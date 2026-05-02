@@ -1695,12 +1695,13 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
                     : /reject|decline|revoke/.test(act) ? 'red'
                     : /message|letter|verification/.test(act) ? 'blue'
                     : /capital|nda/.test(act) ? 'gold' : '';
-          var actionLabel = act.replace(/_/g, ' ');
+          var actionLabel = (typeof humanizeAction === 'function') ? humanizeAction(act) : act.replace(/_/g, ' ');
+          var actorLabel = (typeof humanizeActor === 'function') ? humanizeActor(e.actor, allLeads) : (e.actor || 'system');
           var target = e.target_name || e.target || '';
           return '<div class="tl-row">' +
             '<div class="tl-icon ' + color + '"></div>' +
-            '<div class="tl-text"><strong>' + esc(e.actor || 'system') + '</strong> ' + esc(actionLabel) +
-              (target ? ' <strong>' + esc(target) + '</strong>' : '') + '</div>' +
+            '<div class="tl-text"><strong>' + esc(actorLabel) + '</strong> ' + esc(actionLabel) +
+              (target ? ' · <strong>' + esc(target) + '</strong>' : '') + '</div>' +
             '<div class="tl-time">' + relTime(e.at) + '</div>' +
           '</div>';
         }).join('');
@@ -1916,44 +1917,146 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
   document.getElementById('dr-close').addEventListener('click', closeDrawer);
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && dr.classList.contains('open')) closeDrawer(); });
 
+  // ─── Humanizers ────────────────────────────────────────────────────
+  var ACTION_LABELS = {
+    approve: 'Approved · code issued',
+    decline: 'Declined',
+    invitation_sent: 'Invitation email sent',
+    email_sent: 'Email sent',
+    inquiry_received: 'Enquiry received',
+    inquiry_ack_sent: 'Enquiry confirmation sent',
+    submitted: 'Enquiry submitted',
+    code_issued: 'Access code issued',
+    code_redeemed: 'Code redeemed',
+    nda_uploaded: 'NDA uploaded',
+    nda_approved: 'NDA approved',
+    nda_rejected: 'NDA rejected',
+    subscription_submitted: 'Subscription submitted',
+    wire_instructions_sent: 'Wire instructions sent',
+    wire_instructions_issued: 'Wire instructions issued',
+    wire_received: 'Wire received',
+    wire_cleared: 'Wire cleared',
+    member_funded: 'Funded · admitted',
+    funded: 'Funded · admitted',
+    stage_transition: 'Stage advanced',
+    capital_call_broadcast: 'Capital call broadcast',
+    capital_call_issued: 'Capital call issued',
+    capital_call_acknowledged: 'Capital call acknowledged',
+    message_sent: 'Message sent',
+    message_broadcast: 'Message broadcast',
+    quarterly_letter_sent: 'Quarterly letter sent',
+    vault_verification_published: 'Vault verification published',
+    pw_login: 'Password login',
+    password_set: 'Password set',
+    password_reset_requested: 'Password reset requested',
+    password_reset_completed: 'Password reset completed',
+    magic_link_sent: 'Magic link sent',
+    demo_seed: 'Demo seeded',
+    position_added: 'Position added',
+    position_updated: 'Position updated',
+    position_removed: 'Position removed',
+    access_revoked: 'Access revoked',
+    admission_resent: 'Admission email resent',
+    admin_approved: 'Approved by partner',
+    document_uploaded: 'Document uploaded',
+    soft_deleted: 'Lead removed',
+    nda_review_requested: 'NDA submitted for review'
+  };
+  function humanizeAction(act){
+    if (!act) return '—';
+    var k = String(act).toLowerCase();
+    if (ACTION_LABELS[k]) return ACTION_LABELS[k];
+    return k.replace(/[_-]+/g,' ').replace(/\b\w/g, function(c){return c.toUpperCase();});
+  }
+  var WEALTH_LABELS = {
+    '500k_2m':  '$500K – $2M',
+    '2_5m':     '$2M – $5M',
+    '5_10m':    '$5M – $10M',
+    '10_25m':   '$10M – $25M',
+    '25_50m':   '$25M – $50M',
+    '50m_plus': '$50M+',
+    '50_plus':  '$50M+'
+  };
+  function humanizeWealth(w){
+    if (!w) return '—';
+    return WEALTH_LABELS[String(w).toLowerCase()] || String(w);
+  }
+  var REFERRAL_LABELS = {
+    personal_intro: 'Personal introduction',
+    existing_member: 'Existing member',
+    introduction: 'Introduction',
+    other: 'Other'
+  };
+  function humanizeReferral(r){
+    if (!r) return '—';
+    return REFERRAL_LABELS[String(r).toLowerCase()] || String(r);
+  }
+  function humanizeActor(actor, leadsCache){
+    if (!actor) return 'system';
+    var s = String(actor);
+    if (s === 'system' || s === 'admin' || s === 'cron') return s;
+    // Email actor — strip domain for compactness
+    if (s.indexOf('@') > 0) return s.split('@')[0];
+    // LeadId pattern (demo_*, L_*, M_*) — try to resolve to name from cache
+    if (/^(demo_|L_|M_|lead_)/i.test(s)) {
+      var hit = (leadsCache || []).find(function(x){ return x.id === s || x.leadId === s; });
+      return hit ? (hit.name || 'Member') : 'Member';
+    }
+    return s;
+  }
+
   function renderLeadDrawer(l) {
     document.getElementById('dr-name').textContent = l.name || '—';
     document.getElementById('dr-stage').innerHTML = '<span class="pill pill--' + (STAGE_PILL[l.stage] || 'muted') + '">' + esc(STAGE_LBL[l.stage] || l.stage || '—') + '</span>';
 
     var html = '';
-    // Profile section
+    // Profile section — read all the field-name variants the data actually uses
     html += '<div class="dr-section"><div class="dr-section-title">Profile</div>';
     html += kvRow('Email', l.email);
     html += kvRow('Country', l.country);
-    html += kvRow('Wealth Tier', l.wealth_tier);
-    html += kvRow('Source', l.source || l.intro_by);
+    html += kvRow('Wealth Tier', humanizeWealth(l.investable_assets || l.wealth || l.wealth_tier));
+    html += kvRow('Occupation', l.occupation);
+    html += kvRow('Source', humanizeReferral(l.referral_source || l.source || l.intro_by));
     html += kvRow('Age in pipeline', ageDays(l.created_at) + 'd');
-    html += kvRow('Ticket request', l.ticket_request_krw ? window.TACC.fmKrw(l.ticket_request_krw) : '—');
+    var ticketKg = (l.subscription && l.subscription.kg_requested) || l.ioi_kg;
+    var ticketUsd = l.subscription && l.subscription.usd_amount;
+    if (ticketKg) html += kvRow('Subscription', ticketKg + ' kg' + (ticketUsd ? ' · ' + window.TACC.fmUsd(ticketUsd) : ''));
+    if (l.code) html += kvRow('Access code', l.code + (l.code_revoked ? ' (revoked)' : ''));
+    if (l.member_number) html += kvRow('Member #', String(l.member_number).padStart(3,'0'));
     html += '</div>';
 
-    // Audit
+    // Audit / Case Timeline
     html += '<div class="dr-section"><div class="dr-section-title">Case Timeline</div>';
     var audit = (l.audit || []).slice().reverse();
     if (!audit.length) html += '<div class="lane-empty">No events yet</div>';
     else html += audit.map(function(a){
+      var nextStr = a.next && typeof a.next === 'object' ? Object.entries(a.next).map(function(p){return p[0]+': '+p[1];}).join(', ') : (a.next || '');
+      var prevStr = a.prev && typeof a.prev === 'object' ? Object.entries(a.prev).map(function(p){return p[0]+': '+p[1];}).join(', ') : (a.prev || '');
+      var transition = (prevStr && nextStr) ? ' · ' + esc(prevStr) + ' → ' + esc(nextStr) : (nextStr ? ' · ' + esc(nextStr) : '');
       return '<div class="dr-audit-row">' +
         '<div class="dr-audit-dot"></div>' +
         '<div class="dr-audit-content">' +
-          '<div class="dr-audit-action">' + esc(a.action || '—') + (a.prev && a.next ? ' · ' + esc(a.prev) + ' → ' + esc(a.next) : '') + '</div>' +
-          '<div class="dr-audit-meta">' + esc(a.actor || 'system') + ' · ' + relTime(a.at) + '</div>' +
+          '<div class="dr-audit-action">' + esc(humanizeAction(a.action)) + transition + '</div>' +
+          '<div class="dr-audit-meta">' + esc(humanizeActor(a.actor, allLeads)) + ' · ' + relTime(a.at) + '</div>' +
           (a.memo ? '<div class="dr-audit-memo">' + esc(a.memo) + '</div>' : '') +
         '</div>' +
       '</div>';
     }).join('');
     html += '</div>';
 
-    // Artifacts
-    if (l.nda_url || (l.kyc_docs && l.kyc_docs.length) || l.wire_ref) {
+    // Artifacts — read correct field names
+    var wire = l.wire || {};
+    var hasArtifacts = l.nda_url || (l.documents && l.documents.length) || wire.reference;
+    if (hasArtifacts) {
       html += '<div class="dr-section"><div class="dr-section-title">Artifacts</div>';
       if (l.nda_url) html += '<div style="margin-bottom:10px;"><a class="b b--sm" href="' + esc(l.nda_url) + '" target="_blank">View NDA PDF</a></div>';
-      if (l.kyc_docs && l.kyc_docs.length) html += '<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);">KYC: ' + l.kyc_docs.length + ' file(s)</div>';
-      if (l.wire_ref) html += kvRow('Wire ref', l.wire_ref);
-      if (l.ioi_kg) html += kvRow('IOI', l.ioi_kg + ' kg × spot × ' + (l.ioi_ltv || 70) + '% LTV');
+      if (l.documents && l.documents.length) html += '<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:8px;">' + l.documents.length + ' document(s) on file</div>';
+      if (wire.reference) {
+        html += kvRow('Wire ref', wire.reference);
+        if (wire.amount_usd) html += kvRow('Wire amount', window.TACC.fmUsd(wire.amount_usd));
+        if (wire.received_at) html += kvRow('Received', new Date(wire.received_at).toLocaleDateString());
+        if (wire.cleared_at) html += kvRow('Cleared', new Date(wire.cleared_at).toLocaleDateString());
+      }
       html += '</div>';
     }
 
@@ -1976,10 +2079,14 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
   function stageActions(l) {
     switch (l.stage) {
       case 'inquiry':
-      case 'invited':
         return [
           { op: 'approve-issue-code', label: 'Approve · Issue Code', kind: 'b--green' },
           { op: 'decline', label: 'Decline', kind: 'b--red' }
+        ];
+      case 'invited':
+        return [
+          { op: 'resend-admission', label: 'Resend Invitation', kind: 'b--gold' },
+          { op: 'revoke-access', label: 'Revoke Code', kind: 'b--red' }
         ];
       case 'nda_pending':
         return [
