@@ -28,12 +28,21 @@ import {
   getLead, saveLead, bindCode, listLeads, leadsCount,
   getCachedStats, setCachedStats,
   addCapitalCall, updateCapitalCall,
-  addMessage, getMessages,
+  addMessage, getMessages, markMessageRead,
   markMemberFunded, isMemberNumberTaken, listFundedMembers,
   addQuarterlyLetter, markLetterRead,
   addVaultVerification, broadcastVaultVerification,
   saveTaxStatementUrl,
+  appendAudit, getStageCounts, transitionStage, recountStages,
+  resolveLeadStage,
+  globalAuditList, getActivityFeed,
+  listComplianceFlags, muteFlag, addComplianceFlag,
+  withIdempotency, softDeleteLead,
+  addPosition, updatePosition, removePosition,
+  setLastVaultVerification,
 } from './_lib/storage.js';
+import { scanForExceptions } from './_lib/exceptions.js';
+import { clientIp } from './_lib/http.js';
 import {
   sendInvitation, sendFundedConfirmation, sendWireInstructions,
   sendQuarterlyLetterNotification, sendVaultVerificationNotification,
@@ -156,7 +165,25 @@ async function handleMember(req, res, op) {
     case 'vault-verifications': return memberVaultVerifications(req, res);
     case 'mark-letter-read':  return memberMarkLetterRead(req, res);
     case 'deals':             return memberDeals(req, res);
+    case 'ack-message':       return memberAckMessage(req, res);
     default:                  return bad(res, `unknown member op: ${op}`);
+  }
+}
+
+async function memberAckMessage(req, res) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  const lead = await requireMember(req);
+  if (!lead) return unauthorized(res);
+  let body;
+  try { body = await readBody(req); } catch { return bad(res, 'invalid body'); }
+  const messageId = String(body.message_id || '').trim();
+  if (!messageId) return bad(res, 'message_id required');
+  try {
+    const msg = await markMessageRead(lead.id, messageId);
+    return ok(res, { ok: true, message_id: messageId, read_at: msg.read_at });
+  } catch (e) {
+    if (/not found/.test(e.message)) return notFound(res);
+    return serverError(res, e);
   }
 }
 
@@ -352,7 +379,606 @@ async function handleAdmin(req, res, op) {
     case 'letters':                 return adminLetters(req, res, session);
     case 'tax-statements':          return adminTaxStatements(req, res, session);
     case 'seed-demo':               return adminSeedDemo(req, res, session);
+    // ── Phase 4 ─────────────────────────────────────────────────────────────
+    case 'stats':                   return adminStats(req, res, session);
+    case 'nda-queue':               return adminNdaQueue(req, res, session);
+    case 'wires':                   return adminWires(req, res, session);
+    case 'members':                 return adminMembers(req, res, session);
+    case 'approve-nda':             return adminNdaApprove(req, res, session); // alias
+    case 'reject-nda':              return adminNdaReject(req, res, session);
+    case 'exceptions':              return adminExceptions(req, res, session);
+    case 'mute-exception':          return adminMuteException(req, res, session);
+    case 'scan-exceptions':         return adminScanExceptions(req, res, session);
+    case 'audit-search':            return adminAuditSearch(req, res, session);
+    case 'activity-feed':           return adminActivityFeed(req, res, session);
+    case 'lead-detail':             return adminLeadDetail(req, res, session);
+    case 'bulk-approve':            return adminBulkApprove(req, res, session);
+    case 'request-data-export':     return adminRequestDataExport(req, res, session);
+    case 'soft-delete-lead':        return adminSoftDeleteLead(req, res, session);
+    case 'add-position':            return adminAddPosition(req, res, session);
+    case 'update-position':         return adminUpdatePosition(req, res, session);
+    case 'remove-position':         return adminRemovePosition(req, res, session);
+    case 'send-wire-reminder':      return adminSendWireReminder(req, res, session);
+    case 'resend-admission':        return adminResendAdmission(req, res, session);
+    case 'revoke-access':           return adminRevokeAccess(req, res, session);
+    case 'recount-stages':          return adminRecountStages(req, res, session);
     default:                        return bad(res, `unknown admin op: ${op}`);
+  }
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function err(res, error, code, status = 400) {
+  res.statusCode = status;
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store');
+  res.end(JSON.stringify({ ok: false, error, code: code || 'BAD_REQUEST' }));
+}
+
+function _actor(session) { return session.id || session.email || 'admin'; }
+
+// ── op=stats ────────────────────────────────────────────────────────────────
+
+async function adminStats(req, res, session) {
+  if (req.method !== 'GET') return methodNotAllowed(res);
+
+  let stages;
+  try {
+    stages = await getStageCounts();
+    if (!stages.total) {
+      // Counters not yet initialised — recount once.
+      const counts = await recountStages();
+      stages = { ...counts, total: Object.values(counts).reduce((s, n) => s + (Number(n) || 0), 0) };
+    }
+  } catch (e) {
+    return serverError(res, e);
+  }
+
+  const flags = await listComplianceFlags().catch(() => []);
+  const exceptions_count = flags.length;
+
+  const since = Date.now() - 24 * 60 * 60 * 1000;
+  const recentEntries = await globalAuditList({ limit: 200, since }).catch(() => []);
+  const recent_admits_24h = recentEntries.filter(
+    (e) => e.action === 'member_funded' || e.action === 'funded',
+  ).length;
+
+  // Pending actions = NDA queue + wires awaiting + capital calls overdue
+  const pending = recentEntries.filter((e) => e.action === 'nda_uploaded').length;
+
+  return ok(res, {
+    ok: true,
+    stages,
+    exceptions_count,
+    pending_actions_count: pending,
+    recent_admits_24h,
+  });
+}
+
+// ── op=nda-queue ────────────────────────────────────────────────────────────
+
+async function adminNdaQueue(req, res, session) {
+  if (req.method !== 'GET') return methodNotAllowed(res);
+  const all = await listLeads({ limit: 500 });
+  const queue = all
+    .filter((l) => !l.deleted_at && l.nda_state === 'uploaded')
+    .map((l) => ({
+      id: l.id,
+      name: l.name || null,
+      email: l.email || null,
+      nda_uploaded_at: l.nda_uploaded_at || null,
+      nda_url: l.nda_url || null,
+      status: l.status || 'inquiry',
+    }))
+    .sort((a, b) => (b.nda_uploaded_at || 0) - (a.nda_uploaded_at || 0));
+
+  return ok(res, { ok: true, leads: queue, count: queue.length });
+}
+
+// ── op=wires ────────────────────────────────────────────────────────────────
+
+async function adminWires(req, res, session) {
+  if (req.method !== 'GET') return methodNotAllowed(res);
+  const all = await listLeads({ limit: 500 });
+  const wires = { issued: [], received: [], cleared: [] };
+
+  for (const l of all) {
+    if (l.deleted_at) continue;
+    const w = l.wire || {};
+    if (!w.reference) continue;
+    const entry = {
+      leadId: l.id,
+      name: l.name || null,
+      email: l.email || null,
+      reference: w.reference,
+      amount_usd: w.amount_usd || null,
+      instructions_sent_at: w.instructions_sent_at || null,
+      received_at: w.received_at || null,
+      cleared_at: w.cleared_at || null,
+    };
+    if (w.cleared_at) wires.cleared.push(entry);
+    else if (w.received_at) wires.received.push(entry);
+    else wires.issued.push(entry);
+  }
+
+  return ok(res, { ok: true, wires });
+}
+
+// ── op=members ──────────────────────────────────────────────────────────────
+
+async function adminMembers(req, res, session) {
+  if (req.method !== 'GET') return methodNotAllowed(res);
+  const funded = await listFundedMembers();
+  const members = funded
+    .filter((l) => !l.deleted_at)
+    .map((l) => {
+      const kg = l.subscription?.kg_requested || (l.bars || []).length || 0;
+      const ceiling = Number(l.credit_ceiling_usd) || 0;
+      const drawn   = Number(l.credit_outstanding_usd) || 0;
+      const ltv_pct = ceiling > 0 ? Math.round((drawn / ceiling) * 1000) / 10 : null;
+      return {
+        leadId: l.id,
+        member_number: l.member_number || null,
+        name: l.name || null,
+        email: l.email || null,
+        kg,
+        credit_ceiling_usd: ceiling || null,
+        credit_outstanding_usd: drawn || null,
+        ltv_pct,
+        joined_at: l.funded_at || null,
+        last_login_at: l.last_login_at || null,
+      };
+    })
+    .sort((a, b) => (a.member_number || 999) - (b.member_number || 999));
+
+  return ok(res, { ok: true, members, count: members.length });
+}
+
+// ── op=reject-nda ───────────────────────────────────────────────────────────
+
+async function adminNdaReject(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return err(res, 'invalid body', 'BAD_BODY'); }
+  const leadId = String(body.leadId || '').trim();
+  if (!leadId) return err(res, 'leadId required', 'MISSING_LEAD_ID');
+
+  const lead = await getLead(leadId);
+  if (!lead) return notFound(res);
+
+  const prev = lead.nda_state;
+  lead.nda_state = 'rejected';
+  lead.nda_rejected_at = Date.now();
+  lead.nda_reject_reason = String(body.reason || '').slice(0, 500) || null;
+
+  await appendAudit(lead, {
+    actor: _actor(session),
+    action: 'nda_rejected',
+    prev,
+    next: 'rejected',
+    memo: lead.nda_reject_reason,
+    ip: clientIp(req),
+  });
+  try { await saveLead(lead); } catch (e) { return serverError(res, e); }
+
+  // Notify member
+  try {
+    const { sendRaw } = await import('./_lib/email.js');
+    const siteUrl = process.env.SITE_URL || 'https://www.theaurumcc.com';
+    await sendRaw({
+      to: lead.email,
+      subject: 'Update regarding your NDA — The Aurum Century Club',
+      html: `<p>Dear ${lead.name || 'Member'},</p><p>We were unable to approve the confidentiality agreement you submitted.${lead.nda_reject_reason ? `</p><p>Reason: ${lead.nda_reject_reason}` : ''}</p><p>Please contact us or re-submit at <a href="${siteUrl}/nda">${siteUrl}/nda</a>.</p><p>— The Aurum Team</p>`,
+      text: `Dear ${lead.name || 'Member'},\n\nWe were unable to approve the confidentiality agreement you submitted.${lead.nda_reject_reason ? `\n\nReason: ${lead.nda_reject_reason}` : ''}\n\nPlease contact us or re-submit at ${siteUrl}/nda\n\n— The Aurum Team`,
+    });
+  } catch (e) {
+    console.warn('[v2/admin/reject-nda] notify failed:', e && e.message);
+  }
+
+  return ok(res, { ok: true, leadId, nda_state: 'rejected' });
+}
+
+// ── op=exceptions ───────────────────────────────────────────────────────────
+
+async function adminExceptions(req, res, session) {
+  if (req.method !== 'GET') return methodNotAllowed(res);
+  const flags = await listComplianceFlags();
+  return ok(res, { ok: true, flags });
+}
+
+// ── op=mute-exception ───────────────────────────────────────────────────────
+
+async function adminMuteException(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return err(res, 'invalid body', 'BAD_BODY'); }
+  const leadId = String(body.leadId || '').trim();
+  const type   = String(body.type   || '').trim();
+  const duration = body.duration || '30d';
+  if (!leadId || !type) return err(res, 'leadId and type required', 'MISSING_PARAMS');
+
+  const r = await muteFlag(leadId, type, duration);
+  await globalAuditList({ limit: 1 }).catch(() => {}); // touch
+  // Audit
+  const lead = await getLead(leadId);
+  if (lead) {
+    await appendAudit(lead, {
+      actor: _actor(session),
+      action: 'flag_muted',
+      next: { type, duration },
+      ip: clientIp(req),
+    });
+    await saveLead(lead).catch(() => {});
+  }
+  return ok(res, { ok: true, ...r });
+}
+
+// ── op=scan-exceptions (manual trigger) ─────────────────────────────────────
+
+async function adminScanExceptions(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  try {
+    const r = await scanForExceptions();
+    return ok(res, { ok: true, ...r });
+  } catch (e) {
+    return serverError(res, e);
+  }
+}
+
+// ── op=audit-search ─────────────────────────────────────────────────────────
+
+async function adminAuditSearch(req, res, session) {
+  if (req.method !== 'GET') return methodNotAllowed(res);
+  const q = getQuery(req);
+  const opts = {
+    limit:  Math.min(500, Math.max(1, parseInt(q.limit  || '100', 10))),
+    offset: Math.max(0, parseInt(q.offset || '0', 10)),
+    actor:  q.actor  || undefined,
+    action: q.action || undefined,
+    since:  q.since  ? Number(q.since)  : undefined,
+    until:  q.until  ? Number(q.until)  : undefined,
+  };
+  const entries = await globalAuditList(opts);
+  return ok(res, { ok: true, entries, count: entries.length });
+}
+
+// ── op=activity-feed ────────────────────────────────────────────────────────
+
+async function adminActivityFeed(req, res, session) {
+  if (req.method !== 'GET') return methodNotAllowed(res);
+  const q = getQuery(req);
+  const limit = Math.min(200, Math.max(1, parseInt(q.limit || '50', 10)));
+  const entries = await getActivityFeed({ limit });
+  return ok(res, { ok: true, entries });
+}
+
+// ── op=lead-detail ──────────────────────────────────────────────────────────
+
+async function adminLeadDetail(req, res, session) {
+  if (req.method !== 'GET') return methodNotAllowed(res);
+  const leadId = String(getQuery(req).leadId || '').trim();
+  if (!leadId) return err(res, 'leadId required', 'MISSING_LEAD_ID');
+  const lead = await getLead(leadId);
+  if (!lead) return notFound(res);
+
+  // Compute LTV fields when funded
+  let computed = {};
+  if (lead.status === 'funded') {
+    const ceiling = Number(lead.credit_ceiling_usd) || 0;
+    const drawn   = Number(lead.credit_outstanding_usd) || 0;
+    const kg      = lead.subscription?.kg_requested || (lead.bars || []).length || 0;
+    const ltv_pct = ceiling > 0 ? Math.round((drawn / ceiling) * 1000) / 10 : null;
+    computed = {
+      kg, credit_ceiling_usd: ceiling || null, credit_outstanding_usd: drawn || null,
+      ltv_pct,
+      ltv_status: ltv_pct == null ? null : ltv_pct >= 80 ? 'margin_call' : ltv_pct >= 75 ? 'breach' : ltv_pct >= 70 ? 'alert' : 'ok',
+    };
+  }
+
+  const audit = (lead.audit || []).slice(-200);
+  const messages = (lead.messages || []).slice(-20);
+
+  return ok(res, { ok: true, lead, audit, messages, computed });
+}
+
+// ── op=bulk-approve ─────────────────────────────────────────────────────────
+
+async function adminBulkApprove(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return err(res, 'invalid body', 'BAD_BODY'); }
+  const leadIds = Array.isArray(body.leadIds) ? body.leadIds : [];
+  const action  = String(body.action || '').trim();
+  if (!leadIds.length) return err(res, 'leadIds[] required', 'MISSING_LEAD_IDS');
+  if (!['issue-code', 'send-reminder'].includes(action)) {
+    return err(res, 'action must be issue-code or send-reminder', 'BAD_ACTION');
+  }
+
+  const results = [];
+  for (const lid of leadIds) {
+    try {
+      const lead = await getLead(String(lid));
+      if (!lead) { results.push({ leadId: lid, ok: false, error: 'not_found' }); continue; }
+      if (action === 'issue-code') {
+        if (lead.status === 'inquiry' || lead.status === 'invited') {
+          if (!lead.code) {
+            const code = generateCode();
+            await bindCode(lead.id, code);
+            lead.code = code;
+            lead.code_issued_at = Date.now();
+            lead.status = 'invited';
+            if (!lead.nda_state) lead.nda_state = 'awaiting';
+            await appendAudit(lead, {
+              actor: _actor(session),
+              action: 'admin_approved',
+              next: { code },
+              memo: 'bulk-approve',
+              ip: clientIp(req),
+            });
+            await saveLead(lead);
+            try {
+              const { sendInvitation } = await import('./_lib/email.js');
+              await sendInvitation(lead, code);
+            } catch {}
+            results.push({ leadId: lid, ok: true, code });
+          } else {
+            results.push({ leadId: lid, ok: true, code: lead.code, skipped: 'already_has_code' });
+          }
+        } else {
+          results.push({ leadId: lid, ok: false, error: 'wrong_status' });
+        }
+      } else if (action === 'send-reminder') {
+        try {
+          const { sendRaw } = await import('./_lib/email.js');
+          const siteUrl = process.env.SITE_URL || 'https://www.theaurumcc.com';
+          await sendRaw({
+            to: lead.email,
+            subject: 'Reminder: your invitation to The Aurum Century Club',
+            html: `<p>Dear ${lead.name || 'Member'},</p><p>Your invitation remains active. Continue your application at <a href="${siteUrl}/code">${siteUrl}/code</a>.</p><p>— The Aurum Team</p>`,
+            text: `Reminder: continue your application at ${siteUrl}/code`,
+          });
+          await appendAudit(lead, {
+            actor: _actor(session), action: 'reminder_sent', memo: 'bulk',
+            ip: clientIp(req),
+          });
+          await saveLead(lead);
+          results.push({ leadId: lid, ok: true });
+        } catch (e) {
+          results.push({ leadId: lid, ok: false, error: e.message });
+        }
+      }
+    } catch (e) {
+      results.push({ leadId: lid, ok: false, error: e.message });
+    }
+  }
+  return ok(res, { ok: true, action, results });
+}
+
+// ── op=request-data-export (PDPA) ──────────────────────────────────────────
+
+async function adminRequestDataExport(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return err(res, 'invalid body', 'BAD_BODY'); }
+  const leadId = String(body.leadId || '').trim();
+  if (!leadId) return err(res, 'leadId required', 'MISSING_LEAD_ID');
+
+  const lead = await getLead(leadId);
+  if (!lead) return notFound(res);
+
+  const exportObj = {
+    exported_at: new Date().toISOString(),
+    exported_by: _actor(session),
+    lead,
+  };
+  const json = JSON.stringify(exportObj, null, 2);
+
+  // Try to upload to Vercel Blob; fall back to a data URL.
+  let blobUrl = null;
+  try {
+    const { put } = await import('@vercel/blob');
+    const filename = `data-export/${lead.id}-${Date.now()}.json`;
+    const r = await put(filename, json, { access: 'public', contentType: 'application/json' });
+    blobUrl = r.url;
+  } catch (e) {
+    console.warn('[v2/admin/request-data-export] blob upload failed:', e && e.message);
+  }
+
+  await appendAudit(lead, {
+    actor: _actor(session),
+    action: 'data_export_requested',
+    next: { url: blobUrl, bytes: json.length },
+    ip: clientIp(req),
+  });
+  await saveLead(lead);
+
+  if (blobUrl) return ok(res, { ok: true, url: blobUrl, bytes: json.length });
+  return ok(res, {
+    ok: true,
+    url: null,
+    bytes: json.length,
+    inline: `data:application/json;base64,${Buffer.from(json).toString('base64')}`,
+  });
+}
+
+// ── op=soft-delete-lead ─────────────────────────────────────────────────────
+
+async function adminSoftDeleteLead(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return err(res, 'invalid body', 'BAD_BODY'); }
+  const leadId = String(body.leadId || '').trim();
+  const reason = String(body.reason || '').slice(0, 500);
+  if (!leadId) return err(res, 'leadId required', 'MISSING_LEAD_ID');
+  try {
+    const lead = await softDeleteLead(leadId, reason, _actor(session));
+    return ok(res, { ok: true, leadId: lead.id, deleted_at: lead.deleted_at });
+  } catch (e) {
+    if (/not found/.test(e.message)) return notFound(res);
+    return serverError(res, e);
+  }
+}
+
+// ── op=add/update/remove-position ───────────────────────────────────────────
+
+async function adminAddPosition(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return err(res, 'invalid body', 'BAD_BODY'); }
+  const leadId = String(body.leadId || '').trim();
+  if (!leadId) return err(res, 'leadId required', 'MISSING_LEAD_ID');
+  const position = body.position || {};
+  if (!position.deal_id && !position.deal_name) return err(res, 'position.deal_id or deal_name required', 'MISSING_DEAL');
+  if (!isFinite(Number(position.amount_usd))) return err(res, 'position.amount_usd required', 'MISSING_AMOUNT');
+  try {
+    const p = await addPosition(leadId, position, _actor(session));
+    return ok(res, { ok: true, position: p });
+  } catch (e) {
+    if (/not found/.test(e.message)) return notFound(res);
+    return serverError(res, e);
+  }
+}
+async function adminUpdatePosition(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return err(res, 'invalid body', 'BAD_BODY'); }
+  const leadId = String(body.leadId || '').trim();
+  const positionId = String(body.positionId || '').trim();
+  if (!leadId || !positionId) return err(res, 'leadId & positionId required', 'MISSING_PARAMS');
+  try {
+    const p = await updatePosition(leadId, positionId, body.updates || {}, _actor(session));
+    return ok(res, { ok: true, position: p });
+  } catch (e) {
+    if (/not found/.test(e.message)) return notFound(res);
+    return serverError(res, e);
+  }
+}
+async function adminRemovePosition(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return err(res, 'invalid body', 'BAD_BODY'); }
+  const leadId = String(body.leadId || '').trim();
+  const positionId = String(body.positionId || '').trim();
+  if (!leadId || !positionId) return err(res, 'leadId & positionId required', 'MISSING_PARAMS');
+  try {
+    const removed = await removePosition(leadId, positionId, _actor(session));
+    return ok(res, { ok: true, removed });
+  } catch (e) {
+    if (/not found/.test(e.message)) return notFound(res);
+    return serverError(res, e);
+  }
+}
+
+// ── op=send-wire-reminder ───────────────────────────────────────────────────
+
+async function adminSendWireReminder(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return err(res, 'invalid body', 'BAD_BODY'); }
+  const leadId = String(body.leadId || '').trim();
+  if (!leadId) return err(res, 'leadId required', 'MISSING_LEAD_ID');
+
+  const lead = await getLead(leadId);
+  if (!lead) return notFound(res);
+  if (!lead.wire || !lead.wire.reference) return err(res, 'no wire on file', 'NO_WIRE');
+
+  // Idempotency: 1 reminder per leadId per 5 min
+  const idem = body.idempotency_key || `wire-reminder:${leadId}:${Math.floor(Date.now() / 300000)}`;
+  const result = await withIdempotency(idem, 300, async () => {
+    const wireDetails = {
+      reference:       lead.wire.reference,
+      bank:            process.env.WIRE_BANK_NAME      || '',
+      account_name:    process.env.WIRE_ACCOUNT_NAME   || '',
+      account_number:  process.env.WIRE_ACCOUNT_NUMBER || '',
+      swift:           process.env.WIRE_SWIFT          || '',
+      amount_usd:      lead.wire.amount_usd || null,
+    };
+    try { await sendWireInstructions(lead, wireDetails); } catch (e) {
+      console.warn('[wire-reminder] email failed:', e && e.message);
+    }
+    await appendAudit(lead, {
+      actor: _actor(session),
+      action: 'wire_reminder_sent',
+      next: { reference: lead.wire.reference },
+      ip: clientIp(req),
+    });
+    await saveLead(lead);
+    return { sent: true, reference: lead.wire.reference };
+  });
+
+  return ok(res, { ok: true, ...result });
+}
+
+// ── op=resend-admission ─────────────────────────────────────────────────────
+
+async function adminResendAdmission(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return err(res, 'invalid body', 'BAD_BODY'); }
+  const leadId = String(body.leadId || '').trim();
+  if (!leadId) return err(res, 'leadId required', 'MISSING_LEAD_ID');
+
+  const lead = await getLead(leadId);
+  if (!lead) return notFound(res);
+  if (!lead.code) return err(res, 'no invitation code on file', 'NO_CODE');
+
+  const idem = body.idempotency_key || `resend-admission:${leadId}:${Math.floor(Date.now() / 300000)}`;
+  const result = await withIdempotency(idem, 300, async () => {
+    try { await sendInvitation(lead, lead.code); } catch (e) {
+      console.warn('[resend-admission] email failed:', e && e.message);
+    }
+    await appendAudit(lead, {
+      actor: _actor(session),
+      action: 'admission_resent',
+      next: { code: lead.code },
+      ip: clientIp(req),
+    });
+    await saveLead(lead);
+    return { sent: true, code: lead.code };
+  });
+
+  return ok(res, { ok: true, ...result });
+}
+
+// ── op=revoke-access ────────────────────────────────────────────────────────
+
+async function adminRevokeAccess(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return err(res, 'invalid body', 'BAD_BODY'); }
+  const leadId = String(body.leadId || '').trim();
+  const reason = String(body.reason || '').slice(0, 500);
+  if (!leadId) return err(res, 'leadId required', 'MISSING_LEAD_ID');
+
+  const lead = await getLead(leadId);
+  if (!lead) return notFound(res);
+
+  const prev = lead.code_revoked || false;
+  lead.code_revoked = true;
+  lead.code_revoked_at = Date.now();
+  lead.code_revoked_reason = reason || null;
+  await appendAudit(lead, {
+    actor: _actor(session),
+    action: 'access_revoked',
+    prev,
+    next: true,
+    memo: reason,
+    ip: clientIp(req),
+  });
+  await saveLead(lead);
+
+  return ok(res, { ok: true, leadId, code_revoked: true });
+}
+
+// ── op=recount-stages ───────────────────────────────────────────────────────
+
+async function adminRecountStages(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  try {
+    const counts = await recountStages();
+    return ok(res, { ok: true, counts });
+  } catch (e) {
+    return serverError(res, e);
   }
 }
 
@@ -456,6 +1082,67 @@ async function adminSeedDemo(req, res, session) {
       created_at: now - 30 * day,
       with_messages: true,
     },
+    // 9. Funded with LTV at 73% — triggers ltv-approaching
+    {
+      stage: 'funded',
+      name: '오현우',
+      email: 'demo.oh@example.com',
+      country: 'KR',
+      occupation: 'PE managing partner',
+      assets: '50m_plus',
+      kg_requested: 4,
+      member_number: 3,
+      created_at: now - 40 * day,
+      ltv_pct_target: 73,
+    },
+    // 10. Stale inquiry from 32d ago
+    {
+      stage: 'inquiry',
+      name: '서지원',
+      email: 'demo.seo@example.com',
+      country: 'KR',
+      occupation: 'Family office advisor',
+      assets: '5_10m',
+      created_at: now - 32 * day,
+    },
+    // 11. Wire issued 9d ago, not cleared — triggers wire-pending-stale
+    {
+      stage: 'wire_issued',
+      name: '권다은',
+      email: 'demo.kwon@example.com',
+      country: 'KR',
+      occupation: 'Tech executive',
+      assets: '10_25m',
+      kg_requested: 2,
+      created_at: now - 11 * day,
+      wire_age_days: 9,
+    },
+    // 12. Funded inactive 65d
+    {
+      stage: 'funded',
+      name: '문지호',
+      email: 'demo.moon@example.com',
+      country: 'KR',
+      occupation: 'Industrialist',
+      assets: '50m_plus',
+      kg_requested: 3,
+      member_number: 4,
+      created_at: now - 80 * day,
+      last_login_days_ago: 65,
+    },
+    // 13. Funded with overdue capital call
+    {
+      stage: 'funded',
+      name: '백서윤',
+      email: 'demo.baek@example.com',
+      country: 'KR',
+      occupation: 'Asset allocator',
+      assets: '25_50m',
+      kg_requested: 2,
+      member_number: 5,
+      created_at: now - 50 * day,
+      with_overdue_capital_call: true,
+    },
   ];
 
   const seeded = [];
@@ -468,7 +1155,27 @@ async function adminSeedDemo(req, res, session) {
     }
   }
 
-  return ok(res, { ok: true, seeded: seeded.length, leads: seeded });
+  // Seed a global vault verification 95d ago to trigger vault-verification-overdue
+  try {
+    await setLastVaultVerification({
+      id: 'demo_vv_old',
+      title: 'Q3 2025 Vault Verification',
+      year: 2025,
+      published_at: new Date(now - 95 * day).toISOString(),
+    });
+  } catch {}
+
+  // Recount counters from authoritative state
+  let counts;
+  try { counts = await recountStages(); } catch {}
+
+  // Run exception scan so flags are immediately available
+  let exceptions;
+  try { exceptions = await scanForExceptions(); } catch (e) {
+    console.warn('[seed-demo] scanForExceptions failed:', e && e.message);
+  }
+
+  return ok(res, { ok: true, seeded: seeded.length, leads: seeded, counts, exceptions });
 }
 
 function buildDemoLead(id, f, now) {
@@ -528,9 +1235,12 @@ function buildDemoLead(id, f, now) {
 
   // Wire issued+
   const wireRef = `TACC-${id.slice(-8).toUpperCase()}-${(now).toString(36).toUpperCase()}`;
+  const wireSent = f.wire_age_days != null
+    ? now - f.wire_age_days * day
+    : f.created_at + 5 * day;
   lead.wire = {
     reference: wireRef,
-    instructions_sent_at: f.created_at + 5 * day,
+    instructions_sent_at: wireSent,
   };
   lead.audit.push({ at: lead.wire.instructions_sent_at, actor: 'admin', action: 'wire_instructions_sent' });
 
@@ -560,6 +1270,36 @@ function buildDemoLead(id, f, now) {
       weight_kg: 1,
       assigned_at: lead.funded_at,
       vault_location: 'Malca-Amit Singapore FTZ',
+    });
+  }
+
+  // LTV target — set credit lines to hit a target ratio
+  if (f.ltv_pct_target) {
+    const usdPerKg = 112000;
+    const goldValue = kg * usdPerKg;
+    const ceiling = Math.round(goldValue * 0.75);
+    const drawn   = Math.round(ceiling * (f.ltv_pct_target / 100));
+    lead.credit_ceiling_usd     = ceiling;
+    lead.credit_outstanding_usd = drawn;
+  }
+
+  // Inactive member
+  if (f.last_login_days_ago) {
+    lead.last_login_at = new Date(now - f.last_login_days_ago * day).toISOString();
+  }
+
+  // Overdue capital call
+  if (f.with_overdue_capital_call) {
+    lead.capital_calls = lead.capital_calls || [];
+    lead.capital_calls.push({
+      id: `cc_${id}_overdue`,
+      ref: `CC-2026-Q1-${lead.member_number}`,
+      issued_at: now - 12 * day,
+      due_date: now - 2 * day,
+      amount_usd: 75000,
+      reason: 'Tier 1 facility deployment',
+      status: 'pending',
+      acknowledged_at: null,
     });
   }
 
@@ -624,6 +1364,7 @@ async function adminApprove(req, res, session) {
   const actor = session.id || session.email || 'admin';
   const now   = Date.now();
   const code  = generateCode();
+  const fromStage = resolveLeadStage(lead);
 
   try { await bindCode(leadId, code); }
   catch (e) { return serverError(res, e); }
@@ -632,8 +1373,8 @@ async function adminApprove(req, res, session) {
   lead.code_issued_at = now;
   lead.status         = 'invited';
   if (!lead.nda_state) lead.nda_state = 'awaiting';
-  lead.audit = lead.audit || [];
-  lead.audit.push({ at: now, actor, action: 'admin_approved', code });
+  await appendAudit(lead, { at: now, actor, action: 'admin_approved', next: { code }, ip: clientIp(req) });
+  if (fromStage !== 'invited') await transitionStage(lead, fromStage, 'invited');
 
   try { await saveLead(lead); }
   catch (e) { return serverError(res, e); }
@@ -643,7 +1384,7 @@ async function adminApprove(req, res, session) {
     try {
       emailResult = await sendInvitation(lead, code);
       if (emailResult.sent) {
-        lead.audit.push({ at: Date.now(), actor, action: 'invitation_sent', to: lead.email });
+        await appendAudit(lead, { actor, action: 'invitation_sent', next: { to: lead.email } });
         await saveLead(lead).catch(() => {});
       }
     } catch (e) {
@@ -711,15 +1452,16 @@ async function adminNdaApprove(req, res, session) {
   const actor = session.id || session.email || 'admin';
   const now   = Date.now();
 
+  const prevNda  = lead.nda_state;
+  const fromStg  = resolveLeadStage(lead);
   lead.nda_state       = 'approved';
   lead.nda_approved_at = now;
-  lead.audit = lead.audit || [];
-  lead.audit.push({
-    at:     now,
-    actor,
-    action: 'nda_approved',
-    meta:   { notes: body.notes || null },
+  await appendAudit(lead, {
+    at: now, actor, action: 'nda_approved', prev: prevNda, next: 'approved',
+    memo: body.notes || null, ip: clientIp(req),
   });
+  const toStg = resolveLeadStage(lead);
+  if (fromStg !== toStg) await transitionStage(lead, fromStg, toStg);
 
   try { await saveLead(lead); }
   catch (e) { return serverError(res, e); }
@@ -764,11 +1506,16 @@ async function adminWireIssue(req, res, session) {
   const prefix   = process.env.WIRE_REFERENCE_PREFIX || 'TACC';
   const ref      = `${prefix}-${lead.id.slice(-8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
 
+  const fromStg2 = resolveLeadStage(lead);
   lead.wire = lead.wire || {};
   lead.wire.reference          = ref;
   lead.wire.instructions_sent_at = now;
-  lead.audit = lead.audit || [];
-  lead.audit.push({ at: now, actor, action: 'wire_instructions_issued', meta: { ref } });
+  await appendAudit(lead, {
+    at: now, actor, action: 'wire_instructions_issued',
+    next: { reference: ref }, ip: clientIp(req),
+  });
+  const toStg2 = resolveLeadStage(lead);
+  if (fromStg2 !== toStg2) await transitionStage(lead, fromStg2, toStg2);
 
   try { await saveLead(lead); }
   catch (e) { return serverError(res, e); }
@@ -810,16 +1557,16 @@ async function adminWireReceived(req, res, session) {
   const actor = session.id || session.email || 'admin';
   const now   = Date.now();
 
+  const fromStg3 = resolveLeadStage(lead);
   lead.wire = lead.wire || {};
   lead.wire.received_at = now;
   lead.wire.amount_usd  = amountUsd;
-  lead.audit = lead.audit || [];
-  lead.audit.push({
-    at:     now,
-    actor,
-    action: 'wire_received',
-    meta:   { amount_usd: amountUsd },
+  await appendAudit(lead, {
+    at: now, actor, action: 'wire_received',
+    next: { amount_usd: amountUsd }, ip: clientIp(req),
   });
+  const toStg3 = resolveLeadStage(lead);
+  if (fromStg3 !== toStg3) await transitionStage(lead, fromStg3, toStg3);
 
   try { await saveLead(lead); }
   catch (e) { return serverError(res, e); }
@@ -856,6 +1603,7 @@ async function adminWireCleared(req, res, session) {
   const now   = Date.now();
 
   // Record cleared timestamp before markMemberFunded sets it
+  const fromStg4 = resolveLeadStage(lead);
   lead.wire = lead.wire || {};
   lead.wire.cleared_at = now;
   await saveLead(lead).catch(() => {});
@@ -867,6 +1615,18 @@ async function adminWireCleared(req, res, session) {
   } catch (e) {
     return serverError(res, e);
   }
+  // Counter transition
+  try { await transitionStage(updatedLead, fromStg4, 'funded'); } catch {}
+  // Global stream entry for funded
+  try {
+    const { globalAuditAppend } = await import('./_lib/storage.js');
+    await globalAuditAppend({
+      actor, action: 'member_funded',
+      target_type: 'lead', target_id: updatedLead.id,
+      target_name: updatedLead.name || updatedLead.email,
+      next: { member_number: memberNumber },
+    });
+  } catch {}
 
   // Generate member certificate
   let certificateUrl = null;
@@ -1154,6 +1914,7 @@ async function adminPublishVaultVerification(req, res, session) {
   };
 
   const { sent_to, total, errors } = await broadcastVaultVerification(vv);
+  try { await setLastVaultVerification(vv); } catch {}
 
   // Send email notifications — failures logged, do not abort
   const funded = await listFundedMembers();

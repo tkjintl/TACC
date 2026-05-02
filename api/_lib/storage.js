@@ -449,12 +449,477 @@ export async function saveTaxStatementUrl(leadId, fiscalYear, url) {
   if (!lead) throw new Error(`saveTaxStatementUrl: lead ${leadId} not found`);
   lead.tax_statements = lead.tax_statements || {};
   lead.tax_statements[String(fiscalYear)] = url;
-  lead.audit = lead.audit || [];
-  lead.audit.push({
-    at:     Date.now(),
+  await appendAudit(lead, {
     actor:  'system',
     action: 'tax_statement_generated',
-    meta:   { fiscal_year: fiscalYear, url },
+    next:   { fiscal_year: fiscalYear, url },
   });
   await saveLead(lead);
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Phase 4 — Audit, counters, compliance flags, idempotency, messages
+// ────────────────────────────────────────────────────────────────────────────
+
+// In-memory ZADD support for audit:global needs ZRANGEBYSCORE — extend memCall
+async function _zAddRaw(key, score, member) {
+  return call(['ZADD', key, String(score), member]);
+}
+async function _zRangeByScore(key, min, max, limit, offset) {
+  const args = ['ZRANGEBYSCORE', key, String(min), String(max)];
+  if (limit != null) args.push('LIMIT', String(offset || 0), String(limit));
+  return callExt(args);
+}
+async function _zRevRangeByScore(key, max, min, limit, offset) {
+  const args = ['ZREVRANGEBYSCORE', key, String(max), String(min)];
+  if (limit != null) args.push('LIMIT', String(offset || 0), String(limit));
+  return callExt(args);
+}
+async function _scan(pattern, count = 100) {
+  // Upstash: SCAN cursor MATCH pattern COUNT n. Iterate till cursor=0.
+  let cursor = '0';
+  const keys = [];
+  let safety = 0;
+  do {
+    const r = await callExt(['SCAN', cursor, 'MATCH', pattern, 'COUNT', String(count)]);
+    if (Array.isArray(r) && r.length === 2) {
+      cursor = String(r[0]);
+      if (Array.isArray(r[1])) keys.push(...r[1]);
+    } else {
+      break;
+    }
+    safety++;
+    if (safety > 1000) break;
+  } while (cursor !== '0');
+  return keys;
+}
+
+// Augment in-memory store to support new commands used above.
+const _origMemCall = memCall;
+function memCallExt(cmd) {
+  const s = memStore();
+  const op = String(cmd[0]).toUpperCase();
+  const a = cmd.slice(1);
+  // Initialise lists map lazily
+  if (!s.lists) s.lists = new Map();
+  switch (op) {
+    case 'RPUSH': {
+      const k = a[0];
+      const list = s.lists.get(k) || [];
+      for (let i = 1; i < a.length; i++) list.push(a[i]);
+      s.lists.set(k, list);
+      return list.length;
+    }
+    case 'LPUSH': {
+      const k = a[0];
+      const list = s.lists.get(k) || [];
+      for (let i = 1; i < a.length; i++) list.unshift(a[i]);
+      s.lists.set(k, list);
+      return list.length;
+    }
+    case 'LRANGE': {
+      const k = a[0];
+      const start = parseInt(a[1], 10);
+      const stop  = parseInt(a[2], 10);
+      const list = s.lists.get(k) || [];
+      const end = stop === -1 ? list.length : stop + 1;
+      return list.slice(start, end);
+    }
+    case 'LLEN': {
+      const list = s.lists.get(a[0]) || [];
+      return list.length;
+    }
+    case 'DECR': {
+      const v = (parseInt(s.kv.get(a[0]) || '0', 10) || 0) - 1;
+      s.kv.set(a[0], String(v));
+      return v;
+    }
+    case 'SET': {
+      // Support EX option used by addComplianceFlag/withIdempotency
+      s.kv.set(a[0], a[1]);
+      const exIdx = a.indexOf('EX');
+      if (exIdx >= 0 && a[exIdx + 1]) {
+        s.ttls.set(a[0], Date.now() + Number(a[exIdx + 1]) * 1000);
+      } else {
+        s.ttls.delete(a[0]);
+      }
+      return 'OK';
+    }
+    case 'ZRANGEBYSCORE':
+    case 'ZREVRANGEBYSCORE': {
+      const k = a[0];
+      const parseB = (v) => {
+        if (v === '-inf') return -Infinity;
+        if (v === '+inf') return Infinity;
+        return Number(v);
+      };
+      // For ZRANGEBYSCORE: a[1]=min, a[2]=max
+      // For ZREVRANGEBYSCORE: a[1]=max, a[2]=min
+      const lo = op === 'ZRANGEBYSCORE' ? parseB(a[1]) : parseB(a[2]);
+      const hi = op === 'ZRANGEBYSCORE' ? parseB(a[2]) : parseB(a[1]);
+      let limit = null, offset = 0;
+      const li = a.findIndex((x) => String(x).toUpperCase() === 'LIMIT');
+      if (li >= 0) { offset = parseInt(a[li + 1], 10); limit = parseInt(a[li + 2], 10); }
+      const z = s.zsets.get(k) || new Map();
+      let arr = [...z.entries()].filter(([, sc]) => sc >= lo && sc <= hi);
+      arr.sort((x, y) => op === 'ZREVRANGEBYSCORE' ? y[1] - x[1] : x[1] - y[1]);
+      if (limit != null) arr = arr.slice(offset, offset + limit);
+      return arr.map(([m]) => m);
+    }
+    case 'SCAN': {
+      // Returns ['0', [matchingKeys]]
+      let pattern = '*';
+      const mi = a.findIndex((x) => String(x).toUpperCase() === 'MATCH');
+      if (mi >= 0) pattern = a[mi + 1];
+      const re = new RegExp('^' + pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$');
+      const allKeys = [...s.kv.keys()].filter((k) => {
+        const ttl = s.ttls.get(k);
+        if (ttl && Date.now() > ttl) { s.kv.delete(k); s.ttls.delete(k); return false; }
+        return re.test(k);
+      });
+      return ['0', allKeys];
+    }
+    case 'ZRANGEBYSCORE_': // unreachable, here for future proofing
+      return [];
+    default:
+      return _origMemCall(cmd);
+  }
+}
+// Re-route call() through extended memCall when no KV.
+const _origCall = call;
+async function callExt(cmd) {
+  const url = KV_URL();
+  const tok = KV_TOK();
+  if (!url || !tok) {
+    warnNoKv();
+    return memCallExt(cmd);
+  }
+  return _origCall(cmd);
+}
+// Replace local helpers' use of `call` with `callExt`. We can't reassign `call`
+// (it's a const function), so we route the new helpers through callExt directly.
+// (Existing code still uses `call` which uses the old memCall — unchanged.)
+
+// ── Audit (per-lead + global stream) ──────────────────────────────────────────
+
+const AUDIT_GLOBAL_KEY = 'audit:global';
+
+/**
+ * appendAudit(lead, entry)
+ * Mutates lead.audit IN PLACE (push) and writes a copy to global stream.
+ * Caller is responsible for calling saveLead(lead) afterwards (so we can batch).
+ * Entry shape: { actor, action, prev?, next?, memo?, ip?, target_type?, target_id? }
+ */
+export async function appendAudit(lead, entry) {
+  const at = entry.at || Date.now();
+  const e = {
+    at,
+    actor:  entry.actor || 'system',
+    action: entry.action,
+    prev:   entry.prev != null ? entry.prev : undefined,
+    next:   entry.next != null ? entry.next : undefined,
+    memo:   entry.memo || undefined,
+    ip:     entry.ip   || undefined,
+  };
+  lead.audit = lead.audit || [];
+  lead.audit.push(e);
+
+  // Global stream
+  const globalEntry = {
+    ...e,
+    leadId:      lead.id,
+    target_type: entry.target_type || 'lead',
+    target_id:   entry.target_id   || lead.id,
+    target_name: lead.name || lead.email || lead.id,
+  };
+  try {
+    // Score = at (ms). Member must be unique, so we suffix with leadId+random.
+    const member = JSON.stringify(globalEntry);
+    await callExt(['ZADD', AUDIT_GLOBAL_KEY, String(at), member]);
+  } catch (err) {
+    console.warn('[appendAudit] global stream write failed:', err && err.message);
+  }
+  return e;
+}
+
+export async function globalAuditAppend(entry) {
+  const at = entry.at || Date.now();
+  const e = { at, ...entry };
+  await callExt(['ZADD', AUDIT_GLOBAL_KEY, String(at), JSON.stringify(e)]);
+  return e;
+}
+
+export async function globalAuditList({ limit = 50, offset = 0, since, until, actor, action } = {}) {
+  const max = until ? String(until) : '+inf';
+  const min = since ? String(since) : '-inf';
+  const raw = await _zRevRangeByScore(AUDIT_GLOBAL_KEY, max, min, Math.min(500, limit + offset + 200), 0);
+  const entries = [];
+  for (const m of (raw || [])) {
+    try {
+      const parsed = typeof m === 'string' ? JSON.parse(m) : m;
+      if (actor && parsed.actor !== actor) continue;
+      if (action && parsed.action !== action) continue;
+      entries.push(parsed);
+    } catch {}
+  }
+  return entries.slice(offset, offset + limit);
+}
+
+export async function getActivityFeed({ limit = 50 } = {}) {
+  return globalAuditList({ limit, offset: 0 });
+}
+
+// ── Stage counters ────────────────────────────────────────────────────────────
+
+const STAGE_KEY = (stage) => `counter:stage:${stage}`;
+const STAGES = ['inquiry', 'invited', 'nda_pending', 'subscribed', 'wire_issued', 'wire_received', 'funded'];
+
+export async function getStageCounts() {
+  const out = {};
+  let total = 0;
+  for (const s of STAGES) {
+    const v = await callExt(['GET', STAGE_KEY(s)]);
+    const n = Math.max(0, parseInt(v || '0', 10) || 0);
+    out[s] = n;
+    total += n;
+  }
+  out.total = total;
+  return out;
+}
+
+async function _stageIncr(stage, delta) {
+  if (!stage || !STAGES.includes(stage)) return;
+  // Read-modify-write to avoid going negative
+  const cur = parseInt((await callExt(['GET', STAGE_KEY(stage)])) || '0', 10) || 0;
+  const next = Math.max(0, cur + delta);
+  await callExt(['SET', STAGE_KEY(stage), String(next)]);
+}
+
+/**
+ * transitionStage(lead, fromStage, toStage)
+ * Updates per-stage counters atomically (best-effort) + records audit.
+ * Caller must saveLead() afterwards (to persist any other lead mutations).
+ */
+export async function transitionStage(lead, fromStage, toStage) {
+  if (fromStage === toStage) return;
+  if (fromStage) await _stageIncr(fromStage, -1);
+  if (toStage)   await _stageIncr(toStage,   +1);
+  await appendAudit(lead, {
+    actor:  'system',
+    action: 'stage_transition',
+    prev:   fromStage,
+    next:   toStage,
+  });
+}
+
+/**
+ * recountStages()
+ * Recomputes counters from scratch by scanning all leads. Use sparingly.
+ */
+export async function recountStages() {
+  // Resolve current stage of every lead
+  const all = await listLeads({ limit: 1000 });
+  const counts = Object.fromEntries(STAGES.map((s) => [s, 0]));
+  for (const l of all) {
+    const stage = _resolveStage(l);
+    if (counts[stage] != null) counts[stage]++;
+  }
+  for (const s of STAGES) {
+    await callExt(['SET', STAGE_KEY(s), String(counts[s])]);
+  }
+  return counts;
+}
+
+function _resolveStage(lead) {
+  if (lead.deleted_at) return null;
+  if (lead.status === 'funded') return 'funded';
+  const wire = lead.wire || {};
+  if (wire.reference && wire.received_at && !wire.cleared_at) return 'wire_received';
+  if (wire.reference && !wire.received_at) return 'wire_issued';
+  if (lead.status === 'subscribed') return 'subscribed';
+  if (lead.nda_state === 'uploaded') return 'nda_pending';
+  if (lead.status === 'invited' || lead.code) return 'invited';
+  return 'inquiry';
+}
+
+export { _resolveStage as resolveLeadStage };
+
+// ── Compliance flags ──────────────────────────────────────────────────────────
+
+const FLAG_KEY  = (leadId, type) => `flag:${leadId}:${type}`;
+const MUTE_KEY  = (leadId, type) => `flag:muted:${leadId}:${type}`;
+const FLAG_SCAN = 'flag:*';
+
+const SEVERITY_BY_TYPE = {
+  'kyc-expiring':              'warning',
+  'nda-missing':               'critical',
+  'code-expiring':             'warning',
+  'ltv-approaching':           'warning',
+  'ltv-near-ceiling':          'critical',
+  'capital-call-overdue':      'critical',
+  'member-inactive':           'info',
+  'wire-pending-stale':        'warning',
+  'vault-verification-overdue':'warning',
+};
+
+export async function addComplianceFlag(leadId, type, reason, ttlSeconds = 32 * 86400) {
+  // Skip if muted
+  const muted = await callExt(['EXISTS', MUTE_KEY(leadId, type)]);
+  if (muted === 1) return { skipped: 'muted' };
+
+  const now = Date.now();
+  const flag = {
+    leadId,
+    type,
+    severity: SEVERITY_BY_TYPE[type] || 'info',
+    reason,
+    created_at: now,
+  };
+  await callExt(['SET', FLAG_KEY(leadId, type), JSON.stringify(flag), 'EX', String(ttlSeconds)]);
+  return flag;
+}
+
+export async function listComplianceFlags() {
+  const keys = await _scan(FLAG_SCAN, 200);
+  const flags = [];
+  for (const k of keys) {
+    if (k.startsWith('flag:muted:')) continue;
+    const v = await callExt(['GET', k]);
+    if (!v) continue;
+    let parsed;
+    try { parsed = typeof v === 'object' ? v : JSON.parse(v); } catch { continue; }
+    // Hydrate lead name (best-effort)
+    const lead = parsed.leadId ? await getLead(parsed.leadId) : null;
+    flags.push({
+      ...parsed,
+      leadName: lead ? (lead.name || lead.email) : null,
+      age_seconds: Math.floor((Date.now() - (parsed.created_at || Date.now())) / 1000),
+      action_url: lead ? `/admin#lead-${parsed.leadId}` : null,
+    });
+  }
+  flags.sort((a, b) => {
+    const sevOrder = { critical: 0, warning: 1, info: 2 };
+    const sa = sevOrder[a.severity] ?? 3;
+    const sb = sevOrder[b.severity] ?? 3;
+    if (sa !== sb) return sa - sb;
+    return (b.created_at || 0) - (a.created_at || 0);
+  });
+  return flags;
+}
+
+export async function muteFlag(leadId, type, duration) {
+  const ttl = _parseDuration(duration);
+  await callExt(['SET', MUTE_KEY(leadId, type), '1', 'EX', String(ttl)]);
+  // Also remove the active flag
+  await callExt(['DEL', FLAG_KEY(leadId, type)]);
+  return { muted: true, ttl };
+}
+
+function _parseDuration(d) {
+  if (d === 'forever') return 60 * 60 * 24 * 365 * 10; // 10y ~= forever
+  if (d === '90d') return 60 * 60 * 24 * 90;
+  if (d === '30d') return 60 * 60 * 24 * 30;
+  if (typeof d === 'number') return d;
+  return 60 * 60 * 24 * 30;
+}
+
+// ── External messages history ─────────────────────────────────────────────────
+
+const MSG_HIST_KEY = (leadId) => `messages:${leadId}`;
+
+export async function appendMessageHistory(leadId, message) {
+  await callExt(['RPUSH', MSG_HIST_KEY(leadId), JSON.stringify(message)]);
+}
+
+export async function getMessageHistory(leadId, { limit = 50, offset = 0 } = {}) {
+  const start = offset;
+  const stop  = offset + limit - 1;
+  const raw = await callExt(['LRANGE', MSG_HIST_KEY(leadId), String(start), String(stop)]);
+  const out = [];
+  for (const m of (raw || [])) {
+    try { out.push(typeof m === 'object' ? m : JSON.parse(m)); } catch {}
+  }
+  return out;
+}
+
+// ── Idempotency ──────────────────────────────────────────────────────────────
+
+const IDEM_KEY = (k) => `idem:${k}`;
+
+export async function withIdempotency(key, ttlSeconds, fn) {
+  if (!key) return fn();
+  const existing = await callExt(['GET', IDEM_KEY(key)]);
+  if (existing) {
+    try { return typeof existing === 'object' ? existing : JSON.parse(existing); } catch { return existing; }
+  }
+  const result = await fn();
+  try {
+    await callExt(['SET', IDEM_KEY(key), JSON.stringify(result), 'EX', String(ttlSeconds || 60)]);
+  } catch {}
+  return result;
+}
+
+// ── Vault verification: global state ──────────────────────────────────────────
+
+const VAULT_LAST_KEY = 'vault:last_verification';
+
+export async function getLastVaultVerification() {
+  return getJSON(VAULT_LAST_KEY);
+}
+export async function setLastVaultVerification(vv) {
+  await setJSON(VAULT_LAST_KEY, vv);
+}
+
+// Patch broadcastVaultVerification by exposing a setter helper above.
+// (broadcastVaultVerification itself is left untouched; exceptions.js reads the timestamp.)
+
+// ── Soft delete ───────────────────────────────────────────────────────────────
+
+export async function softDeleteLead(leadId, reason, actor) {
+  const lead = await getLead(leadId);
+  if (!lead) throw new Error(`softDeleteLead: lead ${leadId} not found`);
+  if (lead.deleted_at) return lead;
+  const fromStage = _resolveStage(lead);
+  lead.deleted_at = Date.now();
+  lead.deleted_reason = reason || null;
+  await appendAudit(lead, { actor: actor || 'admin', action: 'lead_soft_deleted', memo: reason });
+  if (fromStage) await _stageIncr(fromStage, -1);
+  await saveLead(lead);
+  return lead;
+}
+
+// ── Member positions (deal allocations) ───────────────────────────────────────
+
+export async function addPosition(leadId, position, actor) {
+  const lead = await getLead(leadId);
+  if (!lead) throw new Error(`addPosition: lead ${leadId} not found`);
+  lead.positions = lead.positions || [];
+  if (!position.id) position.id = `pos_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+  lead.positions.push(position);
+  await appendAudit(lead, { actor: actor || 'admin', action: 'position_added', next: { id: position.id, deal: position.deal_name || position.deal_id } });
+  await saveLead(lead);
+  return position;
+}
+export async function updatePosition(leadId, positionId, updates, actor) {
+  const lead = await getLead(leadId);
+  if (!lead) throw new Error(`updatePosition: lead ${leadId} not found`);
+  lead.positions = lead.positions || [];
+  const idx = lead.positions.findIndex((p) => p.id === positionId);
+  if (idx === -1) throw new Error(`updatePosition: position ${positionId} not found`);
+  const prev = lead.positions[idx];
+  lead.positions[idx] = { ...prev, ...updates };
+  await appendAudit(lead, { actor: actor || 'admin', action: 'position_updated', prev, next: lead.positions[idx] });
+  await saveLead(lead);
+  return lead.positions[idx];
+}
+export async function removePosition(leadId, positionId, actor) {
+  const lead = await getLead(leadId);
+  if (!lead) throw new Error(`removePosition: lead ${leadId} not found`);
+  lead.positions = lead.positions || [];
+  const idx = lead.positions.findIndex((p) => p.id === positionId);
+  if (idx === -1) throw new Error(`removePosition: position ${positionId} not found`);
+  const removed = lead.positions.splice(idx, 1)[0];
+  await appendAudit(lead, { actor: actor || 'admin', action: 'position_removed', prev: removed });
+  await saveLead(lead);
+  return removed;
 }
