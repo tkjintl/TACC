@@ -2,36 +2,39 @@
 <html lang="en">
 <head>
 <!--
-  TACC — Public Gate · Particle Physics Variant
-  ─────────────────────────────────────────────
-  WHAT IT DOES
-  A canvas of ~2,400 gold motes suspended in a near-black field. On load,
-  each particle is assigned a target sampled from the offscreen-rendered
-  "Au" monogram (or, on a slow 22s cycle, from the wordmark "AURUM" and a
-  kilo-bar silhouette). Particles ease toward their targets with a critically
-  damped spring, then breathe — a low-amplitude noise drift keeps the form
-  alive without ever feeling animated. The pointer applies a soft inverse-
-  square repulsion (radius ~140px), as if the form had a magnetic field.
-  A vignette and a faint film-grain canvas overlay finish the surface.
-
-  WHAT MAKES IT INSTITUTIONAL (NOT CUTE)
-  - No bouncing, no rainbow, no parallax tricks. One palette: gold on near-black.
-  - Particles are 0.6–1.6px. They are dust, not confetti. Density does the work.
-  - Motion is sub-perceptual (≤ 0.4px/frame at rest). The form looks still until
-    you watch it for ten seconds.
-  - The shape IS the typography. The "Au" is rendered from Cormorant italic —
-    same serif as the wordmark — so the visual is the wordmark made physical.
-  - Cycle interval is slow (22s). This is a vault, not a screensaver.
-  - Below the canvas: one CTA, one tagline, one status line. Nothing else.
-
-  TRADEOFFS
-  - Particles are sampled from rasterized text, so on retina the sample density
-    is doubled to keep the silhouette crisp. ~2.4k particles renders at 60fps
-    on a 2020 MBP integrated GPU. We cap at 2,400 and dial down to 1,400 on
-    devices with hardwareConcurrency < 6 or width < 768.
-  - Reduced-motion: physics loop is skipped entirely. We stamp the static
-    monogram once and never repaint. No grain animation either.
-  - No external libs. Hand-rolled. ~7KB JS.
+  TACC — Public Gate · Particle Physics Variant (Cinematic Build)
+  ────────────────────────────────────────────────────────────────
+  CHANGES IN THIS PASS
+  ─ Au emerges slowly. Each particle gets a per-particle arrival offset
+    (0–2.6s) and a soft spring (factor 0.0042, damping 0.92). Combined
+    with an outOf scatter (particles spawn just past the viewport edges
+    and drift inward) the glyph takes ~5–6 seconds to fully resolve.
+    Easing is hand-rolled cubic-out (1 - (1-t)^3) on the per-particle
+    arrival weight, so the silhouette fades in particle-by-particle —
+    sparse hint first, dense seal last.
+  ─ Ambient field. A second layer of ~280 dust motes drifts independently,
+    rising slowly, never assembling, never targeting the glyph. Smaller
+    (0.4–1.0px) and dimmer (max 0.35 alpha). They wrap top↔bottom so the
+    field is perpetual. Painted before the main field so the Au sits in
+    front.
+  ─ Trails. Background fade alpha lowered (was 0.22 → 0.10) so motion
+    leaves faint persistent trails during convergence. As the cohort
+    settles the trails dissolve naturally because particles stop moving.
+  ─ Glow. A 'screen' composite radial gradient is laid over the focal
+    region and breathes on a slow sine. Once particles are near-target
+    they get a luminance boost (settled brightness 1.0 + 8% pulse) that
+    reads as the glyph being charged.
+  ─ Dissolve transitions. CYCLE_MS unchanged at 22s. We added a 2.0s
+    dissolve window inside each cycle: when transitionPhase is active
+    the spring factor is dropped to 0.0008 and a small outward jitter
+    is injected, so particles drift apart for ~1.6s before the next
+    target locks in. Then arrival offsets are re-randomised and the
+    new shape resolves over ~3.5s.
+  ─ Ambient atmosphere on load. The backplate radial gradient now has
+    a slow CSS keyframe pulse (12s) so the room is already lit before
+    the particles arrive.
+  ─ Reduced-motion path is unchanged: static stamp, no loop, no glow,
+    no ambient field.
 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -55,21 +58,28 @@
     overflow: hidden;
   }
 
-  /* Layered background washes */
+  /* Layered background washes — now breathing on a slow loop so the
+     room already feels lit before any particles are visible. */
   .stage::before {
     content: '';
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 80% 60% at 50% 45%,
-        rgba(197,165,114,0.06) 0%,
-        rgba(197,165,114,0.02) 35%,
-        transparent 70%),
+      radial-gradient(ellipse 80% 60% at 50% 38%,
+        rgba(197,165,114,0.085) 0%,
+        rgba(197,165,114,0.025) 38%,
+        transparent 72%),
       radial-gradient(ellipse 100% 100% at 50% 100%,
         rgba(0,0,0,0.55) 0%,
         transparent 50%);
     pointer-events: none;
     z-index: 1;
+    animation: bloom 14000ms ease-in-out infinite;
+  }
+
+  @keyframes bloom {
+    0%, 100% { opacity: 0.78; }
+    50%      { opacity: 1.00; }
   }
 
   /* Vignette on top of canvas */
@@ -203,9 +213,8 @@
     pointer-events: auto;
   }
 
-  /* The wordmark — sits beneath the particle field. Push it down further
-     now that the Au glyph centers at h*0.28 (was 0.42) so the gap reads
-     as deliberate spacing, not crowded composition. */
+  /* The wordmark — now rises later (1900ms) so the Au has time to
+     resolve dramatically before the typography arrives. */
   .wordmark {
     display: flex;
     flex-direction: column;
@@ -214,7 +223,7 @@
     margin-top: clamp(280px, 46vh, 440px);
     opacity: 0;
     transform: translateY(8px);
-    animation: rise 1400ms 1200ms var(--ease-entrance) forwards;
+    animation: rise 1600ms 2400ms var(--ease-entrance) forwards;
   }
 
   .wordmark .article {
@@ -260,7 +269,7 @@
     color: var(--muted);
     letter-spacing: 0.04em;
     opacity: 0;
-    animation: rise 1400ms 1500ms var(--ease-entrance) forwards;
+    animation: rise 1600ms 2800ms var(--ease-entrance) forwards;
   }
 
   .cta {
@@ -282,7 +291,7 @@
                 box-shadow var(--dur-base) ease,
                 transform var(--dur-fast) ease;
     opacity: 0;
-    animation: rise 1400ms 1700ms var(--ease-entrance) forwards;
+    animation: rise 1600ms 3100ms var(--ease-entrance) forwards;
     cursor: pointer;
   }
   .cta:hover, .cta:focus-visible {
@@ -311,7 +320,7 @@
     color: var(--dim);
     text-transform: uppercase;
     opacity: 0;
-    animation: rise 1400ms 1900ms var(--ease-entrance) forwards;
+    animation: rise 1600ms 3400ms var(--ease-entrance) forwards;
   }
   .status::before, .status::after {
     content: '';
@@ -381,6 +390,7 @@
 
   /* ─── Reduced motion ─── */
   @media (prefers-reduced-motion: reduce) {
+    .stage::before { animation: none; opacity: 0.9; }
     .wordmark, .tagline, .cta, .status {
       opacity: 1;
       transform: none;
@@ -458,16 +468,23 @@
   const gctx   = grain.getContext('2d', { alpha: true });
 
   const lowEnd = (navigator.hardwareConcurrency || 4) < 6 || window.innerWidth < 768;
-  const TARGET_COUNT = lowEnd ? 2400 : 4200;
+  const TARGET_COUNT  = lowEnd ? 2400 : 4200;
+  const AMBIENT_COUNT = lowEnd ? 180  : 300;
 
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   let W = 0, H = 0;
   let particles = [];
+  let ambient   = [];
   let pointer = { x: -9999, y: -9999, active: false };
   let cycleIndex = 0;
-  const CYCLE_MS = 22000;
+  const CYCLE_MS    = 22000;
+  const DISSOLVE_MS = 2000;       // dissolve window before each new shape locks
+  const REVEAL_MS   = 5400;       // total time for full assembly (initial + cycles)
   let lastCycle = 0;
+  let cycleStart = 0;             // ms timestamp of current shape's lock-in
+  let dissolving = false;
   let raf = null;
+  let bootTime = 0;
 
   // ── Resize ────────────────────────────────────────────────
   function resize() {
@@ -486,9 +503,7 @@
     rebuildTargets();
   }
 
-  // ── Sample shape from offscreen canvas ────────────────────
-  // Renders text/shape to a hidden canvas, reads alpha pixels,
-  // returns array of {x,y} coordinates inside the silhouette.
+  // ── Sample shape ──────────────────────────────────────────
   function sampleShape(drawFn, count) {
     const off = document.createElement('canvas');
     off.width = W;
@@ -498,8 +513,6 @@
 
     const data = o.getImageData(0, 0, W, H).data;
     const pts = [];
-    // Tighter scan — step sized so the silhouette gets ~3-4× as many candidate
-    // pixels as we need particles, then we shuffle-trim. Yields denser glyph.
     const step = Math.max(2, Math.floor(Math.sqrt((W * H) / (count * 4.5))));
     for (let y = 0; y < H; y += step) {
       for (let x = 0; x < W; x += step) {
@@ -507,12 +520,10 @@
         if (a > 80) pts.push({ x: x + (Math.random() - 0.5) * step, y: y + (Math.random() - 0.5) * step });
       }
     }
-    // If too few, jitter-fill
     while (pts.length < count && pts.length > 0) {
       const p = pts[(Math.random() * pts.length) | 0];
       pts.push({ x: p.x + (Math.random() - 0.5) * step * 1.5, y: p.y + (Math.random() - 0.5) * step * 1.5 });
     }
-    // Trim and shuffle
     if (pts.length > count) pts.length = count;
     for (let i = pts.length - 1; i > 0; i--) {
       const j = (Math.random() * (i + 1)) | 0;
@@ -523,10 +534,6 @@
 
   // ── Shapes ────────────────────────────────────────────────
   const shapes = [
-    // Au monogram — upright serif. Stroke + fill builds a dense silhouette
-    // that reads unambiguously after particle sampling.
-    // Sized at 25%w / 43%h (was 36/62 — reduced ~30% for cleaner composition).
-    // Centered at h*0.28 — upper third, with breathing room above the wordmark.
     (o, w, h) => {
       const fs = Math.min(w * 0.25, h * 0.43);
       o.fillStyle = '#fff';
@@ -540,7 +547,6 @@
       o.strokeText('Au', w / 2, h * 0.28);
       o.fillText('Au', w / 2, h * 0.28);
     },
-    // Wordmark — AURUM
     (o, w, h) => {
       const fs = Math.min(w * 0.14, h * 0.22);
       o.fillStyle = '#fff';
@@ -549,20 +555,17 @@
       o.textBaseline = 'middle';
       o.letterSpacing = '0.18em';
       o.fillText('AURUM', w / 2, h * 0.26);
-      // hairline
       o.fillRect(w / 2 - fs * 1.4, h * 0.26 + fs * 0.65, fs * 2.8, 1.5);
       o.font = `300 italic ${fs * 0.32}px "Cormorant Garamond", Georgia, serif`;
       o.fillText('1 kg · LBMA · Singapore', w / 2, h * 0.26 + fs * 0.95);
     },
-    // Kilo bar silhouette — trapezoid with chamfered corners
     (o, w, h) => {
       const cx = w / 2, cy = h * 0.28;
       const bw = Math.min(w * 0.34, h * 0.46);
       const bh = bw * 0.55;
-      const ch = bh * 0.18; // chamfer
+      const ch = bh * 0.18;
       o.fillStyle = '#fff';
       o.beginPath();
-      // top is slightly narrower (perspective)
       const inset = bw * 0.06;
       o.moveTo(cx - bw / 2 + ch + inset, cy - bh / 2);
       o.lineTo(cx + bw / 2 - ch - inset, cy - bh / 2);
@@ -574,7 +577,6 @@
       o.lineTo(cx - bw / 2 - inset, cy - bh / 2 + ch);
       o.closePath();
       o.fill();
-      // engraved hairlines (gaps)
       o.globalCompositeOperation = 'destination-out';
       o.font = `300 ${bh * 0.12}px "JetBrains Mono", monospace`;
       o.textAlign = 'center';
@@ -583,17 +585,14 @@
       o.fillText('TACC · No. 001', cx, cy + bh * 0.12);
       o.globalCompositeOperation = 'source-over';
     },
-    // Seal frame — circle with Au
     (o, w, h) => {
       const cx = w / 2, cy = h * 0.28;
       const r = Math.min(w, h) * 0.20;
       o.fillStyle = '#fff';
-      // ring
       o.lineWidth = Math.max(2, r * 0.025);
       o.strokeStyle = '#fff';
       o.beginPath(); o.arc(cx, cy, r, 0, Math.PI * 2); o.stroke();
       o.beginPath(); o.arc(cx, cy, r * 0.92, 0, Math.PI * 2); o.stroke();
-      // Au inside
       o.font = `300 italic ${r * 1.0}px "Cormorant Garamond", Georgia, serif`;
       o.textAlign = 'center';
       o.textBaseline = 'middle';
@@ -601,40 +600,79 @@
     }
   ];
 
+  // ── Edge spawn — particles enter from just past the viewport edges,
+  //    biased toward the lower half so the Au feels "lifted" into place.
+  function edgeSpawn() {
+    const side = (Math.random() * 4) | 0;
+    const pad = Math.max(W, H) * 0.15;
+    if (side === 0) return { x: Math.random() * W, y: H + Math.random() * pad };           // bottom (most common)
+    if (side === 1) return { x: -pad + Math.random() * pad, y: Math.random() * H };       // left
+    if (side === 2) return { x: W + Math.random() * pad, y: Math.random() * H };          // right
+    return { x: Math.random() * W, y: -pad + Math.random() * pad };                       // top
+  }
+
   // ── Particle init ─────────────────────────────────────────
   function initParticles() {
     particles = new Array(TARGET_COUNT);
     for (let i = 0; i < TARGET_COUNT; i++) {
+      // Bias bottom-spawn for the initial reveal — feels like sparks rising.
+      const s = Math.random() < 0.55
+        ? { x: Math.random() * W, y: H + Math.random() * H * 0.4 }
+        : edgeSpawn();
       particles[i] = {
-        x: W / 2 + (Math.random() - 0.5) * W * 1.2,
-        y: H / 2 + (Math.random() - 0.5) * H * 1.2,
+        x: s.x, y: s.y,
+        px: s.x, py: s.y,         // previous position for trail rendering
         vx: 0, vy: 0,
         tx: 0, ty: 0,
-        // visual jitter — bigger dots for legibility (was 0.5–1.6)
         size: 1.0 + Math.random() * 1.4,
-        hue: Math.random(), // 0..1, mapped to gold gradient
+        hue: Math.random(),
         phase: Math.random() * Math.PI * 2,
-        wob: 0.4 + Math.random() * 0.6
+        wob: 0.4 + Math.random() * 0.6,
+        delay: Math.random() * 2600   // staggered arrival 0–2.6s
+      };
+    }
+  }
+
+  function initAmbient() {
+    ambient = new Array(AMBIENT_COUNT);
+    for (let i = 0; i < AMBIENT_COUNT; i++) {
+      ambient[i] = {
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vy: -(0.04 + Math.random() * 0.08),       // slow rise
+        vx: (Math.random() - 0.5) * 0.04,
+        size: 0.4 + Math.random() * 0.6,
+        a:  0.10 + Math.random() * 0.22,           // 0.10–0.32 alpha
+        phase: Math.random() * Math.PI * 2,
+        hue: Math.random()
       };
     }
   }
 
   function rebuildTargets() {
     if (!particles.length) initParticles();
+    if (!ambient.length) initAmbient();
     const pts = sampleShape(shapes[cycleIndex % shapes.length], TARGET_COUNT);
     const n = Math.min(particles.length, pts.length);
     for (let i = 0; i < n; i++) {
       particles[i].tx = pts[i].x;
       particles[i].ty = pts[i].y;
     }
-    // any extras: scatter to edges
     for (let i = n; i < particles.length; i++) {
       particles[i].tx = Math.random() * W;
       particles[i].ty = Math.random() * H;
     }
   }
 
-  // ── Grain texture (static, painted once per resize) ───────
+  // Re-randomise per-particle arrival delays after each dissolve so the
+  // next shape resolves with the same staggered fade-in.
+  function rerollDelays(maxMs) {
+    for (let i = 0; i < particles.length; i++) {
+      particles[i].delay = Math.random() * maxMs;
+    }
+  }
+
+  // ── Grain texture ─────────────────────────────────────────
   function paintGrain() {
     if (reduce) return;
     const img = gctx.createImageData(W, H);
@@ -647,7 +685,7 @@
     gctx.putImageData(img, 0, 0);
   }
 
-  // ── Static fallback render ────────────────────────────────
+  // ── Static fallback ───────────────────────────────────────
   function renderStatic() {
     ctx.clearRect(0, 0, W, H);
     rebuildTargets();
@@ -658,11 +696,10 @@
   }
 
   // ── Drawing ───────────────────────────────────────────────
-  // Three gold tones to add depth without breaking the palette.
   const GOLD = [
-    [0xC5, 0xA5, 0x72], // goldA
-    [0xDE, 0xB9, 0x7A], // goldB-ish
-    [0xF0, 0xCF, 0x9A]  // goldD
+    [0xC5, 0xA5, 0x72],
+    [0xDE, 0xB9, 0x7A],
+    [0xF0, 0xCF, 0x9A]
   ];
   function drawDot(x, y, s, h, a) {
     const g = GOLD[(h * GOLD.length) | 0] || GOLD[0];
@@ -670,38 +707,95 @@
     ctx.fillRect(x - s / 2, y - s / 2, s, s);
   }
 
+  // Cubic-out easing: 1 - (1-t)^3
+  function easeOutCubic(t) { const u = 1 - t; return 1 - u * u * u; }
+
   // ── Loop ──────────────────────────────────────────────────
   function tick(ts) {
-    if (!lastCycle) lastCycle = ts;
-    if (ts - lastCycle > CYCLE_MS) {
+    if (!bootTime) bootTime = ts;
+    if (!lastCycle) { lastCycle = ts; cycleStart = ts; }
+
+    // Cycle / dissolve scheduling
+    const elapsedInCycle = ts - lastCycle;
+    if (elapsedInCycle > CYCLE_MS - DISSOLVE_MS && !dissolving && cycleIndex >= 0) {
+      dissolving = true;
+    }
+    if (elapsedInCycle > CYCLE_MS) {
       cycleIndex++;
       rebuildTargets();
+      rerollDelays(2200);
       lastCycle = ts;
+      cycleStart = ts;
+      dissolving = false;
     }
 
-    // Trail: faint clear keeps motion legible without being smeary.
-    // Lower alpha → particles persist longer per frame → denser silhouette read.
-    ctx.fillStyle = 'rgba(7,7,6,0.22)';
+    // Background fade — softer (was 0.22). Lower alpha → slight trail.
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = 'rgba(7,7,6,0.10)';
     ctx.fillRect(0, 0, W, H);
 
+    // ── Ambient layer ─────────────────────────────────────
+    const tt = ts * 0.001;
+    for (let i = 0; i < ambient.length; i++) {
+      const a = ambient[i];
+      a.x += a.vx + Math.sin(tt * 0.6 + a.phase) * 0.05;
+      a.y += a.vy;
+      if (a.y < -10) { a.y = H + 10; a.x = Math.random() * W; }
+      if (a.x < -10) a.x = W + 10;
+      if (a.x > W + 10) a.x = -10;
+      const flicker = 0.85 + 0.15 * Math.sin(tt * 1.3 + a.phase * 2);
+      drawDot(a.x, a.y, a.size, a.hue, a.a * flicker);
+    }
+
+    // ── Main field ────────────────────────────────────────
     const px = pointer.x, py = pointer.y;
     const pActive = pointer.active;
     const t = ts * 0.0007;
 
+    // Spring/damping coefficients depend on phase.
+    const springBase   = dissolving ? 0.0008 : 0.0042;
+    const dampingBase  = dissolving ? 0.965  : 0.92;
+    const bootElapsed  = ts - bootTime;
+
+    // Glow pulse for settled particles (slow breathing)
+    const settledPulse = 1.0 + 0.08 * Math.sin(tt * 1.2);
+
+    // Enable additive blend for the main field — particles add light.
+    ctx.globalCompositeOperation = 'screen';
+
+    let avgSettleX = 0, avgSettleY = 0, settledCount = 0;
+
     for (let i = 0; i < particles.length; i++) {
       const p = particles[i];
 
-      // Spring toward target — critically damped feel.
+      // Per-particle reveal weight: 0 → static, 1 → fully active spring.
+      // Slow ramp over particle's delay window, then full-bore spring.
+      const sinceCycle = ts - cycleStart;
+      const localT = Math.max(0, sinceCycle - p.delay) / 1400; // 1.4s ramp
+      const weight = dissolving ? 1 : easeOutCubic(Math.min(1, localT));
+
       const dx = p.tx - p.x;
       const dy = p.ty - p.y;
-      p.vx = p.vx * 0.86 + dx * 0.012;
-      p.vy = p.vy * 0.86 + dy * 0.012;
+      const k  = springBase * weight;
+
+      p.vx = p.vx * dampingBase + dx * k;
+      p.vy = p.vy * dampingBase + dy * k;
 
       // Breathing drift — sine + per-particle phase.
-      p.vx += Math.cos(t + p.phase) * 0.04 * p.wob;
-      p.vy += Math.sin(t * 1.1 + p.phase) * 0.04 * p.wob;
+      const wob = (dissolving ? 1.6 : 1.0) * p.wob;
+      p.vx += Math.cos(t + p.phase) * 0.04 * wob;
+      p.vy += Math.sin(t * 1.1 + p.phase) * 0.04 * wob;
 
-      // Pointer repulsion — inverse square within 140px.
+      // Inject outward dissolve drift — gentle radial push during transition
+      if (dissolving) {
+        const cx = W / 2, cy = H * 0.28;
+        const ox = p.x - cx, oy = p.y - cy;
+        const od = Math.sqrt(ox * ox + oy * oy) + 0.001;
+        p.vx += (ox / od) * 0.08;
+        p.vy += (oy / od) * 0.08;
+      }
+
+      // Pointer repulsion
       if (pActive) {
         const ddx = p.x - px;
         const ddy = p.y - py;
@@ -713,15 +807,59 @@
         }
       }
 
+      p.px = p.x; p.py = p.y;
       p.x += p.vx;
       p.y += p.vy;
 
-      // Render — slightly brighter when close to target (settled).
       const dist2 = dx * dx + dy * dy;
-      const settle = dist2 < 4 ? 1 : (dist2 < 100 ? 0.85 : 0.55);
-      drawDot(p.x, p.y, p.size, p.hue, settle);
+      const isSettled = dist2 < 4;
+      const settleRaw = isSettled ? 1 : (dist2 < 100 ? 0.85 : 0.55);
+
+      // Fade-in alpha tied to per-particle reveal weight (initial assembly only).
+      const reveal = bootElapsed < REVEAL_MS && cycleIndex === 0
+        ? weight
+        : 1;
+
+      // Settled particles get a gentle pulse — reads as charged glyph.
+      const glow = isSettled ? settledPulse : 1;
+
+      // Trail: faint segment from previous to current. Cheap and reads
+      // beautifully during convergence, fades out once particles settle.
+      const speed2 = p.vx * p.vx + p.vy * p.vy;
+      if (speed2 > 0.4 && reveal > 0.05) {
+        const g = GOLD[(p.hue * GOLD.length) | 0] || GOLD[0];
+        ctx.strokeStyle = `rgba(${g[0]},${g[1]},${g[2]},${(0.10 * reveal).toFixed(3)})`;
+        ctx.lineWidth = p.size * 0.7;
+        ctx.beginPath();
+        ctx.moveTo(p.px, p.py);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+      }
+
+      drawDot(p.x, p.y, p.size, p.hue, settleRaw * reveal * glow);
+
+      if (isSettled) {
+        avgSettleX += p.x; avgSettleY += p.y; settledCount++;
+      }
     }
 
+    // ── Glow halo over the focal region ───────────────────
+    // Only draws meaningfully once a cohort has settled; uses 'screen'
+    // blend so it adds light without clobbering the dots.
+    if (settledCount > 200) {
+      const gx = avgSettleX / settledCount;
+      const gy = avgSettleY / settledCount;
+      const r  = Math.min(W, H) * 0.32;
+      const intensity = Math.min(1, settledCount / particles.length) * 0.55 * settledPulse;
+      const grd = ctx.createRadialGradient(gx, gy, 0, gx, gy, r);
+      grd.addColorStop(0,   `rgba(240,207,154,${(0.10 * intensity).toFixed(3)})`);
+      grd.addColorStop(0.4, `rgba(197,165,114,${(0.04 * intensity).toFixed(3)})`);
+      grd.addColorStop(1,   'rgba(0,0,0,0)');
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    ctx.globalCompositeOperation = 'source-over';
     raf = requestAnimationFrame(tick);
   }
 
@@ -745,7 +883,6 @@
       renderStatic();
       return;
     }
-    // Wait one frame so fonts have a chance to load before sampling.
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => {
         rebuildTargets();
@@ -758,6 +895,7 @@
 
   window.addEventListener('resize', () => {
     cancelAnimationFrame(raf);
+    bootTime = 0; lastCycle = 0; cycleStart = 0; dissolving = false;
     resize();
     if (reduce) renderStatic();
     else raf = requestAnimationFrame(tick);
@@ -768,13 +906,12 @@
   window.addEventListener('touchend', onLeave);
   window.addEventListener('blur', onLeave);
 
-  // Pause when tab hidden — preserve battery / fps budget.
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
       if (raf) cancelAnimationFrame(raf);
       raf = null;
     } else if (!reduce && !raf) {
-      lastCycle = 0;
+      lastCycle = 0; cycleStart = 0; dissolving = false;
       raf = requestAnimationFrame(tick);
     }
   });
