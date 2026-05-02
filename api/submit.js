@@ -30,11 +30,27 @@ export default async function handler(req, res) {
   const country = String(body.country || '').trim();
   const wealth  = String(body.wealth  || body.investable_assets || '').trim();
   const referral = String(body.referral || body.referral_source || '').trim();
+  const phone   = String(body.phone   || '').trim();
+  const taxResidency      = String(body.tax_residency || '').trim();
+  const occupation        = String(body.occupation || '').trim();
+  const investorClass     = String(body.investor_classification || '').trim();
+  const sourceOfWealth    = String(body.source_of_wealth || '').trim();
+  const anticipatedKg     = String(body.anticipated_allocation_kg || '').trim();
+  const referrerName      = String(body.referrer_name || '').trim();
 
   if (!name)                                       return bad(res, 'missing field: name');
   if (!email)                                      return bad(res, 'missing field: email');
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))  return bad(res, 'invalid email');
   if (!country)                                    return bad(res, 'missing field: country');
+  if (!wealth)                                     return bad(res, 'missing field: investable_assets');
+  if (!phone || phone.length < 7)                  return bad(res, 'missing field: phone');
+  if (!taxResidency)                               return bad(res, 'missing field: tax_residency');
+  if (!occupation)                                 return bad(res, 'missing field: occupation');
+  if (!investorClass)                              return bad(res, 'missing field: investor_classification');
+  if (!sourceOfWealth)                             return bad(res, 'missing field: source_of_wealth');
+  if (!anticipatedKg)                              return bad(res, 'missing field: anticipated_allocation_kg');
+  if (!referral)                                   return bad(res, 'missing field: referral_source');
+  if (body.reverse_solicitation_ack !== true)      return bad(res, 'reverse solicitation acknowledgement required');
 
   // Deduplication — treat as success to avoid form errors on legitimate re-submissions
   try {
@@ -57,8 +73,16 @@ export default async function handler(req, res) {
     name,
     country,
     wealth:     wealth || null,
-    occupation: String(body.occupation || '').trim() || null,
+    investable_assets: wealth || null,
+    phone:      phone || null,
+    tax_residency: taxResidency || null,
+    occupation: occupation || null,
+    investor_classification: investorClass || null,
+    source_of_wealth_high_level: sourceOfWealth || null,
+    anticipated_allocation_kg: anticipatedKg || null,
     referral:   referral || null,
+    referral_source: referral || null,
+    referrer_name: referrerName || null,
     reverse_solicitation_ack: body.reverse_solicitation_ack === true,
     status:     'inquiry',
     member_number: null,

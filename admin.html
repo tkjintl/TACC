@@ -2047,13 +2047,31 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
     document.getElementById('dr-stage').innerHTML = '<span class="pill pill--' + (STAGE_PILL[l.stage] || 'muted') + '">' + esc(STAGE_LBL[l.stage] || l.stage || '—') + '</span>';
 
     var html = '';
-    // Profile section — read all the field-name variants the data actually uses
-    html += '<div class="dr-section"><div class="dr-section-title">Profile</div>';
+    // Identity
+    html += '<div class="dr-section"><div class="dr-section-title">Identity</div>';
     html += kvRow('Email', l.email);
-    html += kvRow('Country', l.country);
-    html += kvRow('Wealth Tier', humanizeWealth(l.investable_assets || l.wealth || l.wealth_tier));
+    html += kvRow('Phone', l.phone);
+    html += kvRow('Country of Residence', l.country);
+    html += kvRow('Tax Residency', l.tax_residency);
     html += kvRow('Occupation', l.occupation);
-    html += kvRow('Source', humanizeReferral(l.referral_source || l.source || l.intro_by));
+    html += '</div>';
+
+    // Investor Profile
+    var ALLOC_LABELS = { '1':'1 kg ($112K)', '2':'2 kg ($224K)', '3_5':'3 – 5 kg', '5_10':'5 – 10 kg', '10_plus':'10+ kg', 'discuss':'Prefer to discuss' };
+    var CLASS_LABELS = { hnw:'High Net Worth', family_office:'Family Office (Single)', multi_family_office:'Family Office (Multi)', institutional:'Institutional', qualified_investor:'Qualified Investor (SG/KR)', other:'Other' };
+    var SOW_LABELS   = { business:'Business / Entrepreneurship', employment:'Employment / Compensation', inheritance:'Inheritance / Family Wealth', investments:'Investment Returns', real_estate:'Real Estate', financial_services:'Financial Services', other:'Other' };
+    html += '<div class="dr-section"><div class="dr-section-title">Investor Profile</div>';
+    html += kvRow('Investor classification', CLASS_LABELS[l.investor_classification] || l.investor_classification);
+    html += kvRow('Wealth tier', humanizeWealth(l.investable_assets || l.wealth || l.wealth_tier));
+    html += kvRow('Source of wealth', SOW_LABELS[l.source_of_wealth_high_level] || l.source_of_wealth_high_level);
+    html += kvRow('Anticipated allocation', ALLOC_LABELS[l.anticipated_allocation_kg] || l.anticipated_allocation_kg);
+    html += kvRow('Reverse-solicit ack', l.reverse_solicitation_ack ? '✓ Confirmed' : '— Missing');
+    html += '</div>';
+
+    // Pipeline / referral / member info
+    html += '<div class="dr-section"><div class="dr-section-title">Pipeline</div>';
+    html += kvRow('How heard', humanizeReferral(l.referral_source || l.source || l.intro_by));
+    if (l.referrer_name) html += kvRow('Referrer', l.referrer_name);
     html += kvRow('Age in pipeline', ageDays(l.created_at) + 'd');
     var ticketKg = (l.subscription && l.subscription.kg_requested) || l.ioi_kg;
     var ticketUsd = l.subscription && l.subscription.usd_amount;

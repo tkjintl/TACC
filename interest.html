@@ -315,19 +315,108 @@
           </div>
         </div>
 
-        <div class="field-group">
-          <label class="field-label" for="occupation">Occupation / Industry</label>
-          <input class="input-field" type="text" id="occupation" name="occupation" placeholder="e.g. Private investor, Finance, Technology" autocomplete="organization-title">
+        <div class="form-row">
+          <div class="field-group">
+            <label class="field-label" for="phone">Phone (with country code)</label>
+            <input class="input-field" type="tel" id="phone" name="phone" placeholder="+82 10 1234 5678" autocomplete="tel" required>
+            <span class="field-error" id="err-phone">Please enter a valid phone number.</span>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="tax-residency">Tax Residency</label>
+            <select class="input-field" id="tax-residency" name="tax_residency" required>
+              <option value="" disabled selected>Select tax residency</option>
+              <option value="SG">Singapore</option>
+              <option value="KR">Korea, Republic of</option>
+              <option value="HK">Hong Kong SAR</option>
+              <option disabled>─────────────</option>
+              <option value="AE">United Arab Emirates</option>
+              <option value="AU">Australia</option>
+              <option value="CH">Switzerland</option>
+              <option value="CN">China</option>
+              <option value="DE">Germany</option>
+              <option value="FR">France</option>
+              <option value="GB">United Kingdom</option>
+              <option value="ID">Indonesia</option>
+              <option value="IN">India</option>
+              <option value="JP">Japan</option>
+              <option value="MY">Malaysia</option>
+              <option value="TH">Thailand</option>
+              <option value="TW">Taiwan</option>
+              <option value="US">United States</option>
+              <option value="VN">Vietnam</option>
+              <option value="OTHER">Other</option>
+            </select>
+            <span class="field-error" id="err-tax-residency">Please select your tax residency.</span>
+          </div>
         </div>
 
         <div class="field-group">
-          <label class="field-label" for="referral">How did you hear about us?</label>
-          <select class="input-field" id="referral" name="referral_source">
-            <option value="" disabled selected>Select</option>
-            <option value="personal_intro">Personal introduction</option>
-            <option value="existing_member">Existing member</option>
-            <option value="other">Other</option>
-          </select>
+          <label class="field-label" for="occupation">Occupation / Industry</label>
+          <input class="input-field" type="text" id="occupation" name="occupation" placeholder="e.g. Private investor, Finance, Technology" autocomplete="organization-title" required>
+          <span class="field-error" id="err-occupation">Please describe your occupation or industry.</span>
+        </div>
+
+        <div class="form-row">
+          <div class="field-group">
+            <label class="field-label" for="investor-class">Investor Classification</label>
+            <select class="input-field" id="investor-class" name="investor_classification" required>
+              <option value="" disabled selected>Select classification</option>
+              <option value="hnw">High Net Worth Individual</option>
+              <option value="family_office">Family Office (Single)</option>
+              <option value="multi_family_office">Family Office (Multi)</option>
+              <option value="institutional">Institutional Investor</option>
+              <option value="qualified_investor">Qualified Investor (SG/KR)</option>
+              <option value="other">Other</option>
+            </select>
+            <span class="field-error" id="err-investor-class">Please select a classification.</span>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="source-of-wealth">Primary Source of Wealth</label>
+            <select class="input-field" id="source-of-wealth" name="source_of_wealth" required>
+              <option value="" disabled selected>Select source</option>
+              <option value="business">Business / Entrepreneurship</option>
+              <option value="employment">Employment / Compensation</option>
+              <option value="inheritance">Inheritance / Family Wealth</option>
+              <option value="investments">Investment Returns</option>
+              <option value="real_estate">Real Estate</option>
+              <option value="financial_services">Financial Services / Fund Management</option>
+              <option value="other">Other</option>
+            </select>
+            <span class="field-error" id="err-source-of-wealth">Please select a source of wealth.</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="field-group">
+            <label class="field-label" for="allocation">Anticipated Allocation (kg)</label>
+            <select class="input-field" id="allocation" name="anticipated_allocation_kg" required>
+              <option value="" disabled selected>Select range</option>
+              <option value="1">1 kg ($112K)</option>
+              <option value="2">2 kg ($224K)</option>
+              <option value="3_5">3 – 5 kg ($335K – $560K)</option>
+              <option value="5_10">5 – 10 kg ($560K – $1.12M)</option>
+              <option value="10_plus">10+ kg ($1.12M+)</option>
+              <option value="discuss">Prefer to discuss</option>
+            </select>
+            <span class="field-error" id="err-allocation">Please indicate anticipated allocation.</span>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="referral">How did you hear about us?</label>
+            <select class="input-field" id="referral" name="referral_source" required>
+              <option value="" disabled selected>Select</option>
+              <option value="personal_intro">Personal introduction</option>
+              <option value="existing_member">Existing member</option>
+              <option value="introducer">Family office introducer</option>
+              <option value="prior_relationship">Prior relationship with partner</option>
+              <option value="other">Other</option>
+            </select>
+            <span class="field-error" id="err-referral">Please tell us how you heard about us.</span>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="referrer-name">Referrer's name <span style="color:var(--muted);font-weight:300;">(if applicable)</span></label>
+          <input class="input-field" type="text" id="referrer-name" name="referrer_name" placeholder="Optional — name of the person who introduced you" autocomplete="off">
         </div>
 
         <div class="field-group" style="border-top:1px solid var(--border);padding-top:24px;margin-top:8px;">
@@ -447,20 +536,28 @@
     const email = document.getElementById('email').value.trim();
     const country = document.getElementById('country').value;
     const assets = document.getElementById('assets').value;
+    const phone = document.getElementById('phone').value.trim();
+    const taxResidency = document.getElementById('tax-residency').value;
+    const occupation = document.getElementById('occupation').value.trim();
+    const investorClass = document.getElementById('investor-class').value;
+    const sourceOfWealth = document.getElementById('source-of-wealth').value;
+    const allocation = document.getElementById('allocation').value;
+    const referralSrc = document.getElementById('referral').value;
+    const referrerName = document.getElementById('referrer-name').value.trim();
 
     let valid = true;
-
-    if (!name) { showError('err-name', true); valid = false; }
-    else showError('err-name', false);
-
-    if (!email || !isValidEmail(email)) { showError('err-email', true); valid = false; }
-    else showError('err-email', false);
-
-    if (!country) { showError('err-country', true); valid = false; }
-    else showError('err-country', false);
-
-    if (!assets) { showError('err-assets', true); valid = false; }
-    else showError('err-assets', false);
+    function check(id, ok) { showError(id, !ok); if (!ok) valid = false; }
+    check('err-name', !!name);
+    check('err-email', !!email && isValidEmail(email));
+    check('err-country', !!country);
+    check('err-assets', !!assets);
+    check('err-phone', phone.length >= 7);
+    check('err-tax-residency', !!taxResidency);
+    check('err-occupation', !!occupation);
+    check('err-investor-class', !!investorClass);
+    check('err-source-of-wealth', !!sourceOfWealth);
+    check('err-allocation', !!allocation);
+    check('err-referral', !!referralSrc);
 
     const ackEl = document.getElementById('reverse-solicit');
     const ackErr = document.getElementById('err-reverse-solicit');
@@ -481,9 +578,15 @@
       country: country,
       wealth: assets,
       investable_assets: assets,
-      occupation: document.getElementById('occupation').value.trim(),
-      referral: document.getElementById('referral').value || '',
-      referral_source: document.getElementById('referral').value || '',
+      phone: phone,
+      tax_residency: taxResidency,
+      occupation: occupation,
+      investor_classification: investorClass,
+      source_of_wealth: sourceOfWealth,
+      anticipated_allocation_kg: allocation,
+      referral: referralSrc,
+      referral_source: referralSrc,
+      referrer_name: referrerName || null,
       reverse_solicitation_ack: true
     };
 

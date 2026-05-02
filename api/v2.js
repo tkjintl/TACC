@@ -1605,6 +1605,24 @@ function buildDemoLead(id, f, now) {
   const day = 24 * 60 * 60 * 1000;
   const code = `DEMO${String(Math.abs(id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)) % 9999).padStart(4, '0')}`;
 
+  // Realistic profile filler — picks values deterministically from the id
+  // so re-seeding the same fixture gives the same profile.
+  const seed = id.split('').reduce((a,c)=>a+c.charCodeAt(0),0);
+  const pick = (arr) => arr[seed % arr.length];
+  const investorClass = pick(['hnw','family_office','multi_family_office','qualified_investor','hnw','hnw']);
+  const sourceOfWealth = pick(['business','employment','inheritance','investments','financial_services','real_estate']);
+  const taxRes = f.country;
+  const phoneCountry = { KR:'+82 10', SG:'+65 9', HK:'+852 6', JP:'+81 90', US:'+1 415', CN:'+86 138', GB:'+44 20', CH:'+41 79' }[f.country] || '+1 415';
+  const phone = `${phoneCountry} ${(seed % 9000 + 1000)} ${(seed * 7 % 9000 + 1000)}`;
+  const allocPick = (() => {
+    if (f.assets === '50m_plus') return '10_plus';
+    if (f.assets === '25_50m')  return '5_10';
+    if (f.assets === '10_25m')  return '3_5';
+    if (f.assets === '5_10m')   return '2';
+    return '1';
+  })();
+  const referralPick = pick(['personal_intro','existing_member','prior_relationship','introducer']);
+
   const lead = {
     id,
     demo: true,
@@ -1612,9 +1630,15 @@ function buildDemoLead(id, f, now) {
     legal_name: f.name,
     email: f.email,
     country: f.country,
+    phone: phone,
+    tax_residency: taxRes,
     occupation: f.occupation,
     investable_assets: f.assets,
-    referral_source: 'personal_intro',
+    investor_classification: investorClass,
+    source_of_wealth_high_level: sourceOfWealth,
+    anticipated_allocation_kg: allocPick,
+    referral_source: referralPick,
+    referrer_name: referralPick === 'existing_member' ? '윤상호 (#001)' : (referralPick === 'personal_intro' ? 'TKJ' : null),
     reverse_solicitation_ack: true,
     created_at: f.created_at,
     audit: [{ at: f.created_at, actor: 'system', action: 'inquiry_received' }],

@@ -89,28 +89,38 @@ export const SCENARIOS = {
     name: 'Signup rush',
     description: '6 new inquiries in last 24h',
     apply: async (session) => {
-      const names = [
-        { name: 'Tan Wei Hsien', email: 'demo.tan.wh@example.com', country: 'SG' },
-        { name: '오민준', email: 'demo.oh.minjun@example.com', country: 'KR' },
-        { name: 'Yamamoto Shun', email: 'demo.yamamoto.s@example.com', country: 'JP' },
-        { name: '서지윤', email: 'demo.seo.jiyoon@example.com', country: 'KR' },
-        { name: 'Chan Wai Lung', email: 'demo.chan.wl@example.com', country: 'HK' },
-        { name: '윤하늘', email: 'demo.yoon.haneul@example.com', country: 'KR' },
+      const profiles = [
+        { name: 'Tan Wei Hsien',  email: 'demo.tan.wh@example.com',     country: 'SG', occ: 'Family office CIO',     assets: '25_50m',  invclass: 'family_office',       sow: 'business' },
+        { name: '오민준',          email: 'demo.oh.minjun@example.com',  country: 'KR', occ: 'PE managing partner',   assets: '50m_plus', invclass: 'family_office',       sow: 'investments' },
+        { name: 'Yamamoto Shun',  email: 'demo.yamamoto.s@example.com', country: 'JP', occ: 'Industrial heir',       assets: '50m_plus', invclass: 'hnw',                 sow: 'inheritance' },
+        { name: '서지윤',          email: 'demo.seo.jiyoon@example.com', country: 'KR', occ: 'Tech founder',          assets: '10_25m',  invclass: 'hnw',                 sow: 'business' },
+        { name: 'Chan Wai Lung',  email: 'demo.chan.wl@example.com',    country: 'HK', occ: 'Hedge fund LP',         assets: '25_50m',  invclass: 'qualified_investor',  sow: 'employment' },
+        { name: '윤하늘',          email: 'demo.yoon.haneul@example.com',country: 'KR', occ: 'Cosmetics founder',     assets: '10_25m',  invclass: 'hnw',                 sow: 'business' },
       ];
       let mutations = 0;
       const now = Date.now();
-      for (let i = 0; i < names.length; i++) {
-        const f = names[i];
+      const phonePref = { KR:'+82 10', SG:'+65 9', HK:'+852 6', JP:'+81 90' };
+      const allocFor = (a) => a === '50m_plus' ? '10_plus' : a === '25_50m' ? '5_10' : a === '10_25m' ? '3_5' : '2';
+      for (let i = 0; i < profiles.length; i++) {
+        const f = profiles[i];
         const id = 'demo_bot_' + (now + i).toString(36);
         const lead = {
           id,
           demo: true,
           bot_generated: true,
           name: f.name,
+          legal_name: f.name,
           email: f.email,
           country: f.country,
-          investable_assets: ['5_10m', '10_25m', '25_50m'][i % 3],
-          referral_source: 'introduction',
+          phone: `${phonePref[f.country] || '+1 415'} ${(1000+i*1234)%9000+1000} ${(7000+i*99)%9000+1000}`,
+          tax_residency: f.country,
+          occupation: f.occ,
+          investable_assets: f.assets,
+          investor_classification: f.invclass,
+          source_of_wealth_high_level: f.sow,
+          anticipated_allocation_kg: allocFor(f.assets),
+          referral_source: ['personal_intro','existing_member','prior_relationship','introducer'][i % 4],
+          referrer_name: i % 2 === 0 ? '윤상호 (#001)' : 'TKJ',
           reverse_solicitation_ack: true,
           status: 'inquiry',
           nda_state: 'awaiting',
