@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<meta name="theme-color" content="#070706">
+<title>Member Sign In — The Aurum Century Club</title>
+<meta name="description" content="Aurum Century Club member portal sign in.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23070706'/><rect x='4' y='4' width='24' height='24' fill='none' stroke='%23C5A572' stroke-width='1'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='14' font-style='italic' fill='%23C5A572'>Au</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400&family=DM+Sans:wght@400;500&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/_styles/tokens.css">
+
+<style>
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+/* Ambient gradient */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse 900px 600px at 50% 30%, rgba(197,165,114,0.05), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.card-shell {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.card-seal {
+  margin-bottom: 32px;
+}
+
+.card-heading {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 32px;
+  letter-spacing: 0.05em;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.card-sub {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 44px;
+}
+
+.login-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-error {
+  display: none;
+  background: rgba(176,94,86,0.08);
+  border: 1px solid var(--redBd);
+  padding: 13px 16px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--red);
+  line-height: 1.6;
+}
+
+.form-error.visible {
+  display: block;
+}
+
+.form-links {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 8px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.form-link-item {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.form-link-item a {
+  color: var(--goldA);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 200ms ease;
+}
+
+.form-link-item a:hover {
+  border-bottom-color: var(--goldA);
+}
+
+.nav-back {
+  position: fixed;
+  top: 24px;
+  left: 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  opacity: 0.5;
+  transition: opacity 200ms ease;
+}
+
+.nav-back:hover {
+  opacity: 1;
+}
+
+.nav-back-icon {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--text);
+}
+
+.nav-back-label {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--text);
+  text-transform: uppercase;
+}
+
+/* ─── Mobile fixes ─────────────────────────────────────────────────── */
+@media (max-width: 430px) {
+  body { padding: 20px 16px; }
+  /* iOS zoom prevention: inputs must be ≥16px */
+  .input-field { font-size: 16px !important; }
+  /* Ensure card fits narrow screens */
+  .card-shell { max-width: 100%; }
+  /* Bigger touch target for submit */
+  #submit-btn { min-height: 48px; }
+  /* Nav back link — move slightly for safe area */
+  .nav-back { top: max(20px, env(safe-area-inset-top)); left: 16px; }
+}
+
+@media (max-width: 375px) {
+  .card-heading { font-size: 26px; }
+  body { padding: 16px 14px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-veil" id="page-veil"></div>
+
+<a href="/" class="nav-back" aria-label="Return to homepage">
+  <span class="nav-back-icon">←</span>
+  <span class="nav-back-label">Aurum</span>
+</a>
+
+<div class="card-shell" data-reveal>
+  <div class="card-seal">
+    <div class="seal seal--lg"><em>Au</em></div>
+  </div>
+  <h1 class="card-heading">Member Sign In</h1>
+  <p class="card-sub">Century Club · Private Portal</p>
+
+  <form class="login-form" id="login-form" novalidate>
+    <div class="field-group">
+      <label class="field-label" for="email">Email Address</label>
+      <input class="input-field" type="email" id="email" name="email" placeholder="your@email.com" autocomplete="email" required>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label" for="password">Credential</label>
+      <input class="input-field" type="password" id="password" name="password" placeholder="············" autocomplete="current-password" required>
+    </div>
+
+    <div class="form-error" id="form-error" role="alert" aria-live="polite">
+      The credential you entered was not recognised. Please verify and try again, or contact your relationship manager.
+    </div>
+
+    <button type="submit" class="btn-primary" id="submit-btn" style="width:100%;justify-content:center;padding:15px;">
+      Sign In
+    </button>
+  </form>
+
+  <div class="form-links">
+    <p class="form-link-item">
+      <a href="/forgot-password">Forgotten your credential?</a>
+    </p>
+    <p class="form-link-item">
+      New to Aurum? Access is by invitation.<br>
+      Enter your access code at <a href="/code">/code</a>.
+    </p>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const lang = localStorage.getItem('lang');
+  if (lang) document.documentElement.lang = lang;
+
+  const veil = document.getElementById('page-veil');
+  document.querySelectorAll('a[href]').forEach(function (link) {
+    const href = link.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto')) return;
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      veil.classList.add('covering');
+      setTimeout(function () { window.location.href = href; }, 290);
+    });
+  });
+
+  // Entrance reveal
+  const shell = document.querySelector('[data-reveal]');
+  setTimeout(function () {
+    if (shell) shell.classList.add('revealed');
+  }, 80);
+
+  const form = document.getElementById('login-form');
+  const submitBtn = document.getElementById('submit-btn');
+  const errorEl = document.getElementById('form-error');
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    if (!email || !password) {
+      errorEl.classList.add('visible');
+      return;
+    }
+
+    errorEl.classList.remove('visible');
+    submitBtn.setAttribute('aria-busy', 'true');
+    submitBtn.textContent = '—';
+
+    fetch('/api/login?op=member-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ email: email, password: password })
+    })
+    .then(function (r) {
+      if (r.ok) {
+        return r.json().then(function (data) {
+          veil.classList.add('covering');
+          setTimeout(function () {
+            window.location.href = data.redirect || '/portfolio';
+          }, 290);
+        });
+      }
+      throw new Error('auth');
+    })
+    .catch(function () {
+      submitBtn.removeAttribute('aria-busy');
+      submitBtn.textContent = 'Sign In';
+      errorEl.classList.add('visible');
+      document.getElementById('password').value = '';
+      document.getElementById('password').focus();
+    });
+  });
+}());
+</script>
+</body>
+</html>

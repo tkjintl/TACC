@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<meta name="theme-color" content="#070706">
+<title>Member Documents — The Aurum Century Club</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23070706'/><rect x='4' y='4' width='24' height='24' fill='none' stroke='%23C5A572' stroke-width='1'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='14' font-style='italic' fill='%23C5A572'>Au</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400&family=DM+Sans:wght@400;500&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/_styles/tokens.css">
+<style>
+
+.page-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  background: rgba(7,7,6,0.92);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.member-badge {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--goldA);
+  border: 1px solid var(--goldBorderS);
+  padding: 5px 12px;
+}
+
+.page-content {
+  max-width: calc(var(--content-max) + var(--pad-x) * 2);
+  margin: 0 auto;
+  padding: 120px var(--pad-x) 100px;
+}
+
+@media (max-width: 768px) {
+  .page-content { padding: 100px 20px 80px; }
+  .page-nav { padding: 16px 20px; }
+}
+
+.page-header { margin-bottom: 56px; }
+
+.page-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(32px, 5vw, 52px);
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+}
+
+.doc-section-title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.26em;
+  color: var(--muted);
+  text-transform: uppercase;
+  padding: 20px 0 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-group { margin-bottom: 48px; }
+
+.doc-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.doc-entry-left { flex: 1; }
+
+.doc-entry-date {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.doc-entry-name {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--text);
+}
+
+.doc-entry-type {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+
+.doc-entry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease;
+  flex-shrink: 0;
+}
+
+.doc-entry-btn:hover { border-color: var(--goldBorderS); color: var(--goldA); }
+.doc-entry-btn.loading { cursor: wait; pointer-events: none; }
+.doc-entry-btn.done { color: var(--green); border-color: var(--greenBd); pointer-events: none; }
+.doc-entry-btn-spinner { display: inline-block; animation: spin 0.8s linear infinite; }
+
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.doc-empty {
+  padding: 28px 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+/* ─── Reporting section extras ──────────────────────────────────────── */
+.doc-entry-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 2px;
+}
+
+.doc-entry--vault {
+  border-left: 3px solid var(--goldBorderS);
+  padding-left: 14px;
+}
+
+.doc-entry-summary {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--dim);
+  line-height: 1.6;
+  margin-top: 3px;
+}
+
+.doc-unread-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--goldC);
+  margin-right: 6px;
+  flex-shrink: 0;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}
+
+.vault-status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  margin-right: 6px;
+  flex-shrink: 0;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}
+
+/* ─── Mobile bottom nav ─────────────────────────────────────────────── */
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 100;
+  background: var(--near);
+  border-top: 1px solid var(--border);
+  padding: 10px 24px max(10px, env(safe-area-inset-bottom));
+  justify-content: space-around;
+  align-items: center;
+  height: 56px;
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-decoration: none;
+  color: var(--muted);
+  transition: color 180ms ease;
+  min-width: 48px;
+  cursor: pointer;
+}
+
+.mobile-nav-item.active { color: var(--goldA); }
+.mobile-nav-icon { font-size: 18px; line-height: 1; }
+.mobile-nav-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-bottom: 1px solid transparent;
+}
+
+.mobile-nav-item.active .mobile-nav-label { border-bottom-color: var(--goldA); }
+
+@media (max-width: 768px) {
+  .mobile-nav { display: flex; }
+  .page-content { padding-bottom: 120px; }
+}
+
+/* ─── Bilingual ────────────────────────────────────────────────────── */
+[data-lang]{display:none}
+.lang-en [data-lang="en"],.lang-en [data-lang="en"].block{display:inline}.lang-en [data-lang="en"].block{display:block}
+.lang-ko [data-lang="ko"],.lang-ko [data-lang="ko"].block{display:inline}.lang-ko [data-lang="ko"].block{display:block}
+
+/* ─── Mobile breakpoints ───────────────────────────────────────────── */
+@media (max-width: 430px) {
+  .page-nav { padding: 14px 16px; }
+  .member-badge { font-size: 10px; padding: 4px 8px; }
+  .page-content { padding: 90px 16px 120px; }
+}
+
+@media (max-width: 375px) {
+  .page-content { padding: 86px 14px 120px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-veil" id="page-veil"></div>
+
+<nav class="page-nav" role="navigation">
+  <a href="/portfolio" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+    <div class="seal"><em>Au</em></div>
+    <span style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.22em;color:var(--muted);text-transform:uppercase;"><span data-lang="en">Documents</span><span data-lang="ko">문서</span></span>
+  </a>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button class="lang-btn" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" onclick="setLang('ko')">한국어</button>
+    <span class="member-badge" id="member-badge">#—</span>
+  </div>
+</nav>
+
+<main class="page-content">
+
+  <header class="page-header" data-reveal>
+    <p class="page-eyebrow">Member Access</p>
+    <h1 class="page-title">Member <em class="gold-gradient">Documents</em></h1>
+  </header>
+
+  <!-- Membership -->
+  <div class="doc-group" data-reveal>
+    <div class="doc-section-title">Membership</div>
+    <div class="doc-entry">
+      <div class="doc-entry-left">
+        <div class="doc-entry-date">Q2 2026</div>
+        <div class="doc-entry-name">Member Agreement</div>
+        <div class="doc-entry-type">PDF · Membership</div>
+      </div>
+      <button class="doc-entry-btn" data-doc-id="membership-agreement">
+        <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+      </button>
+    </div>
+    <div class="doc-entry">
+      <div class="doc-entry-left">
+        <div class="doc-entry-date">Q2 2026</div>
+        <div class="doc-entry-name">Executed NDA</div>
+        <div class="doc-entry-type">PDF · Confidentiality</div>
+      </div>
+      <button class="doc-entry-btn" data-doc-id="nda-executed">
+        <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+      </button>
+    </div>
+    <div class="doc-entry">
+      <div class="doc-entry-left">
+        <div class="doc-entry-date">Q2 2026</div>
+        <div class="doc-entry-name">KYC Record</div>
+        <div class="doc-entry-type">PDF · Compliance</div>
+      </div>
+      <button class="doc-entry-btn" data-doc-id="kyc-record">
+        <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Fund -->
+  <div class="doc-group" data-reveal data-delay="100">
+    <div class="doc-section-title">Fund</div>
+    <div class="doc-entry">
+      <div class="doc-entry-left">
+        <div class="doc-entry-date">Q2 2026</div>
+        <div class="doc-entry-name">Information Memorandum</div>
+        <div class="doc-entry-type">PDF · Information Memorandum</div>
+      </div>
+      <button class="doc-entry-btn" data-doc-id="package">
+        <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+      </button>
+    </div>
+    <div class="doc-entry">
+      <div class="doc-entry-left">
+        <div class="doc-entry-date">Q2 2026</div>
+        <div class="doc-entry-name">VCC Constitution</div>
+        <div class="doc-entry-type">PDF · Legal</div>
+      </div>
+      <button class="doc-entry-btn" data-doc-id="structural">
+        <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+      </button>
+    </div>
+    <div class="doc-entry">
+      <div class="doc-entry-left">
+        <div class="doc-entry-date">Q2 2026</div>
+        <div class="doc-entry-name">Subscription Agreement</div>
+        <div class="doc-entry-type">PDF · Subscription</div>
+      </div>
+      <button class="doc-entry-btn" data-doc-id="subscription-template">
+        <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+      </button>
+    </div>
+    <div class="doc-entry">
+      <div class="doc-entry-left">
+        <div class="doc-entry-date">Q2 2026</div>
+        <div class="doc-entry-name">KYC Requirements</div>
+        <div class="doc-entry-type">PDF · Compliance</div>
+      </div>
+      <button class="doc-entry-btn" data-doc-id="kyc-requirements">
+        <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Reporting: quarterly letters -->
+  <div class="doc-group" data-reveal data-delay="200">
+    <div class="doc-section-title">Reporting</div>
+    <div id="letters-container">
+      <div class="doc-empty" id="letters-loading" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.16em;color:var(--dim);text-transform:uppercase;padding:20px 0;">Loading&hellip;</div>
+    </div>
+  </div>
+
+  <!-- Vault verifications -->
+  <div class="doc-group" data-reveal data-delay="300">
+    <div class="doc-section-title">Vault Verification</div>
+    <div id="vault-container">
+      <div class="doc-empty" id="vault-loading" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.16em;color:var(--dim);text-transform:uppercase;padding:20px 0;">Loading&hellip;</div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Mobile bottom nav -->
+<nav class="mobile-nav" aria-label="Mobile navigation">
+  <a href="/portfolio" class="mobile-nav-item">
+    <span class="mobile-nav-icon">⌂</span>
+    <span class="mobile-nav-label">Overview</span>
+  </a>
+  <a href="/gold" class="mobile-nav-item">
+    <span class="mobile-nav-icon">◈</span>
+    <span class="mobile-nav-label">Gold</span>
+  </a>
+  <a href="/documents" class="mobile-nav-item active">
+    <span class="mobile-nav-icon">⊟</span>
+    <span class="mobile-nav-label">Documents</span>
+  </a>
+  <a href="/messages" class="mobile-nav-item">
+    <span class="mobile-nav-icon">✉</span>
+    <span class="mobile-nav-label">Messages</span>
+  </a>
+</nav>
+
+<script src="/_scripts/shared.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var isIOS = TACC.isIOS;
+
+  // Override iOS labels on load
+  if (isIOS) {
+    document.querySelectorAll('.doc-btn-label').forEach(function (el) {
+      el.innerHTML = '<span data-lang="en">View</span><span data-lang="ko">보기</span>';
+    });
+  }
+
+  /* ─── Member badge + vault mode ───────────────────────────────── */
+  fetch('/api/v2?resource=member&op=me', { credentials: 'same-origin' })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var badge = document.getElementById('member-badge');
+      if (badge && d.member_number) badge.textContent = '#' + d.member_number;
+
+      // Vault mode: hide vault verification section in bank mode
+      if (d.vault_mode === 'bank') {
+        var vaultGroup = document.querySelector('#vault-container') && document.querySelector('#vault-container').closest('.doc-group');
+        if (vaultGroup) vaultGroup.style.display = 'none';
+      }
+    })
+    .catch(function () {});
+
+  /* ─── Static doc download handlers ────────────────────────────── */
+  document.querySelectorAll('.doc-entry-btn[data-doc-id]').forEach(function (btn) {
+    var labelEl = btn.querySelector('.doc-btn-label');
+    if (isIOS && labelEl) labelEl.textContent = 'View';
+    attachDownloadHandler(btn);
+  });
+
+  function attachDownloadHandler(btn) {
+    var labelEl = btn.querySelector('.doc-btn-label');
+    btn.addEventListener('click', function () {
+      var docId = btn.getAttribute('data-doc-id');
+      if (!docId) return;
+      btn.classList.add('loading');
+      if (labelEl) labelEl.innerHTML = '<span class="doc-entry-btn-spinner">&#x27F3;</span>';
+      var a = document.createElement('a');
+      a.href = '/api/doc?id=' + encodeURIComponent(docId);
+      a.download = '';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () {
+        btn.classList.remove('loading');
+        btn.classList.add('done');
+        if (labelEl) labelEl.textContent = '&#10003; Saved';
+        setTimeout(function () {
+          btn.classList.remove('done');
+          if (labelEl) labelEl.innerHTML = isIOS
+            ? '<span data-lang="en">View</span><span data-lang="ko">보기</span>'
+            : '<span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span>';
+        }, 1500);
+      }, 1000);
+    });
+  }
+
+  /* ─── Quarterly letters ────────────────────────────────────────── */
+  function quarterLabel(dateIso) {
+    if (!dateIso) return '—';
+    var d = new Date(dateIso);
+    var q = Math.floor(d.getMonth() / 3) + 1;
+    return 'Q' + q + ' ' + d.getFullYear();
+  }
+
+  function loadLetters() {
+    fetch('/api/v2?resource=member&op=letters', { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var letters = Array.isArray(data) ? data : (data.letters || []);
+        renderLetters(letters);
+      })
+      .catch(function () {
+        var c = document.getElementById('letters-container');
+        if (c) c.innerHTML = '<div class="doc-empty">Unable to load letters.</div>';
+      });
+  }
+
+  function renderLetters(letters) {
+    var c = document.getElementById('letters-container');
+    if (!c) return;
+    if (!letters.length) {
+      c.innerHTML = '<div class="doc-empty">REPORTING &middot; No quarterly letters have been published.</div>';
+      return;
+    }
+    c.innerHTML = '';
+    letters.forEach(function (letter) {
+      var unread = !letter.read;
+      var entry = document.createElement('div');
+      entry.className = 'doc-entry';
+      var nameHtml = (unread ? '<span class="doc-unread-dot" aria-label="Unread"></span>' : '') + escHtml(letter.subject || '—');
+      entry.innerHTML =
+        '<div class="doc-entry-left">' +
+          '<div class="doc-entry-date">' + quarterLabel(letter.date || letter.sent_at) + '</div>' +
+          '<div class="doc-entry-name">' + nameHtml + '</div>' +
+          '<div class="doc-entry-type">Quarterly Fund Letter</div>' +
+        '</div>' +
+        '<button class="doc-entry-btn" data-letter-id="' + escAttr(letter.id) + '">' +
+          '<span class="doc-btn-label"><span data-lang="en">Read</span><span data-lang="ko">읽기</span></span>' +
+        '</button>';
+
+      var btn = entry.querySelector('.doc-entry-btn');
+      btn.addEventListener('click', function () {
+        var lid = btn.getAttribute('data-letter-id');
+        window.open('/api/doc?id=quarterly-letter-' + encodeURIComponent(lid), '_blank');
+        if (unread) {
+          fetch('/api/v2?resource=member&op=mark-letter-read', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ letter_id: lid })
+          })
+          .then(function () {
+            var dot = entry.querySelector('.doc-unread-dot');
+            if (dot) dot.parentNode.removeChild(dot);
+            unread = false;
+          })
+          .catch(function () {});
+        }
+      });
+
+      c.appendChild(entry);
+    });
+  }
+
+  /* ─── Vault verifications ──────────────────────────────────────── */
+  function loadVaultVerifications() {
+    fetch('/api/v2?resource=member&op=vault-verifications', { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var items = Array.isArray(data) ? data : (data.verifications || []);
+        renderVaultVerifications(items);
+      })
+      .catch(function () {
+        var c = document.getElementById('vault-container');
+        if (c) c.innerHTML = '<div class="doc-empty">Unable to load vault verification records.</div>';
+      });
+  }
+
+  function renderVaultVerifications(items) {
+    var c = document.getElementById('vault-container');
+    if (!c) return;
+    if (!items.length) {
+      c.innerHTML = '<div class="doc-empty">VAULT VERIFICATION &middot; The first report will be published following the 2026 annual review.</div>';
+      return;
+    }
+    c.innerHTML = '';
+    items.forEach(function (item) {
+      var entry = document.createElement('div');
+      entry.className = 'doc-entry doc-entry--vault';
+      entry.innerHTML =
+        '<div class="doc-entry-left">' +
+          '<div class="doc-entry-eyebrow">Independent Verification</div>' +
+          '<div class="doc-entry-date">' + escHtml(item.year ? String(item.year) : '') + '</div>' +
+          '<div class="doc-entry-name"><span class="vault-status-dot" aria-hidden="true"></span>' + escHtml(item.title || '—') + '</div>' +
+          (item.summary ? '<div class="doc-entry-summary">' + escHtml(item.summary) + '</div>' : '') +
+        '</div>' +
+        '<button class="doc-entry-btn" data-vault-blob="' + escAttr(item.blob_pathname || '') + '">' +
+          '<span class="doc-btn-label"><span data-lang="en">Read</span><span data-lang="ko">읽기</span></span>' +
+        '</button>';
+
+      var btn = entry.querySelector('.doc-entry-btn');
+      btn.addEventListener('click', function () {
+        var blob = btn.getAttribute('data-vault-blob');
+        if (blob) {
+          window.open('/api/doc?blob=' + encodeURIComponent(blob), '_blank');
+        }
+      });
+
+      c.appendChild(entry);
+    });
+  }
+
+  /* ─── HTML helpers ─────────────────────────────────────────────── */
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function escAttr(str) {
+    if (!str) return '';
+    return String(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  /* ─── Init ─────────────────────────────────────────────────────── */
+  loadLetters();
+  loadVaultVerifications();
+
+}());
+</script>
+</body>
+</html>

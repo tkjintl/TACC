@@ -1,0 +1,2657 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<meta name="theme-color" content="#070706">
+<title>Member Portfolio — The Aurum Century Club</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23070706'/><rect x='4' y='4' width='24' height='24' fill='none' stroke='%23C5A572' stroke-width='1'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='14' font-style='italic' fill='%23C5A572'>Au</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400&family=DM+Sans:wght@400;500&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/_styles/tokens.css">
+<style>
+
+/* ─── Skeleton shimmer ─────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton-active {
+  background: linear-gradient(90deg,
+    var(--surface) 25%,
+    rgba(255,255,255,0.04) 50%,
+    var(--surface) 75%
+  ) !important;
+  background-size: 800px 100% !important;
+  animation: shimmer 1.4s ease-in-out infinite !important;
+  color: transparent !important;
+  border-radius: 2px;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ─── Top nav ──────────────────────────────────────────────────────── */
+.portfolio-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  background: rgba(7,7,6,0.96);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  height: 60px;
+}
+
+.portfolio-nav-left { display: flex; align-items: center; gap: 14px; }
+
+/* ─── Tab bar ──────────────────────────────────────────────────────── */
+.tab-bar {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  height: 100%;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.tab-item {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dim);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color var(--dur-base) ease, border-color var(--dur-base) ease;
+  user-select: none;
+  position: relative;
+  white-space: nowrap;
+}
+
+.tab-item:hover { color: var(--muted); }
+
+.tab-item.active {
+  color: var(--goldA);
+  border-bottom-color: var(--goldA);
+}
+
+@media (max-width: 900px) {
+  .tab-bar { display: none; }
+}
+
+.nav-right { display: flex; align-items: center; gap: 14px; }
+
+.member-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--goldA);
+  border: 1px solid var(--goldBorderS);
+  padding: 4px 10px;
+}
+
+.logout-link {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--dim);
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color var(--dur-fast) ease;
+}
+
+.logout-link:hover { color: var(--muted); }
+
+/* ─── Tab panels ───────────────────────────────────────────────────── */
+.tab-panels {
+  padding-top: 60px;
+  min-height: 100vh;
+}
+
+.tab-panel {
+  display: none;
+  padding: 48px var(--pad-x) 100px;
+  max-width: calc(var(--content-max) + var(--pad-x) * 2);
+  margin: 0 auto;
+}
+
+.tab-panel.active {
+  display: block;
+  animation: panelIn 250ms var(--ease-entrance) both;
+}
+
+@keyframes panelIn {
+  from { opacity: 0; transform: translateX(8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ─── Mobile tab bar ───────────────────────────────────────────────── */
+.mobile-tab-bar {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 200;
+  background: var(--near);
+  border-top: 1px solid var(--border);
+  height: 56px;
+  justify-content: space-around;
+  align-items: stretch;
+}
+
+.mobile-tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  color: var(--dim);
+  transition: color 180ms ease;
+  border-bottom: 2px solid transparent;
+  padding-bottom: max(0px, env(safe-area-inset-bottom));
+}
+
+.mobile-tab-item.active {
+  color: var(--goldA);
+  border-bottom-color: var(--goldA);
+}
+
+.mobile-tab-icon { font-size: 18px; line-height: 1; }
+.mobile-tab-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 900px) {
+  .mobile-tab-bar { display: flex; }
+  .tab-panel { padding-bottom: 80px; }
+}
+
+@media (max-width: 768px) {
+  .portfolio-nav { padding: 0 20px; }
+  .tab-panel { padding-left: 20px; padding-right: 20px; }
+}
+
+/* ─── Mobile breakpoints ───────────────────────────────────────────── */
+@media (max-width: 430px) {
+  .portfolio-nav { padding: 0 16px; height: 54px; }
+  /* Member badge shrink */
+  .member-badge { font-size: 10px; padding: 4px 8px; }
+  /* Logout link — hide label, icon only on smallest screens */
+  .logout-link .logout-label { display: none; }
+  /* Tab panel */
+  .tab-panel { padding-left: 16px; padding-right: 16px; padding-top: 32px; }
+  /* KPI tiles — reduce padding */
+  .kpi-tile { padding: 20px 16px; }
+  /* Gold bar section — prevent overflow */
+  .gold-bar-section { overflow: hidden; }
+  .gold-bar-wrap { max-width: 100%; }
+  .gold-bar-wrap,
+  .gold-bar { width: 160px; height: 72px; }
+  .bar-face--right { width: 72px; transform: rotateY(90deg) translateZ(124px); }
+  /* Capital call card — wire instructions fit in 375px */
+  .capital-call-card { padding: 18px 14px; }
+  .cc-wire-row { flex-direction: column; gap: 2px; }
+  .cc-wire-val { text-align: left; word-break: break-word; }
+  .cc-wire-key { min-width: unset; }
+  .cc-amount { font-size: 22px; }
+  /* Since strip: smaller min-width */
+  .since-item { min-width: 100px; padding: 12px 14px; }
+  /* Notice card */
+  .notice-card { padding: 16px 14px; }
+  /* Limbo wire ref size */
+  .limbo-wire-ref { font-size: 16px; }
+  /* Timeline: reduce left padding on mobile */
+  .timeline { padding-left: 24px; }
+  .history-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+}
+
+@media (max-width: 390px) {
+  .gold-bar-wrap,
+  .gold-bar { width: 140px; height: 64px; }
+  .bar-face--right { width: 64px; transform: rotateY(90deg) translateZ(108px); }
+  .kpi-strip { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 375px) {
+  .portfolio-nav { height: 50px; }
+  .tab-panel { padding-left: 14px; padding-right: 14px; padding-top: 28px; }
+  .tab-panels { padding-top: 50px; }
+  .gold-kg-display { font-size: clamp(52px, 14vw, 72px); }
+  /* Seat grid fits 375px */
+  .seat-grid { max-width: calc(100vw - 28px); gap: 4px; }
+}
+
+/* ─── Greeting line ────────────────────────────────────────────────── */
+.greeting-line {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--goldA);
+  text-transform: uppercase;
+  margin-bottom: 40px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── KPI strip ────────────────────────────────────────────────────── */
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin-bottom: 40px;
+}
+
+@media (max-width: 768px) {
+  .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+}
+
+.kpi-tile {
+  background: var(--surface);
+  padding: 28px 24px;
+}
+
+.kpi-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.kpi-value {
+  font-family: var(--font-mono);
+  font-size: clamp(24px, 3.5vw, 36px);
+  color: var(--text);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.kpi-value.cormorant {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 300;
+  letter-spacing: 0.02em;
+}
+
+.kpi-value.green { color: var(--green); }
+.kpi-value.amber { color: var(--amber); }
+
+.kpi-sub {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.kpi-krw {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--dim);
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Notice zone ──────────────────────────────────────────────────── */
+.notice-zone {
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notice-card {
+  padding: 20px 24px;
+  border: 1px solid;
+  background: var(--surface);
+  border-left-width: 3px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.notice-card--amber { border-color: var(--amberBd); border-left-color: var(--amber); }
+.notice-card--gold  { border-color: var(--goldBorderS); border-left-color: var(--goldA); }
+
+.notice-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.notice-label.amber { color: var(--amber); }
+.notice-label.gold  { color: var(--goldA); }
+
+.notice-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.notice-body {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.notice-ref {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--goldA);
+  cursor: pointer;
+}
+
+/* ─── Founding grid ────────────────────────────────────────────────── */
+.grid-section { text-align: center; }
+
+.grid-count {
+  font-family: var(--font-mono);
+  font-size: clamp(28px, 5vw, 40px);
+  color: var(--goldB);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.grid-label {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+
+.seat-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 5px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.seat {
+  aspect-ratio: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: background 600ms var(--ease-entrance), border-color 600ms var(--ease-entrance);
+}
+
+.seat.filled {
+  background: var(--goldMuted);
+  border-color: var(--goldBorderS);
+}
+
+.seat.own {
+  transform: scale(1.06);
+  box-shadow: 0 0 0 2px var(--goldA);
+  background: rgba(197,165,114,0.2);
+  border-color: var(--goldA);
+  z-index: 1;
+  position: relative;
+}
+
+/* ─── GOLD TAB ─────────────────────────────────────────────────────── */
+.gold-hero {
+  position: relative;
+  text-align: center;
+  padding: 60px 0 48px;
+  overflow: hidden;
+}
+
+#particle-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.gold-kg-display {
+  font-family: var(--font-display);
+  font-size: clamp(72px, 10vw, 96px);
+  font-weight: 300;
+  background: linear-gradient(135deg, var(--goldA) 0%, var(--goldD) 60%, var(--goldB) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.gold-sgd {
+  font-family: var(--font-mono);
+  font-size: clamp(20px, 3vw, 32px);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.spot-context {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.gold-krw {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Since you joined strip ───────────────────────────────────────── */
+.since-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  border: 1px solid var(--border);
+  margin: 32px 0;
+  flex-wrap: wrap;
+}
+
+.since-item {
+  flex: 1;
+  min-width: 120px;
+  padding: 16px 20px;
+  border-right: 1px solid var(--border);
+  text-align: center;
+}
+
+.since-item:last-child { border-right: none; }
+
+.since-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.since-value {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.since-value.green { color: var(--green); }
+.since-value.amber { color: var(--amber); }
+
+/* ─── 3D Gold bar ──────────────────────────────────────────────────── */
+.gold-bar-section {
+  display: flex;
+  justify-content: center;
+  margin: 48px 0;
+}
+
+.gold-bar-wrap {
+  perspective: 600px;
+  width: 200px;
+  height: 90px;
+}
+
+.gold-bar {
+  width: 200px;
+  height: 90px;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: rockBar 8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gold-bar {
+    animation: none;
+    transform: rotateY(-14deg) rotateX(4deg);
+  }
+}
+
+@keyframes rockBar {
+  0%,100% { transform: rotateY(-14deg) rotateX(4deg); }
+  50%      { transform: rotateY(14deg)  rotateX(-2deg); }
+}
+
+.bar-face {
+  position: absolute;
+  width: 200px;
+  height: 90px;
+  backface-visibility: hidden;
+}
+
+.bar-face--top {
+  background: linear-gradient(135deg, #E8C060 0%, #D4A84B 40%, #C09040 100%);
+  transform: rotateX(90deg) translateZ(45px);
+}
+
+.bar-face--top::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+  transform: translateX(-120%);
+  animation: specularSweep 6s ease-in-out infinite;
+}
+
+@keyframes specularSweep {
+  0%, 30% { transform: translateX(-120%); }
+  60%, 100% { transform: translateX(120%); }
+}
+
+.bar-face--front {
+  background: linear-gradient(180deg, #D4A84B 0%, #C5A040 60%, #B89038 100%);
+  transform: translateZ(45px);
+}
+
+.bar-face--back {
+  background: linear-gradient(180deg, #7a6040 0%, #6a5030 100%);
+  transform: rotateY(180deg) translateZ(45px);
+}
+
+.bar-face--right {
+  background: linear-gradient(180deg, #B88040 0%, #A07030 100%);
+  transform: rotateY(90deg) translateZ(155px);
+  width: 90px;
+}
+
+.bar-face--left {
+  background: linear-gradient(180deg, #8a6e3c 0%, #7a5e2c 100%);
+  transform: rotateY(-90deg) translateZ(45px);
+  width: 90px;
+}
+
+.bar-face--bottom {
+  background: #5a4a2a;
+  transform: rotateX(-90deg) translateZ(45px);
+}
+
+/* ─── Bar registry ─────────────────────────────────────────────────── */
+.registry-section {
+  border: 1px solid var(--border);
+  margin: 32px 0;
+}
+
+.registry-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  cursor: pointer;
+  background: var(--surface);
+  transition: background var(--dur-fast) ease;
+  user-select: none;
+}
+
+.registry-header:hover { background: rgba(17,17,16,0.6); }
+
+.registry-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.registry-chevron {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--dim);
+  transition: transform var(--dur-base) ease;
+}
+
+.registry-section.open .registry-chevron { transform: rotate(180deg); }
+
+.registry-body {
+  display: none;
+  padding: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.registry-section.open .registry-body { display: block; }
+
+.registry-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.registry-row:last-child { border-bottom: none; }
+
+.registry-key {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.registry-val {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.registry-val a {
+  color: var(--goldA);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-fast) ease;
+}
+
+.registry-val a:hover { border-bottom-color: var(--goldBorderS); }
+
+/* ─── Vault map ────────────────────────────────────────────────────── */
+.vault-map-wrap {
+  position: relative;
+  margin: 32px 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.vault-map-svg {
+  width: 100%;
+  display: block;
+  opacity: 0.5;
+}
+
+.sg-dot-wrap {
+  position: absolute;
+  left: 66%;
+  top: 51%;
+  transform: translate(-50%, -50%);
+}
+
+.sg-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--goldB);
+  animation: sgPulse 3s ease-in-out infinite;
+  cursor: pointer;
+}
+
+@keyframes sgPulse {
+  0%   { transform: scale(1);   opacity: 0.8; box-shadow: 0 0 0 0 rgba(212,175,122,0.6); }
+  50%  { transform: scale(1.8); opacity: 0;   box-shadow: 0 0 0 8px rgba(212,175,122,0); }
+  100% { transform: scale(1);   opacity: 0.8; box-shadow: 0 0 0 0 rgba(212,175,122,0.6); }
+}
+
+.sg-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface);
+  border: 1px solid var(--goldBorderS);
+  padding: 12px 16px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+  z-index: 10;
+}
+
+.sg-dot-wrap:hover .sg-tooltip { opacity: 1; }
+.sg-tooltip:hover { opacity: 1; }
+
+.sg-tooltip-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--goldA);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.sg-tooltip-items {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.9;
+}
+
+/* ─── DOCUMENTS TAB ────────────────────────────────────────────────── */
+.doc-section-title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.26em;
+  color: var(--muted);
+  text-transform: uppercase;
+  padding: 20px 0 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+}
+
+.doc-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.doc-entry-left { flex: 1; }
+
+.doc-entry-date {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.doc-entry-name {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--text);
+}
+
+.doc-entry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.doc-entry-btn:hover { border-color: var(--goldBorderS); color: var(--goldA); }
+.doc-entry-btn.loading { cursor: wait; pointer-events: none; }
+.doc-entry-btn.done { color: var(--green); border-color: var(--greenBd); pointer-events: none; }
+
+.doc-entry-btn-spinner { display: inline-block; animation: spin 0.8s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.doc-empty {
+  padding: 32px 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+.doc-groups { margin-bottom: 40px; }
+
+/* ─── MESSAGES TAB ─────────────────────────────────────────────────── */
+.msg-empty {
+  padding: 80px 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--dim);
+}
+
+.msg-card {
+  border-left: 3px solid;
+  border-top: 1px solid;
+  border-right: 1px solid;
+  border-bottom: 1px solid;
+  background: var(--surface);
+  margin-bottom: 8px;
+  transition: background var(--dur-fast) ease;
+  cursor: pointer;
+}
+
+.msg-card.unread { background: rgba(17,17,16,0.9); }
+.msg-card:hover  { background: rgba(20,20,18,0.9); }
+
+.msg-card.gold  { border-color: var(--goldBorderS); border-left-color: var(--goldA); }
+.msg-card.blue  { border-color: var(--blueBd); border-left-color: var(--blue); }
+.msg-card.amber { border-color: var(--amberBd); border-left-color: var(--amber); }
+
+.msg-card.unread.gold  { border-color: var(--goldBorderM); }
+.msg-card.unread.blue  { border-color: rgba(91,133,184,0.6); }
+.msg-card.unread.amber { border-color: rgba(184,131,58,0.6); }
+
+.msg-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  gap: 12px;
+}
+
+.msg-subject {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--text);
+  flex: 1;
+}
+
+.msg-date {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--dim);
+  text-transform: uppercase;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.msg-unread-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--goldA);
+  flex-shrink: 0;
+  display: none;
+}
+
+.msg-card.unread .msg-unread-dot { display: block; }
+
+.msg-body {
+  display: none;
+  padding: 0 20px 20px;
+}
+
+.msg-card.expanded .msg-body { display: block; }
+
+.msg-body-text {
+  font-family: var(--font-display);
+  font-size: 16px;
+  line-height: 1.8;
+  color: rgba(237,232,223,0.78);
+  margin-bottom: 16px;
+}
+
+.msg-reply-link {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  text-transform: uppercase;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+}
+
+.msg-reply-link:hover { color: var(--goldA); border-bottom-color: var(--goldBorderS); }
+
+/* ─── HISTORY TAB ──────────────────────────────────────────────────── */
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 40px;
+}
+
+.print-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+
+.print-btn:hover { border-color: var(--goldBorderS); color: var(--goldA); }
+
+.timeline {
+  position: relative;
+  padding-left: 32px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: var(--goldBorderS);
+}
+
+.timeline-entry {
+  position: relative;
+  display: flex;
+  gap: 24px;
+  padding-bottom: 28px;
+  align-items: flex-start;
+}
+
+.timeline-entry::before {
+  content: '';
+  position: absolute;
+  left: -36px;
+  top: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--goldA);
+  background: var(--black);
+  flex-shrink: 0;
+}
+
+.timeline-date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+  min-width: 90px;
+  padding-top: 1px;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* ─── Capital call card ────────────────────────────────────────────── */
+.capital-call-card {
+  display: none;
+  width: 100%;
+  background: var(--goldMuted);
+  border: 1px solid var(--amberBd);
+  border-left: 3px solid var(--amber);
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.capital-call-card.visible { display: block; }
+
+.cc-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.cc-badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
+  border: 1px solid var(--amberBd);
+  padding: 3px 8px;
+}
+
+.cc-status {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+.cc-status.overdue { color: var(--red); }
+.cc-status.acknowledged { color: var(--muted); }
+
+.cc-amount {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+
+.cc-due {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.cc-due.urgent { color: #E05040; }
+
+.cc-wire-toggle {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+  transition: color var(--dur-fast) ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cc-wire-toggle:hover { color: var(--goldA); }
+
+.cc-wire-details {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 250ms ease;
+  border-top: 1px solid var(--border);
+  margin-top: 12px;
+}
+
+.cc-wire-details.open { max-height: 300px; }
+
+.cc-wire-inner {
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cc-wire-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cc-wire-key {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+  flex-shrink: 0;
+  min-width: 100px;
+}
+
+.cc-wire-val {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  word-break: break-all;
+}
+
+.cc-wire-val[data-copy] {
+  cursor: pointer;
+  color: var(--goldA);
+  border-bottom: 1px dashed var(--goldBorderS);
+}
+
+.cc-ack-btn {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid var(--amberBd);
+  color: var(--amber);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease;
+}
+
+.cc-ack-btn:hover { background: rgba(184,131,58,0.1); border-color: var(--amber); }
+.cc-ack-btn:disabled { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+
+/* ─── History timeline ─────────────────────────────────────────────── */
+.history-timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+.ht-entry {
+  border-left: 2px solid var(--border);
+  padding: 0 0 24px 16px;
+}
+
+.ht-entry--letter   { border-left-color: var(--goldBorderS); }
+.ht-entry--vault    { border-left-color: var(--goldBorderM); }
+.ht-entry--capital  { border-left-color: var(--amberBd); }
+.ht-entry--system   { border-left-color: var(--border); }
+
+.ht-date {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.ht-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.ht-eyebrow--gold  { color: var(--goldA); }
+.ht-eyebrow--amber { color: var(--amber); }
+
+.ht-label {
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--text);
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.ht-label--dim { color: var(--dim); font-family: var(--font-ui); font-size: 14px; }
+
+.ht-label a {
+  color: inherit;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-fast) ease;
+}
+
+.ht-label a:hover { border-bottom-color: var(--goldBorderS); }
+
+.ht-meta {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--dim);
+  line-height: 1.6;
+}
+
+.ht-badge-amber {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--amber);
+  border: 1px solid var(--amberBd);
+  margin-top: 6px;
+}
+
+.ht-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-left: 18px;
+}
+
+.ht-skel-bar {
+  height: 14px;
+  border-radius: 2px;
+}
+
+.ht-skel-bar--wide  { width: 60%; }
+.ht-skel-bar--short { width: 35%; height: 10px; margin-top: 4px; }
+
+.history-empty {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--dim);
+  text-transform: uppercase;
+  padding: 40px 0;
+}
+
+/* ─── LIMBO screen ─────────────────────────────────────────────────── */
+#screen-limbo {
+  display: none;
+  padding: 60px var(--pad-x) 100px;
+  max-width: calc(var(--content-max) + var(--pad-x) * 2);
+  margin: 60px auto 0;
+}
+
+.limbo-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: var(--goldD);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.limbo-heading {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(32px, 5vw, 40px);
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.limbo-sub {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 40px;
+}
+
+.limbo-card {
+  background: var(--surface);
+  border: 1px solid var(--goldBorderS);
+  padding: 24px 28px;
+  margin-bottom: 16px;
+}
+
+.limbo-card-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.limbo-commitment-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+}
+
+@media (max-width: 600px) {
+  .limbo-commitment-grid { grid-template-columns: 1fr; }
+}
+
+.limbo-commitment-cell {
+  background: var(--surface);
+  padding: 18px 20px;
+}
+
+.limbo-cell-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.limbo-cell-value {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.limbo-cell-krw {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--dim);
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.limbo-wire-ref {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  color: var(--goldB);
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  border-bottom: 1px dashed var(--goldBorderS);
+  display: inline-block;
+  margin: 8px 0 16px;
+  transition: color var(--dur-fast) ease;
+}
+
+.limbo-wire-ref:hover { color: var(--goldD); }
+
+.limbo-wire-hint {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+/* ─── Limbo timeline ───────────────────────────────────────────────── */
+.limbo-timeline {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-left: 28px;
+  margin-top: 8px;
+}
+
+.limbo-timeline::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: var(--border);
+}
+
+.limbo-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding-bottom: 28px;
+  position: relative;
+}
+
+.limbo-step:last-child { padding-bottom: 0; }
+
+.limbo-step-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--black);
+  flex-shrink: 0;
+  position: absolute;
+  left: -28px;
+  top: 2px;
+}
+
+.limbo-step-dot--done {
+  background: var(--goldD);
+  border-color: var(--goldD);
+}
+
+.limbo-step-dot--current {
+  background: var(--goldB);
+  border-color: var(--goldB);
+  box-shadow: 0 0 8px rgba(197,165,114,0.4);
+}
+
+.limbo-step-dot--todo {
+  background: transparent;
+  border-color: var(--muted);
+  opacity: 0.3;
+}
+
+.limbo-step-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.limbo-step-label--done { color: var(--goldD); }
+.limbo-step-label--current { color: var(--goldB); }
+.limbo-step-label--todo { color: var(--dim); }
+
+.limbo-step-desc {
+  font-family: var(--font-display);
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+/* ─── Vault bank-mode note ─────────────────────────────────────────── */
+.bank-custody-note {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+  margin: 12px 0;
+  display: none;
+}
+
+/* ─── Print styles ─────────────────────────────────────────────────── */
+@media print {
+  body { background: #fff; color: #000; }
+  .portfolio-nav, .mobile-tab-bar, .tab-bar { display: none !important; }
+  .tab-panels { padding-top: 0; }
+  .tab-panel { display: none !important; }
+  #panel-history { display: block !important; animation: none !important; }
+  .history-header .print-btn { display: none; }
+  .ht-entry { border-left-color: #ccc; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-veil" id="page-veil"></div>
+
+<!-- Top nav -->
+<nav class="portfolio-nav" role="navigation">
+  <div class="portfolio-nav-left">
+    <a href="/" class="nav-lockup" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+      <div class="seal" style="width:34px;height:34px;font-size:16px;"><em>Au</em></div>
+    </a>
+  </div>
+
+  <div class="tab-bar" id="desktop-tabs" role="tablist">
+    <div class="tab-item active" data-tab="overview" role="tab" tabindex="0"><span data-lang="en">Overview</span><span data-lang="ko">개요</span></div>
+    <div class="tab-item" data-tab="gold" role="tab" tabindex="0"><span data-lang="en">Gold</span><span data-lang="ko">금</span></div>
+    <div class="tab-item" data-tab="documents" role="tab" tabindex="0"><span data-lang="en">Documents</span><span data-lang="ko">문서</span></div>
+    <div class="tab-item" data-tab="messages" role="tab" tabindex="0"><span data-lang="en">Messages</span><span data-lang="ko">메시지</span></div>
+    <div class="tab-item" data-tab="history" role="tab" tabindex="0"><span data-lang="en">History</span><span data-lang="ko">활동 내역</span></div>
+  </div>
+
+  <div class="nav-right">
+    <button class="lang-btn" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" onclick="setLang('ko')">한국어</button>
+    <span class="member-badge" id="member-badge">#—</span>
+    <a href="/api/logout" class="logout-link" data-no-transition><span data-lang="en">Log out</span><span data-lang="ko">로그아웃</span></a>
+  </div>
+</nav>
+
+<!-- LIMBO screen: shown for members not yet funded -->
+<div id="screen-limbo">
+
+  <p class="limbo-eyebrow">ONBOARDING IN PROGRESS</p>
+  <h1 class="limbo-heading" id="limbo-name">Welcome</h1>
+  <p class="limbo-sub">
+    <span data-lang="en">Your subscription is being processed.</span>
+    <span data-lang="ko">가입 절차가 진행 중입니다.</span>
+  </p>
+
+  <!-- Commitment card -->
+  <div class="limbo-card" id="limbo-commitment-card">
+    <div class="limbo-card-eyebrow">YOUR COMMITMENT</div>
+    <div class="limbo-commitment-grid">
+      <div class="limbo-commitment-cell">
+        <div class="limbo-cell-label">Kg Requested</div>
+        <div class="limbo-cell-value" id="limbo-kg">—</div>
+      </div>
+      <div class="limbo-commitment-cell">
+        <div class="limbo-cell-label">USD Amount</div>
+        <div class="limbo-cell-value" id="limbo-usd">—</div>
+        <div class="limbo-cell-krw" id="limbo-krw"></div>
+      </div>
+      <div class="limbo-commitment-cell">
+        <div class="limbo-cell-label">Submitted</div>
+        <div class="limbo-cell-value" id="limbo-submitted">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wire card: shown only when wire.reference exists -->
+  <div class="limbo-card" id="limbo-wire-card" style="display:none;">
+    <div class="limbo-card-eyebrow">WIRE INSTRUCTIONS</div>
+    <div class="limbo-wire-hint">WIRE REFERENCE — INCLUDE ON MEMO LINE</div>
+    <div class="limbo-wire-ref" id="limbo-wire-ref" data-copy="">—</div>
+    <div id="limbo-wire-status"></div>
+  </div>
+
+  <!-- Progress timeline -->
+  <div class="limbo-card" style="margin-top:8px;">
+    <div class="limbo-card-eyebrow">MEMBERSHIP PROGRESS</div>
+    <div class="limbo-timeline" id="limbo-timeline">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+</div>
+
+<!-- Tab panels -->
+<div class="tab-panels" id="tab-panels-wrap">
+
+  <!-- ─── OVERVIEW ──────────────────────────────────────────────────── -->
+  <div class="tab-panel active" id="panel-overview" role="tabpanel">
+
+    <p class="greeting-line" id="greeting-line" data-reveal>
+      <span data-skeleton>Loading &nbsp;·&nbsp; Member #— &nbsp;·&nbsp; Active since —</span>
+    </p>
+
+    <!-- KPI strip -->
+    <div class="kpi-strip" data-reveal data-delay="100">
+
+      <div class="kpi-tile">
+        <div class="kpi-label">Your Gold</div>
+        <div class="kpi-value cormorant" id="kpi-kg" data-skeleton>—</div>
+        <div class="kpi-sub">Kilo Bar · LBMA Certified</div>
+      </div>
+
+      <div class="kpi-tile">
+        <div class="kpi-label">Current Value</div>
+        <div class="kpi-value" id="kpi-value" data-skeleton>—</div>
+        <div class="kpi-sub" id="kpi-value-time">As of — SGT</div>
+        <div class="kpi-krw" id="kpi-krw"></div>
+      </div>
+
+      <div class="kpi-tile">
+        <div class="kpi-label">Fund Status</div>
+        <div class="kpi-value" id="kpi-fund-status" data-skeleton>—</div>
+        <div class="kpi-sub" id="kpi-fund-period">—</div>
+      </div>
+
+      <div class="kpi-tile">
+        <div class="kpi-label">Next Action</div>
+        <div class="kpi-value" id="kpi-next-action" style="font-size:14px;font-family:var(--font-ui);font-weight:400;" data-skeleton>—</div>
+        <div class="kpi-sub" id="kpi-next-action-sub"></div>
+      </div>
+
+    </div>
+
+    <!-- Active notice zone: capital call card + other notices -->
+    <div id="capital-call-zone"></div>
+    <div class="notice-zone" id="notice-zone"></div>
+
+    <!-- Founding grid -->
+    <div class="grid-section" data-reveal data-delay="200">
+      <div class="grid-count" id="grid-count">— / 100</div>
+      <div class="grid-label">Founding Seats Filled</div>
+      <div class="seat-grid" id="seat-grid" role="img" aria-label="Founding seat availability"></div>
+    </div>
+
+  </div>
+
+  <!-- ─── GOLD ──────────────────────────────────────────────────────── -->
+  <div class="tab-panel" id="panel-gold" role="tabpanel">
+
+    <!-- Capital call if active -->
+    <div id="gold-capital-call"></div>
+
+    <!-- Gold hero -->
+    <div class="gold-hero" data-reveal>
+      <canvas id="particle-canvas" aria-hidden="true"></canvas>
+      <div class="gold-kg-display" id="gold-kg">—</div>
+      <div class="gold-sgd" id="gold-sgd">—</div>
+      <div class="spot-context" id="gold-spot-context">XAU SPOT &nbsp;—</div>
+      <div class="spot-context" id="gh-spot" style="font-size:13px;color:var(--muted);"></div>
+      <div class="gold-krw" id="gold-krw-large"></div>
+    </div>
+
+    <!-- Since you joined -->
+    <div class="since-strip" data-reveal data-delay="100">
+      <div class="since-item">
+        <div class="since-label">Entry</div>
+        <div class="since-value" id="since-entry">SGD —</div>
+      </div>
+      <div class="since-item">
+        <div class="since-label">Today</div>
+        <div class="since-value" id="since-today">SGD —</div>
+      </div>
+      <div class="since-item">
+        <div class="since-label">Change</div>
+        <div class="since-value" id="since-change">—</div>
+      </div>
+    </div>
+
+    <!-- 3D Gold bar (vault mode only) -->
+    <div class="gold-bar-section gold-bar-3d" id="gold-bar-section" data-reveal data-delay="200">
+      <div class="gold-bar-wrap">
+        <div class="gold-bar">
+          <div class="bar-face bar-face--top"></div>
+          <div class="bar-face bar-face--front"></div>
+          <div class="bar-face bar-face--back"></div>
+          <div class="bar-face bar-face--right"></div>
+          <div class="bar-face bar-face--left"></div>
+          <div class="bar-face bar-face--bottom"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vault / bank custody badge -->
+    <div id="vault-badge" style="display:flex;align-items:center;gap:8px;margin:0 0 24px;justify-content:center;">
+      <span class="status-badge status-badge--green" id="vault-badge-text"></span>
+    </div>
+    <p class="bank-custody-note" id="bank-custody-note">Gold holdings are maintained through a regulated custodian bank. Bar-level registry is not applicable under this custody structure.</p>
+
+    <!-- Bar registry (collapsible) -->
+    <div class="registry-section" id="registry-section" data-reveal data-delay="300">
+      <div class="registry-header" id="registry-toggle">
+        <span class="registry-title">Your Bar</span>
+        <span class="registry-chevron">▾</span>
+      </div>
+      <div class="registry-body" id="registry-body">
+        <!-- Populated by JS or "not yet available" message -->
+        <p style="font-family:var(--font-ui);font-size:14px;color:var(--muted);">Bar details will be available once your subscription is confirmed.</p>
+      </div>
+    </div>
+
+    <!-- Vault map (vault mode only) -->
+    <div class="vault-map-wrap" id="vault-map-section" data-reveal data-delay="400">
+      <svg class="vault-map-svg" viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect width="800" height="350" fill="#070706"/>
+        <path d="M60,70 L180,62 L210,80 L220,115 L200,145 L190,175 L170,200 L150,225 L120,235 L90,218 L70,192 L55,163 L50,128 L55,95 Z" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
+        <path d="M155,228 L195,222 L210,248 L215,275 L205,308 L185,330 L160,340 L140,323 L130,296 L135,264 L140,244 Z" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
+        <path d="M330,48 L390,43 L410,56 L415,73 L400,87 L375,92 L355,87 L335,74 L325,60 Z" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
+        <path d="M330,100 L395,95 L420,113 L435,143 L430,180 L420,213 L400,246 L375,264 L350,259 L325,237 L310,206 L305,170 L315,140 L320,118 Z" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
+        <path d="M415,38 L560,34 L620,47 L660,60 L675,82 L665,108 L635,125 L590,134 L545,138 L500,133 L460,124 L430,112 L410,90 L405,64 Z" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
+        <path d="M540,134 L580,132 L595,148 L590,170 L575,182 L555,180 L540,165 L535,148 Z" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
+        <path d="M556,168 L570,166 L576,182 L570,196 L558,202 L548,193 L546,178 Z" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.10)" stroke-width="0.8"/>
+        <path d="M580,228 L660,220 L695,233 L710,255 L705,284 L685,305 L650,312 L610,304 L580,282 L565,256 L568,238 Z" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
+      </svg>
+      <!-- Singapore dot at Malay Peninsula tip -->
+      <div class="sg-dot-wrap">
+        <div class="sg-dot"></div>
+        <div class="sg-tooltip" role="tooltip">
+          <div class="sg-tooltip-title">Malca-Amit · Singapore</div>
+          <div class="sg-tooltip-items">
+            Singapore Free Trade Zone<br>
+            LBMA Good Delivery<br>
+            Fully Insured<br>
+            Allocated &amp; Segregated
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ─── DOCUMENTS ─────────────────────────────────────────────────── -->
+  <div class="tab-panel" id="panel-documents" role="tabpanel">
+
+    <div class="doc-groups" data-reveal>
+
+      <div class="doc-section-title">Membership</div>
+      <div class="doc-entry">
+        <div class="doc-entry-left">
+          <div class="doc-entry-date">Q2 2026</div>
+          <div class="doc-entry-name">Member Agreement</div>
+        </div>
+        <button class="doc-entry-btn" data-doc-id="membership-agreement">
+          <span id="ios-btn-label" class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+        </button>
+      </div>
+      <div class="doc-entry">
+        <div class="doc-entry-left">
+          <div class="doc-entry-date">Q2 2026</div>
+          <div class="doc-entry-name">Executed NDA</div>
+        </div>
+        <button class="doc-entry-btn" data-doc-id="nda-executed">
+          <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+        </button>
+      </div>
+      <div class="doc-entry">
+        <div class="doc-entry-left">
+          <div class="doc-entry-date">Q2 2026</div>
+          <div class="doc-entry-name">KYC Record</div>
+        </div>
+        <button class="doc-entry-btn" data-doc-id="kyc-record">
+          <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+        </button>
+      </div>
+
+      <div class="doc-section-title">Fund</div>
+      <div class="doc-entry">
+        <div class="doc-entry-left">
+          <div class="doc-entry-date">Q2 2026</div>
+          <div class="doc-entry-name">Information Memorandum</div>
+        </div>
+        <button class="doc-entry-btn" data-doc-id="package">
+          <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+        </button>
+      </div>
+      <div class="doc-entry">
+        <div class="doc-entry-left">
+          <div class="doc-entry-date">Q2 2026</div>
+          <div class="doc-entry-name">VCC Constitution</div>
+        </div>
+        <button class="doc-entry-btn" data-doc-id="structural">
+          <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+        </button>
+      </div>
+      <div class="doc-entry">
+        <div class="doc-entry-left">
+          <div class="doc-entry-date">Q2 2026</div>
+          <div class="doc-entry-name">Subscription Agreement</div>
+        </div>
+        <button class="doc-entry-btn" data-doc-id="subscription-template">
+          <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+        </button>
+      </div>
+
+      <div class="doc-section-title">Reporting</div>
+      <div class="doc-empty">Reporting documents will be available from Q4 2026.</div>
+
+    </div>
+
+  </div>
+
+  <!-- ─── MESSAGES ─────────────────────────────────────────────────── -->
+  <div class="tab-panel" id="panel-messages" role="tabpanel">
+    <div id="messages-container">
+      <div class="msg-empty" id="msg-empty">Nothing is required at this time.</div>
+    </div>
+  </div>
+
+  <!-- ─── HISTORY ──────────────────────────────────────────────────── -->
+  <div class="tab-panel" id="panel-history" role="tabpanel">
+
+    <div class="history-header">
+      <h2 style="font-family:var(--font-display);font-weight:300;font-size:clamp(24px,3.5vw,36px);letter-spacing:0.04em;">Account <em class="gold-gradient">History</em></h2>
+      <button type="button" class="print-btn" id="print-btn">&#9633; Print</button>
+    </div>
+
+    <div id="history-container">
+      <!-- Skeleton state shown while loading -->
+      <div class="ht-skeleton" id="history-skeleton">
+        <div class="ht-skel-bar ht-skel-bar--wide skeleton-active"></div>
+        <div class="ht-skel-bar ht-skel-bar--short skeleton-active"></div>
+        <div class="ht-skel-bar ht-skel-bar--wide skeleton-active"></div>
+        <div class="ht-skel-bar ht-skel-bar--short skeleton-active"></div>
+      </div>
+      <div class="history-timeline" id="history-timeline" style="display:none;"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Mobile tab bar -->
+<nav class="mobile-tab-bar" role="tablist" aria-label="Mobile navigation">
+  <div class="mobile-tab-item active" data-tab="overview" role="tab">
+    <span class="mobile-tab-icon">⌂</span>
+    <span class="mobile-tab-label"><span data-lang="en">Overview</span><span data-lang="ko">개요</span></span>
+  </div>
+  <div class="mobile-tab-item" data-tab="gold" role="tab">
+    <span class="mobile-tab-icon">◈</span>
+    <span class="mobile-tab-label"><span data-lang="en">Gold</span><span data-lang="ko">금</span></span>
+  </div>
+  <div class="mobile-tab-item" data-tab="documents" role="tab">
+    <span class="mobile-tab-icon">⊟</span>
+    <span class="mobile-tab-label"><span data-lang="en">Documents</span><span data-lang="ko">문서</span></span>
+  </div>
+  <div class="mobile-tab-item" data-tab="messages" role="tab">
+    <span class="mobile-tab-icon">✉</span>
+    <span class="mobile-tab-label"><span data-lang="en">Messages</span><span data-lang="ko">메시지</span></span>
+  </div>
+  <div class="mobile-tab-item" data-tab="history" role="tab">
+    <span class="mobile-tab-icon">&#9776;</span>
+    <span class="mobile-tab-label"><span data-lang="en">History</span><span data-lang="ko">활동 내역</span></span>
+  </div>
+</nav>
+
+<script src="/_scripts/shared.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var memberData = null;
+  var currentTab = 'overview';
+
+  /* ─── KRW / date formatters ────────────────────────────────────── */
+  var fmKrw = TACC.fmKrw;
+  var fmDate = TACC.fmDate;
+
+  /* ─── Tab switching ────────────────────────────────────────────── */
+  function switchTab(tab) {
+    if (tab === currentTab) return;
+
+    var outPanel = document.getElementById('panel-' + currentTab);
+    if (outPanel) {
+      outPanel.style.transition = 'opacity 180ms ease, transform 180ms ease';
+      outPanel.style.opacity = '0';
+      outPanel.style.transform = 'translateX(-8px)';
+    }
+
+    setTimeout(function () {
+      document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
+      document.querySelectorAll('.tab-item, .mobile-tab-item').forEach(function (t) {
+        t.classList.toggle('active', t.getAttribute('data-tab') === tab);
+      });
+
+      var inPanel = document.getElementById('panel-' + tab);
+      if (inPanel) {
+        inPanel.classList.add('active');
+        inPanel.style.opacity = '';
+        inPanel.style.transform = '';
+        inPanel.style.transition = '';
+      }
+    }, 180);
+
+    currentTab = tab;
+
+    if (tab === 'gold') initParticles();
+  }
+
+  document.querySelectorAll('[data-tab]').forEach(function (el) {
+    el.addEventListener('click', function () { switchTab(el.getAttribute('data-tab')); });
+    el.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); switchTab(el.getAttribute('data-tab')); }
+    });
+  });
+
+  /* ─── Load member data ─────────────────────────────────────────── */
+  TACC.showSkeletons();
+
+  fetch('/api/v2?resource=member&op=me', { credentials: 'same-origin' })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      memberData = d;
+      window.__VAULT_MODE__ = d.vault_mode || 'vault';
+      TACC.hideSkeletons();
+
+      if (d.stage && d.stage !== 'funded') {
+        renderLimbo(d);
+        document.getElementById('screen-limbo').style.display = 'block';
+        document.getElementById('tab-panels-wrap').style.display = 'none';
+        document.querySelectorAll('.tab-bar, .mobile-tab-bar').forEach(function (el) {
+          el.style.display = 'none';
+        });
+      } else {
+        renderAll(d);
+      }
+    })
+    .catch(function () {
+      TACC.hideSkeletons();
+      renderFallback();
+    });
+
+  function renderFallback() {
+    var gl = document.getElementById('greeting-line');
+    if (gl) gl.textContent = 'Member Portal';
+  }
+
+  /* ─── LIMBO screen ─────────────────────────────────────────────── */
+  function renderLimbo(d) {
+    // Heading
+    var nameEl = document.getElementById('limbo-name');
+    if (nameEl) nameEl.textContent = 'Welcome, ' + (d.full_name || 'Member');
+
+    // Commitment card
+    var kgEl = document.getElementById('limbo-kg');
+    var usdEl = document.getElementById('limbo-usd');
+    var krwEl = document.getElementById('limbo-krw');
+    var subEl = document.getElementById('limbo-submitted');
+
+    if (kgEl && d.kilos) kgEl.textContent = parseFloat(d.kilos).toFixed(3) + ' kg';
+    if (usdEl && d.subscription_amount_usd) {
+      usdEl.textContent = 'USD ' + parseInt(d.subscription_amount_usd).toLocaleString('en-US');
+    }
+    if (subEl) subEl.textContent = d.subscription_date ? fmDate(d.subscription_date, window._lang) : '—';
+
+    // KRW equivalent via spot rate
+    if (d.subscription_amount_usd) {
+      fetch('/api/v2?resource=public&op=spot', { credentials: 'same-origin' })
+        .then(function (r) { return r.json(); })
+        .then(function (spot) {
+          var rate = parseFloat(spot.krw_per_usd || 0);
+          if (rate > 0 && krwEl) {
+            var krwAmt = parseFloat(d.subscription_amount_usd) * rate;
+            krwEl.textContent = fmKrw(krwAmt);
+          }
+        })
+        .catch(function () {});
+    }
+
+    // Wire card
+    var wire = d.wire || {};
+    if (wire.reference) {
+      var wireCard = document.getElementById('limbo-wire-card');
+      var wireRef = document.getElementById('limbo-wire-ref');
+      var wireStatus = document.getElementById('limbo-wire-status');
+      if (wireCard) wireCard.style.display = 'block';
+      if (wireRef) {
+        wireRef.textContent = wire.reference;
+        wireRef.setAttribute('data-copy', wire.reference);
+      }
+      if (wireStatus) {
+        var statusMap = {
+          'awaiting': ['AWAITING RECEIPT', 'status-badge--amber'],
+          'received': ['RECEIVED', 'status-badge--amber'],
+          'processing': ['PROCESSING', 'status-badge--green']
+        };
+        var sKey = (d.wire_status || 'awaiting').toLowerCase();
+        var sInfo = statusMap[sKey] || statusMap['awaiting'];
+        wireStatus.innerHTML = '<span class="status-badge ' + sInfo[1] + '">' + sInfo[0] + '</span>';
+      }
+      TACC.initCopyHandlers();
+    }
+
+    // Progress timeline
+    var steps = buildLimboSteps(d);
+    var tl = document.getElementById('limbo-timeline');
+    if (tl) {
+      tl.innerHTML = steps.map(function (s) {
+        var dotClass = 'limbo-step-dot--' + s.state;
+        var labelClass = 'limbo-step-label--' + s.state;
+        return '<div class="limbo-step">' +
+          '<div class="limbo-step-dot ' + dotClass + '"></div>' +
+          '<div>' +
+            '<div class="limbo-step-label ' + labelClass + '">' + s.label + '</div>' +
+            '<div class="limbo-step-desc">' + s.desc + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+  }
+
+  function buildLimboSteps(d) {
+    var stage = d.stage || 'invited';
+    var stageOrder = ['invited', 'accessed', 'nda_signed', 'subscribed', 'funded'];
+    var stageIdx = stageOrder.indexOf(stage);
+
+    function stepState(forIdx) {
+      if (forIdx < stageIdx) return 'done';
+      if (forIdx === stageIdx) return 'current';
+      return 'todo';
+    }
+
+    var ndaState = d.nda_state || 'awaiting';
+    return [
+      {
+        state: stageIdx >= 0 ? 'done' : 'todo',
+        label: 'APPLICATION APPROVED',
+        desc: 'Your invitation has been accepted and your account is active.'
+      },
+      {
+        state: ndaState === 'approved' ? 'done' : ndaState === 'uploaded' ? 'current' : stepState(1),
+        label: ndaState === 'approved' ? 'NDA SIGNED' : ndaState === 'uploaded' ? 'NDA PENDING REVIEW' : 'NDA AWAITING',
+        desc: ndaState === 'approved' ? 'Non-disclosure agreement accepted.' : ndaState === 'uploaded' ? 'Your NDA has been submitted and is under review.' : 'Sign and return the NDA to proceed.'
+      },
+      {
+        state: stageIdx >= 2 ? 'done' : stageIdx === 1 ? 'current' : 'todo',
+        label: stageIdx >= 2 ? 'SUBSCRIPTION SUBMITTED' : 'SUBMIT SUBSCRIPTION',
+        desc: stageIdx >= 2 ? 'Your subscription form has been received.' : 'Complete and return your subscription agreement.'
+      },
+      {
+        state: stageIdx >= 3 ? 'done' : stageIdx === 2 ? 'current' : 'todo',
+        label: stageIdx >= 3 ? 'WIRE RECEIVED' : 'WIRE PENDING',
+        desc: stageIdx >= 3 ? 'Your wire transfer has been received and confirmed.' : 'Send the wire transfer using the reference provided.'
+      },
+      {
+        state: 'todo',
+        label: 'MEMBERSHIP ACTIVATED',
+        desc: 'Your position will be established and your bar allocated upon wire clearance.'
+      }
+    ];
+  }
+
+  /* ─── Render all panels ────────────────────────────────────────── */
+  function renderAll(d) {
+    renderOverview(d);
+    renderGold(d);
+    renderDocuments(d);
+    renderMessages(d);
+    loadHistory();
+  }
+
+  /* ─── OVERVIEW ─────────────────────────────────────────────────── */
+  function renderOverview(d) {
+    var badge = document.getElementById('member-badge');
+    if (badge && d.member_number) badge.textContent = '#' + d.member_number;
+
+    // Greeting
+    var gl = document.getElementById('greeting-line');
+    if (gl) {
+      gl.textContent = (d.full_name || 'Member') + '  ·  Member #' + (d.member_number || '—') + '  ·  Active since ' + (d.active_since || '—');
+    }
+
+    // KPI tiles with countup
+    var kgEl = document.getElementById('kpi-kg');
+    if (kgEl) {
+      var kg = parseFloat(d.kilos || 0);
+      if (kg > 0) {
+        kgEl.textContent = '0 kg';
+        TACC.countUp(kgEl, kg, 1200, '', ' kg', 3);
+      } else {
+        kgEl.textContent = d.kilos ? d.kilos + ' kg' : '—';
+      }
+    }
+
+    // Value with countup
+    var valueEl = document.getElementById('kpi-value');
+    if (valueEl && d.current_value_sgd) {
+      var val = parseFloat(d.current_value_sgd);
+      TACC.countUp(valueEl, val, 1400, 'SGD ', '', 0);
+
+      var entryVal = parseFloat(d.entry_value_sgd || 0);
+      if (entryVal > 0) {
+        var pct = (val - entryVal) / entryVal;
+        if (pct > 0.02) valueEl.classList.add('green');
+        else if (pct < -0.05) valueEl.classList.add('amber');
+      }
+    }
+
+    var timeEl = document.getElementById('kpi-value-time');
+    if (timeEl) {
+      var now = new Date();
+      timeEl.textContent = 'As of ' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0') + ' SGT';
+    }
+
+    var krwEl = document.getElementById('kpi-krw');
+    if (krwEl && d.current_value_krw) {
+      var krwNum = parseFloat(d.current_value_krw);
+      krwEl.textContent = fmKrw(krwNum);
+      TACC.countUp(krwEl, krwNum, 1400, '', '', 0);
+    }
+
+    // Fund status
+    var fsEl = document.getElementById('kpi-fund-status');
+    if (fsEl) fsEl.textContent = d.fund_status || 'Pre-Close';
+
+    var fpEl = document.getElementById('kpi-fund-period');
+    if (fpEl) fpEl.textContent = d.fund_period || 'Q3 2026';
+
+    // Next action
+    var naEl = document.getElementById('kpi-next-action');
+    var naSub = document.getElementById('kpi-next-action-sub');
+    if (naEl) {
+      if (d.next_action) {
+        naEl.textContent = d.next_action;
+        naEl.style.color = 'var(--amber)';
+        if (naSub && d.next_action_sub) naSub.textContent = d.next_action_sub;
+      } else {
+        naEl.textContent = 'Nothing required';
+        naEl.style.color = 'var(--dim)';
+      }
+    }
+
+    renderNotices(d);
+    renderGrid(d);
+  }
+
+  function renderNotices(d) {
+    renderCapitalCallCard(d);
+
+    var zone = document.getElementById('notice-zone');
+    if (!zone) return;
+    zone.innerHTML = '';
+
+    var notices = (d.notices || []).filter(function (n) { return n.type !== 'capital_call'; });
+    if (!notices.length) return;
+
+    notices.forEach(function (n) {
+      var card = document.createElement('div');
+      card.className = 'notice-card notice-card--gold';
+      card.innerHTML =
+        '<div>' +
+          '<div class="notice-label gold">Notice</div>' +
+          '<div class="notice-title">' + (n.title || '—') + '</div>' +
+          '<div class="notice-body">' + (n.body || '') + '</div>' +
+          (n.ref ? '<div class="notice-ref" data-copy="' + n.ref + '">' + n.ref + '</div>' : '') +
+        '</div>' +
+        (n.due_date ? '<span style="font-family:var(--font-mono);font-size:11px;white-space:nowrap;">Due ' + n.due_date + '</span>' : '');
+      zone.appendChild(card);
+    });
+
+    TACC.initCopyHandlers();
+  }
+
+  function renderCapitalCallCard(d) {
+    var zone = document.getElementById('capital-call-zone');
+    if (!zone) return;
+    zone.innerHTML = '';
+
+    var calls = d.capital_calls || [];
+    var notices = d.notices || [];
+    notices.forEach(function (n) {
+      if (n.type === 'capital_call') {
+        calls = calls.concat([{
+          id: n.id,
+          ref: n.ref || n.id,
+          status: n.status || 'pending',
+          amount_display: n.title,
+          due_date: n.due_date,
+          wire: n.wire || {}
+        }]);
+      }
+    });
+
+    var activeCall = null;
+    for (var i = 0; i < calls.length; i++) {
+      if (calls[i].status === 'pending' || calls[i].status === 'overdue') {
+        activeCall = calls[i];
+        break;
+      }
+    }
+
+    if (!activeCall) return;
+
+    var today = new Date();
+    var dueDate = activeCall.due_date ? new Date(activeCall.due_date) : null;
+    var daysLeft = dueDate ? Math.floor((dueDate - today) / (1000 * 60 * 60 * 24)) : null;
+    var isUrgent = daysLeft !== null && daysLeft <= 7;
+    var isOverdue = activeCall.status === 'overdue';
+
+    var wire = activeCall.wire || {};
+    var wireRows = [
+      ['Bank', wire.bank],
+      ['Account Name', wire.account_name],
+      ['Account No.', wire.account_no],
+      ['Swift / BIC', wire.swift],
+      ['Reference', wire.reference]
+    ].filter(function (row) { return row[1]; });
+
+    var wireHtml = wireRows.map(function (row) {
+      var isCopy = row[0] === 'Reference';
+      var valClass = 'cc-wire-val' + (isCopy ? '" data-copy="' + row[1] + '"' : '"');
+      return '<div class="cc-wire-row"><span class="cc-wire-key">' + row[0] + '</span><span class="' + valClass + '>' + row[1] + '</span></div>';
+    }).join('');
+
+    var card = document.createElement('div');
+    card.className = 'capital-call-card visible';
+    card.setAttribute('data-cc-id', activeCall.id || '');
+    card.innerHTML =
+      '<div class="cc-header">' +
+        '<span class="cc-badge">' + (activeCall.ref || 'CC') + '</span>' +
+        '<span class="cc-status' + (isOverdue ? ' overdue' : '') + '">' + (isOverdue ? 'OVERDUE' : 'PENDING') + '</span>' +
+      '</div>' +
+      '<div class="cc-amount">' + (activeCall.amount_display || '—') + '</div>' +
+      (dueDate ? '<div class="cc-due' + (isUrgent ? ' urgent' : '') + '">Due ' + dueDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) + '</div>' : '') +
+      (wireRows.length ? '<div class="cc-wire-toggle" id="cc-wire-toggle-' + (activeCall.id || 'main') + '">Wire Instructions &#9660;</div>' +
+        '<div class="cc-wire-details" id="cc-wire-details-' + (activeCall.id || 'main') + '"><div class="cc-wire-inner">' + wireHtml + '</div></div>' : '') +
+      '<button class="cc-ack-btn" id="cc-ack-btn-' + (activeCall.id || 'main') + '">Acknowledge Receipt</button>';
+
+    zone.appendChild(card);
+
+    var toggleEl = document.getElementById('cc-wire-toggle-' + (activeCall.id || 'main'));
+    var detailsEl = document.getElementById('cc-wire-details-' + (activeCall.id || 'main'));
+    if (toggleEl && detailsEl) {
+      toggleEl.addEventListener('click', function () { detailsEl.classList.toggle('open'); });
+    }
+
+    var ackBtn = document.getElementById('cc-ack-btn-' + (activeCall.id || 'main'));
+    if (ackBtn) {
+      ackBtn.addEventListener('click', function () {
+        var ccId = activeCall.id;
+        ackBtn.disabled = true;
+        ackBtn.textContent = '—';
+        fetch('/api/v2?resource=member&op=ack-capital-call', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ capital_call_id: ccId })
+        })
+        .then(function (r) { return r.json(); })
+        .then(function () {
+          var statusEl = card.querySelector('.cc-status');
+          if (statusEl) { statusEl.textContent = 'ACKNOWLEDGED'; statusEl.className = 'cc-status acknowledged'; }
+          ackBtn.style.display = 'none';
+        })
+        .catch(function () {
+          ackBtn.disabled = false;
+          ackBtn.textContent = 'Acknowledge Receipt';
+        });
+      });
+    }
+
+    TACC.initCopyHandlers();
+  }
+
+  function renderGrid(d) {
+    var grid = document.getElementById('seat-grid');
+    var countEl = document.getElementById('grid-count');
+    if (!grid) return;
+
+    var count = parseInt(d.founding_count || 0, 10);
+    var ownIndex = d.member_seat_index !== undefined ? parseInt(d.member_seat_index, 10) : -1;
+
+    // New-member animation: detect count increase via sessionStorage
+    var prevCount = parseInt(sessionStorage.getItem('au_grid_admitted') || '0', 10);
+    var newlyFilled = (count > prevCount) ? count - prevCount : 0;
+    sessionStorage.setItem('au_grid_admitted', String(count));
+
+    for (var i = 0; i < 100; i++) {
+      var seat = document.createElement('div');
+      seat.className = 'seat';
+      grid.appendChild(seat);
+    }
+
+    var seats = grid.querySelectorAll('.seat');
+    for (var j = 0; j < count && j < 100; j++) {
+      (function (idx) {
+        setTimeout(function () {
+          seats[idx].classList.add('filled');
+          if (idx === ownIndex) seats[idx].classList.add('own');
+          // Animate newly-admitted cells
+          if (newlyFilled > 0 && idx >= count - newlyFilled) {
+            animateNewSeat(seats[idx]);
+          }
+        }, idx * 18);
+      }(j));
+    }
+
+    if (ownIndex >= count && ownIndex >= 0 && ownIndex < 100) {
+      setTimeout(function () { seats[ownIndex].classList.add('own'); }, count * 18 + 100);
+    }
+
+    if (countEl) {
+      setTimeout(function () { countEl.textContent = count + ' of 100'; }, Math.min(count, 100) * 18 + 200);
+    }
+  }
+
+  function animateNewSeat(seatEl) {
+    seatEl.style.backgroundColor = '#FFD700';
+    seatEl.style.transition = 'background-color 1.6s ease';
+    setTimeout(function () {
+      seatEl.style.backgroundColor = 'var(--goldB)';
+    }, 100);
+    // Ripple
+    var rect = seatEl.getBoundingClientRect();
+    var ripple = document.createElement('div');
+    ripple.className = 'grid-ripple';
+    ripple.style.cssText = [
+      'position:fixed',
+      'width:' + seatEl.offsetWidth + 'px',
+      'height:' + seatEl.offsetHeight + 'px',
+      'top:' + rect.top + 'px',
+      'left:' + rect.left + 'px',
+      'border-radius:50%',
+      'background:rgba(197,165,114,0.6)',
+      'pointer-events:none',
+      'z-index:500',
+      'transform:scale(1)',
+      'opacity:0.6',
+      'transition:transform 1200ms ease, opacity 1200ms ease'
+    ].join(';');
+    document.body.appendChild(ripple);
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        ripple.style.transform = 'scale(3)';
+        ripple.style.opacity = '0';
+      });
+    });
+    setTimeout(function () { if (ripple.parentNode) ripple.parentNode.removeChild(ripple); }, 1300);
+  }
+
+  /* ─── GOLD TAB ─────────────────────────────────────────────────── */
+  function renderGold(d) {
+    var vaultMode = window.__VAULT_MODE__ || 'vault';
+    var kg = parseFloat(d.kilos || 0);
+
+    var kgEl = document.getElementById('gold-kg');
+    if (kgEl) {
+      kgEl.textContent = '0 kg';
+      TACC.countUp(kgEl, kg, 1200, '', ' kg', 3);
+    }
+
+    var sgdEl = document.getElementById('gold-sgd');
+    if (sgdEl && d.current_value_sgd) {
+      var sgdNum = parseFloat(d.current_value_sgd);
+      TACC.countUp(sgdEl, sgdNum, 1400, 'SGD ', '', 0);
+    }
+
+    var krwLargeEl = document.getElementById('gold-krw-large');
+    if (krwLargeEl && d.current_value_krw) {
+      var krwNum = parseFloat(d.current_value_krw);
+      krwLargeEl.textContent = fmKrw(krwNum);
+    }
+
+    // Spot price with flash animation
+    var _prevSpot = null;
+    function fetchSpot() {
+      fetch('/api/v2?resource=public&op=spot', { credentials: 'same-origin' })
+        .then(function (r) { return r.json(); })
+        .then(function (spot) {
+          var spotUsd = parseFloat(spot.spot_usd || 0);
+          var ctx = document.getElementById('gold-spot-context');
+          var ghSpot = document.getElementById('gh-spot');
+          if (ctx) {
+            var now = new Date();
+            ctx.textContent = 'XAU SPOT  $' + spotUsd.toFixed(2) + '/oz  ·  SGD ' + parseFloat(spot.sgd_per_gram || 0).toFixed(2) + '/g  ·  Updated ' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0') + ' SGT';
+          }
+          if (ghSpot && spotUsd > 0) {
+            // Flash if price changed
+            if (_prevSpot !== null && spotUsd !== _prevSpot) {
+              var up = spotUsd > _prevSpot;
+              ghSpot.style.color = up ? 'var(--green)' : 'var(--red)';
+              ghSpot.style.transition = 'color 1800ms ease';
+              setTimeout(function () { ghSpot.style.color = ''; ghSpot.style.transition = ''; }, 1800);
+              var arrow = document.createElement('span');
+              arrow.textContent = up ? ' ▲' : ' ▼';
+              arrow.style.cssText = 'color:' + (up ? 'var(--green)' : 'var(--red)') + ';opacity:1;transition:opacity 2s ease;';
+              ghSpot.appendChild(arrow);
+              setTimeout(function () { arrow.style.opacity = '0'; }, 200);
+              setTimeout(function () { if (arrow.parentNode) arrow.parentNode.removeChild(arrow); }, 2300);
+            }
+            ghSpot.dataset.spot = spotUsd;
+            _prevSpot = spotUsd;
+          }
+        })
+        .catch(function () {});
+    }
+    fetchSpot();
+    setInterval(fetchSpot, 60000);
+
+    // Since you joined
+    var entryEl = document.getElementById('since-entry');
+    var todayEl = document.getElementById('since-today');
+    var changeEl = document.getElementById('since-change');
+
+    if (d.entry_price_sgd && entryEl) entryEl.textContent = 'SGD ' + parseInt(d.entry_price_sgd).toLocaleString('en-US');
+    if (d.current_value_sgd && todayEl) todayEl.textContent = 'SGD ' + parseInt(d.current_value_sgd).toLocaleString('en-US');
+    if (d.entry_price_sgd && d.current_value_sgd && changeEl) {
+      var entry = parseFloat(d.entry_price_sgd);
+      var curr = parseFloat(d.current_value_sgd);
+      var pct = ((curr - entry) / entry * 100);
+      changeEl.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
+      changeEl.classList.add(pct >= 0 ? 'green' : 'amber');
+    }
+
+    // Capital call notice (read-only)
+    var notices = d.notices || [];
+    var cc = notices.find ? notices.find(function (n) { return n.type === 'capital_call'; }) : null;
+    var ccZone = document.getElementById('gold-capital-call');
+    if (cc && ccZone) {
+      var today2 = new Date();
+      var dueD = cc.due_date ? new Date(cc.due_date) : null;
+      var daysL = dueD ? Math.floor((dueD - today2) / (1000 * 60 * 60 * 24)) : null;
+      var urgentCls = (daysL !== null && daysL <= 7) ? ' urgent' : '';
+      ccZone.innerHTML =
+        '<div class="notice-card notice-card--amber" style="margin-bottom:32px;">' +
+          '<div>' +
+            '<div class="notice-label amber">Capital Call Active</div>' +
+            '<div class="notice-title">' + esc(cc.title || '') + '</div>' +
+            '<div class="notice-body">' + esc(cc.body || '') + '</div>' +
+            (cc.ref ? '<div class="notice-ref" data-copy="' + esc(cc.ref) + '">' + esc(cc.ref) + '</div>' : '') +
+          '</div>' +
+          (cc.due_date ? '<span class="cc-due' + urgentCls + '" style="font-family:var(--font-mono);font-size:11px;white-space:nowrap;">Due ' + esc(cc.due_date) + '</span>' : '') +
+        '</div>';
+      TACC.initCopyHandlers();
+    }
+
+    // Vault / bank mode toggle
+    var badgeEl = document.getElementById('vault-badge-text');
+    var barSection = document.getElementById('gold-bar-section');
+    var regSection = document.getElementById('registry-section');
+    var vaultMapEl = document.getElementById('vault-map-section');
+    var bankNote = document.getElementById('bank-custody-note');
+
+    if (vaultMode === 'bank') {
+      if (barSection) barSection.style.display = 'none';
+      if (regSection) regSection.style.display = 'none';
+      if (vaultMapEl) vaultMapEl.style.display = 'none';
+      if (badgeEl) badgeEl.textContent = 'POSITION CONFIRMED · CUSTODIAN BANK';
+      if (bankNote) bankNote.style.display = 'block';
+    } else {
+      if (badgeEl) badgeEl.textContent = parseFloat(d.kilos || 0).toFixed(3) + ' kg CONFIRMED · MALCA-AMIT SG FTZ';
+      if (bankNote) bankNote.style.display = 'none';
+
+      // Bar registry
+      if (d.bar && d.bar.serial) {
+        var rb = document.getElementById('registry-body');
+        if (rb) {
+          rb.innerHTML = [
+            ['LBMA Serial', '<span data-copy="' + d.bar.serial + '">' + d.bar.serial + '</span>'],
+            ['Assayer', d.bar.assayer || 'LBMA Approved Refiner'],
+            ['Weight', d.bar.weight || '1000.00g fine gold'],
+            ['Fineness', d.bar.fineness || '999.9'],
+            ['Vault', 'Malca-Amit Singapore Free Trade Zone'],
+            ['Certificate', '<a href="/api/doc?id=vault-cert" download>View vault certificate</a>']
+          ].map(function (row) {
+            return '<div class="registry-row"><span class="registry-key">' + row[0] + '</span><span class="registry-val">' + row[1] + '</span></div>';
+          }).join('');
+        }
+      }
+    }
+
+    TACC.initCopyHandlers();
+  }
+
+  /* ─── Registry collapsible ─────────────────────────────────────── */
+  var regToggle = document.getElementById('registry-toggle');
+  if (regToggle) {
+    regToggle.addEventListener('click', function () {
+      document.getElementById('registry-section').classList.toggle('open');
+    });
+  }
+
+  /* ─── DOCUMENTS ────────────────────────────────────────────────── */
+  function renderDocuments(d) {
+    if (TACC.isIOS) {
+      document.querySelectorAll('.doc-btn-label').forEach(function (el) { el.innerHTML = '<span data-lang="en">View</span><span data-lang="ko">보기</span>'; });
+    }
+  }
+
+  document.querySelectorAll('.doc-entry-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var docId = btn.getAttribute('data-doc-id');
+      if (!docId) return;
+
+      btn.classList.add('loading');
+      var labelEl = btn.querySelector('.doc-btn-label');
+      if (labelEl) labelEl.innerHTML = '<span class="doc-entry-btn-spinner">⟳</span>';
+
+      var a = document.createElement('a');
+      a.href = '/api/doc?id=' + encodeURIComponent(docId);
+      a.download = '';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      setTimeout(function () {
+        btn.classList.remove('loading');
+        btn.classList.add('done');
+        if (labelEl) labelEl.textContent = '✓';
+        setTimeout(function () {
+          btn.classList.remove('done');
+          if (labelEl) labelEl.innerHTML = TACC.isIOS
+            ? '<span data-lang="en">View</span><span data-lang="ko">보기</span>'
+            : '<span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span>';
+        }, 1500);
+      }, 1000);
+    });
+  });
+
+  /* ─── MESSAGES ─────────────────────────────────────────────────── */
+  function renderMessages(d) {
+    var container = document.getElementById('messages-container');
+    var msgs = d.messages || [];
+    if (!msgs.length) return;
+
+    document.getElementById('msg-empty').style.display = 'none';
+
+    msgs.forEach(function (m) {
+      var card = document.createElement('div');
+      var typeClass = m.type || 'gold';
+      card.className = 'msg-card ' + typeClass + (m.read ? '' : ' unread');
+
+      card.innerHTML =
+        '<div class="msg-header">' +
+          '<div class="msg-unread-dot"></div>' +
+          '<div class="msg-subject">' + (m.subject || '—') + '</div>' +
+          '<div class="msg-date">' + (m.date || '—') + '</div>' +
+        '</div>' +
+        '<div class="msg-body">' +
+          '<p class="msg-body-text">' + (m.body || '') + '</p>' +
+          '<a class="msg-reply-link" href="mailto:members@theaurumcc.com?subject=Re: ' + encodeURIComponent(m.subject || '') + '">Reply by email</a>' +
+        '</div>';
+
+      card.querySelector('.msg-header').addEventListener('click', function () {
+        card.classList.toggle('expanded');
+        card.classList.remove('unread');
+      });
+
+      container.appendChild(card);
+    });
+  }
+
+  /* ─── HISTORY ──────────────────────────────────────────────────── */
+  function loadHistory() {
+    fetch('/api/v2?resource=member&op=history', { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (entries) {
+        var skeleton = document.getElementById('history-skeleton');
+        var timeline = document.getElementById('history-timeline');
+        if (skeleton) skeleton.style.display = 'none';
+        if (timeline) {
+          timeline.style.display = 'flex';
+          renderHistoryEntries(timeline, entries);
+        }
+      })
+      .catch(function () {
+        var skeleton = document.getElementById('history-skeleton');
+        var timeline = document.getElementById('history-timeline');
+        if (skeleton) skeleton.style.display = 'none';
+        if (timeline) {
+          timeline.style.display = 'flex';
+          timeline.innerHTML = '<div class="history-empty">Unable to load account history.</div>';
+        }
+      });
+  }
+
+  function renderHistoryEntries(container, entries) {
+    if (!entries || !entries.length) {
+      container.innerHTML = '<div class="history-empty">No entries recorded.</div>';
+      return;
+    }
+
+    var lang = window._lang || 'ko';
+    entries.forEach(function (evt) {
+      var type = evt.type || 'system_event';
+      var entryClass = {
+        'system_event':      'ht-entry--system',
+        'quarterly_letter':  'ht-entry--letter',
+        'vault_verification':'ht-entry--vault',
+        'capital_call':      'ht-entry--capital'
+      }[type] || 'ht-entry--system';
+
+      var dateStr = evt.date_iso ? fmDate(evt.date_iso, lang) : '';
+
+      var eyebrowHtml = '';
+      var labelHtml = '';
+      var metaHtml = '';
+      var badgeHtml = '';
+
+      if (type === 'quarterly_letter') {
+        eyebrowHtml = '<div class="ht-eyebrow ht-eyebrow--gold">Fund Update</div>';
+        labelHtml = '<div class="ht-label"><a href="/letters">' + esc(evt.label) + '</a></div>';
+      } else if (type === 'vault_verification') {
+        eyebrowHtml = '<div class="ht-eyebrow ht-eyebrow--gold">Vault Verification</div>';
+        labelHtml = '<div class="ht-label">' + esc(evt.label) + '</div>';
+        badgeHtml = '<div class="ht-badge-amber">Independent Verification</div>';
+      } else if (type === 'capital_call') {
+        eyebrowHtml = '<div class="ht-eyebrow ht-eyebrow--amber">Capital Call</div>';
+        labelHtml = '<div class="ht-label">' + esc(evt.label) + '</div>';
+      } else {
+        labelHtml = '<div class="ht-label ht-label--dim">' + esc(evt.label) + '</div>';
+      }
+
+      if (evt.meta && typeof evt.meta === 'object') {
+        var metaParts = [];
+        if (evt.meta.amount) metaParts.push(evt.meta.amount);
+        if (evt.meta.description) metaParts.push(evt.meta.description);
+        if (evt.meta.status) metaParts.push(evt.meta.status);
+        if (metaParts.length) metaHtml = '<div class="ht-meta">' + esc(metaParts.join(' · ')) + '</div>';
+      }
+
+      var entry = document.createElement('div');
+      entry.className = 'ht-entry ' + entryClass;
+      entry.innerHTML = '<div class="ht-date">' + dateStr + '</div>' + eyebrowHtml + labelHtml + metaHtml + badgeHtml;
+      container.appendChild(entry);
+    });
+  }
+
+  function esc(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /* ─── Print ────────────────────────────────────────────────────── */
+  var printBtn = document.getElementById('print-btn');
+  if (printBtn) printBtn.addEventListener('click', function () { window.print(); });
+
+  /* ─── Particle canvas ──────────────────────────────────────────── */
+  var particlesInited = false;
+  var particleRaf;
+
+  function initParticles() {
+    if (particlesInited) return;
+    particlesInited = true;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var canvas = document.getElementById('particle-canvas');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var W, H;
+    var particles = [];
+
+    function resize() {
+      W = canvas.offsetWidth;
+      H = canvas.offsetHeight;
+      canvas.width = W;
+      canvas.height = H;
+    }
+
+    resize();
+    window.addEventListener('resize', resize);
+
+    for (var i = 0; i < 28; i++) {
+      particles.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vy: -(0.3 + Math.random() * 0.5),
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+
+    function draw() {
+      if (document.hidden || currentTab !== 'gold') {
+        particleRaf = requestAnimationFrame(draw);
+        return;
+      }
+      ctx.clearRect(0, 0, W, H);
+      particles.forEach(function (p) {
+        p.y += p.vy;
+        p.phase += 0.018;
+        if (p.y < -10) { p.y = H + 10; p.x = Math.random() * W; }
+        var opacity = (Math.sin(p.phase) * 0.5 + 0.5) * 0.35;
+        ctx.globalAlpha = opacity;
+        ctx.fillStyle = '#C5A572';
+        ctx.fillRect(p.x, p.y, 1, 4);
+      });
+      ctx.globalAlpha = 1;
+      particleRaf = requestAnimationFrame(draw);
+    }
+
+    particleRaf = requestAnimationFrame(draw);
+
+    TACC._onVisibilityChange = function (visible) {
+      if (!visible) {
+        cancelAnimationFrame(particleRaf);
+      } else if (currentTab === 'gold') {
+        particleRaf = requestAnimationFrame(draw);
+      }
+    };
+  }
+
+}());
+</script>
+</body>
+</html>

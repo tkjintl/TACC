@@ -1,0 +1,19 @@
+{
+  "name": "aurum-century-club",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.34.0",
+    "@vercel/blob": "^0.27.0",
+    "jose": "^5.9.6",
+    "nanoid": "^3.3.7",
+    "resend": "^4.0.0",
+    "bcryptjs": "^2.4.3",
+    "pdfkit": "^0.15.0",
+    "pdf-lib": "^1.17.1"
+  }
+}

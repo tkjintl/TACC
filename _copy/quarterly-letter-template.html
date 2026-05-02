@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Q2 2026 Member Letter — The Aurum Century Club</title>
+<style>
+
+/* ═══════════════════════════════════════════════════════════════════
+   AURUM CENTURY CLUB — QUARTERLY LETTER
+   Standalone HTML blob. No external stylesheets.
+   Fonts loaded via Google Fonts embed below.
+   ═══════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap');
+
+/* ─── Print ───────────────────────────────────────────────────────── */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #1a1a18 !important;
+  }
+  .letter-shell {
+    background: #ffffff !important;
+  }
+  .letter-header {
+    border-bottom-color: rgba(140, 100, 50, 0.25) !important;
+  }
+  .letter-seal {
+    border-color: #8C6432 !important;
+    color: #8C6432 !important;
+  }
+  .gold-text {
+    color: #8C6432 !important;
+  }
+  .letter-footer {
+    border-top-color: rgba(140, 100, 50, 0.15) !important;
+  }
+  .position-table th {
+    color: #8C6432 !important;
+    border-bottom-color: rgba(140, 100, 50, 0.20) !important;
+  }
+  .position-table td {
+    border-bottom-color: rgba(0,0,0,0.06) !important;
+    color: #2a2a26 !important;
+  }
+  .position-table td.num {
+    color: #1a1a18 !important;
+  }
+  .section-rule {
+    border-top-color: rgba(0,0,0,0.07) !important;
+  }
+  .label-mono {
+    color: #7a7060 !important;
+  }
+}
+
+/* ─── Base ────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #070706;
+  color: #EDE8DF;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 19px;
+  line-height: 1.80;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  padding: 48px 16px 80px;
+}
+
+/* ─── Letter shell ────────────────────────────────────────────────── */
+.letter-shell {
+  background: #070706;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* ─── Header ──────────────────────────────────────────────────────── */
+.letter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 28px;
+  border-bottom: 1px solid rgba(197,165,114,0.18);
+  margin-bottom: 52px;
+}
+
+.letter-lockup {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.letter-seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #C5A572;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  color: #C5A572;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+  flex-shrink: 0;
+}
+
+.letter-wordmark {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.letter-wordmark-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.34em;
+  color: #EDE8DF;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.letter-wordmark-sub {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  color: rgba(197,165,114,0.55);
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.letter-period {
+  text-align: right;
+}
+
+.letter-period-label {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  color: rgba(197,165,114,0.50);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.letter-period-value {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: #C5A572;
+}
+
+/* ─── Salutation ──────────────────────────────────────────────────── */
+.letter-salutation {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: #EDE8DF;
+  margin-bottom: 36px;
+  letter-spacing: 0.02em;
+}
+
+/* ─── Body sections ───────────────────────────────────────────────── */
+.section-rule {
+  border: none;
+  border-top: 1px solid rgba(197,165,114,0.10);
+  margin: 44px 0;
+}
+
+.section-eyebrow {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  color: #C5A572;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.letter-body p {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 19px;
+  line-height: 1.80;
+  color: rgba(237,232,223,0.85);
+  margin-bottom: 28px;
+}
+
+.letter-body p:last-child {
+  margin-bottom: 0;
+}
+
+.letter-body em {
+  font-style: italic;
+  color: #EDE8DF;
+}
+
+/* ─── Gold position table ─────────────────────────────────────────── */
+.position-block {
+  margin: 44px 0;
+}
+
+.position-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.position-table th {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.26em;
+  color: #C5A572;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 0 0 12px;
+  border-bottom: 1px solid rgba(197,165,114,0.18);
+  font-weight: 400;
+}
+
+.position-table th.right,
+.position-table td.right {
+  text-align: right;
+}
+
+.position-table td {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 16px;
+  color: rgba(237,232,223,0.70);
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  vertical-align: middle;
+}
+
+.position-table td.label {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: rgba(237,232,223,0.50);
+  text-transform: uppercase;
+  padding-right: 24px;
+}
+
+.position-table td.num {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 14px;
+  font-weight: 400;
+  color: #EDE8DF;
+  letter-spacing: 0.06em;
+}
+
+.position-table td.num.positive {
+  color: #7aad8e;
+}
+
+.position-table td.num.negative {
+  color: #b05e56;
+}
+
+.position-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ─── Inline status rows ──────────────────────────────────────────── */
+.status-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.status-row:last-child {
+  border-bottom: none;
+}
+
+.status-label {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.26em;
+  color: rgba(197,165,114,0.50);
+  text-transform: uppercase;
+  min-width: 120px;
+  padding-top: 4px;
+  flex-shrink: 0;
+}
+
+.status-text {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 17px;
+  line-height: 1.65;
+  color: rgba(237,232,223,0.75);
+}
+
+/* ─── Sign-off ────────────────────────────────────────────────────── */
+.signoff-block {
+  margin-top: 52px;
+  padding-top: 36px;
+  border-top: 1px solid rgba(197,165,114,0.12);
+}
+
+.signoff-name {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 22px;
+  font-weight: 400;
+  color: #EDE8DF;
+  margin-bottom: 6px;
+}
+
+.signoff-title {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  color: rgba(197,165,114,0.50);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.signoff-entity {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  color: rgba(237,232,223,0.22);
+  text-transform: uppercase;
+}
+
+/* ─── Footer ──────────────────────────────────────────────────────── */
+.letter-footer {
+  margin-top: 60px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(197,165,114,0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+
+.footer-left,
+.footer-right {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8px;
+  letter-spacing: 0.26em;
+  color: rgba(197,165,114,0.28);
+  text-transform: uppercase;
+}
+
+.footer-right {
+  text-align: right;
+}
+
+/* ─── Utility ─────────────────────────────────────────────────────── */
+.gold-text {
+  color: #C5A572;
+}
+
+.label-mono {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: rgba(197,165,114,0.60);
+}
+
+@media (max-width: 600px) {
+  body { padding: 32px 16px 60px; }
+  .letter-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .letter-period { text-align: left; }
+  .position-table td.label { display: none; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="letter-shell">
+
+  <!-- ── Header ─────────────────────────────────────────────────────── -->
+  <header class="letter-header">
+    <div class="letter-lockup">
+      <div class="letter-seal"><em>Au</em></div>
+      <div class="letter-wordmark">
+        <span class="letter-wordmark-title">AURUM</span>
+        <span class="letter-wordmark-sub">CENTURY · CLUB</span>
+      </div>
+    </div>
+    <div class="letter-period">
+      <div class="letter-period-label">Period</div>
+      <div class="letter-period-value">Q2 · 2026</div>
+    </div>
+  </header>
+
+  <!-- ── Salutation ─────────────────────────────────────────────────── -->
+  <p class="letter-salutation">Dear Member,</p>
+
+  <!-- ── Section I · Quarter narrative ──────────────────────────────── -->
+  <div class="letter-body">
+    <div class="section-eyebrow">I — Quarter in Review</div>
+
+    <p>
+      The second quarter of 2026 saw the gold market consolidate its position above
+      USD 4,800 per troy ounce before advancing through May on a combination of continued
+      central bank accumulation and a renewed bid from institutional accounts responding to
+      persistent US fiscal uncertainty. The LBMA AM fix closed the quarter at
+      <em class="gold-text">USD {{price_end}}/oz</em>, representing a gain of
+      <em class="gold-text">{{change_pct}}%</em> against the opening price of
+      USD {{price_start}}/oz on 1 April. Physical demand from the private wealth segment in
+      Southeast Asia remained robust throughout the period, with no meaningful overhang
+      in the Singapore Freeport market.
+    </p>
+
+    <p>
+      The fund's gold position performed in line with spot. The portfolio holds
+      <em class="gold-text">{{kg_held}} kg</em> of LBMA-compliant bars in allocated,
+      segregated custody at Malca-Amit Singapore Freeport. Bar-level registry and
+      insurance remain current. No substitutions were made during the quarter; the
+      inventory is unchanged from the position confirmed in the Q1 2026 letter.
+      Independent bar verification remains on schedule for Q4 2026 per the annual
+      verification programme established at first close.
+    </p>
+
+    <p>
+      The credit line entered the quarter at a conservative deployment level and
+      was incrementally activated during April and May as the Manager reviewed
+      incoming private credit opportunities against the criteria set in the Fund
+      Agreement. Deployment as at 30 June 2026 stands at approximately 40% of
+      the authorised credit facility. The balance of the facility remains undrawn
+      and available. NAV per unit as at quarter end stands at
+      <em class="gold-text">USD {{nav_per_unit}}</em>, reflecting the gold
+      position at LBMA spot and the current mark-to-market of deployed credit
+      positions. Cost-basis reconciliation is provided in the annual audited
+      accounts; the quarterly NAV is unaudited and presented for indicative purposes.
+    </p>
+
+    <p>
+      The 20% fund-level cash reserve held at the administrator is fully intact.
+      No draw on the reserve was required during the quarter. LTV across the
+      gold-collateralised facility remained well within the 75% ceiling specified
+      in the Fund Agreement throughout the period; no margin proximity events were
+      recorded. The Manager considers the current capital structure adequately
+      defensive against a gold drawdown of the magnitude that would trigger
+      reserve deployment.
+    </p>
+  </div>
+
+  <!-- ── Section II · Gold position summary ─────────────────────────── -->
+  <hr class="section-rule">
+  <div class="section-eyebrow">II — Gold Position</div>
+
+  <div class="position-block">
+    <table class="position-table" cellpadding="0" cellspacing="0">
+      <thead>
+        <tr>
+          <th>Line item</th>
+          <th class="right">Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="label">Gold held (kg)</td>
+          <td class="num right">{{kg_held}}</td>
+        </tr>
+        <tr>
+          <td class="label">NAV per unit (USD)</td>
+          <td class="num right">{{nav_per_unit}}</td>
+        </tr>
+        <tr>
+          <td class="label">LBMA spot open (USD/oz)</td>
+          <td class="num right">{{price_start}}</td>
+        </tr>
+        <tr>
+          <td class="label">LBMA spot close (USD/oz)</td>
+          <td class="num right">{{price_end}}</td>
+        </tr>
+        <tr>
+          <td class="label">Quarter change</td>
+          <td class="num right positive">+{{change_pct}}%</td>
+        </tr>
+        <tr>
+          <td class="label">Custody</td>
+          <td class="num right">Malca-Amit Singapore FTZ</td>
+        </tr>
+        <tr>
+          <td class="label">Custodian verification</td>
+          <td class="num right">Q4 2026 (scheduled)</td>
+        </tr>
+        <tr>
+          <td class="label">Bar registry</td>
+          <td class="num right">Current</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:8.5px;letter-spacing:0.20em;color:rgba(197,165,114,0.30);text-transform:uppercase;margin-top:14px;">
+      NAV is unaudited. Gold spot references LBMA AM Fix. Figures as at 30 June 2026.
+    </p>
+  </div>
+
+  <!-- ── Section III · Credit line ──────────────────────────────────── -->
+  <hr class="section-rule">
+  <div class="section-eyebrow">III — Credit Line Status</div>
+
+  <div class="letter-body">
+    <p>
+      The gold-collateralised credit facility was 40% deployed as at 30 June 2026,
+      with positions in two private credit instruments meeting the Fund Agreement's
+      minimum credit quality and seniority criteria; full position details will be
+      provided in the annual member statement. The undrawn 60% of the facility remains
+      available and the Manager is reviewing two further opportunities for deployment
+      in Q3 2026.
+    </p>
+  </div>
+
+  <!-- ── Section IV · Vault status ──────────────────────────────────── -->
+  <hr class="section-rule">
+  <div class="section-eyebrow">IV — Vault Status</div>
+
+  <div class="status-row">
+    <span class="status-label">Status</span>
+    <span class="status-text">
+      All bars remain in allocated, segregated custody at Malca-Amit Singapore Freeport;
+      insurance is current and no events affecting physical integrity were recorded
+      during the quarter.
+    </span>
+  </div>
+
+  <!-- ── Section V · Outlook ─────────────────────────────────────────── -->
+  <hr class="section-rule">
+  <div class="section-eyebrow">V — Conditions and Outlook</div>
+
+  <div class="letter-body">
+    <p>
+      The conditions that supported gold through the first half of 2026 — central bank
+      demand, structurally elevated US deficits, and a sustained negative real-rate
+      environment in the USD — remain in place entering Q3. Physical supply in the
+      Singapore Freeport market is orderly. SORA, the reference rate for the fund's
+      credit facility, has stabilised following the Monetary Authority of Singapore's
+      June review, and the Manager does not presently anticipate rate movements that
+      would materially alter the facility's cost structure in the near term. The
+      Manager makes no forward projections as to gold price, NAV, or credit returns,
+      and members are reminded that the quarterly letter is not investment advice.
+      Full risk disclosures are set out in the PPM.
+    </p>
+  </div>
+
+  <!-- ── Sign-off ────────────────────────────────────────────────────── -->
+  <div class="signoff-block">
+    <p class="signoff-name">{{partner_name}}</p>
+    <p class="signoff-title">Manager · TACC Pte Ltd</p>
+    <p class="signoff-entity">Singapore · MMXXVI</p>
+  </div>
+
+  <!-- ── Footer ─────────────────────────────────────────────────────── -->
+  <footer class="letter-footer">
+    <span class="footer-left">
+      Confidential · Qualified Members Only · Not Investment Advice
+    </span>
+    <span class="footer-right">
+      Q2 2026 · Member No. {{member_number}}
+    </span>
+  </footer>
+
+</div><!-- /letter-shell -->
+
+</body>
+</html>

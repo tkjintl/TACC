@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<meta name="theme-color" content="#070706">
+<title>Non-Disclosure Agreement — The Aurum Century Club</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23070706'/><rect x='4' y='4' width='24' height='24' fill='none' stroke='%23C5A572' stroke-width='1'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='14' font-style='italic' fill='%23C5A572'>Au</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400&family=DM+Sans:wght@400;500&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/_styles/tokens.css">
+<style>
+
+/* ─── Page layout ──────────────────────────────────────────────────── */
+.page-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  background: rgba(7,7,6,0.92);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.member-badge {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--goldA);
+  border: 1px solid var(--goldBorderS);
+  padding: 5px 12px;
+}
+
+.page-content {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 120px 32px 100px;
+}
+
+@media (max-width: 768px) {
+  .page-content { padding: 100px 20px 80px; }
+  .page-nav { padding: 16px 20px; }
+}
+
+/* ─── NDA states ───────────────────────────────────────────────────── */
+.nda-state {
+  display: none;
+}
+
+.nda-state.active {
+  display: block;
+}
+
+/* ─── State indicators ─────────────────────────────────────────────── */
+.state-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.state-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.state-dot--amber { background: var(--amber); box-shadow: 0 0 8px rgba(184,131,58,0.5); }
+.state-dot--green { background: var(--green); box-shadow: 0 0 8px rgba(90,158,114,0.5); }
+
+.state-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.state-label--amber { color: var(--amber); }
+.state-label--green { color: var(--green); }
+
+/* ─── Typography ───────────────────────────────────────────────────── */
+.nda-heading {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(32px, 5vw, 52px);
+  letter-spacing: 0.04em;
+  line-height: 1.12;
+  margin-bottom: 32px;
+}
+
+.nda-body-text {
+  font-family: var(--font-display);
+  font-size: 18px;
+  line-height: 1.8;
+  color: rgba(237,232,223,0.80);
+  margin-bottom: 24px;
+}
+
+/* ─── Download card ────────────────────────────────────────────────── */
+.download-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 28px 32px;
+  margin: 40px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.download-card-info { flex: 1; min-width: 200px; }
+
+.download-card-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 400;
+  margin-bottom: 6px;
+}
+
+.download-card-sub {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* ─── Upload zone ──────────────────────────────────────────────────── */
+.upload-zone {
+  border: 1px dashed var(--goldBorderS);
+  padding: 52px 32px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--dur-base) ease, background var(--dur-base) ease;
+  position: relative;
+  margin: 40px 0;
+}
+
+.upload-zone:hover,
+.upload-zone.drag-over {
+  border-color: var(--goldBorderM);
+  background: var(--goldMuted);
+}
+
+.upload-icon {
+  font-size: 28px;
+  color: var(--goldA);
+  margin-bottom: 16px;
+  opacity: 0.7;
+}
+
+.upload-primary {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.upload-secondary {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.upload-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+/* ─── File selected preview ────────────────────────────────────────── */
+.file-preview {
+  display: none;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: var(--surface);
+  border: 1px solid var(--goldBorderS);
+  margin-top: -1px;
+}
+
+.file-preview.visible { display: flex; }
+
+.file-icon {
+  font-size: 24px;
+  color: var(--goldA);
+  flex-shrink: 0;
+}
+
+.file-meta { flex: 1; }
+
+.file-name {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.file-size {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.file-remove {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  transition: color var(--dur-fast) ease;
+  flex-shrink: 0;
+}
+
+.file-remove:hover { color: var(--red); }
+
+/* ─── Form feedback ────────────────────────────────────────────────── */
+.form-feedback {
+  display: none;
+  padding: 14px 18px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.6;
+  margin-top: 16px;
+  border: 1px solid;
+}
+
+.form-feedback.error {
+  display: block;
+  color: var(--red);
+  border-color: var(--redBd);
+  background: rgba(176,94,86,0.06);
+}
+
+.form-feedback.success {
+  display: block;
+  color: var(--green);
+  border-color: var(--greenBd);
+  background: rgba(90,158,114,0.06);
+}
+
+/* ─── Review state card ────────────────────────────────────────────── */
+.review-card {
+  background: var(--surface);
+  border: 1px solid var(--amberBd);
+  border-left: 3px solid var(--amber);
+  padding: 32px;
+  margin: 40px 0;
+}
+
+.review-card-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--amber);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+/* ─── Approved state ───────────────────────────────────────────────── */
+.approved-ctas {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 40px;
+}
+
+/* ─── Download link ────────────────────────────────────────────────── */
+.doc-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  text-transform: uppercase;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+  margin-top: 24px;
+}
+
+.doc-link:hover {
+  color: var(--goldA);
+  border-bottom-color: var(--goldBorderS);
+}
+
+/* ─── Section divider ──────────────────────────────────────────────── */
+.section-divider {
+  width: 40px;
+  height: 1px;
+  background: var(--goldBorderS);
+  margin: 48px 0;
+}
+
+/* ─── Bilingual ────────────────────────────────────────────────────── */
+[data-lang]{display:none}
+.lang-en [data-lang="en"],.lang-en [data-lang="en"].block{display:inline}.lang-en [data-lang="en"].block{display:block}
+.lang-ko [data-lang="ko"],.lang-ko [data-lang="ko"].block{display:inline}.lang-ko [data-lang="ko"].block{display:block}
+
+/* ─── Mobile bottom nav ────────────────────────────────────────────── */
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 100;
+  background: var(--near);
+  border-top: 1px solid var(--border);
+  padding: 10px 24px max(10px, env(safe-area-inset-bottom));
+  justify-content: space-around;
+  align-items: center;
+  height: 56px;
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-decoration: none;
+  color: var(--muted);
+  transition: color 180ms ease;
+  min-width: 48px;
+}
+
+.mobile-nav-item.active { color: var(--goldA); }
+.mobile-nav-icon { font-size: 18px; line-height: 1; }
+.mobile-nav-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-bottom: 1px solid transparent;
+}
+
+.mobile-nav-item.active .mobile-nav-label { border-bottom-color: var(--goldA); }
+
+@media (max-width: 768px) {
+  .mobile-nav { display: flex; }
+  .page-content { padding-bottom: 120px; }
+}
+
+/* ─── Mobile breakpoints ───────────────────────────────────────────── */
+@media (max-width: 430px) {
+  .page-nav { padding: 14px 16px; }
+  .member-badge { font-size: 10px; padding: 4px 8px; }
+  .page-content { padding: 90px 16px 120px; }
+  /* iOS zoom prevention */
+  .input-field { font-size: 16px !important; }
+  /* Signature field */
+  #sig-input { font-size: 16px !important; }
+  /* Touch targets for NDA action buttons */
+  .btn-primary, .btn-ghost { min-height: 48px; }
+}
+
+@media (max-width: 375px) {
+  .page-content { padding: 86px 14px 120px; }
+}
+</style>
+</head>
+<body data-nda-state="awaiting">
+
+<div class="page-veil" id="page-veil"></div>
+
+<!-- Nav -->
+<nav class="page-nav" role="navigation">
+  <a href="/main" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+    <div class="seal"><em>Au</em></div>
+    <span style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.22em;color:var(--muted);text-transform:uppercase;">NDA</span>
+  </a>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button class="lang-btn" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" onclick="setLang('ko')">한국어</button>
+    <span class="member-badge" id="member-badge">#—</span>
+  </div>
+</nav>
+
+<main class="page-content">
+
+  <!-- STATE A: awaiting -->
+  <div class="nda-state" id="state-awaiting" data-reveal>
+    <h1 class="nda-heading">Non-Disclosure<br><em class="gold-gradient">Agreement</em></h1>
+
+    <p class="nda-body-text">The Non-Disclosure Agreement governs your access to confidential fund materials, including the full information memorandum, subscription agreement templates, KYC requirements, and all other materials made available to prospective members of the Aurum Century Club.</p>
+
+    <p class="nda-body-text">By executing the NDA, you acknowledge that you are a qualified investor evaluating this opportunity on a private and confidential basis, that the materials you will receive are not for further distribution, and that this engagement is conducted under Singapore law. You are not required to proceed beyond this stage.</p>
+
+    <div class="download-card" data-reveal data-delay="200">
+      <div class="download-card-info">
+        <div class="download-card-title">NDA Template</div>
+        <div class="download-card-sub">PDF · Singapore Law · Bilateral Confidentiality</div>
+      </div>
+      <a href="/api/nda?op=template" class="btn-primary" style="flex-shrink:0;" download>
+        Download Template
+      </a>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <p class="nda-body-text" style="font-size:16px;color:var(--muted);">Sign the document. Scan or photograph a clear copy. Return it using the form below.</p>
+
+    <!-- Upload zone -->
+    <div class="upload-zone" id="upload-zone" role="button" aria-label="Upload executed NDA" tabindex="0">
+      <input type="file" accept=".pdf,application/pdf" id="nda-file-input" class="upload-input" aria-label="Select NDA file">
+      <div class="upload-icon">⬆</div>
+      <p class="upload-primary">Drop your executed NDA here<br>or click to select</p>
+      <p class="upload-secondary">PDF only &nbsp;·&nbsp; Max 10 MB</p>
+    </div>
+
+    <div class="file-preview" id="file-preview">
+      <span class="file-icon">⊟</span>
+      <div class="file-meta">
+        <div class="file-name" id="file-name">—</div>
+        <div class="file-size" id="file-size">—</div>
+      </div>
+      <button class="file-remove" id="file-remove-btn" type="button">Remove</button>
+    </div>
+
+    <div class="form-feedback" id="form-feedback" role="alert" aria-live="polite"></div>
+
+    <button type="button" class="btn-primary" id="submit-btn" style="margin-top:24px;width:100%;justify-content:center;padding:15px;" disabled>
+      Return Executed Agreement
+    </button>
+  </div>
+
+  <!-- STATE B: uploaded -->
+  <div class="nda-state" id="state-uploaded">
+    <div class="state-indicator" data-reveal>
+      <div class="state-dot state-dot--amber"></div>
+      <span class="state-label state-label--amber">Under Review</span>
+    </div>
+
+    <h1 class="nda-heading" data-reveal>Your Agreement<br>Is <em class="gold-gradient">Under Review</em></h1>
+
+    <div class="review-card" data-reveal data-delay="100">
+      <div class="review-card-title">Pending Acceptance</div>
+      <p class="nda-body-text" style="margin-bottom:16px;">Your executed NDA has been received and is under review. You will be notified once it has been accepted. No action is required at this time.</p>
+      <p style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.14em;">Reviews are typically completed within one business day.</p>
+    </div>
+
+    <a href="/api/nda?op=mine" class="doc-link" download>
+      ↓ &nbsp;Re-download your submitted copy
+    </a>
+  </div>
+
+  <!-- STATE C: approved -->
+  <div class="nda-state" id="state-approved">
+    <div class="state-indicator" data-reveal>
+      <div class="state-dot state-dot--green"></div>
+      <span class="state-label state-label--green">Accepted</span>
+    </div>
+
+    <h1 class="nda-heading" data-reveal>Your NDA<br>Has Been <em class="gold-gradient">Accepted</em></h1>
+
+    <p class="nda-body-text" data-reveal data-delay="100">Your Non-Disclosure Agreement has been accepted. The information memorandum, subscription agreement template, KYC requirements, and member FAQ are now available to you.</p>
+
+    <div class="approved-ctas" data-reveal data-delay="200">
+      <a href="/memo" class="btn-primary">Access Materials Hub</a>
+      <a href="/subscription" class="btn-ghost">Proceed to Subscription</a>
+    </div>
+
+    <a href="/api/nda?op=mine" class="doc-link" data-reveal data-delay="300" download>
+      ↓ &nbsp;Download your executed copy
+    </a>
+  </div>
+
+</main>
+
+<!-- Mobile bottom nav -->
+<nav class="mobile-nav" aria-label="Mobile navigation">
+  <a href="/portfolio" class="mobile-nav-item">
+    <span class="mobile-nav-icon">⌂</span>
+    <span class="mobile-nav-label"><span data-lang="en">Overview</span><span data-lang="ko">개요</span></span>
+  </a>
+  <a href="/gold" class="mobile-nav-item">
+    <span class="mobile-nav-icon">◈</span>
+    <span class="mobile-nav-label"><span data-lang="en">Gold</span><span data-lang="ko">금</span></span>
+  </a>
+  <a href="/documents" class="mobile-nav-item">
+    <span class="mobile-nav-icon">⊟</span>
+    <span class="mobile-nav-label"><span data-lang="en">Documents</span><span data-lang="ko">문서</span></span>
+  </a>
+  <a href="/messages" class="mobile-nav-item">
+    <span class="mobile-nav-icon">✉</span>
+    <span class="mobile-nav-label"><span data-lang="en">Messages</span><span data-lang="ko">메시지</span></span>
+  </a>
+</nav>
+
+<script src="/_scripts/shared.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  // Determine state from body attribute (set by serving API)
+  var ndaState = document.body.getAttribute('data-nda-state') || 'awaiting';
+  var stateMap = { awaiting: 'state-awaiting', uploaded: 'state-uploaded', approved: 'state-approved' };
+  var activeId = stateMap[ndaState] || 'state-awaiting';
+  document.getElementById(activeId).classList.add('active');
+
+  // Populate member badge
+  fetch('/api/v2?resource=member&op=me', { credentials: 'same-origin' })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var badge = document.getElementById('member-badge');
+      if (badge && d.member_number) badge.textContent = '#' + d.member_number;
+      // API may also provide nda_state to override body attribute
+      if (d.nda_state && d.nda_state !== ndaState) {
+        document.getElementById(activeId).classList.remove('active');
+        ndaState = d.nda_state;
+        activeId = stateMap[ndaState] || activeId;
+        var el = document.getElementById(activeId);
+        if (el) el.classList.add('active');
+      }
+    })
+    .catch(function () {});
+
+  // ─── Upload zone logic ───────────────────────────────────────────── //
+  var zone = document.getElementById('upload-zone');
+  var fileInput = document.getElementById('nda-file-input');
+  var filePreview = document.getElementById('file-preview');
+  var fileName = document.getElementById('file-name');
+  var fileSize = document.getElementById('file-size');
+  var removeBtn = document.getElementById('file-remove-btn');
+  var submitBtn = document.getElementById('submit-btn');
+  var feedback = document.getElementById('form-feedback');
+  var selectedFile = null;
+
+  function formatBytes(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+    return (b / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  function setFile(file) {
+    if (!file) return;
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      showFeedback('error', 'Please select a PDF document. Other file formats are not accepted.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      showFeedback('error', 'The file exceeds the 10 MB limit. Please compress the document and try again.');
+      return;
+    }
+    selectedFile = file;
+    fileName.textContent = file.name;
+    fileSize.textContent = formatBytes(file.size);
+    filePreview.classList.add('visible');
+    submitBtn.disabled = false;
+    feedback.className = 'form-feedback';
+  }
+
+  function clearFile() {
+    selectedFile = null;
+    fileInput.value = '';
+    filePreview.classList.remove('visible');
+    submitBtn.disabled = true;
+    fileName.textContent = '—';
+    fileSize.textContent = '—';
+  }
+
+  function showFeedback(type, msg) {
+    feedback.className = 'form-feedback ' + type;
+    feedback.textContent = msg;
+  }
+
+  fileInput.addEventListener('change', function () {
+    if (fileInput.files && fileInput.files[0]) setFile(fileInput.files[0]);
+  });
+
+  removeBtn.addEventListener('click', function (e) { e.stopPropagation(); clearFile(); });
+
+  // Drag and drop
+  zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', function () { zone.classList.remove('drag-over'); });
+  zone.addEventListener('drop', function (e) {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) setFile(f);
+  });
+
+  // Keyboard accessibility for zone
+  zone.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
+  });
+
+  // Submit
+  submitBtn.addEventListener('click', function () {
+    if (!selectedFile) return;
+    submitBtn.disabled = true;
+    submitBtn.textContent = '—';
+    feedback.className = 'form-feedback';
+
+    var formData = new FormData();
+    formData.append('nda', selectedFile);
+
+    fetch('/api/nda?op=upload', {
+      method: 'POST',
+      credentials: 'same-origin',
+      body: formData
+    })
+    .then(function (r) {
+      if (r.ok) return r.json();
+      return r.json().then(function (d) { throw new Error(d.message || 'upload-failed'); });
+    })
+    .then(function () {
+      // Transition to uploaded state without reload
+      document.getElementById('state-awaiting').classList.remove('active');
+      document.getElementById('state-uploaded').classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    })
+    .catch(function (err) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Return Executed Agreement';
+      showFeedback('error', 'Your document could not be delivered at this time. Please try again or contact your relationship manager.');
+    });
+  });
+}());
+</script>
+</body>
+</html>

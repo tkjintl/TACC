@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<meta name="theme-color" content="#070706">
+<title>Activate Membership — The Aurum Century Club</title>
+<meta name="description" content="Enter your invitation access code to activate your Aurum Century Club membership.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23070706'/><rect x='4' y='4' width='24' height='24' fill='none' stroke='%23C5A572' stroke-width='1'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='14' font-style='italic' fill='%23C5A572'>Au</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400&family=DM+Sans:wght@400;500&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/_styles/tokens.css">
+
+<style>
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+/* Ambient radial */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse 700px 500px at 50% 40%, rgba(197,165,114,0.06), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.card-wrap {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* SVG vault-door border draw animation */
+.vault-border {
+  position: absolute;
+  inset: -20px;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.vault-border rect {
+  fill: none;
+  stroke: var(--goldA);
+  stroke-width: 1;
+  stroke-dasharray: 1600;
+  stroke-dashoffset: 1600;
+  opacity: 0.5;
+  animation: vault-draw 1.4s var(--ease-entrance) 0.2s forwards;
+}
+
+@keyframes vault-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+.card-content {
+  width: 100%;
+  padding: 48px 40px 44px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 500ms var(--ease-entrance) 0.8s,
+              transform 500ms var(--ease-entrance) 0.8s;
+}
+
+.card-content.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.card-seal {
+  margin-bottom: 36px;
+}
+
+.card-heading {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 40px;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  margin-bottom: 14px;
+}
+
+.card-sub {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 44px;
+  max-width: 300px;
+}
+
+/* 6-char code input */
+.code-input-wrap {
+  width: 100%;
+  margin-bottom: 32px;
+}
+
+.code-input {
+  width: 100%;
+  background: var(--near);
+  border: 1px solid var(--goldBorderS);
+  color: var(--goldB);
+  font-family: var(--font-mono);
+  font-size: 32px;
+  letter-spacing: 0.3em;
+  text-align: center;
+  text-transform: uppercase;
+  padding: 18px 16px 18px;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 0;
+  caret-color: var(--goldA);
+  transition: border-color var(--dur-base) ease,
+              box-shadow var(--dur-base) ease;
+}
+
+.code-input::placeholder {
+  color: var(--dim);
+  letter-spacing: 0.3em;
+}
+
+.code-input:focus {
+  border-color: var(--goldBorderM);
+  box-shadow: 0 0 0 3px rgba(197,165,114,0.10),
+              0 0 20px rgba(197,165,114,0.08);
+}
+
+/* Character counter below input */
+.code-counter {
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--dim);
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.code-counter span {
+  color: var(--goldA);
+}
+
+.form-error {
+  display: none;
+  width: 100%;
+  background: rgba(176,94,86,0.08);
+  border: 1px solid var(--redBd);
+  padding: 13px 16px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--red);
+  line-height: 1.6;
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.form-error.visible {
+  display: block;
+}
+
+.nav-back {
+  position: fixed;
+  top: 24px;
+  left: 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  opacity: 0.4;
+  transition: opacity 200ms ease;
+  z-index: 10;
+}
+
+.nav-back:hover {
+  opacity: 0.9;
+}
+
+.nav-back-icon {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--text);
+}
+
+.nav-back-label {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--text);
+  text-transform: uppercase;
+}
+
+@media (max-width: 480px) {
+  .card-content {
+    padding: 36px 24px 32px;
+  }
+  .card-heading {
+    font-size: 32px;
+  }
+  .code-input {
+    font-size: 26px;
+    letter-spacing: 0.22em;
+  }
+}
+
+@media (max-width: 430px) {
+  body { padding: 16px; }
+  /* iOS zoom: code input already >16px; other inputs if any */
+  .card-wrap { max-width: 100%; }
+  /* Remove vault SVG border overflow on very narrow screens */
+  .vault-border { display: none; }
+  /* Bigger submit touch target */
+  #submit-btn { min-height: 48px; }
+  .nav-back { top: max(20px, env(safe-area-inset-top)); left: 14px; }
+}
+
+@media (max-width: 375px) {
+  .card-heading { font-size: 28px; }
+  .card-sub { font-size: 14px; }
+  .code-input { font-size: 22px; letter-spacing: 0.18em; padding: 16px 12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-veil" id="page-veil"></div>
+
+<a href="/login" class="nav-back" aria-label="Return to sign in">
+  <span class="nav-back-icon">←</span>
+  <span class="nav-back-label">Sign In</span>
+</a>
+
+<div class="card-wrap" id="card-wrap">
+  <!-- Vault door SVG border -->
+  <svg class="vault-border" aria-hidden="true" viewBox="-20 -20 460 500" preserveAspectRatio="none">
+    <rect x="-16" y="-16" width="452" height="492" rx="0"/>
+  </svg>
+
+  <div class="card-content" id="card-content">
+    <div class="card-seal">
+      <div class="seal seal--lg"><em>Au</em></div>
+    </div>
+    <h1 class="card-heading">Activate Your<br>Membership</h1>
+    <p class="card-sub">Enter the access credential from your invitation.</p>
+
+    <form id="code-form" novalidate style="width:100%;">
+      <div class="code-input-wrap">
+        <label class="field-label" for="code-input" style="margin-bottom:12px;display:block;">Access Credential</label>
+        <input
+          class="code-input"
+          type="text"
+          id="code-input"
+          name="code"
+          placeholder="······"
+          maxlength="6"
+          autocomplete="one-time-code"
+          spellcheck="false"
+          autocorrect="off"
+          autocapitalize="characters"
+          inputmode="text"
+          required
+          aria-describedby="code-counter"
+        >
+        <p class="code-counter" id="code-counter" aria-live="polite">
+          <span id="code-len">0</span> / 6 characters
+        </p>
+      </div>
+
+      <div class="form-error" id="form-error" role="alert" aria-live="polite">
+        The access credential was not recognised. Please verify and try again, or contact your relationship manager.
+      </div>
+
+      <button type="submit" class="btn-primary" id="submit-btn" style="width:100%;justify-content:center;padding:16px;" disabled>
+        Activate
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const lang = localStorage.getItem('lang');
+  if (lang) document.documentElement.lang = lang;
+
+  const veil = document.getElementById('page-veil');
+  document.querySelectorAll('a[href]').forEach(function (link) {
+    const href = link.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto')) return;
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      veil.classList.add('covering');
+      setTimeout(function () { window.location.href = href; }, 290);
+    });
+  });
+
+  // Animate card in (after vault door draws)
+  const card = document.getElementById('card-content');
+  setTimeout(function () {
+    card.classList.add('visible');
+  }, 50);
+
+  // Code input — enforce uppercase, update counter
+  const codeInput = document.getElementById('code-input');
+  const codeLenEl = document.getElementById('code-len');
+  const submitBtn = document.getElementById('submit-btn');
+  const errorEl = document.getElementById('form-error');
+
+  codeInput.addEventListener('input', function () {
+    // Force uppercase, strip non-alphanumeric
+    const clean = this.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 6);
+    this.value = clean;
+    codeLenEl.textContent = clean.length;
+    submitBtn.disabled = clean.length !== 6;
+    errorEl.classList.remove('visible');
+  });
+
+  // Auto-submit when 6 chars reached
+  codeInput.addEventListener('input', function () {
+    if (this.value.length === 6) {
+      submitBtn.removeAttribute('disabled');
+    }
+  });
+
+  const form = document.getElementById('code-form');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const code = codeInput.value.trim();
+    if (code.length !== 6) return;
+
+    errorEl.classList.remove('visible');
+    submitBtn.setAttribute('aria-busy', 'true');
+    submitBtn.textContent = '—';
+
+    fetch('/api/verify-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ code: code })
+    })
+    .then(function (r) {
+      if (r.ok) {
+        return r.json().then(function (data) {
+          veil.classList.add('covering');
+          setTimeout(function () {
+            window.location.href = data.redirect || '/login';
+          }, 290);
+        });
+      }
+      throw new Error('invalid');
+    })
+    .catch(function () {
+      submitBtn.removeAttribute('aria-busy');
+      submitBtn.textContent = 'Activate';
+      errorEl.classList.add('visible');
+      codeInput.value = '';
+      codeLenEl.textContent = '0';
+      submitBtn.disabled = true;
+      codeInput.focus();
+    });
+  });
+
+  // Focus input on load (after animation completes)
+  setTimeout(function () {
+    codeInput.focus();
+  }, 900);
+
+  // Pause vault animation on reduced motion
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const rect = document.querySelector('.vault-border rect');
+    if (rect) {
+      rect.style.strokeDashoffset = '0';
+      rect.style.animation = 'none';
+    }
+  }
+}());
+</script>
+</body>
+</html>

@@ -1,0 +1,1827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<meta name="theme-color" content="#070706">
+<title>Partner Console — The Aurum Century Club</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23070706'/><rect x='4' y='4' width='24' height='24' fill='none' stroke='%23C5A572' stroke-width='1'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='14' font-style='italic' fill='%23C5A572'>Au</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400&family=DM+Sans:wght@400;500&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/_styles/tokens.css">
+<style>
+
+/* ─── Admin nav ─────────────────────────────────────────────────────── */
+.admin-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  background: rgba(7,7,6,0.97);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  height: 58px;
+}
+
+.admin-nav-left { display: flex; align-items: center; gap: 16px; }
+
+.admin-console-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.admin-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin-email {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--dim);
+}
+
+.admin-logout {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--dim);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color var(--dur-fast) ease;
+}
+
+.admin-logout:hover { color: var(--red); }
+
+/* ─── Admin tab bar ─────────────────────────────────────────────────── */
+.admin-tab-bar {
+  position: fixed;
+  top: 58px;
+  left: 0; right: 0;
+  z-index: 190;
+  display: flex;
+  background: var(--near);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.admin-tab-bar::-webkit-scrollbar { display: none; }
+
+.admin-tab-item {
+  flex-shrink: 0;
+  padding: 14px 24px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dim);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color var(--dur-base) ease, border-color var(--dur-base) ease;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.admin-tab-item:hover { color: var(--muted); }
+.admin-tab-item.active { color: var(--goldA); border-bottom-color: var(--goldA); }
+
+/* ─── Page frame ────────────────────────────────────────────────────── */
+.admin-panels {
+  padding-top: 108px;
+  min-height: 100vh;
+}
+
+.admin-panel {
+  display: none;
+  padding: 40px 32px 80px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.admin-panel.active {
+  display: block;
+  animation: panelIn 200ms var(--ease-entrance) both;
+}
+
+@keyframes panelIn {
+  from { opacity: 0; transform: translateX(6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@media (max-width: 768px) {
+  .admin-nav { padding: 0 16px; }
+  .admin-panel { padding: 32px 16px 80px; }
+}
+
+/* ─── Mobile breakpoints ───────────────────────────────────────────── */
+@media (max-width: 430px) {
+  .admin-nav { padding: 0 12px; height: 52px; }
+  .admin-console-label { font-size: 8px; letter-spacing: 0.18em; }
+  .admin-email { display: none; }
+  .admin-panel { padding: 28px 12px 80px; }
+  .admin-panels { padding-top: 100px; }
+  /* Tab bar already has overflow-x: auto — ensure items accessible */
+  .admin-tab-item { padding: 12px 16px; font-size: 9px; }
+  /* Table — data-table-wrap already has overflow-x; ensure full width */
+  .data-table-wrap { width: 100%; max-width: calc(100vw - 24px); }
+  /* Stats bar */
+  .stat-val { font-size: 22px; }
+  /* Drawer: full viewport width on mobile */
+  .drawer { width: 100vw; padding: 24px 18px; }
+  /* Search input */
+  .search-input { min-width: 0; font-size: 16px !important; }
+  /* Filter bar: wrap and scroll */
+  .filter-bar { gap: 8px; }
+  .filter-btn { padding: 8px 10px; min-height: 36px; }
+  /* NDA card */
+  .nda-card { padding: 18px 14px; }
+  /* Compose form */
+  .compose-form { padding: 20px 14px; }
+  /* Panel heading */
+  .panel-heading { font-size: clamp(20px, 6vw, 28px); }
+  /* Input fields */
+  .input-field { font-size: 16px !important; }
+  select.input-field { font-size: 16px !important; }
+  textarea.input-field { font-size: 16px !important; }
+}
+
+@media (max-width: 390px) {
+  .admin-nav { height: 50px; }
+  .admin-panels { padding-top: 96px; }
+  .data-table-wrap { max-width: calc(100vw - 20px); }
+}
+
+@media (max-width: 375px) {
+  .admin-panel { padding: 24px 10px 80px; }
+  .drawer { padding: 20px 14px; }
+  .stat-val { font-size: 18px; }
+}
+
+/* ─── Panel heading ─────────────────────────────────────────────────── */
+.panel-heading {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(24px, 3.5vw, 36px);
+  letter-spacing: 0.04em;
+  margin-bottom: 32px;
+}
+
+/* ─── Stats bar ─────────────────────────────────────────────────────── */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin-bottom: 32px;
+}
+
+@media (max-width: 900px) { .stats-bar { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 480px) { .stats-bar { grid-template-columns: repeat(2, 1fr); } }
+
+.stat-tile {
+  background: var(--surface);
+  padding: 20px 16px;
+  text-align: center;
+}
+
+.stat-val {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  color: var(--goldB);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* ─── Filter bar ────────────────────────────────────────────────────── */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease, background var(--dur-fast) ease;
+}
+
+.filter-btn:hover { border-color: var(--goldBorderS); color: var(--goldA); }
+.filter-btn.active { background: var(--goldMuted); border-color: var(--goldBorderM); color: var(--goldA); }
+
+.search-input {
+  flex: 1;
+  min-width: 200px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 9px 14px;
+  outline: none;
+  transition: border-color var(--dur-base) ease;
+}
+
+.search-input::placeholder { color: var(--dim); }
+.search-input:focus { border-color: var(--goldBorderS); }
+
+/* ─── Data table ────────────────────────────────────────────────────── */
+.data-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+}
+
+.data-table th {
+  background: var(--surface);
+  padding: 12px 16px;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  font-weight: 400;
+}
+
+.data-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--muted);
+  vertical-align: middle;
+}
+
+.data-table tr:last-child td { border-bottom: none; }
+
+.data-table tr:hover td { background: rgba(255,255,255,0.02); cursor: pointer; }
+
+.data-table td.name-col {
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--text);
+}
+
+.data-table td.mono-col {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+}
+
+/* ─── Status badges ─────────────────────────────────────────────────── */
+.stage-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.stage-badge::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.stage-1 { color: var(--muted); border-color: var(--border); }
+.stage-2 { color: var(--blue); border-color: var(--blueBd); }
+.stage-3 { color: var(--amber); border-color: var(--amberBd); }
+.stage-4 { color: var(--amber); border-color: var(--amberBd); }
+.stage-5 { color: var(--green); border-color: var(--greenBd); }
+.stage-6 { color: var(--goldA); border-color: var(--goldBorderS); }
+
+/* ─── Action buttons in table ───────────────────────────────────────── */
+.action-btn {
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease, background var(--dur-fast) ease;
+  white-space: nowrap;
+}
+
+.action-btn:hover { border-color: var(--goldBorderS); color: var(--goldA); }
+.action-btn.primary { border-color: var(--goldBorderS); color: var(--goldA); background: var(--goldMuted); }
+.action-btn.primary:hover { background: rgba(197,165,114,0.2); }
+.action-btn.danger:hover { border-color: var(--redBd); color: var(--red); }
+
+/* ─── NDA queue cards ───────────────────────────────────────────────── */
+.nda-queue {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nda-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 24px 28px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 600px) { .nda-card { grid-template-columns: 1fr; } }
+
+.nda-card-meta {}
+
+.nda-card-name {
+  font-family: var(--font-display);
+  font-size: 19px;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.nda-card-sub {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.nda-notes {
+  width: 100%;
+  background: var(--near);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  padding: 10px 12px;
+  outline: none;
+  resize: vertical;
+  min-height: 60px;
+  transition: border-color var(--dur-base) ease;
+}
+
+.nda-notes::placeholder { color: var(--dim); }
+.nda-notes:focus { border-color: var(--goldBorderS); }
+
+.nda-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+  min-width: 140px;
+}
+
+/* ─── Wire management table ─────────────────────────────────────────── */
+.wire-ref {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--goldA);
+  cursor: pointer;
+}
+
+/* ─── Member cards (funded only) ────────────────────────────────────── */
+.members-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.member-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 24px;
+  transition: border-color var(--dur-base) ease;
+}
+
+.member-card:hover { border-color: var(--goldBorderS); }
+
+.mc-number {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--goldA);
+  margin-bottom: 10px;
+}
+
+.mc-name {
+  font-family: var(--font-display);
+  font-size: 19px;
+  color: var(--text);
+  margin-bottom: 18px;
+}
+
+.mc-data-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.mc-data-row:last-child { border-bottom: none; }
+.mc-key { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; color: var(--dim); text-transform: uppercase; }
+.mc-val { font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.mc-view-link {
+  display: block;
+  margin-top: 18px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  text-transform: uppercase;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+}
+
+.mc-view-link:hover { color: var(--goldA); border-bottom-color: var(--goldBorderS); }
+
+/* ─── Messages compose ──────────────────────────────────────────────── */
+.compose-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 32px;
+  margin-bottom: 40px;
+}
+
+.compose-form-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+
+.compose-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 600px) { .compose-grid { grid-template-columns: 1fr; } }
+
+.compose-grid .full { grid-column: 1 / -1; }
+
+.sent-list { margin-top: 40px; }
+.sent-list-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.sent-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sent-subject {
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--text);
+  flex: 1;
+}
+
+.read-receipt {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.read-receipt.read { color: var(--green); }
+.read-receipt.unread { color: var(--dim); }
+
+/* ─── Letter + vault forms ──────────────────────────────────────────── */
+.compose-section-divider {
+  border-top: 1px solid var(--border);
+  margin: 48px 0 32px;
+}
+
+.compose-section-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  color: var(--goldA);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.letter-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  margin-top: 24px;
+}
+
+.letter-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.letter-table th {
+  background: var(--surface);
+  padding: 10px 14px;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  font-weight: 400;
+}
+
+.letter-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--muted);
+  vertical-align: middle;
+}
+
+.letter-table tr:last-child td { border-bottom: none; }
+
+.letter-table td.name-col {
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--text);
+}
+
+.letter-table td.mono-col {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+}
+
+.letter-empty {
+  padding: 24px 16px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+/* ─── Slide-out drawer ──────────────────────────────────────────────── */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 300;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-base) ease;
+}
+
+.drawer-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.drawer {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: min(480px, 95vw);
+  background: var(--near);
+  border-left: 1px solid var(--border);
+  z-index: 400;
+  transform: translateX(100%);
+  transition: transform 280ms var(--ease-entrance);
+  overflow-y: auto;
+  padding: 32px 28px;
+}
+
+.drawer.open { transform: translateX(0); }
+
+.drawer-close {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 28px;
+}
+
+.drawer-close-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+
+.drawer-close-btn:hover { border-color: var(--goldBorderS); color: var(--goldA); }
+
+.drawer-section-title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 24px 0 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.drawer-field {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.drawer-key {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--dim);
+  text-transform: uppercase;
+  flex-shrink: 0;
+  min-width: 100px;
+}
+
+.drawer-val {
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--text);
+  text-align: right;
+  word-break: break-word;
+}
+
+.drawer-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 28px;
+}
+
+.drawer-action-btn {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+
+.drawer-action-btn.primary {
+  color: var(--goldA);
+  border-color: var(--goldBorderM);
+}
+
+.drawer-action-btn.primary:hover { background: var(--goldMuted); }
+
+.drawer-action-btn.secondary {
+  color: var(--muted);
+  border-color: var(--border);
+}
+
+.drawer-action-btn.secondary:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+.drawer-action-btn.danger {
+  color: var(--red);
+  border-color: var(--redBd);
+}
+
+.drawer-action-btn.danger:hover { background: rgba(176,94,86,0.1); }
+
+.audit-entry {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.audit-date {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+  flex-shrink: 0;
+  min-width: 80px;
+  font-variant-numeric: tabular-nums;
+}
+
+.audit-event {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ─── Modal ─────────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--near);
+  border: 1px solid var(--border);
+  width: 100%;
+  max-width: 480px;
+  padding: 32px;
+  animation: modalIn 200ms var(--ease-entrance) both;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.97) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 24px;
+  margin-bottom: 24px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.modal-form-row { margin-bottom: 16px; }
+
+/* ─── Toast ─────────────────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  background: var(--surface);
+  border: 1px solid var(--goldBorderS);
+  color: var(--goldA);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  padding: 12px 20px;
+  z-index: 1000;
+  transform: translateY(20px);
+  opacity: 0;
+  transition: opacity 200ms ease, transform 200ms ease;
+  pointer-events: none;
+  text-transform: uppercase;
+}
+
+.toast.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="page-veil" id="page-veil"></div>
+
+<!-- Admin nav -->
+<nav class="admin-nav" role="navigation">
+  <div class="admin-nav-left">
+    <div class="seal" style="width:32px;height:32px;font-size:15px;"><em>Au</em></div>
+    <span class="admin-console-label">Partner Console</span>
+  </div>
+  <div class="admin-nav-right">
+    <span class="admin-email" id="admin-email">—</span>
+    <a href="/api/logout" class="admin-logout">Sign Out</a>
+  </div>
+</nav>
+
+<!-- Admin tab bar -->
+<div class="admin-tab-bar" id="admin-tab-bar" role="tablist">
+  <div class="admin-tab-item active" data-tab="leads" role="tab">Leads</div>
+  <div class="admin-tab-item" data-tab="nda" role="tab">NDA Review</div>
+  <div class="admin-tab-item" data-tab="wire" role="tab">Wire Management</div>
+  <div class="admin-tab-item" data-tab="members" role="tab">Members</div>
+  <div class="admin-tab-item" data-tab="messages" role="tab">Messages</div>
+</div>
+
+<!-- Panels -->
+<div class="admin-panels">
+
+  <!-- ─── LEADS ───────────────────────────────────────────────────── -->
+  <div class="admin-panel active" id="panel-leads">
+
+    <h1 class="panel-heading">Leads <span style="font-size:0.55em;font-family:var(--font-mono);letter-spacing:0.1em;color:var(--muted);">&amp; Pipeline</span></h1>
+
+    <!-- Stats bar -->
+    <div class="stats-bar" id="stats-bar">
+      <div class="stat-tile"><div class="stat-val" id="stat-enquiry">—</div><div class="stat-label">Enquiries</div></div>
+      <div class="stat-tile"><div class="stat-val" id="stat-invited">—</div><div class="stat-label">Invited</div></div>
+      <div class="stat-tile"><div class="stat-val" id="stat-accessed">—</div><div class="stat-label">Accessed</div></div>
+      <div class="stat-tile"><div class="stat-val" id="stat-nda">—</div><div class="stat-label">NDA Signed</div></div>
+      <div class="stat-tile"><div class="stat-val" id="stat-subscribed">—</div><div class="stat-label">Subscribed</div></div>
+      <div class="stat-tile"><div class="stat-val" id="stat-funded" style="color:var(--green)">—</div><div class="stat-label">Funded</div></div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="1">Enquiry</button>
+      <button class="filter-btn" data-filter="2">Invited</button>
+      <button class="filter-btn" data-filter="3">Accessed</button>
+      <button class="filter-btn" data-filter="4">NDA Signed</button>
+      <button class="filter-btn" data-filter="5">Subscribed</button>
+      <button class="filter-btn" data-filter="6">Funded</button>
+      <input type="text" class="search-input" id="leads-search" placeholder="Search name or email…">
+    </div>
+
+    <!-- Table -->
+    <div class="data-table-wrap">
+      <table class="data-table" id="leads-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Country</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="leads-tbody">
+          <tr><td colspan="6" style="text-align:center;color:var(--dim);font-family:var(--font-mono);font-size:11px;padding:40px;">Loading pipeline data…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- ─── NDA REVIEW ───────────────────────────────────────────────── -->
+  <div class="admin-panel" id="panel-nda">
+
+    <h1 class="panel-heading">NDA <em class="gold-gradient">Review</em></h1>
+
+    <div class="nda-queue" id="nda-queue">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--dim);letter-spacing:0.14em;text-transform:uppercase;">Loading submitted NDAs…</div>
+    </div>
+
+  </div>
+
+  <!-- ─── WIRE MANAGEMENT ──────────────────────────────────────────── -->
+  <div class="admin-panel" id="panel-wire">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+      <h1 class="panel-heading" style="margin-bottom:0;">Wire <em class="gold-gradient">Management</em></h1>
+      <button class="btn-primary" id="issue-wire-btn" style="font-size:10px;padding:10px 20px;">+ Issue Wire Instructions</button>
+    </div>
+
+    <div class="data-table-wrap">
+      <table class="data-table" id="wire-table">
+        <thead>
+          <tr>
+            <th>Member</th>
+            <th>Amount (USD)</th>
+            <th>Wire Ref</th>
+            <th>Status</th>
+            <th>Issued</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="wire-tbody">
+          <tr><td colspan="6" style="text-align:center;color:var(--dim);font-family:var(--font-mono);font-size:11px;padding:40px;">No wire instructions issued yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- ─── MEMBERS ─────────────────────────────────────────────────── -->
+  <div class="admin-panel" id="panel-members">
+
+    <h1 class="panel-heading">Funded <em class="gold-gradient">Members</em></h1>
+
+    <div class="members-grid" id="members-grid">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--dim);letter-spacing:0.14em;text-transform:uppercase;">Loading member data…</div>
+    </div>
+
+  </div>
+
+  <!-- ─── MESSAGES ────────────────────────────────────────────────── -->
+  <div class="admin-panel" id="panel-messages">
+
+    <h1 class="panel-heading">Send <em class="gold-gradient">Message</em></h1>
+
+    <!-- Compose form -->
+    <div class="compose-form" id="compose-form">
+      <div class="compose-form-title">Compose Communication</div>
+
+      <div class="compose-grid">
+        <div class="field-group">
+          <label class="field-label" for="msg-recipient">Recipient</label>
+          <select class="input-field" id="msg-recipient">
+            <option value="all">All Members</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="msg-type">Message Type</label>
+          <select class="input-field" id="msg-type">
+            <option value="gold">Gold (Standard)</option>
+            <option value="blue">Blue (Informational)</option>
+            <option value="amber">Amber (Important)</option>
+          </select>
+        </div>
+
+        <div class="field-group full">
+          <label class="field-label" for="msg-subject">Subject</label>
+          <input class="input-field" type="text" id="msg-subject" placeholder="Message subject">
+        </div>
+
+        <div class="field-group full">
+          <label class="field-label" for="msg-body">Message Body</label>
+          <textarea class="input-field" id="msg-body" rows="6" placeholder="Your message to the member…" style="resize:vertical;"></textarea>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;">
+        <button class="btn-primary" id="send-msg-btn">Send Message</button>
+      </div>
+    </div>
+
+    <!-- Sent messages list -->
+    <div class="sent-list">
+      <div class="sent-list-title">Sent Communications</div>
+      <div id="sent-list-body">
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--dim);letter-spacing:0.14em;text-transform:uppercase;padding:20px 0;">No messages sent yet.</div>
+      </div>
+    </div>
+
+    <!-- Quarterly letter compose -->
+    <div class="compose-section-divider"></div>
+    <div class="compose-section-eyebrow">Quarterly Letters</div>
+
+    <div class="compose-form" id="letter-compose-form">
+      <div class="compose-form-title">Send Quarterly Letter</div>
+
+      <div class="compose-grid">
+        <div class="field-group">
+          <label class="field-label" for="letter-quarter">Quarter</label>
+          <select class="input-field" id="letter-quarter">
+            <option value="1">Q1</option>
+            <option value="2">Q2</option>
+            <option value="3">Q3</option>
+            <option value="4">Q4</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="letter-year">Year</label>
+          <input class="input-field" type="number" id="letter-year" min="2024" max="2040" value="2026">
+        </div>
+
+        <div class="field-group full">
+          <label class="field-label" for="letter-subject">Subject</label>
+          <input class="input-field" type="text" id="letter-subject" placeholder="Q2 2026 Fund Update">
+        </div>
+
+        <div class="field-group full">
+          <label class="field-label" for="letter-body">HTML Body</label>
+          <textarea class="input-field" id="letter-body" rows="12" placeholder="&lt;p&gt;Dear Members,&lt;/p&gt;" style="font-family:var(--font-mono);font-size:12px;resize:vertical;min-height:300px;"></textarea>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;">
+        <button class="btn-primary" id="send-letter-btn">Send to All Members</button>
+      </div>
+    </div>
+
+    <!-- Sent letters table -->
+    <div style="margin-top:32px;">
+      <div class="sent-list-title" id="letters-table-title">Previous Quarterly Letters</div>
+      <div id="letters-table-body">
+        <div class="letter-empty">Loading letters&hellip;</div>
+      </div>
+    </div>
+
+    <!-- Vault verification publish -->
+    <div class="compose-section-divider"></div>
+    <div class="compose-section-eyebrow">Vault Verification</div>
+
+    <div class="compose-form" id="vault-compose-form">
+      <div class="compose-form-title">Publish Vault Verification</div>
+
+      <div class="compose-grid">
+        <div class="field-group full">
+          <label class="field-label" for="vault-title">Title</label>
+          <input class="input-field" type="text" id="vault-title" placeholder="Annual Vault Verification 2026">
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="vault-year">Year</label>
+          <input class="input-field" type="number" id="vault-year" min="2024" max="2040" value="2026">
+        </div>
+
+        <div class="field-group full">
+          <label class="field-label" for="vault-summary">Summary</label>
+          <textarea class="input-field" id="vault-summary" rows="3" placeholder="All bars verified present and accounted for at Malca-Amit Singapore Free Trade Zone." style="resize:vertical;"></textarea>
+        </div>
+
+        <div class="field-group full">
+          <label class="field-label" for="vault-blob">PDF Blob Pathname</label>
+          <input class="input-field" type="text" id="vault-blob" placeholder="vault-verifications/2026-annual.pdf">
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;">
+        <button class="btn-primary" id="publish-vault-btn">Publish Vault Verification</button>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Slide-out drawer -->
+<div class="drawer-overlay" id="drawer-overlay"></div>
+<aside class="drawer" id="lead-drawer" role="dialog" aria-modal="true" aria-label="Lead profile">
+  <div class="drawer-close">
+    <button class="drawer-close-btn" id="drawer-close">Close ×</button>
+  </div>
+  <div id="drawer-content"><!-- Populated by JS --></div>
+</aside>
+
+<!-- Wire modal -->
+<div class="modal-overlay" id="wire-modal">
+  <div class="modal">
+    <h2 class="modal-title">Issue Wire Instructions</h2>
+    <div class="modal-form-row">
+      <div class="field-group">
+        <label class="field-label" for="wire-member-select">Member</label>
+        <select class="input-field" id="wire-member-select"><option value="">Select member…</option></select>
+      </div>
+    </div>
+    <div class="modal-form-row">
+      <div class="field-group">
+        <label class="field-label" for="wire-amount">Subscription Amount (USD)</label>
+        <input class="input-field" type="number" id="wire-amount" placeholder="100000">
+      </div>
+    </div>
+    <div class="modal-form-row">
+      <div class="field-group">
+        <label class="field-label" for="wire-ref">Wire Reference</label>
+        <input class="input-field" type="text" id="wire-ref" placeholder="TACC-2026-XXX">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" id="wire-modal-cancel">Cancel</button>
+      <button class="btn-primary" id="wire-modal-submit">Issue Instructions</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="/_scripts/shared.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ─── Tab switching ────────────────────────────────────────────── */
+  var currentTab = 'leads';
+
+  document.querySelectorAll('.admin-tab-item').forEach(function (item) {
+    item.addEventListener('click', function () {
+      var tab = item.getAttribute('data-tab');
+      document.querySelectorAll('.admin-tab-item').forEach(function (t) { t.classList.remove('active'); });
+      item.classList.add('active');
+      document.querySelectorAll('.admin-panel').forEach(function (p) { p.classList.remove('active'); });
+      document.getElementById('panel-' + tab).classList.add('active');
+      currentTab = tab;
+    });
+  });
+
+  /* ─── Toast ────────────────────────────────────────────────────── */
+  var toastTimer;
+
+  function showToast(msg, type) {
+    var toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.style.borderColor = type === 'error' ? 'var(--redBd)' : 'var(--goldBorderS)';
+    toast.style.color = type === 'error' ? 'var(--red)' : 'var(--goldA)';
+    toast.classList.add('visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove('visible'); }, 2500);
+  }
+
+  /* ─── Admin API helper ─────────────────────────────────────────── */
+  function adminFetch(url, opts) {
+    return fetch(url, Object.assign({ credentials: 'same-origin' }, opts));
+  }
+
+  /* ─── Load all data ────────────────────────────────────────────── */
+  var allLeads = [];
+  var allMembers = [];
+
+  function loadLeads() {
+    adminFetch('/api/v2?resource=admin&op=leads')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        allLeads = d.leads || [];
+        renderStats(d.stats || {});
+        renderLeadsTable(allLeads);
+      })
+      .catch(function () {
+        document.getElementById('leads-tbody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--red);font-family:var(--font-mono);font-size:11px;padding:32px;">Unable to load pipeline data.</td></tr>';
+      });
+  }
+
+  function loadNdaQueue() {
+    adminFetch('/api/v2?resource=admin&op=nda-queue')
+      .then(function (r) { return r.json(); })
+      .then(function (d) { renderNdaQueue(d.submissions || []); })
+      .catch(function () {});
+  }
+
+  function loadWires() {
+    adminFetch('/api/v2?resource=admin&op=wires')
+      .then(function (r) { return r.json(); })
+      .then(function (d) { renderWireTable(d.wires || []); })
+      .catch(function () {});
+  }
+
+  function loadFundedMembers() {
+    adminFetch('/api/v2?resource=admin&op=members')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        allMembers = d.members || [];
+        renderMembersGrid(allMembers);
+        populateMemberSelects(allMembers);
+      })
+      .catch(function () {});
+  }
+
+  function loadSentMessages() {
+    adminFetch('/api/v2?resource=admin&op=messages')
+      .then(function (r) { return r.json(); })
+      .then(function (d) { renderSentMessages(d.messages || []); })
+      .catch(function () {});
+  }
+
+  function loadAdminProfile() {
+    adminFetch('/api/v2?resource=admin&op=me')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var emailEl = document.getElementById('admin-email');
+        if (emailEl && d.email) emailEl.textContent = d.email;
+      })
+      .catch(function () {});
+  }
+
+  loadLeads();
+  loadNdaQueue();
+  loadWires();
+  loadFundedMembers();
+  loadSentMessages();
+  loadAdminProfile();
+  loadAdminLetters();
+
+  /* ─── Stats bar ────────────────────────────────────────────────── */
+  function renderStats(stats) {
+    var fields = { enquiry: 'stat-enquiry', invited: 'stat-invited', accessed: 'stat-accessed', nda: 'stat-nda', subscribed: 'stat-subscribed', funded: 'stat-funded' };
+    Object.keys(fields).forEach(function (key) {
+      var el = document.getElementById(fields[key]);
+      if (el) el.textContent = stats[key] || '0';
+    });
+  }
+
+  /* ─── Stage helpers ────────────────────────────────────────────── */
+  var stageLabels = { 1: 'Enquiry', 2: 'Invited', 3: 'Accessed', 4: 'NDA Signed', 5: 'Subscribed', 6: 'Funded' };
+  var stageActions = {
+    1: [{ label: 'Approve & Issue Code', op: 'approve-code', cls: 'primary' }],
+    2: [{ label: 'View Profile', op: 'view', cls: '' }],
+    3: [{ label: 'Approve NDA', op: 'approve-nda', cls: 'primary' }],
+    4: [{ label: 'Issue Wire Instr.', op: 'issue-wire', cls: 'primary' }],
+    5: [{ label: 'Mark Wire Cleared', op: 'mark-cleared', cls: 'primary' }],
+    6: [{ label: 'View Portfolio', op: 'view-portfolio', cls: '' }]
+  };
+
+  /* ─── Leads table ──────────────────────────────────────────────── */
+  var activeFilter = 'all';
+  var searchQuery = '';
+
+  function filteredLeads() {
+    return allLeads.filter(function (lead) {
+      if (activeFilter !== 'all' && String(lead.stage) !== activeFilter) return false;
+      if (searchQuery) {
+        var q = searchQuery.toLowerCase();
+        return (lead.name || '').toLowerCase().includes(q) || (lead.email || '').toLowerCase().includes(q);
+      }
+      return true;
+    });
+  }
+
+  function renderLeadsTable(leads) {
+    var tbody = document.getElementById('leads-tbody');
+    if (!leads.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--dim);font-family:var(--font-mono);font-size:11px;padding:40px;">No leads match the current filter.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = leads.map(function (lead) {
+      var stage = lead.stage || 1;
+      var actions = (stageActions[stage] || []).map(function (a) {
+        return '<button class="action-btn ' + a.cls + '" data-op="' + a.op + '" data-id="' + lead.id + '">' + a.label + '</button>';
+      }).join(' ');
+
+      return '<tr data-lead-id="' + lead.id + '">' +
+        '<td class="name-col">' + (lead.name || '—') + '</td>' +
+        '<td class="mono-col">' + (lead.email || '—') + '</td>' +
+        '<td>' + (lead.country || '—') + '</td>' +
+        '<td><span class="stage-badge stage-' + stage + '">' + (stageLabels[stage] || '—') + '</span></td>' +
+        '<td class="mono-col">' + (lead.created || '—') + '</td>' +
+        '<td>' + actions + '</td>' +
+      '</tr>';
+    }).join('');
+
+    // Row click → drawer
+    tbody.querySelectorAll('tr[data-lead-id]').forEach(function (row) {
+      row.addEventListener('click', function (e) {
+        if (e.target.tagName === 'BUTTON') return; // let button handle
+        var id = row.getAttribute('data-lead-id');
+        var lead = allLeads.find(function (l) { return String(l.id) === String(id); });
+        if (lead) openDrawer(lead);
+      });
+    });
+
+    // Action buttons
+    tbody.querySelectorAll('.action-btn').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        handleLeadAction(btn.getAttribute('data-op'), btn.getAttribute('data-id'));
+      });
+    });
+  }
+
+  function handleLeadAction(op, id) {
+    if (op === 'view' || op === 'view-portfolio') {
+      var lead = allLeads.find(function (l) { return String(l.id) === String(id); });
+      if (lead) openDrawer(lead);
+      return;
+    }
+
+    if (op === 'issue-wire') {
+      var wireSelect = document.getElementById('wire-member-select');
+      var lead2 = allLeads.find(function (l) { return String(l.id) === String(id); });
+      if (wireSelect && lead2) {
+        // Pre-select member in wire modal
+        for (var i = 0; i < wireSelect.options.length; i++) {
+          if (wireSelect.options[i].value === String(id)) {
+            wireSelect.selectedIndex = i;
+            break;
+          }
+        }
+      }
+      document.getElementById('wire-modal').classList.add('open');
+      return;
+    }
+
+    adminFetch('/api/v2?resource=admin&op=' + op, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: id })
+    })
+    .then(function (r) { return r.json(); })
+    .then(function () {
+      showToast('Instruction confirmed.');
+      loadLeads();
+    })
+    .catch(function () {
+      showToast('Unable to process instruction.', 'error');
+    });
+  }
+
+  /* ─── Filter controls ──────────────────────────────────────────── */
+  document.querySelectorAll('.filter-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      activeFilter = btn.getAttribute('data-filter');
+      renderLeadsTable(filteredLeads());
+    });
+  });
+
+  var searchInput = document.getElementById('leads-search');
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      searchQuery = this.value;
+      renderLeadsTable(filteredLeads());
+    });
+  }
+
+  /* ─── Lead drawer ──────────────────────────────────────────────── */
+  function openDrawer(lead) {
+    var stage = lead.stage || 1;
+    var content = document.getElementById('drawer-content');
+
+    content.innerHTML =
+      '<div style="margin-bottom:20px;">' +
+        '<div style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.2em;color:var(--goldA);text-transform:uppercase;margin-bottom:8px;">#' + (lead.id || '—') + '</div>' +
+        '<div style="font-family:var(--font-display);font-size:26px;font-weight:300;color:var(--text);">' + (lead.name || '—') + '</div>' +
+        '<span class="stage-badge stage-' + stage + '" style="margin-top:10px;">' + (stageLabels[stage] || '—') + '</span>' +
+      '</div>' +
+      '<div class="drawer-section-title">Profile</div>' +
+      [
+        ['Email', lead.email],
+        ['Country', lead.country],
+        ['Estimated Wealth', lead.wealth],
+        ['Source', lead.source],
+        ['Introduced By', lead.introduced_by],
+        ['Registered', lead.created]
+      ].map(function (row) {
+        if (!row[1]) return '';
+        return '<div class="drawer-field"><span class="drawer-key">' + row[0] + '</span><span class="drawer-val">' + row[1] + '</span></div>';
+      }).join('') +
+      '<div class="drawer-section-title">Audit Trail</div>' +
+      '<div id="drawer-audit">' + ((lead.audit || []).map(function (a) {
+        return '<div class="audit-entry"><span class="audit-date">' + (a.date || '—') + '</span><span class="audit-event">' + (a.event || '—') + '</span></div>';
+      }).join('') || '<div style="font-family:var(--font-mono);font-size:10px;color:var(--dim);">No audit events.</div>') + '</div>' +
+      '<div class="drawer-section-title">Actions</div>' +
+      '<div class="drawer-actions">' +
+        (stageActions[stage] || []).map(function (a) {
+          return '<button class="drawer-action-btn primary" data-op="' + a.op + '" data-id="' + lead.id + '">' + a.label + '</button>';
+        }).join('') +
+      '</div>';
+
+    // Wire button handler in drawer
+    content.querySelectorAll('.drawer-action-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        closeDrawer();
+        handleLeadAction(btn.getAttribute('data-op'), btn.getAttribute('data-id'));
+      });
+    });
+
+    document.getElementById('drawer-overlay').classList.add('open');
+    document.getElementById('lead-drawer').classList.add('open');
+  }
+
+  function closeDrawer() {
+    document.getElementById('drawer-overlay').classList.remove('open');
+    document.getElementById('lead-drawer').classList.remove('open');
+  }
+
+  document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+  document.getElementById('drawer-overlay').addEventListener('click', closeDrawer);
+
+  /* ─── NDA Queue ────────────────────────────────────────────────── */
+  function renderNdaQueue(submissions) {
+    var queue = document.getElementById('nda-queue');
+    if (!submissions.length) {
+      queue.innerHTML = '<div style="font-family:var(--font-mono);font-size:11px;color:var(--dim);letter-spacing:0.14em;text-transform:uppercase;padding:32px 0;">No NDAs awaiting review.</div>';
+      return;
+    }
+
+    queue.innerHTML = submissions.map(function (sub) {
+      return '<div class="nda-card" data-nda-id="' + sub.id + '">' +
+        '<div class="nda-card-meta">' +
+          '<div class="nda-card-name">' + (sub.name || '—') + '</div>' +
+          '<div class="nda-card-sub">Member #' + (sub.member_number || '—') + ' &nbsp;·&nbsp; Submitted ' + (sub.submitted || '—') + '</div>' +
+          '<a href="/api/nda?op=admin-download&id=' + sub.id + '" class="btn-ghost" style="padding:8px 16px;font-size:9px;margin-bottom:16px;" download>Download NDA</a>' +
+          '<div><textarea class="nda-notes" placeholder="Internal notes (optional)…" data-nda-notes="' + sub.id + '">' + (sub.notes || '') + '</textarea></div>' +
+        '</div>' +
+        '<div class="nda-card-actions">' +
+          '<button class="btn-primary" style="padding:10px;font-size:9px;" data-nda-approve="' + sub.id + '">Approve</button>' +
+          '<button class="btn-ghost" style="padding:10px;font-size:9px;" data-nda-reject="' + sub.id + '">Reject</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    // Approve / Reject
+    queue.querySelectorAll('[data-nda-approve]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.getAttribute('data-nda-approve');
+        var notesEl = queue.querySelector('[data-nda-notes="' + id + '"]');
+        var notes = notesEl ? notesEl.value : '';
+        adminFetch('/api/v2?resource=admin&op=approve-nda', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: id, notes: notes })
+        }).then(function () {
+          showToast('NDA approved.');
+          loadNdaQueue();
+          loadLeads();
+        }).catch(function () { showToast('Unable to approve NDA.', 'error'); });
+      });
+    });
+
+    queue.querySelectorAll('[data-nda-reject]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.getAttribute('data-nda-reject');
+        var notesEl = queue.querySelector('[data-nda-notes="' + id + '"]');
+        var notes = notesEl ? notesEl.value : '';
+        adminFetch('/api/v2?resource=admin&op=reject-nda', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: id, notes: notes })
+        }).then(function () {
+          showToast('NDA rejected. Member notified.');
+          loadNdaQueue();
+        }).catch(function () { showToast('Unable to process.', 'error'); });
+      });
+    });
+  }
+
+  /* ─── Wire table ───────────────────────────────────────────────── */
+  function renderWireTable(wires) {
+    var tbody = document.getElementById('wire-tbody');
+    if (!wires.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--dim);font-family:var(--font-mono);font-size:11px;padding:40px;">No wire instructions issued.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = wires.map(function (w) {
+      var statusBadge = {
+        pending: '<span class="stage-badge stage-3">Pending</span>',
+        received: '<span class="stage-badge stage-5">Received</span>',
+        cleared: '<span class="stage-badge stage-6">Cleared</span>'
+      }[w.status] || '<span class="stage-badge stage-1">' + (w.status || '—') + '</span>';
+
+      var actions = '';
+      if (w.status === 'pending') actions = '<button class="action-btn primary" data-wire-op="mark-received" data-wire-id="' + w.id + '">Mark Received</button>';
+      if (w.status === 'received') actions = '<button class="action-btn primary" data-wire-op="mark-cleared" data-wire-id="' + w.id + '">Mark Cleared</button>';
+
+      return '<tr>' +
+        '<td class="name-col">' + (w.member_name || '—') + '</td>' +
+        '<td class="mono-col">USD ' + (parseInt(w.amount_usd || 0)).toLocaleString('en-US') + '</td>' +
+        '<td><span class="wire-ref" data-copy="' + (w.ref || '') + '">' + (w.ref || '—') + '</span></td>' +
+        '<td>' + statusBadge + '</td>' +
+        '<td class="mono-col">' + (w.issued || '—') + '</td>' +
+        '<td>' + actions + '</td>' +
+      '</tr>';
+    }).join('');
+
+    tbody.querySelectorAll('[data-wire-op]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var op = btn.getAttribute('data-wire-op');
+        var id = btn.getAttribute('data-wire-id');
+        adminFetch('/api/v2?resource=admin&op=' + op, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: id })
+        }).then(function () {
+          showToast('Wire status updated.');
+          loadWires();
+          loadLeads();
+        }).catch(function () { showToast('Update failed.', 'error'); });
+      });
+    });
+
+    // Re-init copy handlers
+    TACC.initCopyHandlers();
+  }
+
+  /* ─── Wire modal ───────────────────────────────────────────────── */
+  document.getElementById('issue-wire-btn').addEventListener('click', function () {
+    document.getElementById('wire-modal').classList.add('open');
+  });
+
+  document.getElementById('wire-modal-cancel').addEventListener('click', function () {
+    document.getElementById('wire-modal').classList.remove('open');
+  });
+
+  document.getElementById('wire-modal').addEventListener('click', function (e) {
+    if (e.target === this) this.classList.remove('open');
+  });
+
+  document.getElementById('wire-modal-submit').addEventListener('click', function () {
+    var memberId = document.getElementById('wire-member-select').value;
+    var amount = document.getElementById('wire-amount').value;
+    var ref = document.getElementById('wire-ref').value.trim();
+
+    if (!memberId || !amount || !ref) {
+      showToast('All fields are required.', 'error');
+      return;
+    }
+
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = '—';
+
+    adminFetch('/api/v2?resource=admin&op=issue-wire', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ member_id: memberId, amount_usd: parseFloat(amount), ref: ref })
+    })
+    .then(function () {
+      document.getElementById('wire-modal').classList.remove('open');
+      btn.disabled = false;
+      btn.textContent = 'Issue Instructions';
+      showToast('Wire instructions issued.');
+      loadWires();
+    })
+    .catch(function () {
+      btn.disabled = false;
+      btn.textContent = 'Issue Instructions';
+      showToast('Issue failed.', 'error');
+    });
+  });
+
+  /* ─── Members grid ─────────────────────────────────────────────── */
+  function renderMembersGrid(members) {
+    var grid = document.getElementById('members-grid');
+    if (!members.length) {
+      grid.innerHTML = '<div style="font-family:var(--font-mono);font-size:11px;color:var(--dim);letter-spacing:0.14em;text-transform:uppercase;">No funded members yet.</div>';
+      return;
+    }
+
+    grid.innerHTML = members.map(function (m) {
+      return '<div class="member-card">' +
+        '<div class="mc-number">#' + (m.member_number || '—') + '</div>' +
+        '<div class="mc-name">' + (m.name || '—') + '</div>' +
+        '<div class="mc-data-row"><span class="mc-key">Gold</span><span class="mc-val">' + (m.kilos || '—') + ' kg</span></div>' +
+        '<div class="mc-data-row"><span class="mc-key">Current Value</span><span class="mc-val">SGD ' + (parseInt(m.value_sgd || 0)).toLocaleString('en-US') + '</span></div>' +
+        '<div class="mc-data-row"><span class="mc-key">Joined</span><span class="mc-val">' + (m.joined || '—') + '</span></div>' +
+        '<a href="/portfolio?lead=' + m.id + '" class="mc-view-link" target="_blank">View portfolio →</a>' +
+      '</div>';
+    }).join('');
+  }
+
+  function populateMemberSelects(members) {
+    var selects = [document.getElementById('wire-member-select'), document.getElementById('msg-recipient')];
+    selects.forEach(function (sel) {
+      if (!sel) return;
+      // Keep existing "All Members" option for msg-recipient
+      var hasAll = sel.querySelector('option[value="all"]');
+      // Remove old member options
+      var toRemove = sel.querySelectorAll('option[data-member]');
+      toRemove.forEach(function (o) { o.parentNode.removeChild(o); });
+
+      members.forEach(function (m) {
+        var opt = document.createElement('option');
+        opt.value = m.id;
+        opt.setAttribute('data-member', '1');
+        opt.textContent = (m.name || '—') + ' (#' + m.member_number + ')';
+        sel.appendChild(opt);
+      });
+    });
+  }
+
+  /* ─── Compose + sent messages ──────────────────────────────────── */
+  document.getElementById('send-msg-btn').addEventListener('click', function () {
+    var recipient = document.getElementById('msg-recipient').value;
+    var type = document.getElementById('msg-type').value;
+    var subject = document.getElementById('msg-subject').value.trim();
+    var body = document.getElementById('msg-body').value.trim();
+
+    if (!subject || !body) {
+      showToast('Subject and body are required.', 'error');
+      return;
+    }
+
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = '—';
+
+    adminFetch('/api/v2?resource=admin&op=send-message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recipient: recipient, type: type, subject: subject, body: body })
+    })
+    .then(function () {
+      btn.disabled = false;
+      btn.textContent = 'Send Message';
+      document.getElementById('msg-subject').value = '';
+      document.getElementById('msg-body').value = '';
+      showToast('Message delivered.');
+      loadSentMessages();
+    })
+    .catch(function () {
+      btn.disabled = false;
+      btn.textContent = 'Send Message';
+      showToast('Delivery failed.', 'error');
+    });
+  });
+
+  /* ─── Quarterly letters ────────────────────────────────────────── */
+  function loadAdminLetters() {
+    adminFetch('/api/v2?resource=admin&op=letters')
+      .then(function (r) { return r.json(); })
+      .then(function (d) { renderAdminLettersTable(d.letters || []); })
+      .catch(function () {
+        var el = document.getElementById('letters-table-body');
+        if (el) el.innerHTML = '<div class="letter-empty">Unable to load letters.</div>';
+      });
+  }
+
+  function renderAdminLettersTable(letters) {
+    var wrap = document.getElementById('letters-table-body');
+    if (!wrap) return;
+    if (!letters.length) {
+      wrap.innerHTML = '<div class="letter-empty">No quarterly letters sent yet.</div>';
+      return;
+    }
+    wrap.innerHTML =
+      '<div class="letter-table-wrap">' +
+        '<table class="letter-table">' +
+          '<thead><tr>' +
+            '<th>Quarter</th>' +
+            '<th>Year</th>' +
+            '<th>Subject</th>' +
+            '<th>Date Sent</th>' +
+            '<th>Recipients</th>' +
+            '<th>Read</th>' +
+          '</tr></thead>' +
+          '<tbody>' +
+            letters.map(function (l) {
+              return '<tr>' +
+                '<td class="mono-col">Q' + (l.quarter || '—') + '</td>' +
+                '<td class="mono-col">' + (l.year || '—') + '</td>' +
+                '<td class="name-col">' + escAdm(l.subject || '—') + '</td>' +
+                '<td class="mono-col">' + (l.sent_at || '—') + '</td>' +
+                '<td class="mono-col">' + (l.recipient_count || '—') + '</td>' +
+                '<td class="mono-col">' + (l.read_count || 0) + '</td>' +
+              '</tr>';
+            }).join('') +
+          '</tbody>' +
+        '</table>' +
+      '</div>';
+  }
+
+  document.getElementById('send-letter-btn').addEventListener('click', function () {
+    var quarter = document.getElementById('letter-quarter').value;
+    var year = document.getElementById('letter-year').value;
+    var subject = document.getElementById('letter-subject').value.trim();
+    var body = document.getElementById('letter-body').value.trim();
+
+    if (!subject || !body) {
+      showToast('Subject and body are required.', 'error');
+      return;
+    }
+
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = '—';
+
+    adminFetch('/api/v2?resource=admin&op=send-quarterly-letter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ quarter: parseInt(quarter, 10), year: parseInt(year, 10), subject: subject, body: body })
+    })
+    .then(function () {
+      btn.disabled = false;
+      btn.textContent = 'Send to All Members';
+      document.getElementById('letter-subject').value = '';
+      document.getElementById('letter-body').value = '';
+      showToast('Quarterly letter sent.');
+      loadAdminLetters();
+    })
+    .catch(function () {
+      btn.disabled = false;
+      btn.textContent = 'Send to All Members';
+      showToast('Send failed.', 'error');
+    });
+  });
+
+  /* ─── Vault verification ───────────────────────────────────────── */
+  document.getElementById('publish-vault-btn').addEventListener('click', function () {
+    var title = document.getElementById('vault-title').value.trim();
+    var year = document.getElementById('vault-year').value;
+    var summary = document.getElementById('vault-summary').value.trim();
+    var blob = document.getElementById('vault-blob').value.trim();
+
+    if (!title || !blob) {
+      showToast('Title and blob pathname are required.', 'error');
+      return;
+    }
+
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = '—';
+
+    adminFetch('/api/v2?resource=admin&op=publish-vault-verification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: title, year: parseInt(year, 10), summary: summary, blob_pathname: blob })
+    })
+    .then(function () {
+      btn.disabled = false;
+      btn.textContent = 'Publish Vault Verification';
+      document.getElementById('vault-title').value = '';
+      document.getElementById('vault-summary').value = '';
+      document.getElementById('vault-blob').value = '';
+      showToast('Vault verification published.');
+    })
+    .catch(function () {
+      btn.disabled = false;
+      btn.textContent = 'Publish Vault Verification';
+      showToast('Publish failed.', 'error');
+    });
+  });
+
+  function escAdm(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function renderSentMessages(msgs) {
+    var body = document.getElementById('sent-list-body');
+    if (!msgs.length) {
+      body.innerHTML = '<div style="font-family:var(--font-mono);font-size:11px;color:var(--dim);letter-spacing:0.14em;text-transform:uppercase;padding:20px 0;">No messages sent yet.</div>';
+      return;
+    }
+
+    body.innerHTML = msgs.map(function (m) {
+      var allRead = (m.recipients || []).every(function (r) { return r.read; });
+      var readCount = (m.recipients || []).filter(function (r) { return r.read; }).length;
+      var total = (m.recipients || []).length;
+      var receiptClass = allRead ? 'read' : 'unread';
+      var receiptText = allRead ? '✓ All read' : (readCount + ' / ' + total + ' read');
+
+      return '<div class="sent-item">' +
+        '<div>' +
+          '<div class="sent-subject">' + (m.subject || '—') + '</div>' +
+          '<div style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.12em;color:var(--dim);text-transform:uppercase;margin-top:3px;">Sent ' + (m.sent || '—') + ' · To: ' + (m.recipient_label || 'All Members') + '</div>' +
+        '</div>' +
+        '<span class="read-receipt ' + receiptClass + '">' + receiptText + '</span>' +
+      '</div>';
+    }).join('');
+  }
+
+}());
+</script>
+</body>
+</html>

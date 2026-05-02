@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<meta name="theme-color" content="#070706">
+<title>The Kilo — The Aurum Century Club</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23070706'/><rect x='4' y='4' width='24' height='24' fill='none' stroke='%23C5A572' stroke-width='1'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='14' font-style='italic' fill='%23C5A572'>Au</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400&family=DM+Sans:wght@400;500&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/_styles/tokens.css">
+<style>
+
+/* ─── Read progress line ───────────────────────────────────────────── */
+#read-progress {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--goldA), transparent);
+  transform-origin: top;
+  transform: scaleY(0);
+  transition: transform 0.1s linear;
+  z-index: 1000;
+}
+
+/* ─── Top nav ──────────────────────────────────────────────────────── */
+.memo-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  background: rgba(7,7,6,0.92);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.member-badge {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--goldA);
+  border: 1px solid var(--goldBorderS);
+  padding: 5px 12px;
+}
+
+/* ─── Document layout ──────────────────────────────────────────────── */
+.doc-body {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 120px 32px 100px;
+}
+
+@media (max-width: 768px) {
+  .doc-body { padding: 100px 20px 80px; }
+  .memo-nav { padding: 16px 20px; }
+}
+
+/* ─── Section spacing ──────────────────────────────────────────────── */
+.doc-section {
+  padding: 80px 0;
+  border-top: 1px solid var(--border);
+}
+
+.doc-section:first-child {
+  border-top: none;
+  padding-top: 40px;
+}
+
+/* ─── Typography ───────────────────────────────────────────────────── */
+.doc-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+
+.doc-headline {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(42px, 6vw, 72px);
+  line-height: 1.08;
+  letter-spacing: 0.03em;
+  margin-bottom: 52px;
+}
+
+.doc-h2 {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.15;
+  letter-spacing: 0.04em;
+  margin-bottom: 36px;
+}
+
+.doc-body p {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 400;
+  line-height: 1.85;
+  color: rgba(237,232,223,0.82);
+  margin-bottom: 32px;
+}
+
+.doc-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* ─── Pull-quote ───────────────────────────────────────────────────── */
+.pull-quote {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(26px, 4vw, 40px);
+  font-weight: 300;
+  line-height: 1.3;
+  color: var(--goldB);
+  letter-spacing: 0.03em;
+  padding: 40px 0;
+  border-top: 1px solid var(--goldBorderS);
+  border-bottom: 1px solid var(--goldBorderS);
+  margin: 48px 0;
+}
+
+.pull-quote-sub {
+  display: block;
+  margin-top: 16px;
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* ─── List items ───────────────────────────────────────────────────── */
+.doc-list {
+  list-style: none;
+  padding: 0;
+  margin: 32px 0;
+}
+
+.doc-list li {
+  font-family: var(--font-display);
+  font-size: 18px;
+  line-height: 1.75;
+  color: rgba(237,232,223,0.82);
+  padding: 16px 0 16px 28px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.doc-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 1px;
+  background: var(--goldA);
+}
+
+.doc-list li:last-child { border-bottom: none; }
+
+/* ─── Stage list ───────────────────────────────────────────────────── */
+.stage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 40px 0;
+}
+
+.stage-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.stage-item:first-child { padding-top: 0; }
+.stage-item:last-child { border-bottom: none; }
+
+.stage-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--goldA);
+  flex-shrink: 0;
+  padding-top: 3px;
+  min-width: 24px;
+}
+
+.stage-name {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 400;
+  color: var(--text);
+  flex-shrink: 0;
+  min-width: 160px;
+}
+
+.stage-desc {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+@media (max-width: 480px) {
+  .stage-item { flex-direction: column; gap: 8px; }
+  .stage-name { min-width: 0; }
+}
+
+/* ─── Fee table ────────────────────────────────────────────────────── */
+.fee-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 32px 0;
+}
+
+.fee-table td {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-display);
+  font-size: 18px;
+  vertical-align: top;
+}
+
+.fee-table td:last-child {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--goldB);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.fee-table tr:last-child td { border-bottom: none; }
+
+/* ─── CTA section ──────────────────────────────────────────────────── */
+.doc-cta-section {
+  text-align: center;
+  padding: 80px 0 40px;
+  border-top: 1px solid var(--border);
+}
+
+.doc-cta-section p {
+  text-align: center;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ─── Closing seal ─────────────────────────────────────────────────── */
+.closing-seal {
+  text-align: center;
+  padding: 80px 0 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.closing-seal-sub {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+/* ─── Bilingual ────────────────────────────────────────────────────── */
+[data-lang]{display:none}
+.lang-en [data-lang="en"],.lang-en [data-lang="en"].block{display:inline}.lang-en [data-lang="en"].block{display:block}
+.lang-ko [data-lang="ko"],.lang-ko [data-lang="ko"].block{display:inline}.lang-ko [data-lang="ko"].block{display:block}
+
+/* ─── Mobile bottom nav ────────────────────────────────────────────── */
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--near);
+  border-top: 1px solid var(--border);
+  padding: 10px 24px max(10px, env(safe-area-inset-bottom));
+  justify-content: space-around;
+  align-items: center;
+  height: 56px;
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-decoration: none;
+  color: var(--muted);
+  transition: color 180ms ease;
+  min-width: 48px;
+}
+
+.mobile-nav-item.active { color: var(--goldA); }
+
+.mobile-nav-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.mobile-nav-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-bottom: 1px solid transparent;
+}
+
+.mobile-nav-item.active .mobile-nav-label {
+  border-bottom-color: var(--goldA);
+}
+
+@media (max-width: 768px) {
+  .mobile-nav { display: flex; }
+  .doc-body { padding-bottom: 120px; }
+}
+
+/* ─── Mobile breakpoints ───────────────────────────────────────────── */
+@media (max-width: 430px) {
+  .memo-nav { padding: 14px 16px; }
+  .member-badge { font-size: 10px; padding: 4px 8px; }
+  .doc-body { padding: 90px 16px 120px; }
+  /* Typography scale down for very narrow */
+  h1, h2 { font-size: clamp(22px, 7vw, 36px); }
+  /* Tables scroll horizontally */
+  table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+}
+
+@media (max-width: 375px) {
+  .doc-body { padding: 86px 14px 120px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-veil" id="page-veil"></div>
+<div id="read-progress" aria-hidden="true"></div>
+
+<!-- Nav -->
+<nav class="memo-nav" role="navigation">
+  <a href="/portfolio" class="nav-lockup" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+    <div class="seal"><em>Au</em></div>
+    <span style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.22em;color:var(--muted);text-transform:uppercase;">The Kilo</span>
+  </a>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button class="lang-btn" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" onclick="setLang('ko')">한국어</button>
+    <span class="member-badge" data-bind="member_badge">#—</span>
+  </div>
+</nav>
+
+<!-- Document body -->
+<main class="doc-body">
+
+  <!-- 1. Introduction -->
+  <section class="doc-section" data-reveal>
+    <p class="doc-eyebrow">The Aurum Century Club</p>
+    <h1 class="doc-headline">The <em class="gold-gradient">Kilo</em></h1>
+
+    <p>The Aurum Century Club is a closed cohort of one hundred individuals who have chosen to anchor a portion of their private wealth in physical gold — not as a hedge, not as a satellite allocation, but as a primary store of value within a structured Singapore vehicle. Membership is not available. It is extended.</p>
+
+    <p>The Club was formed on a simple proposition: the most durable asset class accessible to private investors is physical gold, held in allocated custody under your name, in a jurisdiction with genuine rule of law. Everything else — the credit facility, the private deployments, the fee structure — is architecture built around that core. The gold is the premise. The returns are what happens when you finance it intelligently.</p>
+
+    <p>You are reading this because you have been invited. The materials in front of you are not a prospectus. They are a considered explanation of what the Club is, how it works, and what it requires of you. Read them carefully. There is no urgency. The only condition is that the cohort closes when it closes.</p>
+
+    <p>One hundred founding seats. Ninety-nine other members. When the cohort is full, it is full.</p>
+  </section>
+
+  <!-- 2. The Asset -->
+  <section class="doc-section" data-reveal>
+    <p class="doc-eyebrow">The Asset</p>
+    <h2 class="doc-h2">Physical Gold. <em class="gold-gradient">Nothing else.</em></h2>
+
+    <p>The Fund holds LBMA Good Delivery kilogram bars. That specification matters. LBMA Good Delivery is the global standard for institutional gold — 999.9 fineness, serial-numbered, assayed and certified by an approved refiner. The one-kilogram bar is the preferred format of Singapore's institutional vault infrastructure. It is large enough to be meaningful, small enough to be precisely allocated.</p>
+
+    <p>The precedent is 1997. During the Asian Financial Crisis, investors who held physical gold — not gold funds, not futures, not ETFs — held their value while regional currencies collapsed. The lesson was not that gold goes up in crises. The lesson was that gold is not denominated in anything you can devalue. You cannot print gold. You cannot rehypothecate a serial-numbered bar sitting in a vault under your name in Singapore's Free Trade Zone.</p>
+
+    <p>Gold is not a portfolio allocation. It is the baseline. Everything built on top of it — the credit facility, the private credit yield, the waterfall — is a structure. The gold is the foundation. Members of the Aurum Century Club are not speculating on gold. They are using it as the most credible monetary asset available to a private investor, and financing around it systematically.</p>
+  </section>
+
+  <!-- 3. The Structure -->
+  <section class="doc-section" data-reveal>
+    <p class="doc-eyebrow">The Structure</p>
+    <h2 class="doc-h2">Singapore VCC. <em class="gold-gradient">Engineered Mechanics.</em></h2>
+
+    <p>The Club is structured as a Singapore Variable Capital Company, managed by TACC Pte Ltd as the appointed investment manager. The VCC is the appropriate vehicle for this purpose: it permits capital to flow in and out efficiently, it is recognised by institutional custodians, and it sits under Singapore's regulatory framework — which provides genuine legal certainty without the costs and restrictions of more heavily regulated jurisdictions.</p>
+
+    <p>The Fund draws a credit facility of up to 75% of the prevailing LBMA value of the gold collateral pool. This is a structural feature of the vehicle, not an election — every member participates. The manager monitors the facility continuously. The 80% LTV level triggers a bank margin call. The 70% LTV level triggers a member alert. The manager's standing mandate is to maintain the facility below 75% under normal market conditions, with a 20% cash reserve held at fund level as a drawdown buffer against facility calls. Capital calls against members are capped at 100% of original commitment.</p>
+
+    <p>The private credit deployed through the facility targets gross yields of 15–25%. These deployments are selected by the investment committee and are not available to members individually. The economics of the deployments flow to the fund as a whole and are distributed through the waterfall. Members are not required to select, manage, or monitor individual deployments. That is the manager's mandate.</p>
+
+    <p>The term is five years base, with a maximum extension to seven years at the manager's discretion subject to member consultation. The vehicle is closed-end. Capital is not available for redemption before maturity except in extraordinary circumstances at the manager's discretion.</p>
+  </section>
+
+  <!-- 4. The Returns -->
+  <section class="doc-section" data-reveal>
+    <p class="doc-eyebrow">The Returns</p>
+    <h2 class="doc-h2">Three income sources. <em class="gold-gradient">One waterfall.</em></h2>
+
+    <blockquote class="pull-quote">
+      ~15% target IRR net of fees.
+      <span class="pull-quote-sub">Target only. Illustrative. Not a guarantee or projection.</span>
+    </blockquote>
+
+    <p>The return architecture has three distinct sources. The first is gold appreciation: the base asset is expected to hold or appreciate in real terms over the investment horizon, as it has in every decade since Bretton Woods. The second is private credit yield from the LTV facility: deployments at 15–25% gross target return, subject to credit selection and execution. The third is LTV arbitrage: the spread between the cost of the credit facility and the yield achieved on private credit deployments flows to members net of carry.</p>
+
+    <ul class="doc-list">
+      <li><strong>Gold Appreciation</strong> — Physical LBMA bar value appreciation over the fund term.</li>
+      <li><strong>Private Credit Yield</strong> — 15–25% gross target from LTV facility deployments.</li>
+      <li><strong>LTV Arbitrage</strong> — Net spread between facility cost and deployment yield.</li>
+    </ul>
+
+    <p>The distribution waterfall operates as follows. All capital returned first. Preferred return at 8% per annum, compounding, is paid in full before the manager receives any carry. The manager then receives 100% of subsequent distributions until it has caught up to 20% of total profits (the "catch-up"). Thereafter, distributions split 80% to members and 20% to manager as carried interest. Management fee is 2% per annum on committed capital, charged from first close.</p>
+
+    <table class="fee-table">
+      <tr><td>Management Fee</td><td>2% p.a. on committed capital</td></tr>
+      <tr><td>Hurdle Rate</td><td>8% p.a. compounding</td></tr>
+      <tr><td>Catch-Up</td><td>100% to manager until 20% of profits</td></tr>
+      <tr><td>Carried Interest</td><td>20% above hurdle</td></tr>
+      <tr><td>Fund Term</td><td>5 years base, max 7 years</td></tr>
+    </table>
+  </section>
+
+  <!-- 5. The Custody -->
+  <section class="doc-section" data-reveal>
+    <p class="doc-eyebrow">The Custody</p>
+    <h2 class="doc-h2">Malca-Amit Singapore. <em class="gold-gradient">Your bars.</em></h2>
+
+    <p>Physical custody is provided by Malca-Amit in Singapore's Free Trade Zone. Malca-Amit is among the world's leading providers of high-value asset logistics and storage, with vault operations across the major financial centres. The Singapore FTZ location provides a further structural advantage: assets held there are outside Singapore's customs boundary, providing additional protections and efficiency for internationally mobile investors.</p>
+
+    <p>Every bar held by the Fund is allocated and segregated. Allocated means the bars are identified as property of the Fund, not of the custodian. Segregated means your bars are not pooled with bars held for other clients. Each bar carries its LBMA serial number, assayer identity, and weight certification. The Fund maintains a live bar registry. Independent verification is conducted annually by an appointed auditor. Members have the right to request a vault visit, subject to coordination with Malca-Amit.</p>
+
+    <p>Your bars are not in a pool. They are not lent. They are not collateral for anything other than the credit facility described in this document, which you have explicitly acknowledged. They are yours — serial-numbered, sitting in a Free Trade Zone vault in Singapore, fully insured, independently verified every year.</p>
+  </section>
+
+  <!-- 6. The Cohort -->
+  <section class="doc-section" data-reveal>
+    <p class="doc-eyebrow">The Cohort</p>
+    <h2 class="doc-h2">One hundred seats. <em class="gold-gradient">Invitation only.</em></h2>
+
+    <p>The Aurum Century Club has one hundred founding seats. This limit is structural, not marketing. The VCC format works best with a compact, cohesive membership that shares a common understanding of the vehicle, a common time horizon, and a common tolerance for illiquidity. A larger cohort would dilute cohort quality. A smaller one would reduce the capital base below the threshold needed to deploy the private credit strategy meaningfully.</p>
+
+    <p>The cohort is the product as much as the gold. Members are individuals who have demonstrated the capacity to participate in a closed-end illiquid vehicle, the network to have received and accepted an invitation, and the judgment to evaluate this document without hand-holding. These qualities matter to the cohort collectively. A single forced redemption in year two, or a member who misunderstood the LTV mechanics, affects everyone. Selection is therefore deliberate and non-negotiable.</p>
+
+    <p>The selection process is simple: an existing member, an advisor, or a relationship of TACC Pte Ltd identifies a candidate. The candidate receives an introduction. The introduction generates an access code. The candidate moves through the admission stages on their own timeline. The cohort closes when it closes. There is no second round on founding terms.</p>
+  </section>
+
+  <!-- 7. Admission -->
+  <section class="doc-section" data-reveal>
+    <p class="doc-eyebrow">Admission</p>
+    <h2 class="doc-h2">Six stages. <em class="gold-gradient">No unnecessary friction.</em></h2>
+
+    <p>The admission process has been designed to be thorough without being burdensome. There are six stages. You progress through them at your own pace. Nothing is required of you until you decide to proceed.</p>
+
+    <div class="stage-list">
+      <div class="stage-item">
+        <span class="stage-num">01</span>
+        <span class="stage-name">Inquiry</span>
+        <span class="stage-desc">Your interest has been registered. You have received an introduction code.</span>
+      </div>
+      <div class="stage-item">
+        <span class="stage-num">02</span>
+        <span class="stage-name">Invited</span>
+        <span class="stage-desc">Your code has been accepted. You have access to the member portal.</span>
+      </div>
+      <div class="stage-item">
+        <span class="stage-num">03</span>
+        <span class="stage-name">Accessed</span>
+        <span class="stage-desc">You have read this document. The NDA is available to you.</span>
+      </div>
+      <div class="stage-item">
+        <span class="stage-num">04</span>
+        <span class="stage-name">NDA Signed</span>
+        <span class="stage-desc">Your executed NDA has been accepted. Subscription materials are unlocked.</span>
+      </div>
+      <div class="stage-item">
+        <span class="stage-num">05</span>
+        <span class="stage-name">Subscribed</span>
+        <span class="stage-desc">Your subscription form has been received. Wire instructions have been issued.</span>
+      </div>
+      <div class="stage-item">
+        <span class="stage-num">06</span>
+        <span class="stage-name">Funded</span>
+        <span class="stage-desc">Wire cleared. Your position is established. Your bar will be allocated and registered.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. Next Steps -->
+  <section class="doc-section doc-cta-section" data-reveal>
+    <p class="doc-eyebrow">Next Steps</p>
+    <h2 class="doc-h2" style="text-align:center;">Proceed to the<br><em class="gold-gradient">Non-Disclosure Agreement.</em></h2>
+    <p>Download the Non-Disclosure Agreement. Execute it. Return the signed copy. Your subscription materials — the full information memorandum, subscription agreement, and KYC requirements — become available immediately upon acceptance of your NDA.</p>
+    <br>
+    <a href="/nda" class="btn-primary" style="margin:0 auto;">Proceed to NDA</a>
+  </section>
+
+  <!-- Closing seal -->
+  <div class="closing-seal" data-reveal>
+    <div class="seal seal--lg"><em>Au</em></div>
+    <span class="closing-seal-sub">TACC Pte Ltd &nbsp;·&nbsp; Singapore &nbsp;·&nbsp; theaurumcc.com</span>
+  </div>
+
+</main>
+
+<!-- Mobile bottom nav -->
+<nav class="mobile-nav" aria-label="Mobile navigation">
+  <a href="/portfolio" class="mobile-nav-item">
+    <span class="mobile-nav-icon">⌂</span>
+    <span class="mobile-nav-label"><span data-lang="en">Overview</span><span data-lang="ko">개요</span></span>
+  </a>
+  <a href="/gold" class="mobile-nav-item">
+    <span class="mobile-nav-icon">◈</span>
+    <span class="mobile-nav-label"><span data-lang="en">Gold</span><span data-lang="ko">금</span></span>
+  </a>
+  <a href="/documents" class="mobile-nav-item">
+    <span class="mobile-nav-icon">⊟</span>
+    <span class="mobile-nav-label"><span data-lang="en">Documents</span><span data-lang="ko">문서</span></span>
+  </a>
+  <a href="/messages" class="mobile-nav-item">
+    <span class="mobile-nav-icon">✉</span>
+    <span class="mobile-nav-label"><span data-lang="en">Messages</span><span data-lang="ko">메시지</span></span>
+  </a>
+</nav>
+
+<script src="/_scripts/shared.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  // Read progress line
+  var progress = document.getElementById('read-progress');
+  function updateProgress() {
+    var scrolled = window.scrollY;
+    var total = document.documentElement.scrollHeight - window.innerHeight;
+    var pct = total > 0 ? scrolled / total : 0;
+    progress.style.transform = 'scaleY(' + pct + ')';
+  }
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  updateProgress();
+
+  // Populate member badge
+  fetch('/api/v2?resource=member&op=me', { credentials: 'same-origin' })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var badge = document.querySelector('[data-bind="member_badge"]');
+      if (badge && data.member_number) {
+        badge.textContent = '#' + data.member_number;
+      }
+    })
+    .catch(function () {});
+}());
+</script>
+</body>
+</html>

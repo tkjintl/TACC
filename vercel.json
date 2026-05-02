@@ -1,0 +1,156 @@
+{
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "framework": null,
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "functions": {
+    "api/doc.js": {
+      "includeFiles": "_docs/**,_pages/**",
+      "maxDuration": 30
+    },
+    "api/**/*.js": {
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    { "source": "/interest",          "destination": "/interest.html" },
+    { "source": "/login",             "destination": "/login.html" },
+    { "source": "/code",              "destination": "/code.html" },
+    { "source": "/forgot-password",   "destination": "/forgot-password.html" },
+    { "source": "/reset-password",    "destination": "/reset-password.html" },
+    { "source": "/setup-password",    "destination": "/setup-password.html" },
+    { "source": "/main",              "destination": "/api/doc?id=program-page" },
+    { "source": "/nda",               "destination": "/api/doc?id=nda-page" },
+    { "source": "/memo",              "destination": "/api/doc?id=memo-page" },
+    { "source": "/subscription",      "destination": "/api/doc?id=subscription-page" },
+    { "source": "/portfolio",         "destination": "/api/doc?id=portfolio-page" },
+    { "source": "/documents",         "destination": "/api/doc?id=documents-page" },
+    { "source": "/messages",          "destination": "/api/doc?id=messages-page" },
+    { "source": "/deals",             "destination": "/api/doc?id=deals-page" },
+    { "source": "/admin",             "destination": "/admin.html" },
+    { "source": "/api/public",                    "destination": "/api/v2?resource=public&op=stats" },
+    { "source": "/api/spot",                      "destination": "/api/v2?resource=public&op=spot" },
+    { "source": "/api/admin/approve",             "destination": "/api/v2?resource=admin&op=approve" },
+    { "source": "/api/admin/leads",               "destination": "/api/v2?resource=admin&op=leads" },
+    { "source": "/api/admin/nda-approve",         "destination": "/api/v2?resource=admin&op=nda-approve" },
+    { "source": "/api/admin/wire-issue",          "destination": "/api/v2?resource=admin&op=wire-issue" },
+    { "source": "/api/admin/wire-received",       "destination": "/api/v2?resource=admin&op=wire-received" },
+    { "source": "/api/admin/wire-cleared",        "destination": "/api/v2?resource=admin&op=wire-cleared" },
+    { "source": "/api/admin/send-message",        "destination": "/api/v2?resource=admin&op=send-message" },
+    { "source": "/api/admin/issue-capital-call",  "destination": "/api/v2?resource=admin&op=issue-capital-call" },
+    { "source": "/api/admin/read-receipt",        "destination": "/api/v2?resource=admin&op=read-receipt" },
+    { "source": "/api/portfolio",                       "destination": "/api/portfolio" },
+    { "source": "/api/member/me",                    "destination": "/api/v2?resource=member&op=me" },
+    { "source": "/api/member/ack-capital-call",      "destination": "/api/v2?resource=member&op=ack-capital-call" },
+    { "source": "/api/member/history",               "destination": "/api/v2?resource=member&op=history" },
+    { "source": "/api/member/letters",               "destination": "/api/v2?resource=member&op=letters" },
+    { "source": "/api/member/vault-verifications",   "destination": "/api/v2?resource=member&op=vault-verifications" },
+    { "source": "/api/member/mark-letter-read",      "destination": "/api/v2?resource=member&op=mark-letter-read" },
+    { "source": "/api/public/countdown",             "destination": "/api/v2?resource=public&op=countdown" },
+    { "source": "/api/admin/send-quarterly-letter",       "destination": "/api/v2?resource=admin&op=send-quarterly-letter" },
+    { "source": "/api/admin/publish-vault-verification",  "destination": "/api/v2?resource=admin&op=publish-vault-verification" },
+    { "source": "/api/admin/generate-tax-statement",      "destination": "/api/v2?resource=admin&op=generate-tax-statement" },
+    { "source": "/api/admin/letters",                     "destination": "/api/v2?resource=admin&op=letters" },
+    { "source": "/api/admin/tax-statements",              "destination": "/api/v2?resource=admin&op=tax-statements" },
+    { "source": "/api/bridge",                            "destination": "/api/bridge" },
+    { "source": "/api/member/deals",                      "destination": "/api/v2?resource=member&op=deals" },
+    { "source": "/fund-positions",                        "destination": "/api/doc?id=deals-page" },
+    { "source": "/_lib/(.*)",         "destination": "/404" },
+    { "source": "/api/_lib/(.*)",     "destination": "/404" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Frame-Options",              "value": "DENY" },
+        { "key": "X-Content-Type-Options",       "value": "nosniff" },
+        { "key": "Referrer-Policy",              "value": "strict-origin-when-cross-origin" }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "X-Robots-Tag",  "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/admin",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "X-Robots-Tag",  "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/main",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "X-Robots-Tag",  "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/memo",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "X-Robots-Tag",  "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/nda",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "X-Robots-Tag",  "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/portfolio",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "X-Robots-Tag",  "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/subscription",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "X-Robots-Tag",  "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/code",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "X-Robots-Tag",  "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/login",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "X-Robots-Tag",  "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/setup-password",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "X-Robots-Tag",  "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/forgot-password",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "X-Robots-Tag",  "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/reset-password",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "X-Robots-Tag",  "value": "noindex, nofollow" }
+      ]
+    }
+  ]
+}

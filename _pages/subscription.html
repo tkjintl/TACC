@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<meta name="theme-color" content="#070706">
+<title>Gold Subscription — The Aurum Century Club</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23070706'/><rect x='4' y='4' width='24' height='24' fill='none' stroke='%23C5A572' stroke-width='1'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='14' font-style='italic' fill='%23C5A572'>Au</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400&family=DM+Sans:wght@400;500&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/_styles/tokens.css">
+<style>
+
+/* ─── Page nav ─────────────────────────────────────────────────────── */
+.page-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  background: rgba(7,7,6,0.92);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.member-badge {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--goldA);
+  border: 1px solid var(--goldBorderS);
+  padding: 5px 12px;
+}
+
+/* ─── Page layout ──────────────────────────────────────────────────── */
+.page-content {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 120px 32px 100px;
+}
+
+@media (max-width: 768px) {
+  .page-content { padding: 100px 20px 80px; }
+  .page-nav { padding: 16px 20px; }
+}
+
+/* ─── Progress indicator ───────────────────────────────────────────── */
+.step-nav {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 64px;
+  border: 1px solid var(--border);
+}
+
+.step-item {
+  flex: 1;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+  border-right: 1px solid var(--border);
+  transition: background var(--dur-base) ease, color var(--dur-base) ease;
+  text-align: center;
+}
+
+.step-item:last-child { border-right: none; }
+
+.step-item.active {
+  background: var(--goldMuted);
+  color: var(--goldA);
+}
+
+.step-item.done {
+  color: var(--green);
+}
+
+.step-num {
+  font-size: 9px;
+  opacity: 0.6;
+}
+
+@media (max-width: 480px) {
+  .step-item { padding: 10px 8px; font-size: 9px; letter-spacing: 0.08em; }
+  .step-num { display: none; }
+}
+
+/* On 375px the 3-step nav needs to scroll horizontally */
+@media (max-width: 390px) {
+  .step-nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+  }
+  .step-nav::-webkit-scrollbar { display: none; }
+  .step-item { flex-shrink: 0; min-width: 80px; }
+}
+
+/* ─── Form sections ────────────────────────────────────────────────── */
+.form-section {
+  display: none;
+}
+
+.form-section.active {
+  display: block;
+  animation: sectionIn 250ms var(--ease-entrance) both;
+}
+
+@keyframes sectionIn {
+  from { opacity: 0; transform: translateX(8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ─── Section headings ─────────────────────────────────────────────── */
+.section-title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(28px, 4vw, 40px);
+  letter-spacing: 0.04em;
+  margin-bottom: 40px;
+  line-height: 1.15;
+}
+
+/* ─── Spot price strip ─────────────────────────────────────────────── */
+.spot-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.spot-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.spot-value {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  transition: color 1800ms ease;
+}
+
+.spot-updated {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+/* ─── Kilo input ───────────────────────────────────────────────────── */
+.kilo-input-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin: 40px 0;
+}
+
+.kilo-stepper {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 20px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease, background var(--dur-fast) ease;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.kilo-stepper:hover {
+  border-color: var(--goldBorderS);
+  color: var(--goldA);
+  background: var(--goldMuted);
+}
+
+.kilo-stepper:active { transform: scale(0.92); }
+
+.kilo-display {
+  font-family: var(--font-display);
+  font-size: clamp(52px, 10vw, 80px);
+  font-weight: 300;
+  color: var(--text);
+  letter-spacing: 0.02em;
+  min-width: 120px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  background: none;
+  border: none;
+  outline: none;
+  cursor: default;
+}
+
+.kilo-unit {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+  display: block;
+  text-align: center;
+  margin-top: -4px;
+}
+
+/* ─── Live calculation ─────────────────────────────────────────────── */
+.calc-display {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 24px 28px;
+  margin-bottom: 40px;
+}
+
+.calc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.calc-row:last-child { border-bottom: none; }
+
+.calc-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.calc-value {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.calc-note {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-top: 14px;
+}
+
+/* ─── LTV acknowledgement card ─────────────────────────────────────── */
+.ltv-card {
+  background: var(--surface);
+  border: 1px solid var(--amberBd);
+  border-left: 3px solid var(--amber);
+  padding: 28px 32px;
+  margin: 40px 0;
+}
+
+.ltv-card-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--amber);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.ltv-card-body {
+  font-family: var(--font-display);
+  font-size: 17px;
+  line-height: 1.8;
+  color: rgba(237,232,223,0.80);
+  margin-bottom: 24px;
+}
+
+/* ─── Checkbox item ─────────────────────────────────────────────────── */
+.check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.check-item:last-child { margin-bottom: 0; }
+
+.check-box {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 2px;
+  transition: border-color var(--dur-fast) ease, background var(--dur-fast) ease;
+  position: relative;
+}
+
+.check-box:checked {
+  background: var(--goldMuted);
+  border-color: var(--goldBorderM);
+}
+
+.check-box:checked::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--goldA);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.check-label {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(237,232,223,0.75);
+  cursor: pointer;
+}
+
+/* ─── Two-column form grid ─────────────────────────────────────────── */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 480px) {
+  .form-grid { grid-template-columns: 1fr; }
+}
+
+.form-grid .full-width { grid-column: 1 / -1; }
+
+/* ─── Korean notice ─────────────────────────────────────────────────── */
+.korea-notice {
+  display: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--blue);
+  padding: 20px 24px;
+  margin: 8px 0 20px;
+}
+
+.korea-notice.visible { display: block; }
+
+.korea-notice-text {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+
+/* ─── Review summary card ───────────────────────────────────────────── */
+.review-card {
+  background: var(--surface);
+  border: 1px solid var(--goldBorderS);
+  padding: 32px;
+  margin-bottom: 40px;
+}
+
+.review-card-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--goldA);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+
+.review-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.review-row:last-child { border-bottom: none; }
+
+.review-key {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  text-transform: uppercase;
+  flex-shrink: 0;
+  min-width: 160px;
+}
+
+.review-val {
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--text);
+  text-align: right;
+  word-break: break-word;
+}
+
+/* ─── E-signature ──────────────────────────────────────────────────── */
+.esig-block {
+  margin: 40px 0;
+}
+
+.esig-label {
+  font-family: var(--font-display);
+  font-size: 17px;
+  line-height: 1.7;
+  color: rgba(237,232,223,0.75);
+  margin-bottom: 20px;
+}
+
+.esig-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: end;
+}
+
+@media (max-width: 480px) { .esig-row { grid-template-columns: 1fr; } }
+
+.esig-date {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.sig-error {
+  display: none;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--red);
+  margin-top: 6px;
+}
+
+.sig-error.visible { display: block; }
+
+/* ─── Form errors ───────────────────────────────────────────────────── */
+.form-feedback {
+  display: none;
+  padding: 14px 18px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 16px 0;
+  border: 1px solid;
+}
+
+.form-feedback.error {
+  display: block;
+  color: var(--red);
+  border-color: var(--redBd);
+  background: rgba(176,94,86,0.06);
+}
+
+/* ─── Action bar ────────────────────────────────────────────────────── */
+.action-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+}
+
+/* ─── Success state ─────────────────────────────────────────────────── */
+#success-state {
+  display: none;
+  text-align: center;
+  padding: 60px 0;
+}
+
+#success-state.active {
+  display: block;
+  animation: sectionIn 350ms var(--ease-entrance) both;
+}
+
+.success-title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(32px, 5vw, 52px);
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  margin-bottom: 32px;
+}
+
+.success-body {
+  font-family: var(--font-display);
+  font-size: 19px;
+  line-height: 1.85;
+  color: rgba(237,232,223,0.80);
+  max-width: 480px;
+  margin: 0 auto 20px;
+}
+
+.success-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 48px;
+}
+
+.success-seal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ─── Mobile bottom nav ─────────────────────────────────────────────── */
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 100;
+  background: var(--near);
+  border-top: 1px solid var(--border);
+  padding: 10px 24px max(10px, env(safe-area-inset-bottom));
+  justify-content: space-around;
+  align-items: center;
+  height: 56px;
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-decoration: none;
+  color: var(--muted);
+  transition: color 180ms ease;
+  min-width: 48px;
+}
+
+.mobile-nav-item.active { color: var(--goldA); }
+.mobile-nav-icon { font-size: 18px; line-height: 1; }
+.mobile-nav-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-bottom: 1px solid transparent;
+}
+
+.mobile-nav-item.active .mobile-nav-label { border-bottom-color: var(--goldA); }
+
+@media (max-width: 768px) {
+  .mobile-nav { display: flex; }
+  .page-content { padding-bottom: 120px; }
+}
+
+/* ─── Bilingual ────────────────────────────────────────────────────── */
+[data-lang]{display:none}
+.lang-en [data-lang="en"],.lang-en [data-lang="en"].block{display:inline}.lang-en [data-lang="en"].block{display:block}
+.lang-ko [data-lang="ko"],.lang-ko [data-lang="ko"].block{display:inline}.lang-ko [data-lang="ko"].block{display:block}
+
+/* ─── Mobile fixes ─────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .page-content { padding: 100px 20px 120px; }
+  .page-nav { padding: 16px 20px; }
+}
+
+@media (max-width: 430px) {
+  .page-content { padding: 90px 16px 120px; }
+  .page-nav { padding: 14px 16px; }
+  /* iOS zoom prevention — all form inputs */
+  .input-field { font-size: 16px !important; }
+  select.input-field { font-size: 16px !important; }
+  textarea.input-field { font-size: 16px !important; }
+  /* Touch targets */
+  .kilo-stepper { width: 56px; height: 56px; }
+  .btn-primary, .btn-ghost { min-height: 48px; }
+  .check-box { width: 24px; height: 24px; flex-shrink: 0; }
+  /* Kilo display scale */
+  .kilo-display { font-size: clamp(44px, 14vw, 72px); }
+  /* Action bar stack on mobile */
+  .action-bar { flex-direction: column; gap: 12px; align-items: stretch; }
+  .action-bar .btn-primary,
+  .action-bar .btn-ghost { width: 100%; justify-content: center; }
+  /* LTV card padding */
+  .ltv-card { padding: 20px 16px; }
+  /* Review card padding */
+  .review-card { padding: 20px 16px; }
+  /* Review rows: stack key/value on narrow */
+  .review-row { flex-direction: column; gap: 4px; }
+  .review-val { text-align: left; }
+  .review-key { min-width: unset; }
+  /* Member badge shrink */
+  .member-badge { font-size: 10px; padding: 4px 8px; }
+}
+
+@media (max-width: 390px) {
+  .esig-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 375px) {
+  .page-content { padding: 86px 14px 120px; }
+  .section-title { font-size: clamp(22px, 7vw, 32px); }
+  .spot-strip { flex-direction: column; align-items: flex-start; gap: 4px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-veil" id="page-veil"></div>
+
+<!-- Nav -->
+<nav class="page-nav" role="navigation">
+  <a href="/memo" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+    <div class="seal"><em>Au</em></div>
+    <span style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.22em;color:var(--muted);text-transform:uppercase;">Subscription</span>
+  </a>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button class="lang-btn" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" onclick="setLang('ko')">한국어</button>
+    <span class="member-badge" id="member-badge">#—</span>
+  </div>
+</nav>
+
+<main class="page-content">
+
+  <!-- Progress bar -->
+  <nav class="step-nav" id="step-nav" aria-label="Subscription steps" data-reveal>
+    <div class="step-item active" data-step="1">
+      <span class="step-num">1</span> Subscription
+    </div>
+    <div class="step-item" data-step="2">
+      <span class="step-num">2</span> Investor Profile
+    </div>
+    <div class="step-item" data-step="3">
+      <span class="step-num">3</span> Confirmation
+    </div>
+  </nav>
+
+  <!-- ─── SECTION 1: Subscription Details ─────────────────────────── -->
+  <div class="form-section active" id="section-1" data-reveal>
+    <h1 class="section-title">Subscription <em class="gold-gradient">Details</em></h1>
+
+    <!-- Spot price strip -->
+    <div class="spot-strip" id="spot-strip">
+      <span class="spot-label">Current XAU/USD</span>
+      <span class="spot-value" id="spot-value">—</span>
+      <span class="spot-updated" id="spot-updated">Updating</span>
+    </div>
+
+    <!-- Kilo input -->
+    <div class="kilo-input-wrap">
+      <button type="button" class="kilo-stepper" id="kilo-minus" aria-label="Decrease">−</button>
+      <div>
+        <div class="kilo-display" id="kilo-display" aria-live="polite">1</div>
+        <span class="kilo-unit">Kilogram bars</span>
+      </div>
+      <button type="button" class="kilo-stepper" id="kilo-plus" aria-label="Increase">+</button>
+    </div>
+
+    <!-- Live calculation -->
+    <div class="calc-display" id="calc-display">
+      <div class="calc-row">
+        <span class="calc-label">Estimated Value (USD)</span>
+        <span class="calc-value" id="calc-usd">—</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">Estimated Value (SGD)</span>
+        <span class="calc-value" id="calc-sgd">—</span>
+      </div>
+      <p class="calc-note">Illustrative — actual amount fixed at trade execution</p>
+    </div>
+
+    <!-- Procurement buffer notice -->
+    <p style="font-family:var(--font-ui);font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:32px;">
+      A procurement buffer of up to 3% of your wired amount is retained by the Fund for execution costs. Unused amounts are reconciled annually and returned to members.
+    </p>
+
+    <!-- LTV acknowledgement -->
+    <div class="ltv-card">
+      <div class="ltv-card-title">Fund Leverage Condition</div>
+      <p class="ltv-card-body">As a condition of membership, the Fund applies a minimum 50% loan-to-value ratio against your gold collateral. This credit facility (capped at 75% LTV) is a structural feature of the vehicle — not an election. You will not be asked to manage the LTV position. A 70% LTV level triggers a member alert. An 80% LTV level triggers a bank margin call. The manager's mandate is to operate the facility below 75% under normal conditions.</p>
+
+      <div class="check-item">
+        <input type="checkbox" class="check-box" id="check-ltv" name="check-ltv">
+        <label for="check-ltv" class="check-label">I understand and acknowledge the LTV mechanics described above, including the credit facility, the 75% ceiling, and my non-election of this structural feature.</label>
+      </div>
+
+      <br>
+
+      <div class="check-item">
+        <input type="checkbox" class="check-box" id="check-capital-call" name="check-capital-call">
+        <label for="check-capital-call" class="check-label">I acknowledge that my aggregate capital call obligation may not exceed 100% of my original subscription amount.</label>
+      </div>
+    </div>
+
+    <div class="form-feedback" id="s1-feedback" role="alert" aria-live="polite"></div>
+
+    <div class="action-bar">
+      <button type="button" class="btn-primary" id="s1-next">
+        Next: Investor Profile &nbsp;→
+      </button>
+    </div>
+  </div>
+
+  <!-- ─── SECTION 2: Investor Profile ─────────────────────────────── -->
+  <div class="form-section" id="section-2">
+    <h2 class="section-title">Investor <em class="gold-gradient">Profile</em></h2>
+
+    <div class="form-grid">
+      <div class="field-group full-width">
+        <label class="field-label" for="legal-name">Legal Full Name (as per passport)</label>
+        <input class="input-field" type="text" id="legal-name" name="legal-name" autocomplete="name" required>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="passport">Passport / NRIC Number</label>
+        <input class="input-field" type="text" id="passport" name="passport" required>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="nationality">Nationality</label>
+        <select class="input-field" id="nationality" name="nationality" required>
+          <option value="">Select</option>
+          <option value="KR">Korean</option>
+          <option value="SG">Singaporean</option>
+          <optgroup label="───────────">
+          <option value="AF">Afghan</option><option value="AL">Albanian</option><option value="DZ">Algerian</option><option value="AR">Argentinian</option><option value="AU">Australian</option><option value="AT">Austrian</option><option value="BE">Belgian</option><option value="BR">Brazilian</option><option value="GB">British</option><option value="CA">Canadian</option><option value="CL">Chilean</option><option value="CN">Chinese</option><option value="CO">Colombian</option><option value="HR">Croatian</option><option value="CZ">Czech</option><option value="DK">Danish</option><option value="EG">Egyptian</option><option value="FI">Finnish</option><option value="FR">French</option><option value="DE">German</option><option value="GH">Ghanaian</option><option value="GR">Greek</option><option value="HK">Hong Kong</option><option value="HU">Hungarian</option><option value="IN">Indian</option><option value="ID">Indonesian</option><option value="IR">Iranian</option><option value="IE">Irish</option><option value="IL">Israeli</option><option value="IT">Italian</option><option value="JP">Japanese</option><option value="JO">Jordanian</option><option value="KE">Kenyan</option><option value="KW">Kuwaiti</option><option value="LB">Lebanese</option><option value="MY">Malaysian</option><option value="MX">Mexican</option><option value="MN">Mongolian</option><option value="MA">Moroccan</option><option value="NL">Dutch</option><option value="NZ">New Zealander</option><option value="NG">Nigerian</option><option value="NO">Norwegian</option><option value="PK">Pakistani</option><option value="PE">Peruvian</option><option value="PH">Filipino</option><option value="PL">Polish</option><option value="PT">Portuguese</option><option value="QA">Qatari</option><option value="RO">Romanian</option><option value="RU">Russian</option><option value="SA">Saudi</option><option value="ZA">South African</option><option value="ES">Spanish</option><option value="SE">Swedish</option><option value="CH">Swiss</option><option value="TW">Taiwanese</option><option value="TH">Thai</option><option value="TN">Tunisian</option><option value="TR">Turkish</option><option value="UA">Ukrainian</option><option value="AE">Emirati</option><option value="US">American</option><option value="UY">Uruguayan</option><option value="VN">Vietnamese</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="tax-residency">Country of Tax Residency</label>
+        <select class="input-field" id="tax-residency" name="tax-residency" required>
+          <option value="">Select</option>
+          <option value="KR">South Korea</option>
+          <option value="SG">Singapore</option>
+          <optgroup label="───────────">
+          <option value="AU">Australia</option><option value="AT">Austria</option><option value="BE">Belgium</option><option value="BR">Brazil</option><option value="CA">Canada</option><option value="CN">China</option><option value="DK">Denmark</option><option value="EG">Egypt</option><option value="FR">France</option><option value="DE">Germany</option><option value="HK">Hong Kong</option><option value="IN">India</option><option value="ID">Indonesia</option><option value="IE">Ireland</option><option value="IL">Israel</option><option value="IT">Italy</option><option value="JP">Japan</option><option value="KW">Kuwait</option><option value="LB">Lebanon</option><option value="MY">Malaysia</option><option value="MX">Mexico</option><option value="NL">Netherlands</option><option value="NZ">New Zealand</option><option value="NG">Nigeria</option><option value="NO">Norway</option><option value="PK">Pakistan</option><option value="PH">Philippines</option><option value="PL">Poland</option><option value="PT">Portugal</option><option value="QA">Qatar</option><option value="RU">Russia</option><option value="SA">Saudi Arabia</option><option value="ZA">South Africa</option><option value="ES">Spain</option><option value="SE">Sweden</option><option value="CH">Switzerland</option><option value="TW">Taiwan</option><option value="TH">Thailand</option><option value="TR">Turkey</option><option value="AE">United Arab Emirates</option><option value="GB">United Kingdom</option><option value="US">United States</option><option value="VN">Vietnam</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <!-- AI status -->
+      <div class="field-group full-width">
+        <label class="field-label">Singapore Accredited Investor Status</label>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+          <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;">
+            <input type="radio" name="ai-status" value="assets" style="margin-top:3px;accent-color:var(--goldA);" required>
+            <span style="font-family:var(--font-ui);font-size:14px;color:var(--muted);line-height:1.6;">Net personal assets exceeding S$2 million (or equivalent)</span>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;">
+            <input type="radio" name="ai-status" value="income" style="margin-top:3px;accent-color:var(--goldA);">
+            <span style="font-family:var(--font-ui);font-size:14px;color:var(--muted);line-height:1.6;">Net income exceeding S$300,000 in the preceding three years</span>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;">
+            <input type="radio" name="ai-status" value="institutional" style="margin-top:3px;accent-color:var(--goldA);">
+            <span style="font-family:var(--font-ui);font-size:14px;color:var(--muted);line-height:1.6;">Institutional investor as defined under the Securities and Futures Act</span>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;">
+            <input type="radio" name="ai-status" value="reverse-solicitation" style="margin-top:3px;accent-color:var(--goldA);">
+            <span style="font-family:var(--font-ui);font-size:14px;color:var(--muted);line-height:1.6;">Non-Singapore investor proceeding on a reverse-solicitation basis</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Korean FETA notice (conditional) -->
+      <div class="korea-notice full-width" id="korea-notice">
+        <p class="korea-notice-text">Korean residents are subject to obligations under FETA (Foreign Exchange Transaction Act) and NTS (National Tax Service) reporting requirements for overseas investments. By checking below, you confirm that you are proceeding on a reverse-solicitation basis and that you are aware of your domestic reporting obligations.</p>
+        <div class="check-item">
+          <input type="checkbox" class="check-box" id="check-korea-feta" name="check-korea-feta">
+          <label for="check-korea-feta" class="check-label">I acknowledge my obligations under Korean FETA and NTS reporting requirements. I am proceeding on a reverse-solicitation basis.</label>
+        </div>
+      </div>
+
+      <!-- Source of wealth -->
+      <div class="field-group full-width">
+        <label class="field-label" for="source-wealth">Source of Wealth</label>
+        <textarea class="input-field" id="source-wealth" name="source-wealth" rows="5" placeholder="Describe the primary source of the capital you are subscribing. This is required for Singapore VCC compliance." style="resize:vertical;line-height:1.6;" required minlength="80"></textarea>
+        <span style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.14em;color:var(--dim);text-transform:uppercase;margin-top:4px;">Minimum 80 characters · Required for VCC compliance</span>
+        <span class="field-error" id="sow-error">Please provide at least 80 characters describing your source of wealth.</span>
+      </div>
+    </div>
+
+    <div class="form-feedback" id="s2-feedback" role="alert" aria-live="polite"></div>
+
+    <div class="action-bar" style="justify-content:space-between;">
+      <button type="button" class="btn-ghost" id="s2-back">← Back</button>
+      <button type="button" class="btn-primary" id="s2-next">Next: Review & Confirm &nbsp;→</button>
+    </div>
+  </div>
+
+  <!-- ─── SECTION 3: Confirmation ──────────────────────────────────── -->
+  <div class="form-section" id="section-3">
+    <h2 class="section-title">Review & <em class="gold-gradient">Confirm</em></h2>
+
+    <!-- Summary card -->
+    <div class="review-card" id="review-card">
+      <div class="review-card-title">Subscription Summary</div>
+      <div id="review-rows">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- E-signature -->
+    <div class="esig-block">
+      <p class="esig-label">By entering your full legal name below, you provide your legally binding electronic signature on this subscription form. The name must exactly match the legal name provided in your investor profile.</p>
+      <div class="esig-row">
+        <div class="field-group">
+          <label class="field-label" for="esig-input">Full Legal Name</label>
+          <input class="input-field" type="text" id="esig-input" name="esig" autocomplete="name" required>
+          <span class="sig-error" id="sig-error">The name entered does not match your legal name. Please verify and re-enter.</span>
+        </div>
+        <div class="esig-date" id="esig-date" aria-label="Signature date">—</div>
+      </div>
+    </div>
+
+    <!-- Final acknowledgements -->
+    <div style="margin: 32px 0; padding: 28px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); display:flex;flex-direction:column;gap:16px;">
+      <div class="check-item">
+        <input type="checkbox" class="check-box" id="check-im" name="check-im">
+        <label for="check-im" class="check-label">I have read and understood the Information Memorandum.</label>
+      </div>
+      <div class="check-item">
+        <input type="checkbox" class="check-box" id="check-qi" name="check-qi">
+        <label for="check-qi" class="check-label">I am a qualified investor under applicable law and am not in breach of any regulatory requirement by subscribing.</label>
+      </div>
+      <div class="check-item">
+        <input type="checkbox" class="check-box" id="check-illiquid" name="check-illiquid">
+        <label for="check-illiquid" class="check-label">I understand the fund is illiquid with a base term of 5 years (maximum 7 years) and I am investing capital I can hold for this period without hardship.</label>
+      </div>
+    </div>
+
+    <div class="form-feedback" id="s3-feedback" role="alert" aria-live="polite"></div>
+
+    <div class="action-bar" style="justify-content:space-between;">
+      <button type="button" class="btn-ghost" id="s3-back">← Back</button>
+      <button type="button" class="btn-primary" id="s3-submit">Confirm Subscription</button>
+    </div>
+  </div>
+
+  <!-- ─── SUCCESS STATE ─────────────────────────────────────────────── -->
+  <div id="success-state">
+    <div class="success-seal">
+      <div class="seal seal--lg"><em>Au</em></div>
+    </div>
+    <br><br>
+    <h2 class="success-title">Your Subscription<br>Has Been <em class="gold-gradient">Received</em></h2>
+    <p class="success-body">Your subscription form has been received. A subscription agreement and wire instructions will be prepared within two business days. Your position is held.</p>
+    <p class="success-sub">You will receive confirmation by email and in your Messages.</p>
+    <a href="/portfolio" class="btn-primary">Return to Portfolio</a>
+  </div>
+
+</main>
+
+<!-- Mobile bottom nav -->
+<nav class="mobile-nav" aria-label="Mobile navigation">
+  <a href="/portfolio" class="mobile-nav-item">
+    <span class="mobile-nav-icon">⌂</span>
+    <span class="mobile-nav-label"><span data-lang="en">Overview</span><span data-lang="ko">개요</span></span>
+  </a>
+  <a href="/gold" class="mobile-nav-item">
+    <span class="mobile-nav-icon">◈</span>
+    <span class="mobile-nav-label"><span data-lang="en">Gold</span><span data-lang="ko">금</span></span>
+  </a>
+  <a href="/documents" class="mobile-nav-item">
+    <span class="mobile-nav-icon">⊟</span>
+    <span class="mobile-nav-label"><span data-lang="en">Documents</span><span data-lang="ko">문서</span></span>
+  </a>
+  <a href="/messages" class="mobile-nav-item">
+    <span class="mobile-nav-icon">✉</span>
+    <span class="mobile-nav-label"><span data-lang="en">Messages</span><span data-lang="ko">메시지</span></span>
+  </a>
+</nav>
+
+<script src="/_scripts/shared.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ─── State ──────────────────────────────────────────────────── */
+  var currentSection = 1;
+  var spotUSD = 0;
+  var sgdRate = 1.35; // fallback
+  var kilos = 1;
+
+  var formData = {
+    kilos: 1,
+    checkLtv: false,
+    checkCapitalCall: false,
+    legalName: '',
+    passport: '',
+    nationality: '',
+    taxResidency: '',
+    aiStatus: '',
+    koreaFeta: false,
+    sourceWealth: '',
+    esig: ''
+  };
+
+  /* ─── Member badge ───────────────────────────────────────────── */
+  fetch('/api/v2?resource=member&op=me', { credentials: 'same-origin' })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var badge = document.getElementById('member-badge');
+      if (badge && d.member_number) badge.textContent = '#' + d.member_number;
+    })
+    .catch(function () {});
+
+  /* ─── Spot price ─────────────────────────────────────────────── */
+  function loadSpot() {
+    fetch('/api/v2?resource=public&op=spot', { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        spotUSD = parseFloat(d.spot_usd || d.price || 0);
+        sgdRate = parseFloat(d.sgd_rate || sgdRate);
+        var el = document.getElementById('spot-value');
+        if (el) {
+          TACC.flashGoldPrice(el, spotUSD);
+          el.textContent = '$' + spotUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        var upd = document.getElementById('spot-updated');
+        if (upd) {
+          var now = new Date();
+          upd.textContent = 'Updated ' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0') + ' SGT';
+        }
+        updateCalc();
+      })
+      .catch(function () {
+        var el = document.getElementById('spot-value');
+        if (el) el.textContent = 'Unavailable';
+      });
+  }
+
+  function updateCalc() {
+    if (!spotUSD) return;
+    // 1 troy oz = 32.1507 troy oz per kg
+    var ozPerKg = 32.1507;
+    var totalUSD = kilos * ozPerKg * spotUSD;
+    var totalSGD = totalUSD * sgdRate;
+    var usdEl = document.getElementById('calc-usd');
+    var sgdEl = document.getElementById('calc-sgd');
+    if (usdEl) usdEl.textContent = 'USD ' + Math.round(totalUSD).toLocaleString('en-US');
+    if (sgdEl) sgdEl.textContent = 'SGD ' + Math.round(totalSGD).toLocaleString('en-US');
+  }
+
+  loadSpot();
+
+  /* ─── Kilo stepper ───────────────────────────────────────────── */
+  function setKilos(n) {
+    kilos = Math.max(0.5, Math.round(n * 2) / 2); // Half-kg increments
+    kilos = Math.max(1, kilos); // Minimum 1
+    document.getElementById('kilo-display').textContent = kilos % 1 === 0 ? kilos : kilos.toFixed(1);
+    formData.kilos = kilos;
+    updateCalc();
+  }
+
+  document.getElementById('kilo-minus').addEventListener('click', function () { setKilos(kilos - 1); });
+  document.getElementById('kilo-plus').addEventListener('click', function () { setKilos(kilos + 1); });
+
+  /* ─── Korean FETA conditional ────────────────────────────────── */
+  document.getElementById('tax-residency').addEventListener('change', function () {
+    var val = this.value;
+    var notice = document.getElementById('korea-notice');
+    if (val === 'KR') {
+      notice.classList.add('visible');
+    } else {
+      notice.classList.remove('visible');
+      document.getElementById('check-korea-feta').checked = false;
+    }
+  });
+
+  /* ─── Step navigation ────────────────────────────────────────── */
+  function goToSection(n) {
+    document.querySelectorAll('.form-section').forEach(function (s) { s.classList.remove('active'); });
+    document.getElementById('section-' + n).classList.add('active');
+
+    document.querySelectorAll('.step-item').forEach(function (item) {
+      var step = parseInt(item.getAttribute('data-step'));
+      item.classList.remove('active', 'done');
+      if (step === n) item.classList.add('active');
+      else if (step < n) item.classList.add('done');
+    });
+
+    currentSection = n;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* ─── Section 1 validation ───────────────────────────────────── */
+  document.getElementById('s1-next').addEventListener('click', function () {
+    var feedback = document.getElementById('s1-feedback');
+    feedback.className = 'form-feedback';
+
+    if (!document.getElementById('check-ltv').checked) {
+      feedback.className = 'form-feedback error';
+      feedback.textContent = 'Please acknowledge the Fund Leverage Condition to proceed.';
+      return;
+    }
+    if (!document.getElementById('check-capital-call').checked) {
+      feedback.className = 'form-feedback error';
+      feedback.textContent = 'Please acknowledge the capital call conditions to proceed.';
+      return;
+    }
+
+    formData.checkLtv = true;
+    formData.checkCapitalCall = true;
+    goToSection(2);
+  });
+
+  /* ─── Section 2 validation ───────────────────────────────────── */
+  document.getElementById('s2-back').addEventListener('click', function () { goToSection(1); });
+
+  document.getElementById('s2-next').addEventListener('click', function () {
+    var feedback = document.getElementById('s2-feedback');
+    feedback.className = 'form-feedback';
+
+    var legalName = document.getElementById('legal-name').value.trim();
+    var passport = document.getElementById('passport').value.trim();
+    var nationality = document.getElementById('nationality').value;
+    var taxResidency = document.getElementById('tax-residency').value;
+    var aiStatus = document.querySelector('input[name="ai-status"]:checked');
+    var sow = document.getElementById('source-wealth').value.trim();
+    var sowErr = document.getElementById('sow-error');
+
+    sowErr.classList.remove('visible');
+
+    if (!legalName || !passport || !nationality || !taxResidency || !aiStatus) {
+      feedback.className = 'form-feedback error';
+      feedback.textContent = 'Please complete all required fields before proceeding.';
+      return;
+    }
+
+    if (taxResidency === 'KR' && !document.getElementById('check-korea-feta').checked) {
+      feedback.className = 'form-feedback error';
+      feedback.textContent = 'Korean residents must acknowledge the FETA and NTS reporting obligations.';
+      return;
+    }
+
+    if (sow.length < 80) {
+      sowErr.classList.add('visible');
+      feedback.className = 'form-feedback error';
+      feedback.textContent = 'Please provide a more detailed description of your source of wealth (minimum 80 characters).';
+      return;
+    }
+
+    formData.legalName = legalName;
+    formData.passport = passport;
+    formData.nationality = nationality;
+    formData.taxResidency = taxResidency;
+    formData.aiStatus = aiStatus.value;
+    formData.koreaFeta = document.getElementById('check-korea-feta').checked;
+    formData.sourceWealth = sow;
+
+    buildReviewCard();
+    goToSection(3);
+  });
+
+  /* ─── Build review summary ───────────────────────────────────── */
+  function buildReviewCard() {
+    var rows = document.getElementById('review-rows');
+    var ozPerKg = 32.1507;
+    var totalUSD = formData.kilos * ozPerKg * spotUSD;
+    var totalSGD = totalUSD * sgdRate;
+
+    var aiLabels = {
+      assets: 'Net assets > S$2M',
+      income: 'Net income > S$300K (3 years)',
+      institutional: 'Institutional investor',
+      'reverse-solicitation': 'Reverse solicitation'
+    };
+
+    var items = [
+      ['Gold Subscription', formData.kilos + ' kilogram bar' + (formData.kilos > 1 ? 's' : '')],
+      ['Estimated Value', 'SGD ' + Math.round(totalSGD).toLocaleString('en-US') + ' / USD ' + Math.round(totalUSD).toLocaleString('en-US')],
+      ['Legal Name', formData.legalName],
+      ['Passport / NRIC', formData.passport],
+      ['Nationality', formData.nationality],
+      ['Tax Residency', formData.taxResidency],
+      ['Investor Status', aiLabels[formData.aiStatus] || formData.aiStatus],
+    ];
+
+    rows.innerHTML = items.map(function (item) {
+      return '<div class="review-row"><span class="review-key">' + item[0] + '</span><span class="review-val">' + item[1] + '</span></div>';
+    }).join('');
+
+    // Set date
+    var now = new Date();
+    var dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+    document.getElementById('esig-date').textContent = dateStr;
+  }
+
+  /* ─── Section 3 validation + submit ─────────────────────────── */
+  document.getElementById('s3-back').addEventListener('click', function () { goToSection(2); });
+
+  document.getElementById('s3-submit').addEventListener('click', function () {
+    var feedback = document.getElementById('s3-feedback');
+    feedback.className = 'form-feedback';
+
+    var esig = document.getElementById('esig-input').value.trim();
+    var sigErr = document.getElementById('sig-error');
+    sigErr.classList.remove('visible');
+
+    if (esig.toLowerCase() !== formData.legalName.toLowerCase()) {
+      sigErr.classList.add('visible');
+      feedback.className = 'form-feedback error';
+      feedback.textContent = 'Your electronic signature does not match your legal name. Please re-enter.';
+      return;
+    }
+
+    if (!document.getElementById('check-im').checked ||
+        !document.getElementById('check-qi').checked ||
+        !document.getElementById('check-illiquid').checked) {
+      feedback.className = 'form-feedback error';
+      feedback.textContent = 'Please confirm all three acknowledgements before submitting.';
+      return;
+    }
+
+    var btn = document.getElementById('s3-submit');
+    btn.disabled = true;
+    btn.textContent = '—';
+
+    var payload = Object.assign({}, formData, { esig: esig });
+
+    fetch('/api/subscription', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function (r) {
+      if (r.ok) return r.json();
+      return r.json().then(function (d) { throw new Error(d.message || 'error'); });
+    })
+    .then(function () {
+      document.querySelectorAll('.form-section').forEach(function (s) { s.classList.remove('active'); });
+      document.getElementById('step-nav').style.display = 'none';
+      var ss = document.getElementById('success-state');
+      ss.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    })
+    .catch(function (err) {
+      btn.disabled = false;
+      btn.textContent = 'Confirm Subscription';
+      feedback.className = 'form-feedback error';
+      feedback.textContent = 'Your instruction could not be processed at this time. Please try again or contact your relationship manager.';
+    });
+  });
+
+}());
+</script>
+</body>
+</html>

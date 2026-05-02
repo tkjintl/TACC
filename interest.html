@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<meta name="theme-color" content="#070706">
+<title>Request an Introduction — The Aurum Century Club</title>
+<meta name="description" content="Submit an enquiry to join the Aurum Century Club founding round. By introduction only.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23070706'/><rect x='4' y='4' width='24' height='24' fill='none' stroke='%23C5A572' stroke-width='1'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='14' font-style='italic' fill='%23C5A572'>Au</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400&family=DM+Sans:wght@400;500&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/_styles/tokens.css">
+
+<style>
+.page-wrap {
+  min-height: 100vh;
+  padding: 120px var(--pad-x) 80px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.page-inner {
+  width: 100%;
+  max-width: 1100px;
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 80px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .page-inner {
+    grid-template-columns: 1fr;
+    gap: 60px;
+  }
+  .context-panel {
+    order: -1;
+  }
+}
+
+/* ─── Form panel ───────────────────────────────────────────────────── */
+.form-panel {
+  width: 100%;
+}
+
+.form-header {
+  margin-bottom: 48px;
+}
+
+.form-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.form-title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(32px, 4.5vw, 52px);
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+
+.form-sub {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.enquiry-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Mobile fixes ─────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .page-wrap {
+    padding: 100px 20px 60px;
+  }
+}
+
+@media (max-width: 430px) {
+  .page-wrap {
+    padding: 90px 16px 60px;
+  }
+  /* iOS zoom prevention */
+  .input-field { font-size: 16px !important; }
+  select.input-field { font-size: 16px !important; }
+  /* Touch targets */
+  #submit-btn { min-height: 48px; width: 100%; }
+  .form-submit-row .btn-primary { align-self: stretch; }
+  /* Nav padding safe area */
+  .nav-bar { padding-top: max(20px, env(safe-area-inset-top)); }
+}
+
+@media (max-width: 390px) {
+  .form-title { font-size: clamp(26px, 8vw, 36px); }
+}
+
+@media (max-width: 375px) {
+  .form-title { font-size: 26px; }
+  .page-wrap { padding: 86px 14px 60px; }
+}
+
+.form-submit-row {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 8px;
+}
+
+.form-disclaimer {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--dim);
+  line-height: 1.65;
+}
+
+/* ─── Success state ────────────────────────────────────────────────── */
+.form-success {
+  display: none;
+  padding: 52px 0;
+}
+
+.form-success.visible {
+  display: block;
+}
+
+.form-success-icon {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--goldBorderS);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+
+.form-success-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.form-success-title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 28px;
+  letter-spacing: 0.04em;
+  margin-bottom: 16px;
+}
+
+.form-success-body {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.8;
+  max-width: 440px;
+}
+
+/* ─── Context panel ────────────────────────────────────────────────── */
+.context-panel {
+  position: sticky;
+  top: 120px;
+}
+
+.context-seal-wrap {
+  margin-bottom: 36px;
+}
+
+.context-points {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 48px;
+}
+
+.context-point {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.context-point:first-child {
+  border-top: 1px solid var(--border);
+}
+
+.context-point-num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--goldA);
+  margin-bottom: 8px;
+}
+
+.context-point-text {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.65;
+}
+
+.context-note {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--dim);
+  line-height: 1.7;
+}
+</style>
+</head>
+<body>
+
+<div class="page-veil" id="page-veil"></div>
+
+<!-- Navigation -->
+<nav class="nav-bar" role="navigation" aria-label="Primary">
+  <a href="/" class="nav-lockup" aria-label="Aurum Century Club home">
+    <div class="seal"><em>Au</em></div>
+    <div class="nav-wordmark">
+      <span class="nav-wordmark-title">Aurum</span>
+      <span class="nav-wordmark-sub">Century Club</span>
+    </div>
+  </a>
+  <div class="nav-actions">
+    <a href="/login" class="btn-ghost" style="padding:9px 18px;font-size:11px;">Member Sign In</a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <div class="page-inner">
+
+    <!-- Form panel -->
+    <div class="form-panel">
+      <div class="form-header" data-reveal>
+        <p class="form-eyebrow">Founding Membership Enquiry</p>
+        <h1 class="form-title">Request an<br><em class="gold-gradient">Introduction</em></h1>
+        <p class="form-sub">Complete the form below. Enquiries are reviewed at the discretion of Aurum management.</p>
+      </div>
+
+      <!-- The form -->
+      <form class="enquiry-form" id="enquiry-form" novalidate data-reveal data-delay="100">
+        <div class="form-row">
+          <div class="field-group">
+            <label class="field-label" for="full-name">Full Name</label>
+            <input class="input-field" type="text" id="full-name" name="full_name" placeholder="Your full name" autocomplete="name" required>
+            <span class="field-error" id="err-name">Please enter your full name.</span>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="email">Email Address</label>
+            <input class="input-field" type="email" id="email" name="email" placeholder="your@email.com" autocomplete="email" required>
+            <span class="field-error" id="err-email">Please enter a valid email address.</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="field-group">
+            <label class="field-label" for="country">Country of Residence</label>
+            <select class="input-field" id="country" name="country" required>
+              <option value="" disabled selected>Select country</option>
+              <option value="SG">Singapore</option>
+              <option value="KR">Korea, Republic of</option>
+              <option value="HK">Hong Kong SAR</option>
+              <option disabled>─────────────</option>
+              <option value="AE">United Arab Emirates</option>
+              <option value="AU">Australia</option>
+              <option value="CH">Switzerland</option>
+              <option value="CN">China</option>
+              <option value="DE">Germany</option>
+              <option value="FR">France</option>
+              <option value="GB">United Kingdom</option>
+              <option value="ID">Indonesia</option>
+              <option value="IN">India</option>
+              <option value="JP">Japan</option>
+              <option value="MY">Malaysia</option>
+              <option value="TH">Thailand</option>
+              <option value="TW">Taiwan</option>
+              <option value="US">United States</option>
+              <option value="VN">Vietnam</option>
+              <option value="OTHER">Other</option>
+            </select>
+            <span class="field-error" id="err-country">Please select your country of residence.</span>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="assets">Estimated Investable Assets</label>
+            <select class="input-field" id="assets" name="investable_assets" required>
+              <option value="" disabled selected>Select range</option>
+              <option value="1m_5m">SGD 1M – 5M</option>
+              <option value="5m_20m">SGD 5M – 20M</option>
+              <option value="20m_50m">SGD 20M – 50M</option>
+              <option value="50m_plus">SGD 50M+</option>
+            </select>
+            <span class="field-error" id="err-assets">Please select an asset range.</span>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="occupation">Occupation / Industry</label>
+          <input class="input-field" type="text" id="occupation" name="occupation" placeholder="e.g. Private investor, Finance, Technology" autocomplete="organization-title">
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="referral">How did you hear about us?</label>
+          <select class="input-field" id="referral" name="referral_source">
+            <option value="" disabled selected>Select</option>
+            <option value="personal_intro">Personal introduction</option>
+            <option value="existing_member">Existing member</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-submit-row">
+          <button type="submit" class="btn-primary" id="submit-btn" style="align-self:flex-start;padding:15px 36px;">
+            Submit Enquiry
+          </button>
+          <p class="form-disclaimer">
+            Enquiries are reviewed at the discretion of Aurum management. Admission is not guaranteed.
+            Your information will not be shared with third parties.
+          </p>
+        </div>
+      </form>
+
+      <!-- Success state -->
+      <div class="form-success" id="form-success">
+        <div class="form-success-icon">
+          <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polyline points="3,9 7,13 15,5" stroke="#C5A572" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h2 class="form-success-title">Enquiry Received</h2>
+        <p class="form-success-body">
+          Your enquiry has been received. A member of the Aurum team will be in touch within two business days.
+        </p>
+      </div>
+    </div>
+
+    <!-- Context panel -->
+    <aside class="context-panel" aria-label="Membership information">
+      <div class="context-seal-wrap" data-reveal>
+        <div class="seal seal--lg"><em>Au</em></div>
+      </div>
+      <div class="context-points">
+        <div class="context-point" data-reveal>
+          <div class="context-point-num">01</div>
+          <p class="context-point-text">By invitation only. One hundred founding seats.</p>
+        </div>
+        <div class="context-point" data-reveal data-delay="100">
+          <div class="context-point-num">02</div>
+          <p class="context-point-text">Singapore VCC. Physical gold custody. LBMA standard.</p>
+        </div>
+        <div class="context-point" data-reveal data-delay="200">
+          <div class="context-point-num">03</div>
+          <p class="context-point-text">Enquiries reviewed within two business days.</p>
+        </div>
+      </div>
+      <p class="context-note" data-reveal data-delay="300">
+        The Aurum Century Club is a private vehicle. Admission is subject to eligibility review and suitability assessment. This form does not constitute an offer or commitment of any kind.
+      </p>
+    </aside>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const lang = localStorage.getItem('lang');
+  if (lang) document.documentElement.lang = lang;
+
+  const veil = document.getElementById('page-veil');
+  document.querySelectorAll('a[href]').forEach(function (link) {
+    const href = link.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto')) return;
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      veil.classList.add('covering');
+      setTimeout(function () { window.location.href = href; }, 290);
+    });
+  });
+
+  // Scroll reveal
+  const revealEls = document.querySelectorAll('[data-reveal]');
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    revealEls.forEach(function (el) { observer.observe(el); });
+  } else {
+    revealEls.forEach(function (el) { el.classList.add('revealed'); });
+  }
+
+  // Form validation + submit
+  const form = document.getElementById('enquiry-form');
+  const submitBtn = document.getElementById('submit-btn');
+  const successEl = document.getElementById('form-success');
+
+  function showError(id, show) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('visible', show);
+  }
+
+  function isValidEmail(val) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const name = document.getElementById('full-name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const country = document.getElementById('country').value;
+    const assets = document.getElementById('assets').value;
+
+    let valid = true;
+
+    if (!name) { showError('err-name', true); valid = false; }
+    else showError('err-name', false);
+
+    if (!email || !isValidEmail(email)) { showError('err-email', true); valid = false; }
+    else showError('err-email', false);
+
+    if (!country) { showError('err-country', true); valid = false; }
+    else showError('err-country', false);
+
+    if (!assets) { showError('err-assets', true); valid = false; }
+    else showError('err-assets', false);
+
+    if (!valid) return;
+
+    // Disable and show pending state
+    submitBtn.setAttribute('aria-busy', 'true');
+    submitBtn.textContent = '—';
+
+    const payload = {
+      full_name: name,
+      email: email,
+      country: country,
+      investable_assets: assets,
+      occupation: document.getElementById('occupation').value.trim(),
+      referral_source: document.getElementById('referral').value || ''
+    };
+
+    fetch('/api/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function (r) {
+      if (!r.ok) throw new Error('Request failed');
+      return r.json();
+    })
+    .then(function () {
+      form.style.display = 'none';
+      successEl.classList.add('visible');
+    })
+    .catch(function () {
+      submitBtn.removeAttribute('aria-busy');
+      submitBtn.textContent = 'Submit Enquiry';
+      // Show a gentle error without alarming language
+      const existing = document.getElementById('submit-error');
+      if (!existing) {
+        const errMsg = document.createElement('p');
+        errMsg.id = 'submit-error';
+        errMsg.style.cssText = 'font-family:var(--font-ui);font-size:13px;color:var(--red);margin-top:8px;';
+        errMsg.textContent = 'Your enquiry could not be submitted at this time. Please try again, or contact us directly.';
+        submitBtn.parentNode.insertBefore(errMsg, submitBtn.nextSibling);
+      }
+    });
+  });
+}());
+</script>
+</body>
+</html>

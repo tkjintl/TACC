@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<meta name="theme-color" content="#070706">
+<title>The Aurum Century Club — A Founding Membership in Physical Gold</title>
+<meta name="description" content="One hundred founding seats. Physical gold. Singapore VCC. By introduction only.">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:title" content="The Aurum Century Club">
+<meta property="og:description" content="A founding membership in physical gold. One hundred seats. Singapore VCC.">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://www.theaurumcc.com/">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23070706'/><rect x='4' y='4' width='24' height='24' fill='none' stroke='%23C5A572' stroke-width='1'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='14' font-style='italic' fill='%23C5A572'>Au</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400&family=DM+Sans:wght@400;500&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/_styles/tokens.css">
+
+<style>
+/* ─── Page loader ──────────────────────────────────────────────────── */
+#loader {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 400ms var(--ease-entrance);
+}
+
+#loader .seal {
+  animation: loader-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes loader-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(197,165,114,0); opacity: 0.6; }
+  50%       { box-shadow: 0 0 24px 4px rgba(197,165,114,0.18); opacity: 1; }
+}
+
+/* ─── Canvas ───────────────────────────────────────────────────────── */
+#ambient-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Hero ─────────────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  padding: 140px var(--pad-x) 100px;
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 860px;
+}
+
+.hero-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 36px;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 500ms var(--ease-entrance),
+              transform 500ms var(--ease-entrance);
+}
+
+.hero-headline {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(52px, 8vw, 96px);
+  line-height: 1.05;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  margin-bottom: 36px;
+}
+
+.hero-headline .word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 500ms var(--ease-entrance),
+              transform 500ms var(--ease-entrance);
+}
+
+.hero-sub {
+  font-family: var(--font-display);
+  font-size: clamp(17px, 2.2vw, 21px);
+  font-weight: 300;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  max-width: 540px;
+  line-height: 1.7;
+  margin-bottom: 52px;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 500ms var(--ease-entrance),
+              transform 500ms var(--ease-entrance);
+}
+
+.hero-cta {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 500ms var(--ease-entrance),
+              transform 500ms var(--ease-entrance);
+}
+
+.hero-scroll-hint {
+  position: absolute;
+  bottom: 40px;
+  left: var(--pad-x);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  opacity: 0;
+  transition: opacity 1s ease 2s;
+}
+
+.hero-scroll-hint .line {
+  width: 40px;
+  height: 1px;
+  background: var(--goldBorderS);
+}
+
+.hero-scroll-hint span {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+/* ─── Section base ─────────────────────────────────────────────────── */
+.section {
+  padding: var(--gap-section) var(--pad-x);
+  position: relative;
+  max-width: calc(var(--content-max) + var(--pad-x) * 2);
+  margin: 0 auto;
+}
+
+.section-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.section-heading {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(36px, 5vw, 60px);
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  margin-bottom: 52px;
+}
+
+/* ─── Fund section ─────────────────────────────────────────────────── */
+.fund-section {
+  border-top: 1px solid var(--border);
+}
+
+.fund-body {
+  max-width: 680px;
+}
+
+.fund-body p {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 400;
+  line-height: 1.8;
+  color: rgba(237,232,223,0.80);
+  margin-bottom: 28px;
+}
+
+.fund-body p:last-child {
+  margin-bottom: 0;
+}
+
+.fund-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  margin-top: 64px;
+  border: 1px solid var(--border);
+}
+
+.fund-stat {
+  background: var(--surface);
+  padding: 32px 28px;
+}
+
+.fund-stat-value {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  color: var(--goldB);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 10px;
+}
+
+.fund-stat-label {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .fund-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Cohort section ───────────────────────────────────────────────── */
+.cohort-section {
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.seat-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 6px;
+  max-width: 600px;
+  margin: 0 auto 48px;
+}
+
+.seat {
+  aspect-ratio: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: background 600ms var(--ease-entrance),
+              border-color 600ms var(--ease-entrance),
+              box-shadow 600ms var(--ease-entrance);
+}
+
+.seat.filled {
+  background: var(--goldMuted);
+  border-color: var(--goldBorderS);
+}
+
+.seat.filled:hover {
+  box-shadow: 0 0 8px rgba(197,165,114,0.2);
+}
+
+.cohort-count {
+  font-family: var(--font-mono);
+  font-size: clamp(48px, 6vw, 64px);
+  color: var(--goldB);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+
+.cohort-sub {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* ─── Vault section ────────────────────────────────────────────────── */
+.vault-section {
+  border-top: 1px solid var(--border);
+}
+
+.vault-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .vault-layout {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+}
+
+.world-map-wrap {
+  position: relative;
+}
+
+.world-map-svg {
+  width: 100%;
+  opacity: 0.55;
+}
+
+.sg-dot-wrap {
+  position: absolute;
+  /* Singapore approx position */
+  left: 66%;
+  top: 51%;
+  transform: translate(-50%, -50%);
+}
+
+.sg-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--goldB);
+  box-shadow: 0 0 0 0 rgba(212,175,122,0.6);
+  animation: sg-pulse 2.4s ease-in-out infinite;
+  cursor: pointer;
+}
+
+@keyframes sg-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(212,175,122,0.6); }
+  70%  { box-shadow: 0 0 0 12px rgba(212,175,122,0); }
+  100% { box-shadow: 0 0 0 0 rgba(212,175,122,0); }
+}
+
+.sg-tooltip {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface);
+  border: 1px solid var(--goldBorderS);
+  padding: 14px 18px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+  z-index: 10;
+}
+
+.sg-dot-wrap:hover .sg-tooltip {
+  opacity: 1;
+}
+
+.sg-tooltip-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--goldA);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.sg-tooltip-items {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.9;
+}
+
+.vault-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.vault-stat {
+  padding: 28px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.vault-stat:first-child {
+  padding-top: 0;
+}
+
+.vault-stat:last-child {
+  border-bottom: none;
+}
+
+.vault-stat-value {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.vault-stat-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* ─── Closing CTA ──────────────────────────────────────────────────── */
+.closing-section {
+  border-top: 1px solid var(--border);
+  text-align: center;
+  padding-top: var(--gap-section);
+  padding-bottom: var(--gap-section);
+}
+
+.closing-section .section-heading {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 20px;
+}
+
+.closing-sub {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 300;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  margin-bottom: 48px;
+}
+
+/* ─── Footer ───────────────────────────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 48px var(--pad-x);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.footer-lockup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.footer-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.footer-company {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.footer-legal {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--dim);
+  max-width: 480px;
+  line-height: 1.7;
+  text-align: right;
+}
+
+@media (max-width: 768px) {
+  footer {
+    flex-direction: column;
+    gap: 32px;
+  }
+  .footer-legal {
+    text-align: left;
+  }
+  /* Nav: collapse CTA text on small screens */
+  .nav-actions a.btn-primary span { display: none; }
+}
+
+/* ─── Nav visible on scroll ────────────────────────────────────────── */
+.nav-bar {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+/* ─── Mobile breakpoints ───────────────────────────────────────────── */
+@media (max-width: 430px) {
+  .hero {
+    padding: 100px 20px 80px;
+  }
+  .hero-headline {
+    font-size: clamp(36px, 10vw, 56px);
+  }
+  .hero-sub {
+    font-size: 16px;
+  }
+  /* CTA full width */
+  .hero-cta .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+  /* Seat grid: shrink cells so 10×10 fits viewport */
+  .seat-grid {
+    gap: 4px;
+    max-width: 100%;
+  }
+  /* Nav: hide wordmark sub on very small screens */
+  .nav-wordmark-sub { display: none; }
+  .fund-stats { grid-template-columns: 1fr; }
+  .section {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .closing-section .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+  /* Scroll hint hidden on mobile */
+  .hero-scroll-hint { display: none; }
+}
+
+@media (max-width: 390px) {
+  .hero-headline {
+    font-size: clamp(32px, 9vw, 44px);
+  }
+  .seat-grid {
+    gap: 3px;
+  }
+}
+
+@media (max-width: 375px) {
+  .hero-headline {
+    font-size: 32px;
+  }
+  .nav-wordmark-title { font-size: 10px; }
+  .seat-grid {
+    gap: 3px;
+    max-width: calc(100vw - 40px);
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- Page veil for transitions -->
+<div class="page-veil" id="page-veil"></div>
+
+<!-- Loader -->
+<div id="loader">
+  <div class="seal"><em>Au</em></div>
+</div>
+
+<!-- Navigation -->
+<nav class="nav-bar" id="nav" role="navigation" aria-label="Primary">
+  <a href="/" class="nav-lockup" aria-label="Aurum Century Club home">
+    <div class="seal"><em>Au</em></div>
+    <div class="nav-wordmark">
+      <span class="nav-wordmark-title">Aurum</span>
+      <span class="nav-wordmark-sub">Century Club</span>
+    </div>
+  </a>
+  <div class="nav-actions">
+    <a href="/login" class="btn-ghost" style="padding:9px 18px;font-size:11px;">Member Sign In</a>
+    <a href="/interest" class="btn-primary" style="padding:10px 22px;font-size:11px;">Request an Introduction</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero" role="banner">
+  <canvas id="ambient-canvas" aria-hidden="true"></canvas>
+  <div class="hero-inner">
+    <p class="hero-eyebrow" id="hero-eyebrow">The Aurum Century Club &nbsp;·&nbsp; Founding Round</p>
+    <h1 class="hero-headline" id="hero-headline" aria-label="A Founding Membership in Physical Gold">
+      <span class="word">A</span><span class="word"> </span><span class="word">Founding</span><span class="word"> </span><span class="word">Membership</span><br>
+      <span class="word">in</span><span class="word"> </span><span class="word gold-gradient">Physical</span><span class="word"> </span><span class="word gold-gradient">Gold</span>
+    </h1>
+    <p class="hero-sub" id="hero-sub">
+      A founding membership in physical gold. One hundred seats. Singapore VCC.
+    </p>
+    <div class="hero-cta" id="hero-cta">
+      <a href="/interest" class="btn-primary">Request an Introduction</a>
+    </div>
+  </div>
+  <div class="hero-scroll-hint" id="hero-scroll">
+    <div class="line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- Fund Structure -->
+<section class="section fund-section" aria-labelledby="fund-heading">
+  <div class="section-eyebrow" data-reveal>Structure</div>
+  <h2 class="section-heading" id="fund-heading" data-reveal data-delay="100">
+    Built for<br><em class="gold-gradient">Permanence</em>
+  </h2>
+  <div class="fund-body">
+    <p data-reveal data-delay="200">
+      The Aurum Century Club is a Singapore Variable Capital Company deploying member capital into physical gold — specifically LBMA Good Delivery bars, one kilogram each, held in allocated custody in Singapore's Free Trade Zone. Aurum manages the vehicle. Members hold interests in it. The gold does not move unless you do.
+    </p>
+    <p data-reveal data-delay="300">
+      Every subscription participates in a credit facility of up to 75% LTV against the gold collateral — a structural feature of the vehicle, not an election. The facility funds private credit deployments selected by the investment committee. Members are not required to draw on it, but the returns it generates flow to all holders.
+    </p>
+    <p data-reveal data-delay="400">
+      The return architecture is three-layered: gold appreciation over time, private credit yield from the LTV facility, and the LTV arbitrage itself. The vehicle targets a net IRR of approximately 15% per annum. This figure is illustrative and not a guarantee. A hurdle of 8% per annum, compounding, applies. Carry is 20% after a full 100% catch-up. Management fee is 2% per annum on committed capital.
+    </p>
+    <p data-reveal data-delay="500">
+      The Founding Round is limited to one hundred members. The vehicle does not reopen. Once the cohort is full, no further subscriptions are accepted on founding terms.
+    </p>
+  </div>
+
+  <div class="fund-stats" data-reveal data-delay="200">
+    <div class="fund-stat">
+      <div class="fund-stat-value">~15%</div>
+      <div class="fund-stat-label">Target Net IRR<br><span style="font-size:9px;opacity:0.6;">Illustrative, not guaranteed</span></div>
+    </div>
+    <div class="fund-stat">
+      <div class="fund-stat-value">8% p.a.</div>
+      <div class="fund-stat-label">Hurdle Rate<br><span style="font-size:9px;opacity:0.6;">Compounding, preferred return</span></div>
+    </div>
+    <div class="fund-stat">
+      <div class="fund-stat-value">75% LTV</div>
+      <div class="fund-stat-label">Credit Facility<br><span style="font-size:9px;opacity:0.6;">Against gold collateral</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Founding Cohort -->
+<section class="section cohort-section" aria-labelledby="cohort-heading">
+  <div class="section-eyebrow" data-reveal>Founding Round</div>
+  <h2 class="section-heading" id="cohort-heading" data-reveal data-delay="100">One Hundred<br>Founding Seats</h2>
+  <div class="seat-grid" id="seat-grid" role="img" aria-label="Seat availability grid" data-reveal data-delay="200">
+    <!-- 100 seats rendered by JS -->
+  </div>
+  <div class="cohort-count" id="cohort-count" data-reveal data-delay="300">— / 100</div>
+  <p class="cohort-sub" data-reveal data-delay="400">The Founding Round closes Q3 2026.</p>
+  <div id="close-countdown" style="margin-top:16px;min-height:18px;" aria-live="polite"></div>
+</section>
+
+<!-- Vault & Custody -->
+<section class="section vault-section" aria-labelledby="vault-heading">
+  <div class="section-eyebrow" data-reveal>Custody</div>
+  <h2 class="section-heading" id="vault-heading" data-reveal data-delay="100">Your Gold.<br><em class="gold-gradient">Singapore. Allocated.</em></h2>
+  <div class="vault-layout">
+    <div class="world-map-wrap" data-reveal data-delay="150">
+      <!-- Simplified world map SVG -->
+      <svg class="world-map-svg" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect width="800" height="420" fill="#070706"/>
+        <!-- Continental outlines simplified -->
+        <!-- North America -->
+        <path d="M60,80 L180,70 L210,90 L220,130 L200,160 L190,200 L170,230 L150,260 L120,270 L90,250 L70,220 L55,190 L50,150 L55,110 Z" fill="#1a1a18" stroke="#2a2a28" stroke-width="0.8"/>
+        <!-- South America -->
+        <path d="M155,265 L195,260 L210,290 L215,320 L205,360 L185,390 L160,400 L140,380 L130,350 L135,310 L140,280 Z" fill="#1a1a18" stroke="#2a2a28" stroke-width="0.8"/>
+        <!-- Europe -->
+        <path d="M330,55 L390,50 L410,65 L415,85 L400,100 L375,105 L355,100 L335,85 L325,70 Z" fill="#1a1a18" stroke="#2a2a28" stroke-width="0.8"/>
+        <!-- Africa -->
+        <path d="M330,115 L395,110 L420,130 L435,165 L430,210 L420,250 L400,290 L375,310 L350,305 L325,280 L310,245 L305,205 L315,165 L320,135 Z" fill="#1a1a18" stroke="#2a2a28" stroke-width="0.8"/>
+        <!-- Asia (large mass) -->
+        <path d="M415,45 L560,40 L620,55 L660,70 L675,95 L665,125 L635,145 L590,155 L545,160 L500,155 L460,145 L430,130 L410,105 L405,75 Z" fill="#1a1a18" stroke="#2a2a28" stroke-width="0.8"/>
+        <!-- Southeast Asia / Indochina -->
+        <path d="M540,160 L580,158 L595,175 L590,200 L575,215 L555,212 L540,195 L535,175 Z" fill="#1a1a18" stroke="#2a2a28" stroke-width="0.8"/>
+        <!-- Malay Peninsula + Singapore area -->
+        <path d="M556,200 L570,198 L576,215 L570,232 L558,238 L548,228 L546,212 Z" fill="#1a1a18" stroke="#2a2a28" stroke-width="0.8"/>
+        <!-- Australia -->
+        <path d="M580,270 L660,260 L695,275 L710,300 L705,335 L685,360 L650,370 L610,360 L580,335 L565,305 L568,280 Z" fill="#1a1a18" stroke="#2a2a28" stroke-width="0.8"/>
+        <!-- UK/Ireland simplified -->
+        <path d="M330,60 L345,58 L350,68 L342,78 L330,75 Z" fill="#1a1a18" stroke="#2a2a28" stroke-width="0.8"/>
+        <!-- Japan -->
+        <path d="M640,85 L655,80 L665,90 L658,105 L645,108 L637,97 Z" fill="#1a1a18" stroke="#2a2a28" stroke-width="0.8"/>
+      </svg>
+      <!-- Singapore dot -->
+      <div class="sg-dot-wrap">
+        <div class="sg-dot"></div>
+        <div class="sg-tooltip">
+          <div class="sg-tooltip-title">Malca-Amit · Singapore</div>
+          <div class="sg-tooltip-items">
+            Singapore Free Trade Zone<br>
+            LBMA Good Delivery<br>
+            Fully Insured<br>
+            Allocated &amp; Segregated Custody
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="vault-stats">
+      <div class="vault-stat" data-reveal data-delay="200">
+        <div class="vault-stat-value">999.9 Fineness</div>
+        <div class="vault-stat-label">LBMA Good Delivery Standard</div>
+      </div>
+      <div class="vault-stat" data-reveal data-delay="300">
+        <div class="vault-stat-value">1 Kilogram Per Bar</div>
+        <div class="vault-stat-label">Physical · Serial-Numbered</div>
+      </div>
+      <div class="vault-stat" data-reveal data-delay="400">
+        <div class="vault-stat-value">Segregated · Allocated</div>
+        <div class="vault-stat-label">Not pooled. Not lent. Yours.</div>
+      </div>
+      <div class="vault-stat" data-reveal data-delay="500">
+        <div class="vault-stat-value">Singapore FTZ</div>
+        <div class="vault-stat-label">Malca-Amit · Fully Insured</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Closing CTA -->
+<section class="section closing-section" aria-labelledby="closing-heading">
+  <div class="section-eyebrow" data-reveal>First Close</div>
+  <h2 class="section-heading" id="closing-heading" data-reveal data-delay="100">
+    The Founding Round<br>closes <em class="gold-gradient">Q3 2026.</em>
+  </h2>
+  <p class="closing-sub" data-reveal data-delay="200">Enquiries by introduction only.</p>
+  <div data-reveal data-delay="300">
+    <a href="/interest" class="btn-primary">Request an Introduction</a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer role="contentinfo">
+  <div class="footer-lockup">
+    <div class="seal"><em>Au</em></div>
+    <div class="footer-meta">
+      <span class="footer-company">TACC Pte Ltd · Singapore</span>
+    </div>
+  </div>
+  <p class="footer-legal">
+    This material is provided for informational purposes only and does not constitute an offer to sell or a solicitation of an offer to buy any security. The Aurum Century Club is a private vehicle. Participation is subject to eligibility criteria and regulatory requirements. Past performance is not indicative of future results. Target returns are illustrative only and not guaranteed. This platform is not regulated by the Monetary Authority of Singapore as a capital markets service.
+  </p>
+</footer>
+
+<script>
+/* ─── Shared utilities ─────────────────────────────────────────────── */
+(function () {
+  'use strict';
+
+  // Language
+  const lang = localStorage.getItem('lang');
+  if (lang) document.documentElement.lang = lang;
+
+  // Page veil transition
+  const veil = document.getElementById('page-veil');
+  document.querySelectorAll('a[href]').forEach(function (link) {
+    const href = link.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto')) return;
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      veil.classList.add('covering');
+      setTimeout(function () { window.location.href = href; }, 290);
+    });
+  });
+
+  // Loader dismiss + entrance sequence
+  const loader = document.getElementById('loader');
+  const nav = document.getElementById('nav');
+  const eyebrow = document.getElementById('hero-eyebrow');
+  const headline = document.getElementById('hero-headline');
+  const sub = document.getElementById('hero-sub');
+  const cta = document.getElementById('hero-cta');
+  const scrollHint = document.getElementById('hero-scroll');
+
+  function runEntrance() {
+    // 600ms: fade loader
+    setTimeout(function () {
+      loader.style.opacity = '0';
+      setTimeout(function () { loader.style.display = 'none'; }, 400);
+    }, 600);
+
+    // 700ms: nav slides in
+    setTimeout(function () {
+      nav.style.transition = 'transform 500ms var(--ease-entrance), opacity 500ms var(--ease-entrance)';
+      nav.style.transform = 'translateY(0)';
+      nav.style.opacity = '1';
+    }, 700);
+
+    // 900ms: eyebrow
+    setTimeout(function () {
+      eyebrow.style.opacity = '1';
+      eyebrow.style.transform = 'translateY(0)';
+    }, 900);
+
+    // 1100ms: headline words stagger
+    const words = headline.querySelectorAll('.word');
+    words.forEach(function (word, i) {
+      setTimeout(function () {
+        word.style.opacity = '1';
+        word.style.transform = 'translateY(0)';
+      }, 1100 + i * 60);
+    });
+
+    // 1400ms: sub
+    setTimeout(function () {
+      sub.style.opacity = '1';
+      sub.style.transform = 'translateY(0)';
+    }, 1400);
+
+    // 1700ms: CTA
+    setTimeout(function () {
+      cta.style.opacity = '1';
+      cta.style.transform = 'translateY(0)';
+    }, 1700);
+
+    // Scroll hint
+    setTimeout(function () {
+      scrollHint.style.opacity = '0.6';
+    }, 2400);
+  }
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(runEntrance);
+  } else {
+    window.addEventListener('load', runEntrance);
+  }
+
+  // Ambient canvas
+  const canvas = document.getElementById('ambient-canvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    let w, h, raf;
+
+    function resize() {
+      w = canvas.offsetWidth;
+      h = canvas.offsetHeight;
+      canvas.width = w;
+      canvas.height = h;
+    }
+
+    function draw(t) {
+      if (document.hidden) {
+        raf = requestAnimationFrame(draw);
+        return;
+      }
+      ctx.clearRect(0, 0, w, h);
+      const cx = w / 2 + Math.sin(t * 0.00007) * 80;
+      const cy = h * 0.35 + Math.cos(t * 0.00004) * 40;
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, w * 0.6);
+      g.addColorStop(0, 'rgba(197,165,114,0.06)');
+      g.addColorStop(1, 'rgba(7,7,6,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, w, h);
+      raf = requestAnimationFrame(draw);
+    }
+
+    resize();
+    window.addEventListener('resize', resize);
+
+    let startTime = null;
+    raf = requestAnimationFrame(function tick(ts) {
+      if (!startTime) startTime = ts;
+      draw(ts - startTime);
+    });
+
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) {
+        cancelAnimationFrame(raf);
+      } else {
+        raf = requestAnimationFrame(function tick(ts) {
+          if (!startTime) startTime = ts;
+          draw(ts - startTime);
+        });
+      }
+    });
+
+    // Respect reduced motion
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      cancelAnimationFrame(raf);
+      canvas.style.display = 'none';
+    }
+  }
+
+  // Scroll reveal via IntersectionObserver
+  const revealEls = document.querySelectorAll('[data-reveal]');
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    revealEls.forEach(function (el) { observer.observe(el); });
+  } else {
+    revealEls.forEach(function (el) { el.classList.add('revealed'); });
+  }
+
+  // Cohort grid
+  const grid = document.getElementById('seat-grid');
+  const countEl = document.getElementById('cohort-count');
+
+  // Render 100 seat cells
+  for (let i = 0; i < 100; i++) {
+    const seat = document.createElement('div');
+    seat.className = 'seat';
+    seat.setAttribute('data-index', i);
+    grid.appendChild(seat);
+  }
+
+  // Fetch live count
+  fetch('/api/v2?resource=public&op=stats')
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      const count = parseInt(data.founding_count || data.count || 0, 10);
+      const seats = grid.querySelectorAll('.seat');
+
+      // Detect newly admitted members since last page load
+      const prevCount = parseInt(sessionStorage.getItem('au_grid_admitted') || '0', 10);
+      const newlyFilled = count > prevCount ? count - prevCount : 0;
+      sessionStorage.setItem('au_grid_admitted', String(count));
+
+      for (let i = 0; i < count && i < 100; i++) {
+        setTimeout(function (idx) {
+          seats[idx].classList.add('filled');
+          // Animate newly-filled cells
+          if (newlyFilled > 0 && idx >= count - newlyFilled) {
+            animateNewGridSeat(seats[idx]);
+          }
+        }, i * 18, i);
+      }
+      if (countEl) {
+        setTimeout(function () {
+          countEl.textContent = count + ' / 100';
+        }, count * 18 + 200);
+      }
+    })
+    .catch(function () {
+      if (countEl) countEl.textContent = '— / 100';
+    });
+
+  function animateNewGridSeat(seatEl) {
+    seatEl.style.backgroundColor = '#FFD700';
+    seatEl.style.transition = 'background-color 1.6s ease';
+    setTimeout(function () {
+      seatEl.style.backgroundColor = 'var(--goldB)';
+    }, 100);
+    // Ripple overlay
+    const rect = seatEl.getBoundingClientRect();
+    const ripple = document.createElement('div');
+    ripple.style.cssText = [
+      'position:fixed',
+      'width:' + seatEl.offsetWidth + 'px',
+      'height:' + seatEl.offsetHeight + 'px',
+      'top:' + rect.top + 'px',
+      'left:' + rect.left + 'px',
+      'border-radius:50%',
+      'background:rgba(197,165,114,0.6)',
+      'pointer-events:none',
+      'z-index:500',
+      'transform:scale(1)',
+      'opacity:0.6',
+      'transition:transform 1200ms ease, opacity 1200ms ease'
+    ].join(';');
+    document.body.appendChild(ripple);
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        ripple.style.transform = 'scale(3)';
+        ripple.style.opacity = '0';
+      });
+    });
+    setTimeout(function () { if (ripple.parentNode) ripple.parentNode.removeChild(ripple); }, 1300);
+  }
+
+  // Fund close countdown
+  (function () {
+    const cdEl = document.getElementById('close-countdown');
+    if (!cdEl) return;
+    fetch('/api/v2?resource=public&op=countdown')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data || !data.target_date) {
+          cdEl.style.display = 'none';
+          return;
+        }
+        if (data.closed === true) {
+          cdEl.style.cssText = [
+            'font-family:var(--font-mono)',
+            'font-size:9px',
+            'letter-spacing:0.22em',
+            'color:var(--goldA)',
+            'text-transform:uppercase'
+          ].join(';');
+          cdEl.textContent = 'First Close — Complete';
+          return;
+        }
+        var target = new Date(data.target_date);
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        target.setHours(0, 0, 0, 0);
+        var days = Math.max(0, Math.round((target - today) / (1000 * 60 * 60 * 24)));
+        cdEl.style.cssText = [
+          'font-family:var(--font-mono)',
+          'font-size:10px',
+          'letter-spacing:0.2em',
+          'color:var(--muted)',
+          'text-transform:uppercase'
+        ].join(';');
+        cdEl.textContent = 'First Close · ' + days + ' Days';
+      })
+      .catch(function () {
+        // Silent — countdown is non-critical
+        cdEl.style.display = 'none';
+      });
+  }());
+}());
+</script>
+</body>
+</html>
