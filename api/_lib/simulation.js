@@ -10,6 +10,7 @@ import {
   getStageCounts,
   stageIndexBackfill,
   listLeads,
+  listFundedMembers,
   resolveLeadStage,
 } from './storage.js';
 
@@ -167,6 +168,103 @@ async function advanceOne(stage, kind, session, log) {
   return false;
 }
 
+// ─── Member-side simulation helpers ──────────────────────────────────────────
+// These simulate what happens when an actual investor visits the portal:
+// /code, /nda, /subscription, /portfolio. Each action triggers the same state
+// changes that the real handler would.
+
+async function runMemberCodeRedemptions(maxCount, log) {
+  const all = _allCache || (_allCache = await listLeads({ limit: 200 }));
+  const candidates = all.filter((l) =>
+    !l.deleted_at && l.status === 'invited' && l.code && !l.code_redeemed_at && !_advancedIds.has(l.id)
+  ).slice(0, maxCount);
+  if (!candidates.length) {
+    log.push('  (no invited members eligible for code redemption)');
+    return;
+  }
+  for (const lead of candidates) {
+    lead.code_redeemed_at = Date.now();
+    lead.last_login_at = Date.now();
+    await saveLead(lead);
+    await appendAudit(lead, { actor: lead.id, action: 'code_redeemed', memo: 'opened /code, entered access code' });
+    log.push(`✓ ${lead.name} entered code at /code → session issued`);
+    _advancedIds.add(lead.id);
+  }
+}
+
+async function runMemberLogins(log) {
+  const funded = await listFundedMembers();
+  if (!funded.length) { log.push('  (no funded members yet)'); return; }
+  // 60% of funded members "log in" this run
+  const subset = funded.filter((_, i) => i % 5 < 3).slice(0, 5);
+  for (const lead of subset) {
+    if (lead.deleted_at) continue;
+    lead.last_login_at = Date.now();
+    await saveLead(lead);
+    await appendAudit(lead, { actor: lead.id, action: 'portfolio_visited', memo: 'opened /portfolio' });
+    log.push(`✓ #${String(lead.member_number || '?').padStart(3,'0')} ${lead.name} logged in → /portfolio rendered`);
+  }
+}
+
+async function runMemberMessageReads(log) {
+  const funded = await listFundedMembers();
+  if (!funded.length) { log.push('  (no funded members)'); return; }
+  let reads = 0;
+  for (const lead of funded.slice(0, 4)) {
+    if (lead.deleted_at) continue;
+    const msgs = lead.messages || [];
+    const unread = msgs.find((m) => !m.read_at);
+    if (unread) {
+      unread.read_at = Date.now();
+      await saveLead(lead);
+      await appendAudit(lead, { actor: lead.id, action: 'message_read', memo: unread.subject });
+      log.push(`✓ ${lead.name} read message: "${unread.subject}"`);
+      reads++;
+    }
+  }
+  if (!reads) log.push('  (no unread messages on the inbox top)');
+}
+
+async function runMemberCapitalCallAcks(log) {
+  const funded = await listFundedMembers();
+  if (!funded.length) { log.push('  (no funded members)'); return; }
+  let acks = 0;
+  for (const lead of funded) {
+    if (lead.deleted_at) continue;
+    const calls = lead.capital_calls || [];
+    const pending = calls.find((c) => c.status === 'pending' && !c.acknowledged_at);
+    if (pending) {
+      pending.acknowledged_at = Date.now();
+      pending.status = 'acknowledged';
+      await saveLead(lead);
+      await appendAudit(lead, { actor: lead.id, action: 'capital_call_acknowledged', memo: pending.ref });
+      log.push(`✓ ${lead.name} ack'd capital call ${pending.ref}`);
+      acks++;
+      if (acks >= 3) break;
+    }
+  }
+  if (!acks) log.push('  (no pending capital calls to acknowledge)');
+}
+
+async function runMemberLetterReads(log) {
+  const funded = await listFundedMembers();
+  if (!funded.length) { log.push('  (no funded members)'); return; }
+  let reads = 0;
+  for (const lead of funded.slice(0, 4)) {
+    if (lead.deleted_at) continue;
+    const letters = lead.quarterly_letters || [];
+    const unread = letters.find((l) => l.sent_at && !l.read_at);
+    if (unread) {
+      unread.read_at = Date.now();
+      await saveLead(lead);
+      await appendAudit(lead, { actor: lead.id, action: 'letter_read', memo: unread.subject || `Q${unread.quarter} ${unread.year}` });
+      log.push(`✓ ${lead.name} read quarterly letter ${unread.subject || ''}`);
+      reads++;
+    }
+  }
+  if (!reads) log.push('  (no unread quarterly letters)');
+}
+
 export async function runSimulation(session) {
   const start = Date.now();
   const log = [];
@@ -233,6 +331,31 @@ export async function runSimulation(session) {
   if (await advanceOne('wire_received', 'wire_cleared', session, log)) {
     // ok
   }
+  log.push('');
+
+  // 8. MEMBER-SIDE actions — invited members redeem access codes
+  log.push('STAGE 8 · MEMBER ACCESS (invited members redeem codes)');
+  await runMemberCodeRedemptions(3, log);
+  log.push('');
+
+  // 9. MEMBER-SIDE — funded members log in to /portfolio
+  log.push('STAGE 9 · MEMBER PORTFOLIO ACCESS (funded members log in)');
+  await runMemberLogins(log);
+  log.push('');
+
+  // 10. MEMBER-SIDE — read in-portal messages
+  log.push('STAGE 10 · MEMBER MESSAGE READS');
+  await runMemberMessageReads(log);
+  log.push('');
+
+  // 11. MEMBER-SIDE — acknowledge pending capital calls
+  log.push('STAGE 11 · MEMBER CAPITAL CALL ACKNOWLEDGEMENTS');
+  await runMemberCapitalCallAcks(log);
+  log.push('');
+
+  // 12. MEMBER-SIDE — mark quarterly letters as read
+  log.push('STAGE 12 · MEMBER QUARTERLY LETTER READS');
+  await runMemberLetterReads(log);
   log.push('');
 
   const elapsedMs = Date.now() - start;
