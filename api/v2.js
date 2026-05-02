@@ -351,8 +351,256 @@ async function handleAdmin(req, res, op) {
     case 'generate-tax-statement':  return adminGenerateTaxStatement(req, res, session);
     case 'letters':                 return adminLetters(req, res, session);
     case 'tax-statements':          return adminTaxStatements(req, res, session);
+    case 'seed-demo':               return adminSeedDemo(req, res, session);
     default:                        return bad(res, `unknown admin op: ${op}`);
   }
+}
+
+// ── admin op=seed-demo (DEMO ONLY) ───────────────────────────────────────────
+// Populates fake leads spanning all 6 pipeline stages so the admin and
+// portfolio screens render with realistic content. No emails sent. No PDFs.
+
+async function adminSeedDemo(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+
+  const now = Date.now();
+  const day = 24 * 60 * 60 * 1000;
+
+  const fixtures = [
+    // 1. Inquiry — just submitted
+    {
+      stage: 'inquiry',
+      name: '김민수',                                // Kim Min-su
+      email: 'demo.kim@example.com',
+      country: 'KR',
+      occupation: 'Family office principal',
+      assets: '5_10m',
+      created_at: now - 1 * day,
+    },
+    // 2. Invited — code issued, NDA awaiting
+    {
+      stage: 'invited',
+      name: '이지훈',                                // Lee Ji-hoon
+      email: 'demo.lee@example.com',
+      country: 'KR',
+      occupation: 'Tech founder',
+      assets: '10_25m',
+      created_at: now - 5 * day,
+    },
+    // 3. NDA pending review
+    {
+      stage: 'nda_pending',
+      name: '박서연',                                // Park Seo-yeon
+      email: 'demo.park@example.com',
+      country: 'KR',
+      occupation: 'Hedge fund partner',
+      assets: '25_50m',
+      created_at: now - 8 * day,
+    },
+    // 4. Subscribed — awaiting wire
+    {
+      stage: 'subscribed',
+      name: '최예진',                                // Choi Ye-jin
+      email: 'demo.choi@example.com',
+      country: 'KR',
+      occupation: 'Private investor',
+      assets: '10_25m',
+      kg_requested: 2,
+      created_at: now - 12 * day,
+    },
+    // 5. Wire issued — instructions sent
+    {
+      stage: 'wire_issued',
+      name: '정도현',                                // Jung Do-hyun
+      email: 'demo.jung@example.com',
+      country: 'KR',
+      occupation: 'Real estate principal',
+      assets: '25_50m',
+      kg_requested: 3,
+      created_at: now - 18 * day,
+    },
+    // 6. Wire received — pending clearance
+    {
+      stage: 'wire_received',
+      name: '한지영',                                // Han Ji-young
+      email: 'demo.han@example.com',
+      country: 'KR',
+      occupation: 'Bank executive',
+      assets: '5_10m',
+      kg_requested: 1,
+      created_at: now - 22 * day,
+    },
+    // 7. Funded — full member, member #001
+    {
+      stage: 'funded',
+      name: '윤상호',                                // Yoon Sang-ho
+      email: 'demo.yoon@example.com',
+      country: 'KR',
+      occupation: 'Founding partner',
+      assets: '50m_plus',
+      kg_requested: 5,
+      member_number: 1,
+      created_at: now - 35 * day,
+      with_capital_call: true,
+    },
+    // 8. Funded — member #002, with messages
+    {
+      stage: 'funded',
+      name: '강수민',                                // Kang Su-min
+      email: 'demo.kang@example.com',
+      country: 'KR',
+      occupation: 'Asset manager',
+      assets: '25_50m',
+      kg_requested: 2,
+      member_number: 2,
+      created_at: now - 30 * day,
+      with_messages: true,
+    },
+  ];
+
+  const seeded = [];
+  for (let i = 0; i < fixtures.length; i++) {
+    const f = fixtures[i];
+    const id = `demo_${(now + i).toString(36)}`;
+    const lead = buildDemoLead(id, f, now);
+    try { await saveLead(lead); seeded.push({ id, name: f.name, stage: f.stage }); } catch (e) {
+      console.error('[seed-demo]', f.name, e);
+    }
+  }
+
+  return ok(res, { ok: true, seeded: seeded.length, leads: seeded });
+}
+
+function buildDemoLead(id, f, now) {
+  const day = 24 * 60 * 60 * 1000;
+  const code = `DEMO${String(Math.abs(id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)) % 9999).padStart(4, '0')}`;
+
+  const lead = {
+    id,
+    demo: true,
+    name: f.name,
+    legal_name: f.name,
+    email: f.email,
+    country: f.country,
+    occupation: f.occupation,
+    investable_assets: f.assets,
+    referral_source: 'personal_intro',
+    reverse_solicitation_ack: true,
+    created_at: f.created_at,
+    audit: [{ at: f.created_at, actor: 'system', action: 'demo_seed' }],
+    status: 'inquiry',
+    nda_state: 'awaiting',
+  };
+
+  if (f.stage === 'inquiry') return lead;
+
+  // Invited+
+  lead.status = 'invited';
+  lead.code = code;
+  lead.code_issued_at = f.created_at + 1 * day;
+  lead.audit.push({ at: lead.code_issued_at, actor: 'admin', action: 'invitation_sent' });
+
+  if (f.stage === 'invited') return lead;
+
+  // NDA pending+
+  lead.nda_state = 'uploaded';
+  lead.nda_uploaded_at = f.created_at + 2 * day;
+  lead.nda_url = 'https://example.com/demo-nda.pdf';
+
+  if (f.stage === 'nda_pending') return lead;
+
+  // Subscribed+
+  lead.nda_state = 'approved';
+  lead.nda_approved_at = f.created_at + 3 * day;
+  lead.status = 'subscribed';
+  const kg = f.kg_requested || 1;
+  const usdPerKg = 112000; // ~spot $3500/oz × 32.15 oz/kg
+  lead.subscription = {
+    kg_requested: kg,
+    usd_amount: kg * usdPerKg,
+    submitted_at: f.created_at + 4 * day,
+    signature: f.name.toLowerCase(),
+    ltv_acknowledged: true,
+  };
+  lead.audit.push({ at: lead.subscription.submitted_at, actor: 'member', action: 'subscription_submitted' });
+
+  if (f.stage === 'subscribed') return lead;
+
+  // Wire issued+
+  const wireRef = `TACC-${id.slice(-8).toUpperCase()}-${(now).toString(36).toUpperCase()}`;
+  lead.wire = {
+    reference: wireRef,
+    instructions_sent_at: f.created_at + 5 * day,
+  };
+  lead.audit.push({ at: lead.wire.instructions_sent_at, actor: 'admin', action: 'wire_instructions_sent' });
+
+  if (f.stage === 'wire_issued') return lead;
+
+  // Wire received+
+  lead.wire.received_at = f.created_at + 7 * day;
+  lead.audit.push({ at: lead.wire.received_at, actor: 'admin', action: 'wire_received' });
+
+  if (f.stage === 'wire_received') return lead;
+
+  // Funded
+  lead.wire.cleared_at = f.created_at + 8 * day;
+  lead.status = 'funded';
+  lead.member_number = f.member_number;
+  lead.funded_at = lead.wire.cleared_at;
+  lead.audit.push({ at: lead.funded_at, actor: 'system', action: 'funded' });
+
+  // Bars (1kg each)
+  lead.bars = [];
+  for (let i = 0; i < kg; i++) {
+    lead.bars.push({
+      id: `bar_${id}_${i}`,
+      serial: `LBMA-${(800000 + i * 17 + lead.member_number * 31).toString()}`,
+      refiner: ['PAMP Suisse', 'Valcambi', 'Argor-Heraeus'][i % 3],
+      year: 2025,
+      weight_kg: 1,
+      assigned_at: lead.funded_at,
+      vault_location: 'Malca-Amit Singapore FTZ',
+    });
+  }
+
+  // Capital call (member 1)
+  if (f.with_capital_call) {
+    lead.capital_calls = [{
+      id: `cc_${id}_1`,
+      issued_at: now - 5 * day,
+      due_date: now + 10 * day,
+      amount_usd: 50000,
+      reason: 'Q1 2026 private credit deployment — Tier 1 facility',
+      status: 'pending',
+      acknowledged_at: null,
+    }];
+  }
+
+  // Messages (member 2)
+  if (f.with_messages) {
+    lead.messages = [
+      {
+        id: `msg_${id}_1`,
+        sent_at: now - 14 * day,
+        from: 'partner',
+        from_name: 'TKJ',
+        subject: 'Welcome to the Century Club',
+        body: 'Your membership is confirmed. Allocation #002. Onboarding documents attached separately.',
+        read_at: now - 13 * day,
+      },
+      {
+        id: `msg_${id}_2`,
+        sent_at: now - 3 * day,
+        from: 'partner',
+        from_name: 'JWC',
+        subject: 'Q2 2026 Quarterly Update',
+        body: 'Letter is now available in Documents. NAV up 3.4% quarter-over-quarter.',
+        read_at: null,
+      },
+    ];
+  }
+
+  return lead;
 }
 
 // ── admin op=approve (Phase 1) ────────────────────────────────────────────────

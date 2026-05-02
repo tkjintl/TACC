@@ -862,9 +862,39 @@
   </div>
   <div class="admin-nav-right">
     <span class="admin-email" id="admin-email">—</span>
+    <button id="seed-demo-btn" class="admin-logout" style="border:1px solid var(--goldBd);color:var(--goldA);background:transparent;cursor:pointer;font:inherit;letter-spacing:inherit;padding:8px 14px;margin-right:12px;" title="Populate fake leads for demo viewing">Seed Demo</button>
     <a href="/api/logout" class="admin-logout">Sign Out</a>
   </div>
 </nav>
+
+<script>
+(function(){
+  var btn = document.getElementById('seed-demo-btn');
+  if (!btn) return;
+  btn.addEventListener('click', function(){
+    if (!confirm('Seed 8 demo leads spanning all pipeline stages? Existing demo leads will be added to (not replaced).')) return;
+    btn.disabled = true; btn.textContent = 'Seeding…';
+    fetch('/api/v2?resource=admin&op=seed-demo', {
+      method: 'POST', credentials: 'same-origin', headers: {'Content-Type':'application/json'}
+    }).then(function(r){ return r.json(); }).then(function(j){
+      if (j && j.ok) {
+        btn.textContent = 'Seeded ' + j.seeded;
+        setTimeout(function(){ window.location.reload(); }, 700);
+      } else {
+        btn.textContent = 'Failed';
+        alert('Seed failed: ' + (j && j.error ? j.error : 'unknown'));
+        btn.disabled = false;
+        setTimeout(function(){ btn.textContent = 'Seed Demo'; }, 2000);
+      }
+    }).catch(function(e){
+      btn.textContent = 'Error';
+      alert('Network error — check Redis env vars are set: ' + e.message);
+      btn.disabled = false;
+      setTimeout(function(){ btn.textContent = 'Seed Demo'; }, 2000);
+    });
+  });
+})();
+</script>
 
 <!-- Admin tab bar -->
 <div class="admin-tab-bar" id="admin-tab-bar" role="tablist">
