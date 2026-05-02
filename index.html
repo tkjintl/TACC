@@ -522,12 +522,14 @@
 
   // ── Shapes ────────────────────────────────────────────────
   const shapes = [
-    // Au monogram — italic serif. Centered at h*0.28 so it lives in the upper
-    // half and leaves clean breathing room above the wordmark below.
+    // Au monogram — upright serif (was italic; italic 'u' was reading as an
+    // inverted 'a' at particle-sample density). Weight bumped 300→500 so
+    // both glyphs have enough stroke for the silhouette to read clearly.
+    // Centered at h*0.28 — upper third, with breathing room above the wordmark.
     (o, w, h) => {
       const fs = Math.min(w * 0.36, h * 0.62);
       o.fillStyle = '#fff';
-      o.font = `300 italic ${fs}px "Cormorant Garamond", Georgia, serif`;
+      o.font = `400 ${fs}px "Cormorant Garamond", Georgia, serif`;
       o.textAlign = 'center';
       o.textBaseline = 'middle';
       o.fillText('Au', w / 2, h * 0.28);
