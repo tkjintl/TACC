@@ -1,7 +1,8 @@
 // _lib/bot-handlers.js — Thin admin op handlers for the bot harness.
 // Imported by api/v2.js handleAdmin switch. Keeps v2.js modest.
 
-import { getBotState, saveBotState, SCENARIOS, runTick } from './bot.js';
+import { getBotState, saveBotState, SCENARIOS, runTick, runAutoTick, AUTO_INTERVALS_MS } from './bot.js';
+import { globalAuditList } from './storage.js';
 
 function ok(res, data) {
   res.statusCode = 200;
@@ -34,7 +35,49 @@ async function readBody(req) {
 export async function botStatus(req, res) {
   if (req.method !== 'GET') return methodNotAllowed(res);
   const state = await getBotState();
-  return ok(res, { ok: true, state, scenarios: Object.keys(SCENARIOS).map((k) => ({ key: k, ...SCENARIOS[k], apply: undefined })) });
+  // Pull last 30 bot-actor audit events for the live feed.
+  let recent = [];
+  try {
+    const all = await globalAuditList({ limit: 100 });
+    recent = (all || []).filter((e) => e && (e.action === 'inquiry_received' || e.action === 'approve' || e.action === 'nda_uploaded' || e.action === 'nda_approved' || e.action === 'subscription_submitted' || e.action === 'wire_instructions_sent' || e.action === 'wire_received' || e.action === 'wire_cleared')).slice(0, 30);
+  } catch {}
+  return ok(res, {
+    ok: true,
+    state,
+    scenarios: Object.keys(SCENARIOS).map((k) => ({ key: k, ...SCENARIOS[k], apply: undefined })),
+    intervals_ms: AUTO_INTERVALS_MS,
+    recent,
+  });
+}
+
+export async function botSetAuto(req, res) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return bad(res, 'invalid body'); }
+  const mode = String((body && body.mode) || 'off').toLowerCase();
+  if (!(mode in AUTO_INTERVALS_MS)) return bad(res, 'mode must be off|slow|medium|fast');
+  const state = await getBotState();
+  state.auto_mode = mode;
+  state.auto_started_at = mode === 'off' ? null : (state.auto_started_at || Date.now());
+  state.last_action_at = Date.now();
+  if (mode !== 'off' && !state.started_at) state.started_at = Date.now();
+  await saveBotState(state);
+  return ok(res, { ok: true, state, interval_ms: AUTO_INTERVALS_MS[mode] });
+}
+
+export async function botAutoTick(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  const state = await getBotState();
+  if (state.paused) return bad(res, 'bot is paused');
+  if (!state.auto_mode || state.auto_mode === 'off') return bad(res, 'auto mode is off');
+  const result = await runAutoTick(session);
+  state.auto_actions_count = (state.auto_actions_count || 0) + 1;
+  state.events_generated = (state.events_generated || 0) + (result && result.kind !== 'noop' ? 1 : 0);
+  state.estimated_upstash_cmds = (state.estimated_upstash_cmds || 0) + (result && result.kind === 'new_signup' ? 6 : 5);
+  state.last_action_at = Date.now();
+  state.last_auto_action = result;
+  await saveBotState(state);
+  return ok(res, { ok: true, state, action: result });
 }
 
 export async function botPause(req, res) {

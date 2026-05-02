@@ -29,6 +29,23 @@ export default async function handler(req, res) {
 
   try {
     switch (job) {
+      case 'bot-daily-burst': {
+        // Overnight insurance — if auto mode is on but no browser open, run a
+        // small batch of auto-ticks once per day. Costs ~150-200 Upstash cmds total.
+        const { getBotState, runAutoTick } = await import('./_lib/bot.js');
+        const state = await getBotState();
+        if (!state.auto_mode || state.auto_mode === 'off' || state.paused) {
+          return ok(res, { ok: true, job, skipped: 'auto mode off or paused' });
+        }
+        const N = 25;
+        const results = [];
+        for (let i = 0; i < N; i++) {
+          const r = await runAutoTick({ email: 'cron@bot' });
+          results.push(r);
+        }
+        return ok(res, { ok: true, job, ran: N, results });
+      }
+
       case 'scan-exceptions': {
         const r = await scanForExceptions();
         await globalAuditAppend({

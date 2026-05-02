@@ -184,6 +184,216 @@ export const SCENARIOS = {
   },
 };
 
+// Auto-mode configuration. Speeds chosen so daily Upstash cost stays under free tier.
+//   slow:   1 tick / 5 min  → 288/day × ~8 cmds = ~2,300 cmds/day
+//   medium: 1 tick / 2 min  → 720/day × ~8 cmds = ~5,800 cmds/day
+//   fast:   1 tick / 30 sec → 2,880/day × ~8 cmds = ~23,000 cmds/day  ⚠ exceeds 10k free
+export const AUTO_INTERVALS_MS = {
+  off: 0,
+  slow: 5 * 60 * 1000,
+  medium: 2 * 60 * 1000,
+  fast: 30 * 1000,
+};
+
+// Realistic weighted action mix for an automated platform simulation.
+const ACTION_WEIGHTS = [
+  { kind: 'new_signup',         weight: 30 },
+  { kind: 'approve_to_invited', weight: 15 },
+  { kind: 'upload_nda',         weight: 15 },
+  { kind: 'approve_nda',        weight: 10 },
+  { kind: 'submit_subscription',weight: 10 },
+  { kind: 'wire_issue',         weight: 8 },
+  { kind: 'wire_received',      weight: 5 },
+  { kind: 'wire_cleared',       weight: 5 },
+  { kind: 'broadcast_message',  weight: 2 },
+];
+
+function _pickWeighted() {
+  const total = ACTION_WEIGHTS.reduce((s, a) => s + a.weight, 0);
+  let r = Math.random() * total;
+  for (const a of ACTION_WEIGHTS) {
+    r -= a.weight;
+    if (r <= 0) return a.kind;
+  }
+  return ACTION_WEIGHTS[0].kind;
+}
+
+const FAKE_PROFILES = [
+  { name: 'Choi Eun-mi',     country: 'KR' }, { name: 'Park Joon-ho',    country: 'KR' },
+  { name: 'Lim Tae-young',   country: 'SG' }, { name: 'Wong Ka-Ho',      country: 'HK' },
+  { name: '김재훈',           country: 'KR' }, { name: '이서영',           country: 'KR' },
+  { name: 'Tanaka Kenji',    country: 'JP' }, { name: 'Sato Mika',       country: 'JP' },
+  { name: 'Lee Hong-bin',    country: 'KR' }, { name: 'Goh Wei Ming',    country: 'SG' },
+  { name: '윤민철',           country: 'KR' }, { name: 'Ng Sze-Wai',      country: 'HK' },
+  { name: 'Müller Hans',     country: 'CH' }, { name: 'Suzuki Aiko',     country: 'JP' },
+  { name: '강도윤',           country: 'KR' }, { name: 'Tan Boon-Kheng',  country: 'SG' },
+];
+const FAKE_OCCUPATIONS = [
+  'Hedge fund LP', 'Family office CIO', 'Tech founder', 'Real estate principal',
+  'PE managing partner', 'Industrial heir', 'Cosmetics founder', 'Bank executive',
+  'Fund manager', 'Private investor', 'Pre-IPO investor', 'Entrepreneur',
+];
+const ALLOC_BY_WEALTH = { '5_10m':'2', '10_25m':'3_5', '25_50m':'5_10', '50m_plus':'10_plus' };
+
+async function _autoNewSignup(now) {
+  const profile = FAKE_PROFILES[Math.floor(Math.random() * FAKE_PROFILES.length)];
+  const wealth = ['5_10m','10_25m','25_50m','50m_plus'][Math.floor(Math.random()*4)];
+  const investorClass = ['hnw','family_office','multi_family_office','qualified_investor'][Math.floor(Math.random()*4)];
+  const sow = ['business','employment','inheritance','investments','financial_services','real_estate'][Math.floor(Math.random()*6)];
+  const referral = ['personal_intro','existing_member','prior_relationship','introducer'][Math.floor(Math.random()*4)];
+  const id = 'demo_bot_' + (now + Math.floor(Math.random()*1e6)).toString(36);
+  const phonePref = { KR:'+82 10', SG:'+65 9', HK:'+852 6', JP:'+81 90', CH:'+41 79' }[profile.country] || '+1 415';
+  const lead = {
+    id,
+    demo: true,
+    bot_generated: true,
+    name: profile.name,
+    legal_name: profile.name,
+    email: `bot.${id.slice(-8)}@example.com`,
+    country: profile.country,
+    phone: `${phonePref} ${1000 + Math.floor(Math.random()*8999)} ${1000 + Math.floor(Math.random()*8999)}`,
+    tax_residency: profile.country,
+    occupation: FAKE_OCCUPATIONS[Math.floor(Math.random() * FAKE_OCCUPATIONS.length)],
+    investable_assets: wealth,
+    investor_classification: investorClass,
+    source_of_wealth_high_level: sow,
+    anticipated_allocation_kg: ALLOC_BY_WEALTH[wealth] || '2',
+    referral_source: referral,
+    referrer_name: referral === 'existing_member' ? '윤상호 (#001)' : 'TKJ',
+    reverse_solicitation_ack: true,
+    status: 'inquiry',
+    nda_state: 'awaiting',
+    created_at: now,
+    audit: [],
+  };
+  await saveLead(lead);
+  await appendAudit(lead, { actor: 'system', action: 'inquiry_received' });
+  return { kind: 'new_signup', leadId: id, leadName: lead.name };
+}
+
+async function _autoAdvanceLead(kind, session) {
+  const all = await listLeads({ limit: 200 });
+  const demoOnly = all.filter((l) => !l.deleted_at && (l.demo || l.bot_generated));
+
+  let candidate = null;
+  if (kind === 'approve_to_invited') {
+    candidate = demoOnly.find((l) => l.status === 'inquiry');
+    if (!candidate) return null;
+    const code = 'BOT' + Math.random().toString(36).slice(2, 6).toUpperCase();
+    candidate.status = 'invited';
+    candidate.code = code;
+    candidate.code_issued_at = Date.now();
+    await saveLead(candidate);
+    await transitionStage(candidate, 'inquiry', 'invited');
+    await appendAudit(candidate, { actor: (session && session.email) || 'tkj', action: 'approve' });
+    return { kind, leadId: candidate.id, leadName: candidate.name };
+  }
+  if (kind === 'upload_nda') {
+    candidate = demoOnly.find((l) => l.status === 'invited' && l.nda_state === 'awaiting');
+    if (!candidate) return null;
+    candidate.nda_state = 'uploaded';
+    candidate.nda_uploaded_at = Date.now();
+    candidate.nda_url = 'https://example.com/demo-nda.pdf';
+    await saveLead(candidate);
+    await appendAudit(candidate, { actor: 'system', action: 'nda_uploaded' });
+    return { kind, leadId: candidate.id, leadName: candidate.name };
+  }
+  if (kind === 'approve_nda') {
+    candidate = demoOnly.find((l) => l.nda_state === 'uploaded');
+    if (!candidate) return null;
+    candidate.nda_state = 'approved';
+    candidate.nda_approved_at = Date.now();
+    if (candidate.status === 'invited') candidate.status = 'subscribed';
+    await saveLead(candidate);
+    await appendAudit(candidate, { actor: (session && session.email) || 'tkj', action: 'nda_approved' });
+    return { kind, leadId: candidate.id, leadName: candidate.name };
+  }
+  if (kind === 'submit_subscription') {
+    candidate = demoOnly.find((l) => l.status === 'subscribed' && !l.subscription);
+    if (!candidate) return null;
+    const kg = parseFloat(candidate.anticipated_allocation_kg === '10_plus' ? '10' : (candidate.anticipated_allocation_kg || '2').split('_')[0]) || 2;
+    candidate.subscription = {
+      kg_requested: kg,
+      usd_amount: Math.round(kg * 112000),
+      submitted_at: Date.now(),
+      ltv_acknowledged: true,
+      capital_call_acknowledged: true,
+      signature: candidate.name.toLowerCase(),
+    };
+    await saveLead(candidate);
+    await appendAudit(candidate, { actor: candidate.id, action: 'subscription_submitted' });
+    return { kind, leadId: candidate.id, leadName: candidate.name };
+  }
+  if (kind === 'wire_issue') {
+    candidate = demoOnly.find((l) => l.status === 'subscribed' && (!l.wire || !l.wire.reference));
+    if (!candidate) return null;
+    candidate.wire = candidate.wire || {};
+    candidate.wire.reference = `TACC-${candidate.id.slice(-8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+    candidate.wire.instructions_sent_at = Date.now();
+    candidate.wire.amount_usd = (candidate.subscription && candidate.subscription.usd_amount) || 224000;
+    await saveLead(candidate);
+    await transitionStage(candidate, 'subscribed', 'wire_issued');
+    await appendAudit(candidate, { actor: (session && session.email) || 'tkj', action: 'wire_instructions_sent' });
+    return { kind, leadId: candidate.id, leadName: candidate.name };
+  }
+  if (kind === 'wire_received') {
+    candidate = demoOnly.find((l) => l.wire && l.wire.reference && !l.wire.received_at);
+    if (!candidate) return null;
+    candidate.wire.received_at = Date.now();
+    await saveLead(candidate);
+    await transitionStage(candidate, 'wire_issued', 'wire_received');
+    await appendAudit(candidate, { actor: (session && session.email) || 'tkj', action: 'wire_received' });
+    return { kind, leadId: candidate.id, leadName: candidate.name };
+  }
+  if (kind === 'wire_cleared') {
+    candidate = demoOnly.find((l) => l.wire && l.wire.received_at && !l.wire.cleared_at);
+    if (!candidate) return null;
+    candidate.wire.cleared_at = Date.now();
+    candidate.status = 'funded';
+    candidate.funded_at = candidate.wire.cleared_at;
+    const taken = new Set(all.filter((x) => x.member_number).map((x) => x.member_number));
+    let mn = 1;
+    while (taken.has(mn) && mn <= 100) mn++;
+    candidate.member_number = mn;
+    await saveLead(candidate);
+    await transitionStage(candidate, 'wire_received', 'funded');
+    await appendAudit(candidate, { actor: (session && session.email) || 'tkj', action: 'wire_cleared' });
+    return { kind, leadId: candidate.id, leadName: candidate.name + ' #' + mn };
+  }
+  return null;
+}
+
+export async function runAutoTick(session) {
+  const now = Date.now();
+  // Try the weighted-random pick. If it has no candidate to act on, fall back
+  // to the next available action so the bot rarely "no-ops" (still cheap — at most
+  // one candidate-search loop).
+  const triedKinds = new Set();
+  let kind = _pickWeighted();
+  let result = null;
+  for (let attempt = 0; attempt < 4 && !result; attempt++) {
+    if (triedKinds.has(kind)) {
+      const remaining = ACTION_WEIGHTS.map((a) => a.kind).filter((k) => !triedKinds.has(k));
+      if (!remaining.length) break;
+      kind = remaining[0];
+    }
+    triedKinds.add(kind);
+    if (kind === 'new_signup') {
+      result = await _autoNewSignup(now);
+    } else if (kind === 'broadcast_message') {
+      // Skip — no-op for cost; not advancing a lead anyway.
+      kind = 'new_signup';
+      continue;
+    } else {
+      result = await _autoAdvanceLead(kind, session);
+    }
+    if (!result) {
+      kind = _pickWeighted();
+    }
+  }
+  return result || { kind: 'noop', leadId: null, leadName: null };
+}
+
 export async function runTick(session) {
   const all = await listLeads({ limit: 200 });
   let mutations = 0;

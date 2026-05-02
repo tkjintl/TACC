@@ -391,6 +391,8 @@ async function handleAdmin(req, res, op) {
     case 'bot-resume':              return (await import('./_lib/bot-handlers.js')).botResume(req, res);
     case 'bot-audit':               return (await import('./_lib/bot-handlers.js')).botAudit(req, res);
     case 'bot-reset':               return (await import('./_lib/bot-handlers.js')).botReset(req, res, session);
+    case 'bot-set-auto':            return (await import('./_lib/bot-handlers.js')).botSetAuto(req, res);
+    case 'bot-auto-tick':           return (await import('./_lib/bot-handlers.js')).botAutoTick(req, res, session);
     // ── Phase 4 ─────────────────────────────────────────────────────────────
     case 'stats':                   return adminStats(req, res, session);
     case 'nda-queue':               return adminNdaQueue(req, res, session);
