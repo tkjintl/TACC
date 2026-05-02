@@ -1969,6 +1969,31 @@
 (function () {
   'use strict';
 
+  // Admin-preview pass-through. When this page is opened from /admin's
+  // "View as Member" button, the URL carries ?preview_lead=ID and the
+  // request was authorized via the aurum_admin cookie path in api/doc.js.
+  // The page's data fetches then go to /api/v2?resource=member&op=... which
+  // also needs the preview_lead query param to honor the admin path. Wrap
+  // window.fetch once to inject it on every member-resource read.
+  (function () {
+    var qs = new URLSearchParams(location.search);
+    var previewLead = qs.get('preview_lead');
+    if (!previewLead) return;
+    var origFetch = window.fetch;
+    window.fetch = function (input, init) {
+      if (typeof input === 'string' && input.indexOf('/api/v2?resource=member') === 0) {
+        var sep = input.indexOf('preview_lead=') >= 0 ? '' : '&preview_lead=' + encodeURIComponent(previewLead);
+        return origFetch(input + sep, init);
+      }
+      if (typeof input === 'string' && input.indexOf('/api/portfolio') === 0) {
+        var has = input.indexOf('preview_lead=') >= 0;
+        var join = input.indexOf('?') >= 0 ? '&' : '?';
+        return origFetch(input + (has ? '' : join + 'preview_lead=' + encodeURIComponent(previewLead)), init);
+      }
+      return origFetch(input, init);
+    };
+  })();
+
   var memberData = null;
   var currentTab = 'overview';
 
