@@ -384,16 +384,6 @@ async function handleAdmin(req, res, op) {
     case 'tax-statements':          return adminTaxStatements(req, res, session);
     case 'seed-demo':               return adminSeedDemo(req, res, session);
     case 'wipe-demo':               return adminWipeDemo(req, res, session);
-    case 'bot-status':              return (await import('./_lib/bot-handlers.js')).botStatus(req, res);
-    case 'bot-scenario':            return (await import('./_lib/bot-handlers.js')).botScenario(req, res, session);
-    case 'bot-tick':                return (await import('./_lib/bot-handlers.js')).botTick(req, res, session);
-    case 'bot-pause':               return (await import('./_lib/bot-handlers.js')).botPause(req, res);
-    case 'bot-resume':              return (await import('./_lib/bot-handlers.js')).botResume(req, res);
-    case 'bot-audit':               return (await import('./_lib/bot-handlers.js')).botAudit(req, res);
-    case 'bot-reset':               return (await import('./_lib/bot-handlers.js')).botReset(req, res, session);
-    case 'bot-set-auto':            return (await import('./_lib/bot-handlers.js')).botSetAuto(req, res);
-    case 'bot-auto-tick':           return (await import('./_lib/bot-handlers.js')).botAutoTick(req, res, session);
-    case 'bot-recent':              return (await import('./_lib/bot-handlers.js')).botRecent(req, res);
     case 'stage-index-backfill':    return adminStageIndexBackfill(req, res, session);
     case 'run-audit':               return adminRunAudit(req, res, session);
     case 'flush-spot-cache':        return adminFlushSpotCache(req, res, session);

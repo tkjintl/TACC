@@ -85,8 +85,7 @@
   "crons": [
     { "path": "/api/cron?job=scan-exceptions",        "schedule": "0 18 * * *" },
     { "path": "/api/cron?job=capital-call-reminders", "schedule": "0 1 * * *" },
-    { "path": "/api/cron?job=stale-data-audit",       "schedule": "0 0 * * 1" },
-    { "path": "/api/cron?job=bot-daily-burst",        "schedule": "0 6 * * *" }
+    { "path": "/api/cron?job=stale-data-audit",       "schedule": "0 0 * * 1" }
   ],
   "headers": [
     {
