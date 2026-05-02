@@ -170,6 +170,8 @@ async function handleMember(req, res, op) {
     case 'mark-letter-read':  return memberMarkLetterRead(req, res);
     case 'deals':             return memberDeals(req, res);
     case 'ack-message':       return memberAckMessage(req, res);
+    case 'tax-statement-signed-url':  return memberTaxStatementSignedUrl(req, res);
+    case 'member-certificate-url':    return memberCertificateSignedUrl(req, res);
     default:                  return bad(res, `unknown member op: ${op}`);
   }
 }
@@ -392,6 +394,11 @@ async function handleAdmin(req, res, op) {
     case 'bots-tick':               return adminBotsTick(req, res, session);
     case 'bots-status':             return adminBotsStatus(req, res, session);
     case 'bots-reset':              return adminBotsReset(req, res, session);
+    case 'bot-start-stress':        return adminBotsStartStress(req, res, session);
+    case 'run-race-test':           return adminRunRaceTest(req, res, session);
+    case 'run-subscription-test':   return adminRunSubscriptionTest(req, res, session);
+    case 'run-softdelete-test':     return adminRunSoftDeleteTest(req, res, session);
+    case 'run-email-extended':      return adminRunEmailExtended(req, res, session);
     case 'flush-spot-cache':        return adminFlushSpotCache(req, res, session);
     case 'backfill-investor-profile': return adminBackfillInvestorProfile(req, res, session);
     // ── Phase 4 ─────────────────────────────────────────────────────────────
@@ -417,6 +424,14 @@ async function handleAdmin(req, res, op) {
     case 'resend-admission':        return adminResendAdmission(req, res, session);
     case 'revoke-access':           return adminRevokeAccess(req, res, session);
     case 'recount-stages':          return adminRecountStages(req, res, session);
+    // ── Phase 5 (operator deepening) ────────────────────────────────────────
+    case 'vault-bars':              return adminVaultBars(req, res, session);
+    case 'decline-lead':            return adminDeclineLead(req, res, session);
+    case 'capital-call-paid':       return adminCapitalCallPaid(req, res, session);
+    case 'nav-update':              return adminNavUpdate(req, res, session);
+    case 'post-distribution':       return adminPostDistribution(req, res, session);
+    case 'tax-statement-signed-url':return adminTaxStatementSignedUrl(req, res, session);
+    case 'cmdk-search':             return adminCmdkSearch(req, res, session);
     default:                        return bad(res, `unknown admin op: ${op}`);
   }
 }
@@ -431,6 +446,23 @@ function err(res, error, code, status = 400) {
 }
 
 function _actor(session) { return session.id || session.email || 'admin'; }
+
+// withIdempotencyMarked — wraps storage.withIdempotency and adds a `cached: true`
+// flag on duplicate calls. We probe the underlying idem key first; if a cached
+// result exists, we know this call is a replay.
+async function withIdempotencyMarked(idemKey, ttlSeconds, fn) {
+  let preExisting = false;
+  try {
+    const { getJSON } = await import('./_lib/storage.js');
+    const cached = await getJSON(`idem:${idemKey}`);
+    if (cached != null) preExisting = true;
+  } catch {}
+  const result = await withIdempotency(idemKey, ttlSeconds, fn);
+  if (preExisting && result && typeof result === 'object') {
+    return { ...result, cached: true };
+  }
+  return result;
+}
 
 // ── op=stats ────────────────────────────────────────────────────────────────
 
@@ -791,8 +823,9 @@ async function adminScanExceptions(req, res, session) {
 async function adminAuditSearch(req, res, session) {
   if (req.method !== 'GET') return methodNotAllowed(res);
   const q = getQuery(req);
+  const wantCsv = String(q.format || '').toLowerCase() === 'csv';
   const opts = {
-    limit:  Math.min(500, Math.max(1, parseInt(q.limit  || '100', 10))),
+    limit:  Math.min(wantCsv ? 5000 : 500, Math.max(1, parseInt(q.limit  || (wantCsv ? '1000' : '100'), 10))),
     offset: Math.max(0, parseInt(q.offset || '0', 10)),
     actor:  q.actor  || undefined,
     action: q.action || undefined,
@@ -800,7 +833,44 @@ async function adminAuditSearch(req, res, session) {
     until:  q.until  ? Number(q.until)  : undefined,
   };
   const entries = await globalAuditList(opts);
+
+  if (wantCsv) {
+    const header = ['timestamp_iso','actor','action','target_type','target_id','target_name','prev','next','memo','ip'];
+    const lines  = [header.map(csvField).join(',')];
+    for (const e of entries) {
+      const row = [
+        e.at ? new Date(Number(e.at)).toISOString() : '',
+        e.actor || '',
+        e.action || '',
+        e.target_type || (e.leadId ? 'lead' : ''),
+        e.target_id || e.leadId || '',
+        e.target_name || '',
+        e.prev != null ? (typeof e.prev === 'object' ? JSON.stringify(e.prev) : String(e.prev)) : '',
+        e.next != null ? (typeof e.next === 'object' ? JSON.stringify(e.next) : String(e.next)) : '',
+        e.memo || '',
+        e.ip   || '',
+      ];
+      lines.push(row.map(csvField).join(','));
+    }
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Content-Disposition', `attachment; filename="audit-${Date.now()}.csv"`);
+    // UTF-8 BOM for Excel
+    res.end('﻿' + lines.join('\r\n') + '\r\n');
+    return;
+  }
+
   return ok(res, { ok: true, entries, count: entries.length });
+}
+
+// RFC 4180 field encoder
+function csvField(v) {
+  const s = v == null ? '' : String(v);
+  if (s.includes(',') || s.includes('"') || s.includes('\n') || s.includes('\r')) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
 }
 
 // ── op=activity-feed ────────────────────────────────────────────────────────
@@ -1253,6 +1323,53 @@ async function adminBotsReset(req, res, session) {
   try {
     const { resetBots } = await import('./_lib/bots-live.js');
     const r = await resetBots();
+    return ok(res, r);
+  } catch (e) { return serverError(res, e); }
+}
+
+// 20-persona stress variant. Uses the same tick logic; just spins up a larger
+// persona array up front. Hits Redis harder so use sparingly.
+async function adminBotsStartStress(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  try {
+    const { startBotsStress } = await import('./_lib/bots-live.js');
+    const r = await startBotsStress();
+    return ok(res, r);
+  } catch (e) { return serverError(res, e); }
+}
+
+async function adminRunRaceTest(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  try {
+    const { runRaceTest } = await import('./_lib/race-tests.js');
+    const r = await runRaceTest(session);
+    return ok(res, r);
+  } catch (e) { return serverError(res, e); }
+}
+
+async function adminRunSubscriptionTest(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  try {
+    const { runSubscriptionTest } = await import('./_lib/race-tests.js');
+    const r = await runSubscriptionTest(session);
+    return ok(res, r);
+  } catch (e) { return serverError(res, e); }
+}
+
+async function adminRunSoftDeleteTest(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  try {
+    const { runSoftDeleteTest } = await import('./_lib/race-tests.js');
+    const r = await runSoftDeleteTest(session);
+    return ok(res, r);
+  } catch (e) { return serverError(res, e); }
+}
+
+async function adminRunEmailExtended(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  try {
+    const { runExtendedEmailChecks } = await import('./_lib/race-tests.js');
+    const r = await runExtendedEmailChecks(session);
     return ok(res, r);
   } catch (e) { return serverError(res, e); }
 }
@@ -2162,7 +2279,19 @@ async function adminWireCleared(req, res, session) {
   const lead = await getLead(leadId);
   if (!lead) return notFound(res);
 
-  const actor = session.id || session.email || 'admin';
+  // Idempotency: same operator + lead + member# within 60s ⇒ replay-safe
+  const actorPre = _actor(session);
+  const { bodyHash: _bh } = await import('./_lib/error-shape.js');
+  const idemKey = body.idempotency_key
+    || `wirecleared:${actorPre}:${_bh({ leadId, memberNumber })}:${Math.floor(Date.now() / 60000)}`;
+  // Probe pre-existing — if already cached, return cached result rather than re-executing
+  try {
+    const { getJSON } = await import('./_lib/storage.js');
+    const cached = await getJSON(`idem:${idemKey}`);
+    if (cached) return ok(res, { ...cached, cached: true });
+  } catch {}
+
+  const actor = actorPre;
   const now   = Date.now();
 
   // Record cleared timestamp before markMemberFunded sets it
@@ -2216,7 +2345,7 @@ async function adminWireCleared(req, res, session) {
     console.warn('[v2/admin/wire-cleared] sendFundedConfirmation failed:', e && e.message);
   }
 
-  return ok(res, {
+  const finalResponse = {
     ok:              true,
     lead: {
       id:            updatedLead.id,
@@ -2226,7 +2355,25 @@ async function adminWireCleared(req, res, session) {
       member_number: updatedLead.member_number,
     },
     certificate_url: certificateUrl,
-  });
+  };
+  // Cache the success response for idempotent replays (60s window above).
+  try {
+    const { setJSON } = await import('./_lib/storage.js');
+    const idemKey2 = body.idempotency_key
+      || `wirecleared:${actor}:${(await import('./_lib/error-shape.js')).bodyHash({ leadId, memberNumber })}:${Math.floor(Date.now() / 60000)}`;
+    await setJSON(`idem:${idemKey2}`, finalResponse);
+    // Set TTL via Upstash SETEX-style call (best effort)
+    const KV_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+    const KV_TOK = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+    if (KV_URL && KV_TOK) {
+      await fetch(KV_URL, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${KV_TOK}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(['EXPIRE', `idem:${idemKey2}`, '120']),
+      }).catch(() => {});
+    }
+  } catch {}
+  return ok(res, finalResponse);
 }
 
 // ── admin op=send-message ─────────────────────────────────────────────────────
@@ -2242,13 +2389,15 @@ async function adminSendMessage(req, res, session) {
   if (!subject || !msgBody) return bad(res, 'subject and body are required');
   if (!['gold', 'blue', 'amber'].includes(type)) return bad(res, 'type must be gold, blue, or amber');
 
-  const actor  = session.id || session.email || 'admin';
+  const actor  = _actor(session);
   const sentAt = new Date().toISOString();
 
   // Resolve recipient lead IDs
   let targetLeads = [];
+  let isBroadcast = false;
   if (recipients === 'all') {
     targetLeads = await listLeads({ limit: 200 });
+    isBroadcast = true;
   } else if (Array.isArray(recipients)) {
     for (const lid of recipients) {
       const l = await getLead(String(lid).trim());
@@ -2260,35 +2409,48 @@ async function adminSendMessage(req, res, session) {
 
   if (!targetLeads.length) return bad(res, 'no valid recipients found');
 
-  const msgId  = await nanoid();
-  const message = {
-    id:      msgId,
-    type,
-    subject: String(subject),
-    body:    String(msgBody),
-    sent_at: sentAt,
-    read_at: null,
-    sender:  'admin',
+  const runDelivery = async () => {
+    const msgId  = await nanoid();
+    const message = {
+      id:      msgId,
+      type,
+      subject: String(subject),
+      body:    String(msgBody),
+      sent_at: sentAt,
+      read_at: null,
+      sender:  'admin',
+    };
+
+    let successCount = 0;
+    const errors = [];
+    for (const lead of targetLeads) {
+      try {
+        await addMessage(lead.id, { ...message });
+        successCount++;
+      } catch (e) {
+        errors.push({ leadId: lead.id, error: e.message });
+      }
+    }
+    return {
+      ok:            true,
+      message_id:    msgId,
+      sent_to:       successCount,
+      total:         targetLeads.length,
+      errors:        errors.length ? errors : undefined,
+    };
   };
 
-  let successCount = 0;
-  const errors = [];
-  for (const lead of targetLeads) {
-    try {
-      await addMessage(lead.id, { ...message });
-      successCount++;
-    } catch (e) {
-      errors.push({ leadId: lead.id, error: e.message });
-    }
+  // Idempotency only for broadcast (recipients='all'); single-recipient sends are cheap.
+  if (isBroadcast) {
+    const { bodyHash } = await import('./_lib/error-shape.js');
+    const idemHash = bodyHash({ type, subject, msgBody, recipients: 'all' });
+    const idemKey  = body.idempotency_key
+      || `msg:${actor}:${idemHash}:${Math.floor(Date.now() / 60000)}`;
+    const result = await withIdempotencyMarked(idemKey, 120, runDelivery);
+    return ok(res, result);
   }
 
-  return ok(res, {
-    ok:            true,
-    message_id:    msgId,
-    sent_to:       successCount,
-    total:         targetLeads.length,
-    errors:        errors.length ? errors : undefined,
-  });
+  return ok(res, await runDelivery());
 }
 
 // ── admin op=issue-capital-call ───────────────────────────────────────────────
@@ -2299,62 +2461,98 @@ async function adminIssueCapitalCall(req, res, session) {
   let body;
   try { body = await readBody(req); } catch { return bad(res, 'invalid body'); }
 
-  const { ref, amount_usd, amount_krw, due_date, wire_details, notes } = body;
+  const { ref, amount_usd, amount_krw, due_date, wire_details, notes, recipients } = body;
   // Accept either amount_usd (preferred) or amount_krw (legacy). Store as USD.
   const amountUsd = Number(amount_usd != null ? amount_usd : amount_krw);
   if (!ref)        return bad(res, 'ref is required');
   if (!isFinite(amountUsd) || amountUsd <= 0) return bad(res, 'amount_usd is required');
   if (!due_date)   return bad(res, 'due_date is required');
 
-  const actor    = session.id || session.email || 'admin';
-  const issuedAt = Date.now();
-  const callId   = await nanoid();
+  const actor = _actor(session);
 
-  const capitalCall = {
-    id:           callId,
-    ref:          String(ref),
-    amount_usd:   amountUsd,
-    due_date:     String(due_date),
-    wire_details: wire_details || null,
-    notes:        notes       || null,
-    status:       'pending',
-    issued_at:    issuedAt,
-    acknowledged_at: null,
-  };
-
-  // Issue to all funded members
+  // Resolve recipient set
   const funded = await listFundedMembers();
   if (!funded.length) return bad(res, 'no funded members to issue capital call to');
 
-  let successCount = 0;
-  for (const lead of funded) {
-    try {
-      await addCapitalCall(lead.id, { ...capitalCall });
-
-      // Send amber in-portal message
-      const msgId = await nanoid();
-      await addMessage(lead.id, {
-        id:      msgId,
-        type:    'amber',
-        subject: `Capital Call: ${ref}`,
-        body:    `A capital call has been issued.\n\nReference: ${ref}\nAmount: $${amountUsd.toLocaleString()}\nDue: ${due_date}\n${notes ? '\nNotes: ' + notes : ''}`,
-        sent_at: new Date(issuedAt).toISOString(),
-        read_at: null,
-        sender:  'admin',
-      });
-
-      successCount++;
-    } catch (e) {
-      console.warn(`[v2/admin/issue-capital-call] lead ${lead.id} failed:`, e && e.message);
-    }
+  let targets;
+  let recipMode;
+  if (recipients == null || recipients === 'all') {
+    targets = funded;
+    recipMode = 'all';
+  } else if (Array.isArray(recipients)) {
+    const wanted = new Set(recipients.map((x) => String(x).trim()));
+    targets = funded.filter((l) => wanted.has(l.id));
+    if (!targets.length) return bad(res, 'recipients list matched no funded members');
+    recipMode = 'selected';
+  } else {
+    return bad(res, 'recipients must be "all" or an array of leadIds');
   }
 
-  return ok(res, {
-    ok:          true,
-    capital_call_id: callId,
-    issued_to:   successCount,
-    total:       funded.length,
+  // Idempotency: actor + ref + amount + due + recipient-set hash, 60s window
+  const { bodyHash } = await import('./_lib/error-shape.js');
+  const idemHash = bodyHash({ ref, amountUsd, due_date, notes, ids: targets.map((l) => l.id).sort() });
+  const idemKey = body.idempotency_key
+    || `cc:${actor}:${idemHash}:${Math.floor(Date.now() / 60000)}`;
+
+  const result = await withIdempotencyMarked(idemKey, 120, async () => {
+    const issuedAt = Date.now();
+    const callId   = await nanoid();
+    const capitalCall = {
+      id:           callId,
+      ref:          String(ref),
+      amount_usd:   amountUsd,
+      due_date:     String(due_date),
+      wire_details: wire_details || null,
+      notes:        notes       || null,
+      status:       'pending',
+      issued_at:    issuedAt,
+      acknowledged_at: null,
+    };
+
+    let successCount = 0;
+    const targetIds = [];
+    for (const lead of targets) {
+      try {
+        await addCapitalCall(lead.id, { ...capitalCall });
+        const msgId = await nanoid();
+        await addMessage(lead.id, {
+          id:      msgId,
+          type:    'amber',
+          subject: `Capital Call: ${ref}`,
+          body:    `A capital call has been issued.\n\nReference: ${ref}\nAmount: $${amountUsd.toLocaleString()}\nDue: ${due_date}\n${notes ? '\nNotes: ' + notes : ''}`,
+          sent_at: new Date(issuedAt).toISOString(),
+          read_at: null,
+          sender:  'admin',
+        });
+        targetIds.push(lead.id);
+        successCount++;
+      } catch (e) {
+        console.warn(`[v2/admin/issue-capital-call] lead ${lead.id} failed:`, e && e.message);
+      }
+    }
+
+    // Global audit
+    try {
+      await globalAuditAppend({
+        actor, action: 'capital_call_broadcast',
+        target_type: 'comms', target_id: callId,
+        target_name: `CC ${ref}`,
+        memo: `${recipMode === 'all' ? 'all funded' : `${targetIds.length} selected`} · $${amountUsd.toLocaleString()} due ${due_date}`,
+        next: { ref, amount_usd: amountUsd, due_date, recipients_mode: recipMode, recipient_ids: targetIds },
+      });
+    } catch {}
+
+    return {
+      ok: true,
+      capital_call_id: callId,
+      issued_to: successCount,
+      total: targets.length,
+      recipients_mode: recipMode,
+      recipient_ids: targetIds,
+    };
   });
+
+  return ok(res, result);
 }
 
 // ── admin op=read-receipt ─────────────────────────────────────────────────────
@@ -2374,6 +2572,8 @@ async function adminReadReceipt(req, res, session) {
     const msg = messages.find((m) => m.id === messageId);
     if (!msg) continue;
     receipts.push({
+      leadId:        lead.id,
+      // Keep legacy alias for any existing UI consumer
       lead_id:       lead.id,
       member_number: lead.member_number || null,
       name:          lead.name          || null,
@@ -2410,48 +2610,65 @@ async function adminSendQuarterlyLetter(req, res, session) {
   const funded = await listFundedMembers();
   if (!funded.length) return bad(res, 'no funded members to send letter to');
 
-  const { nanoid: _nanoid } = await import('nanoid');
-  const letterId  = _nanoid(12);
-  const sentAt    = new Date().toISOString();
-  const actor     = session.id || session.email || 'admin';
+  const actor = _actor(session);
+  const { bodyHash } = await import('./_lib/error-shape.js');
+  const idemHash = bodyHash({ quarter, year, subject: body.subject, html_len: (body.html_body || '').length });
+  const idemKey  = body.idempotency_key
+    || `letter:${actor}:${idemHash}:${Math.floor(Date.now() / 60000)}`;
 
-  const letter = {
-    id:        letterId,
-    quarter,
-    year,
-    subject:   String(body.subject),
-    html_body: String(body.html_body),
-    sent_at:   sentAt,
-    read_at:   null,
-    sender:    actor,
-  };
+  const result = await withIdempotencyMarked(idemKey, 120, async () => {
+    const { nanoid: _nanoid } = await import('nanoid');
+    const letterId  = _nanoid(12);
+    const sentAt    = new Date().toISOString();
 
-  let successCount = 0;
-  const errors = [];
+    const letter = {
+      id:        letterId,
+      quarter,
+      year,
+      subject:   String(body.subject),
+      html_body: String(body.html_body),
+      sent_at:   sentAt,
+      read_at:   null,
+      sender:    actor,
+    };
 
-  for (const lead of funded) {
-    try {
-      await addQuarterlyLetter(lead.id, { ...letter });
-      successCount++;
-      // Email notification — failures must not abort the loop
+    let successCount = 0;
+    const errors = [];
+
+    for (const lead of funded) {
       try {
-        await sendQuarterlyLetterNotification(lead, letter);
-      } catch (emailErr) {
-        console.warn(`[v2/admin/send-quarterly-letter] email failed for ${lead.id}:`, emailErr && emailErr.message);
+        await addQuarterlyLetter(lead.id, { ...letter });
+        successCount++;
+        try {
+          await sendQuarterlyLetterNotification(lead, letter);
+        } catch (emailErr) {
+          console.warn(`[v2/admin/send-quarterly-letter] email failed for ${lead.id}:`, emailErr && emailErr.message);
+        }
+      } catch (e) {
+        console.warn(`[v2/admin/send-quarterly-letter] store failed for ${lead.id}:`, e && e.message);
+        errors.push({ leadId: lead.id, error: e.message });
       }
-    } catch (e) {
-      console.warn(`[v2/admin/send-quarterly-letter] store failed for ${lead.id}:`, e && e.message);
-      errors.push({ leadId: lead.id, error: e.message });
     }
-  }
 
-  return ok(res, {
-    ok:        true,
-    letter_id: letterId,
-    sent_to:   successCount,
-    total:     funded.length,
-    errors:    errors.length ? errors : undefined,
+    try {
+      await globalAuditAppend({
+        actor, action: 'quarterly_letter_published',
+        target_type: 'comms', target_id: letterId,
+        target_name: `Q${quarter} ${year} letter`,
+        memo: `${successCount}/${funded.length} delivered`,
+      });
+    } catch {}
+
+    return {
+      ok:        true,
+      letter_id: letterId,
+      sent_to:   successCount,
+      total:     funded.length,
+      errors:    errors.length ? errors : undefined,
+    };
   });
+
+  return ok(res, result);
 }
 
 // ── admin op=publish-vault-verification ───────────────────────────────────────
@@ -2465,39 +2682,57 @@ async function adminPublishVaultVerification(req, res, session) {
   if (!body.title)         return bad(res, 'title required');
   if (!body.year)          return bad(res, 'year required');
 
-  const { nanoid: _nanoid } = await import('nanoid');
-  const vvId       = _nanoid(12);
-  const publishedAt = new Date().toISOString();
+  const actor = _actor(session);
+  const { bodyHash } = await import('./_lib/error-shape.js');
+  const idemHash = bodyHash({ title: body.title, year: body.year, blob: body.blob_pathname || null });
+  const idemKey  = body.idempotency_key
+    || `vv:${actor}:${idemHash}:${Math.floor(Date.now() / 60000)}`;
 
-  const vv = {
-    id:           vvId,
-    title:        String(body.title),
-    year:         parseInt(body.year, 10),
-    summary:      body.summary   ? String(body.summary)   : null,
-    blob_pathname: body.blob_pathname ? String(body.blob_pathname) : null,
-    published_at: publishedAt,
-  };
+  const result = await withIdempotencyMarked(idemKey, 120, async () => {
+    const { nanoid: _nanoid } = await import('nanoid');
+    const vvId       = _nanoid(12);
+    const publishedAt = new Date().toISOString();
 
-  const { sent_to, total, errors } = await broadcastVaultVerification(vv);
-  try { await setLastVaultVerification(vv); } catch {}
+    const vv = {
+      id:           vvId,
+      title:        String(body.title),
+      year:         parseInt(body.year, 10),
+      summary:      body.summary   ? String(body.summary)   : null,
+      blob_pathname: body.blob_pathname ? String(body.blob_pathname) : null,
+      published_at: publishedAt,
+    };
 
-  // Send email notifications — failures logged, do not abort
-  const funded = await listFundedMembers();
-  for (const lead of funded) {
-    try {
-      await sendVaultVerificationNotification(lead, vv);
-    } catch (e) {
-      console.warn(`[v2/admin/publish-vault-verification] email failed for ${lead.id}:`, e && e.message);
+    const { sent_to, total, errors } = await broadcastVaultVerification(vv);
+    try { await setLastVaultVerification(vv); } catch {}
+
+    const funded = await listFundedMembers();
+    for (const lead of funded) {
+      try {
+        await sendVaultVerificationNotification(lead, vv);
+      } catch (e) {
+        console.warn(`[v2/admin/publish-vault-verification] email failed for ${lead.id}:`, e && e.message);
+      }
     }
-  }
 
-  return ok(res, {
-    ok:      true,
-    vv_id:   vvId,
-    sent_to,
-    total,
-    errors:  errors && errors.length ? errors : undefined,
+    try {
+      await globalAuditAppend({
+        actor, action: 'vault_verification_published',
+        target_type: 'comms', target_id: vvId,
+        target_name: vv.title,
+        memo: `${sent_to}/${total} delivered`,
+      });
+    } catch {}
+
+    return {
+      ok:      true,
+      vv_id:   vvId,
+      sent_to,
+      total,
+      errors:  errors && errors.length ? errors : undefined,
+    };
   });
+
+  return ok(res, result);
 }
 
 // ── admin op=generate-tax-statement ──────────────────────────────────────────
@@ -2508,43 +2743,84 @@ async function adminGenerateTaxStatement(req, res, session) {
   let body;
   try { body = await readBody(req); } catch { return bad(res, 'invalid body'); }
 
-  const leadId       = String(body.leadId || '').trim();
-  const fiscalYear   = parseInt(body.fiscal_year, 10);
-  const goldStart    = Number(body.gold_price_start);
-  const goldEnd      = Number(body.gold_price_end);
+  const leadId     = String(body.leadId || '').trim();
+  const fiscalYear = parseInt(body.fiscal_year, 10);
+  const goldStart  = Number(body.gold_price_start);
+  const goldEnd    = Number(body.gold_price_end);
 
-  if (!leadId)                                     return bad(res, 'leadId required');
+  if (!leadId)                                            return bad(res, 'leadId required');
   if (!Number.isInteger(fiscalYear) || fiscalYear < 2020) return bad(res, 'fiscal_year invalid');
-  if (!isFinite(goldStart) || goldStart <= 0)      return bad(res, 'gold_price_start must be a positive number');
-  if (!isFinite(goldEnd)   || goldEnd   <= 0)      return bad(res, 'gold_price_end must be a positive number');
+  if (!isFinite(goldStart) || goldStart <= 0)             return bad(res, 'gold_price_start must be a positive number');
+  if (!isFinite(goldEnd)   || goldEnd   <= 0)             return bad(res, 'gold_price_end must be a positive number');
 
   const lead = await getLead(leadId);
   if (!lead) return notFound(res);
 
-  const fxRates = {
-    krw_start: Number(body.krw_start) || 1,
-    krw_end:   Number(body.krw_end)   || 1,
-    sgd_start: Number(body.sgd_start) || 1,
-    sgd_end:   Number(body.sgd_end)   || 1,
-  };
+  const krwEnd  = Number(body.krw_end)   || Number(body.fx_rate_krw_end) || 0;
+  const krwStart = Number(body.krw_start) || 0;
+  const sgdStart = Number(body.sgd_start) || 1;
+  const sgdEnd   = Number(body.sgd_end)   || 1;
 
-  let result;
+  // Generate Korean PDF (primary, per brief)
+  let krResult;
   try {
-    const { generateTaxStatement } = await import('./_lib/pdf.js');
-    result = await generateTaxStatement(lead, fiscalYear, goldStart, goldEnd, fxRates);
+    const { generateKoreanTaxStatement } = await import('./_lib/pdf-tax-kr.js');
+    krResult = await generateKoreanTaxStatement(lead, fiscalYear, {
+      gold_price_start_per_kg: goldStart,
+      gold_price_end_per_kg:   goldEnd,
+      fx_rate_krw_end:         krwEnd,
+      custodian:               body.custodian || 'Malca-Amit Singapore FTZ',
+      issue_date_iso:          body.issue_date || new Date().toISOString().slice(0, 10),
+    });
   } catch (e) {
-    console.error('[v2/admin/generate-tax-statement] pdf generation failed:', e && e.message);
+    console.error('[v2/admin/generate-tax-statement] KR pdf generation failed:', e && e.message);
     return serverError(res, e);
   }
 
+  // Mint a 24h signed URL for member access
+  let signed_url = null;
+  let expires_at = null;
   try {
-    await saveTaxStatementUrl(leadId, fiscalYear, result.url);
+    const { buildSignedUrl } = await import('./_lib/signed-url.js');
+    const r = await buildSignedUrl({
+      pathname:    krResult.pathname,
+      leadId,
+      kind:        'tax-statement',
+      ttlSeconds:  24 * 60 * 60,
+    });
+    signed_url = r.signed_url;
+    expires_at = r.expires_at;
   } catch (e) {
-    console.error('[v2/admin/generate-tax-statement] saveTaxStatementUrl failed:', e && e.message);
-    // Non-fatal — PDF was generated successfully; return url anyway
+    console.warn('[v2/admin/generate-tax-statement] signed url build failed:', e && e.message);
   }
 
-  return ok(res, { ok: true, url: result.url, fiscal_year: fiscalYear });
+  try {
+    await saveTaxStatementUrl(leadId, fiscalYear, {
+      url:           krResult.url,
+      pathname:      krResult.pathname,
+      format:        'kr',
+      blob_pathname: krResult.pathname,
+      gold_price_start: goldStart,
+      gold_price_end:   goldEnd,
+      fx_rate_krw_end:  krwEnd,
+      fx_rate_krw_start: krwStart,
+      sgd_start:        sgdStart,
+      sgd_end:          sgdEnd,
+    });
+  } catch (e) {
+    console.error('[v2/admin/generate-tax-statement] saveTaxStatementUrl failed:', e && e.message);
+  }
+
+  return ok(res, {
+    ok: true,
+    lead_id: leadId,
+    fiscal_year: fiscalYear,
+    url: krResult.url,           // raw blob URL (admin-only)
+    signed_url,                  // 24h signed URL (member-safe)
+    expires_at,
+    pathname: krResult.pathname,
+    format: 'kr',
+  });
 }
 
 // ── admin op=letters ──────────────────────────────────────────────────────────
@@ -2602,3 +2878,520 @@ async function adminTaxStatements(req, res, session) {
 
   return ok(res, { ok: true, tax_statements: results });
 }
+
+// ────────────────────────────────────────────────────────────────────────────
+// Phase 5 ops — vault registry, lead lifecycle, capital reconciliation, NAV,
+// distributions, signed-URL surfaces, command-palette search.
+// ────────────────────────────────────────────────────────────────────────────
+
+// ── admin op=vault-bars ─────────────────────────────────────────────────────
+// Flatten every funded member's bars[] into a global registry suitable for
+// the vault-room screen. One Upstash listFundedMembers() call.
+
+async function adminVaultBars(req, res, session) {
+  if (req.method !== 'GET') return methodNotAllowed(res);
+
+  // Spot price for current_value computation
+  let xau_usd_kg = 0;
+  try {
+    const { getXauUsd } = await import('./_lib/gold-price.js');
+    const spot = await getXauUsd();
+    xau_usd_kg = Number(spot.price_usd_per_kg_spot || spot.price_usd_per_kg) || 0;
+  } catch {}
+
+  const funded = await listFundedMembers();
+  const bars = [];
+  let total_kg = 0;
+  let total_value_usd = 0;
+  let total_cost_basis_usd = 0;
+
+  for (const m of funded) {
+    if (m.deleted_at) continue;
+    const memBars = Array.isArray(m.bars) ? m.bars : [];
+    for (const b of memBars) {
+      const weight_kg = Number(b.weight_kg) || 1;
+      const cost_basis_usd = Number(b.cost_basis_usd) || 0;
+      const current_value_usd = weight_kg * xau_usd_kg;
+      bars.push({
+        serial:             b.serial            || null,
+        refiner:            b.refiner           || null,
+        year:               b.year              || null,
+        weight_kg,
+        member_number:      m.member_number     || null,
+        member_name:        m.name              || null,
+        custody_location:   b.vault_location    || 'Malca-Amit Singapore FTZ',
+        last_verified_at:   b.last_verified_at  || null,
+        cost_basis_usd:     cost_basis_usd      || null,
+        current_value_usd:  Math.round(current_value_usd),
+        lead_id:            m.id,
+      });
+      total_kg += weight_kg;
+      total_value_usd += current_value_usd;
+      total_cost_basis_usd += cost_basis_usd;
+    }
+  }
+
+  bars.sort((a, b) => {
+    const an = a.member_number ?? 999;
+    const bn = b.member_number ?? 999;
+    if (an !== bn) return an - bn;
+    return String(a.serial || '').localeCompare(String(b.serial || ''));
+  });
+
+  return ok(res, {
+    ok: true,
+    bars,
+    total_kg: +total_kg.toFixed(3),
+    total_value_usd: Math.round(total_value_usd),
+    total_cost_basis_usd: Math.round(total_cost_basis_usd),
+    xau_usd_kg: Math.round(xau_usd_kg),
+  });
+}
+
+// ── admin op=decline-lead ───────────────────────────────────────────────────
+// Records a decline reason. Status is preserved so the operator can reverse
+// the decision. NO email is sent (per brief).
+
+async function adminDeclineLead(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return err(res, 'invalid body', 'BAD_BODY'); }
+  const leadId = String(body.leadId || '').trim();
+  const reason = String(body.reason || '').trim().slice(0, 500);
+  if (!leadId) return err(res, 'leadId required', 'MISSING_LEAD_ID');
+  if (!reason) return err(res, 'reason required', 'MISSING_REASON');
+
+  const lead = await getLead(leadId);
+  if (!lead) return notFound(res);
+
+  const now = Date.now();
+  lead.declined_at = now;
+  lead.declined_reason = reason;
+
+  await appendAudit(lead, {
+    actor: _actor(session),
+    action: 'decline_lead',
+    memo: reason,
+    next: { declined_at: now },
+    ip: clientIp(req),
+  });
+  try { await saveLead(lead); } catch (e) { return serverError(res, e); }
+
+  return ok(res, { ok: true, lead: {
+    id: lead.id,
+    name: lead.name,
+    email: lead.email,
+    status: lead.status,
+    declined_at: lead.declined_at,
+    declined_reason: lead.declined_reason,
+  } });
+}
+
+// ── admin op=capital-call-paid ──────────────────────────────────────────────
+// Marks a single capital call as paid + reconciled. Audit captures wire ref.
+
+async function adminCapitalCallPaid(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return err(res, 'invalid body', 'BAD_BODY'); }
+
+  const leadId         = String(body.leadId || '').trim();
+  const capitalCallId  = String(body.capitalCallId || body.capital_call_id || '').trim();
+  const paidAmountUsd  = Number(body.paid_amount_usd);
+  const paidAtMs       = body.paid_at ? new Date(body.paid_at).getTime() : Date.now();
+  const wireRef        = String(body.wire_ref || '').trim().slice(0, 200);
+
+  if (!leadId)                                       return err(res, 'leadId required', 'MISSING_LEAD_ID');
+  if (!capitalCallId)                                return err(res, 'capitalCallId required', 'MISSING_CC_ID');
+  if (!isFinite(paidAmountUsd) || paidAmountUsd <= 0) return err(res, 'paid_amount_usd must be a positive number', 'BAD_AMOUNT');
+  if (!isFinite(paidAtMs))                           return err(res, 'paid_at invalid', 'BAD_DATE');
+
+  const lead = await getLead(leadId);
+  if (!lead) return notFound(res);
+  const calls = lead.capital_calls || [];
+  const idx = calls.findIndex((c) => c.id === capitalCallId);
+  if (idx === -1) return notFound(res);
+
+  const cc = calls[idx];
+  const prevStatus = cc.status;
+  cc.status = 'paid';
+  cc.paid_at = paidAtMs;
+  cc.paid_amount_usd = paidAmountUsd;
+  cc.wire_ref = wireRef || null;
+  // Reconciliation flag: matches if amount within 1 cent of expected.
+  cc.reconciled = Math.abs(paidAmountUsd - Number(cc.amount_usd || 0)) < 0.01;
+
+  await appendAudit(lead, {
+    actor: _actor(session),
+    action: 'capital_call_paid',
+    prev: prevStatus,
+    next: { status: 'paid', paid_amount_usd: paidAmountUsd, paid_at: paidAtMs, wire_ref: wireRef || null, reconciled: cc.reconciled },
+    memo: cc.reconciled ? 'reconciled' : `mismatch: expected $${cc.amount_usd}`,
+    ip: clientIp(req),
+    target_type: 'capital_call',
+    target_id: capitalCallId,
+  });
+  try { await saveLead(lead); } catch (e) { return serverError(res, e); }
+
+  return ok(res, { ok: true, capitalCallId, reconciled: cc.reconciled });
+}
+
+// ── admin op=nav-update ─────────────────────────────────────────────────────
+// Records a NAV value for a given period (e.g. "2026-Q1"), then regenerates
+// per-member statements with their share of NAV.
+
+async function adminNavUpdate(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return err(res, 'invalid body', 'BAD_BODY'); }
+
+  const navUsd    = Number(body.nav_usd);
+  const period    = String(body.period || '').trim();
+  const narrative = String(body.narrative || '').slice(0, 5000);
+
+  if (!isFinite(navUsd) || navUsd < 0) return err(res, 'nav_usd must be a non-negative number', 'BAD_NAV');
+  if (!/^\d{4}-Q[1-4]$|^\d{4}-\d{2}$/.test(period)) return err(res, 'period must look like 2026-Q1 or 2026-03', 'BAD_PERIOD');
+
+  const actor = _actor(session);
+
+  // Idempotency: same actor + period + nav within 60s ⇒ cached
+  const { bodyHash } = await import('./_lib/error-shape.js');
+  const idemKey = body.idempotency_key
+    || `nav:${actor}:${bodyHash({ navUsd, period, narrative })}:${Math.floor(Date.now() / 60000)}`;
+
+  const result = await withIdempotencyMarked(idemKey, 120, async () => {
+    const postedAt = Date.now();
+    const navRecord = { nav_usd: navUsd, period, narrative, posted_at: postedAt, actor };
+
+    // Persist nav record under nav:{period}
+    try {
+      const { setJSON } = await import('./_lib/storage.js');
+      await setJSON(`nav:${period}`, navRecord);
+    } catch (e) {
+      console.warn('[nav-update] persist failed:', e && e.message);
+    }
+
+    // Spot for kg valuation
+    let xau_usd_kg = 0;
+    try {
+      const { getXauUsd } = await import('./_lib/gold-price.js');
+      const spot = await getXauUsd();
+      xau_usd_kg = Number(spot.price_usd_per_kg_spot || spot.price_usd_per_kg) || 0;
+    } catch {}
+
+    const funded = await listFundedMembers();
+    const sumKg = funded.reduce((s, m) => {
+      if (m.deleted_at) return s;
+      const memberKg = (m.bars || []).reduce((a, b) => a + (Number(b.weight_kg) || 0), 0)
+        || (m.subscription && Number(m.subscription.kg_requested)) || 0;
+      return s + memberKg;
+    }, 0);
+
+    const recipients = [];
+    let statements_generated = 0;
+
+    for (const lead of funded) {
+      if (lead.deleted_at) continue;
+      const memberKg = (lead.bars || []).reduce((a, b) => a + (Number(b.weight_kg) || 0), 0)
+        || (lead.subscription && Number(lead.subscription.kg_requested)) || 0;
+      const sharePct  = sumKg > 0 ? (memberKg / sumKg) * 100 : 0;
+      const shareNav  = sumKg > 0 ? (memberKg / sumKg) * navUsd : 0;
+      const costBasis = (lead.bars || []).reduce((a, b) => a + (Number(b.cost_basis_usd) || 0), 0)
+        || (lead.subscription && Number(lead.subscription.usd_amount)) || 0;
+      const returnPct = costBasis > 0 ? ((shareNav - costBasis) / costBasis) * 100 : 0;
+      const goldValue = memberKg * xau_usd_kg;
+
+      const statement = {
+        leadId:           lead.id,
+        member_number:    lead.member_number || null,
+        period,
+        nav_usd:          navUsd,
+        member_kg:        +memberKg.toFixed(3),
+        share_pct:        +sharePct.toFixed(4),
+        share_of_nav_usd: Math.round(shareNav),
+        gold_value_usd:   Math.round(goldValue),
+        cost_basis_usd:   Math.round(costBasis),
+        return_pct:       +returnPct.toFixed(2),
+        narrative,
+        posted_at:        postedAt,
+      };
+
+      try {
+        const { setJSON } = await import('./_lib/storage.js');
+        await setJSON(`statement:${lead.id}:${period}`, statement);
+        statements_generated++;
+        recipients.push({ leadId: lead.id, name: lead.name || null, member_number: lead.member_number || null, share_pct: statement.share_pct });
+      } catch (e) {
+        console.warn(`[nav-update] statement save failed ${lead.id}:`, e && e.message);
+      }
+
+      // Per-lead audit
+      try {
+        await appendAudit(lead, {
+          actor, action: 'nav_statement_generated',
+          target_type: 'statement', target_id: `${lead.id}:${period}`,
+          next: { period, share_of_nav_usd: statement.share_of_nav_usd, return_pct: statement.return_pct },
+        });
+        await saveLead(lead);
+      } catch {}
+    }
+
+    // Global audit
+    try {
+      await globalAuditAppend({
+        actor, action: 'nav_update_posted',
+        target_type: 'fund', target_id: `nav:${period}`,
+        target_name: `NAV ${period}`,
+        memo: `$${navUsd.toLocaleString()} · ${statements_generated} statements`,
+        next: { period, nav_usd: navUsd },
+      });
+    } catch {}
+
+    return { ok: true, period, nav_usd: navUsd, statements_generated, recipients };
+  });
+
+  return ok(res, result);
+}
+
+// ── admin op=post-distribution ──────────────────────────────────────────────
+// Computes per-member pro-rata payouts by kg ownership and persists them in
+// each lead's distributions[] array.
+
+async function adminPostDistribution(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return err(res, 'invalid body', 'BAD_BODY'); }
+
+  const period          = String(body.period || '').trim();
+  const totalAmountUsd  = Number(body.total_amount_usd);
+  const type            = String(body.type || '').trim();
+  const distributionDate = String(body.distribution_date || '').trim();
+
+  if (!/^\d{4}-Q[1-4]$|^\d{4}-\d{2}$/.test(period)) return err(res, 'period must look like 2026-Q1', 'BAD_PERIOD');
+  if (!isFinite(totalAmountUsd) || totalAmountUsd <= 0) return err(res, 'total_amount_usd must be a positive number', 'BAD_AMOUNT');
+  if (!['income', 'capital', 'return_of_capital'].includes(type)) return err(res, 'type must be income, capital, or return_of_capital', 'BAD_TYPE');
+  if (!/^\d{4}-\d{2}-\d{2}/.test(distributionDate)) return err(res, 'distribution_date must be YYYY-MM-DD', 'BAD_DATE');
+
+  const actor = _actor(session);
+  const { bodyHash } = await import('./_lib/error-shape.js');
+  const idemKey = body.idempotency_key
+    || `dist:${actor}:${bodyHash({ period, totalAmountUsd, type, distributionDate })}:${Math.floor(Date.now() / 60000)}`;
+
+  const result = await withIdempotencyMarked(idemKey, 120, async () => {
+    const funded = await listFundedMembers();
+    const sumKg = funded.reduce((s, m) => {
+      if (m.deleted_at) return s;
+      const memberKg = (m.bars || []).reduce((a, b) => a + (Number(b.weight_kg) || 0), 0)
+        || (m.subscription && Number(m.subscription.kg_requested)) || 0;
+      return s + memberKg;
+    }, 0);
+
+    if (sumKg <= 0) return { ok: false, error: 'no kg ownership recorded across funded members', code: 'ZERO_KG_BASIS' };
+
+    const distId = await nanoid();
+    const postedAt = Date.now();
+
+    const distributions = [];
+    for (const lead of funded) {
+      if (lead.deleted_at) continue;
+      const memberKg = (lead.bars || []).reduce((a, b) => a + (Number(b.weight_kg) || 0), 0)
+        || (lead.subscription && Number(lead.subscription.kg_requested)) || 0;
+      const sharePct = (memberKg / sumKg) * 100;
+      const payoutUsd = Math.round((memberKg / sumKg) * totalAmountUsd * 100) / 100;
+
+      const record = {
+        id:                distId + '-' + lead.id.slice(-6),
+        period,
+        type,
+        amount_usd:        payoutUsd,
+        share_pct:         +sharePct.toFixed(4),
+        distribution_date: distributionDate,
+        posted_at:         postedAt,
+      };
+      lead.distributions = lead.distributions || [];
+      lead.distributions.push(record);
+      try {
+        await appendAudit(lead, {
+          actor, action: 'distribution_posted',
+          target_type: 'distribution', target_id: record.id,
+          next: { period, type, amount_usd: payoutUsd, share_pct: record.share_pct },
+        });
+        await saveLead(lead);
+      } catch (e) {
+        console.warn(`[post-distribution] save failed ${lead.id}:`, e && e.message);
+      }
+      distributions.push({
+        leadId: lead.id,
+        name: lead.name || null,
+        member_number: lead.member_number || null,
+        payout_usd: payoutUsd,
+        share_pct: +sharePct.toFixed(4),
+      });
+    }
+
+    // Global audit
+    try {
+      await globalAuditAppend({
+        actor, action: 'distribution_broadcast',
+        target_type: 'fund', target_id: distId,
+        target_name: `Distribution ${period} (${type})`,
+        memo: `$${totalAmountUsd.toLocaleString()} across ${distributions.length} members`,
+        next: { period, type, total_amount_usd: totalAmountUsd, distribution_date: distributionDate },
+      });
+    } catch {}
+
+    return { ok: true, period, type, total_amount_usd: totalAmountUsd, distribution_date: distributionDate, distribution_id: distId, distributions };
+  });
+
+  return ok(res, result);
+}
+
+// ── admin op=tax-statement-signed-url ───────────────────────────────────────
+// Re-mint a 24h signed URL for an already-generated tax statement.
+
+async function adminTaxStatementSignedUrl(req, res, session) {
+  if (req.method !== 'GET') return methodNotAllowed(res);
+  const q = getQuery(req);
+  const leadId = String(q.leadId || '').trim();
+  const fy     = parseInt(q.fiscal_year, 10);
+  if (!leadId)                       return err(res, 'leadId required', 'MISSING_LEAD_ID');
+  if (!Number.isInteger(fy) || fy < 2020) return err(res, 'fiscal_year invalid', 'BAD_FY');
+
+  const lead = await getLead(leadId);
+  if (!lead) return notFound(res);
+
+  const stmt = lead.tax_statements && lead.tax_statements[String(fy)];
+  if (!stmt) return notFound(res);
+
+  // Backwards-compat: stmt may be a string url (old shape) — no pathname stored.
+  const pathname = (typeof stmt === 'object') ? stmt.pathname : null;
+  if (!pathname) return err(res, 'no blob pathname stored for this statement (regenerate)', 'NO_PATHNAME', 409);
+
+  try {
+    const { buildSignedUrl } = await import('./_lib/signed-url.js');
+    const r = await buildSignedUrl({ pathname, leadId, kind: 'tax-statement', ttlSeconds: 24 * 60 * 60 });
+    return ok(res, { ok: true, lead_id: leadId, fiscal_year: fy, signed_url: r.signed_url, expires_at: r.expires_at });
+  } catch (e) {
+    return serverError(res, e);
+  }
+}
+
+// ── member op=tax-statement-signed-url ──────────────────────────────────────
+// Member-side signed URL refresh — same as admin but scoped to the member's
+// own session via requireMember().
+
+async function memberTaxStatementSignedUrl(req, res) {
+  if (req.method !== 'GET') return methodNotAllowed(res);
+  const lead = await requireMember(req);
+  if (!lead) return unauthorized(res);
+
+  const q = getQuery(req);
+  const fy = parseInt(q.fiscal_year, 10);
+  if (!Number.isInteger(fy) || fy < 2020) return bad(res, 'fiscal_year invalid');
+
+  const stmt = lead.tax_statements && lead.tax_statements[String(fy)];
+  if (!stmt) return notFound(res);
+
+  const pathname = (typeof stmt === 'object') ? stmt.pathname : null;
+  if (!pathname) return bad(res, 'no blob pathname stored for this statement', 409);
+
+  try {
+    const { buildSignedUrl } = await import('./_lib/signed-url.js');
+    const r = await buildSignedUrl({ pathname, leadId: lead.id, kind: 'tax-statement', ttlSeconds: 24 * 60 * 60 });
+    return ok(res, { ok: true, lead_id: lead.id, fiscal_year: fy, signed_url: r.signed_url, expires_at: r.expires_at });
+  } catch (e) {
+    return serverError(res, e);
+  }
+}
+
+// ── member op=member-certificate-url ────────────────────────────────────────
+// Returns a 24h signed URL for the member's certificate PDF (already created
+// at funded transition by generateMemberCertificate).
+
+async function memberCertificateSignedUrl(req, res) {
+  if (req.method !== 'GET') return methodNotAllowed(res);
+  const lead = await requireMember(req);
+  if (!lead) return unauthorized(res);
+  if (lead.status !== 'funded') return unauthorized(res);
+
+  const pathname = `certificates/${lead.id}.pdf`;
+  try {
+    const { buildSignedUrl } = await import('./_lib/signed-url.js');
+    const r = await buildSignedUrl({ pathname, leadId: lead.id, kind: 'certificate', ttlSeconds: 24 * 60 * 60 });
+    return ok(res, { ok: true, lead_id: lead.id, signed_url: r.signed_url, expires_at: r.expires_at });
+  } catch (e) {
+    return serverError(res, e);
+  }
+}
+
+// ── admin op=cmdk-search ────────────────────────────────────────────────────
+// Command-palette search across leads, members, and audit entries.
+
+async function adminCmdkSearch(req, res, session) {
+  if (req.method !== 'GET') return methodNotAllowed(res);
+  const q = getQuery(req);
+  const term = String(q.q || '').trim().toLowerCase();
+  if (!term) return ok(res, { ok: true, results: [] });
+
+  const cap = 30;
+  const results = [];
+  const seen = new Set();
+  function push(r) {
+    const k = `${r.kind}:${r.id}`;
+    if (seen.has(k)) return;
+    seen.add(k);
+    results.push(r);
+  }
+
+  // 1. Leads/members
+  try {
+    const all = await listLeads({ limit: 500 });
+    for (const l of all) {
+      if (results.length >= cap) break;
+      if (l.deleted_at) continue;
+      const hay = [
+        l.name, l.legal_name, l.email, l.id,
+        l.member_number ? `#${String(l.member_number).padStart(3, '0')}` : '',
+        l.code,
+      ].filter(Boolean).join(' ').toLowerCase();
+      if (!hay.includes(term)) continue;
+      const isFunded = l.status === 'funded';
+      push({
+        kind: isFunded ? 'member' : 'lead',
+        id:   l.id,
+        label: l.name || l.email || l.id,
+        sub:  isFunded
+          ? `#${String(l.member_number || '—').padStart(3, '0')} · ${l.email || ''}`
+          : `${l.status || 'inquiry'} · ${l.email || ''}`,
+        ts: l.funded_at || l.created_at || null,
+      });
+    }
+  } catch (e) {
+    console.warn('[cmdk-search] leads scan failed:', e && e.message);
+  }
+
+  // 2. Audit entries (action / memo / actor)
+  if (results.length < cap) {
+    try {
+      const entries = await globalAuditList({ limit: 200 });
+      for (const e of entries) {
+        if (results.length >= cap) break;
+        const hay = [e.actor, e.action, e.memo, e.target_name, e.target_id].filter(Boolean).join(' ').toLowerCase();
+        if (!hay.includes(term)) continue;
+        const id = `${e.at}:${e.action}:${e.target_id || ''}`;
+        push({
+          kind: 'audit',
+          id,
+          label: `${e.action.replace(/_/g, ' ')}${e.target_name ? ' — ' + e.target_name : ''}`,
+          sub:   `${e.actor || 'system'}${e.memo ? ' · ' + String(e.memo).slice(0, 80) : ''}`,
+          ts:    e.at || null,
+        });
+      }
+    } catch (err) {
+      console.warn('[cmdk-search] audit scan failed:', err && err.message);
+    }
+  }
+
+  return ok(res, { ok: true, results: results.slice(0, cap), q: term, count: results.length });
+}
+

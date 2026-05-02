@@ -1442,6 +1442,127 @@
   display: none;
 }
 
+/* ─── Modal (letters / confirm) ─────────────────────────────────────── */
+.au-modal-backdrop {
+  position: fixed; inset: 0; z-index: 9000;
+  background: rgba(0,0,0,0.78);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  display: none; align-items: flex-start; justify-content: center;
+  padding: 80px 16px 16px;
+  overflow-y: auto;
+}
+.au-modal-backdrop.open { display: flex; animation: aufade 180ms var(--ease-entrance) both; }
+@keyframes aufade { from { opacity: 0; } to { opacity: 1; } }
+.au-modal {
+  background: var(--surface);
+  border: 1px solid var(--goldBorderS);
+  width: 100%; max-width: 720px;
+  padding: 36px clamp(20px, 4vw, 44px) 40px;
+  position: relative;
+  animation: aurise 220ms var(--ease-entrance) both;
+}
+@keyframes aurise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.au-modal-close {
+  position: absolute; top: 14px; right: 14px;
+  width: 36px; height: 36px;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--muted); cursor: pointer;
+  font-family: var(--font-mono); font-size: 16px;
+  transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+}
+.au-modal-close:hover { color: var(--goldA); border-color: var(--goldBorderS); }
+.au-modal-eyebrow {
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.26em;
+  color: var(--muted); text-transform: uppercase; margin-bottom: 8px;
+}
+.au-modal-title {
+  font-family: var(--font-display); font-weight: 300;
+  font-size: clamp(22px, 3vw, 30px); letter-spacing: 0.03em;
+  margin-bottom: 6px; padding-right: 40px;
+}
+.au-modal-meta {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em;
+  color: var(--dim); text-transform: uppercase; margin-bottom: 24px;
+}
+.au-modal-body {
+  font-family: var(--font-display); font-size: 16px; line-height: 1.85;
+  color: rgba(237,232,223,0.86);
+}
+.au-modal-body p { margin-bottom: 14px; }
+.au-modal-body h2, .au-modal-body h3 {
+  font-family: var(--font-display); font-weight: 400;
+  margin: 22px 0 10px; color: var(--goldA); letter-spacing: 0.02em;
+}
+.au-modal-actions {
+  display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap;
+  padding-top: 22px; border-top: 1px solid var(--border);
+}
+.au-modal-confirm-text {
+  font-family: var(--font-display); font-size: 17px; line-height: 1.7;
+  color: var(--text); margin-bottom: 4px;
+}
+
+/* ─── Toast ─────────────────────────────────────────────────────────── */
+.au-toast-stack {
+  position: fixed; z-index: 9500; bottom: 24px; right: 24px;
+  display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none;
+}
+.au-toast {
+  background: var(--surface);
+  border-left: 3px solid var(--goldA);
+  border-top: 1px solid var(--goldBorderS);
+  border-right: 1px solid var(--goldBorderS);
+  border-bottom: 1px solid var(--goldBorderS);
+  padding: 12px 18px;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em;
+  color: var(--goldA); text-transform: uppercase;
+  animation: autoast 260ms var(--ease-entrance) both;
+  pointer-events: auto;
+  max-width: 320px;
+}
+.au-toast.error { border-left-color: var(--red); color: var(--red); }
+@keyframes autoast { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+@media (max-width: 600px) {
+  .au-toast-stack { bottom: 76px; right: 12px; left: 12px; }
+  .au-toast { max-width: none; }
+}
+
+/* ─── Letters list (history-style) ──────────────────────────────────── */
+.qletter-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 0; border-bottom: 1px solid var(--border);
+  gap: 16px; cursor: pointer;
+  transition: background var(--dur-fast) ease;
+}
+.qletter-row:hover { background: rgba(255,255,255,0.015); }
+.qletter-row .ql-left { flex: 1; min-width: 0; }
+.qletter-row .ql-eyebrow {
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.22em;
+  color: var(--dim); text-transform: uppercase; margin-bottom: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.qletter-row .ql-subj {
+  font-family: var(--font-display); font-size: 17px; color: var(--text);
+}
+.qletter-row.unread .ql-subj::before {
+  content: ''; display: inline-block;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--goldC); margin-right: 8px; vertical-align: middle;
+}
+.qletter-row .ql-status {
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.18em;
+  color: var(--muted); text-transform: uppercase; flex-shrink: 0;
+}
+.qletter-row.unread .ql-status { color: var(--goldA); }
+
+/* ─── Doc signed-url sub-line ───────────────────────────────────────── */
+.doc-sub-line {
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em;
+  color: var(--dim); text-transform: uppercase; margin-top: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ─── Print styles ─────────────────────────────────────────────────── */
 @media print {
   body { background: #fff; color: #000; }
@@ -1740,8 +1861,37 @@
         </button>
       </div>
 
-      <div class="doc-section-title">Reporting</div>
-      <div class="doc-empty">Reporting documents will be available from Q4 2026.</div>
+      <div class="doc-section-title">Statements</div>
+      <div class="doc-entry" id="doc-tax-statement">
+        <div class="doc-entry-left">
+          <div class="doc-entry-date">FY 2025</div>
+          <div class="doc-entry-name">Annual Tax Statement</div>
+          <div class="doc-sub-line">Signed URL · expires in 24h</div>
+        </div>
+        <button class="doc-entry-btn" data-signed-doc="tax-statement" data-fiscal-year="2025">
+          <span class="doc-btn-label"><span data-lang="en">Open</span><span data-lang="ko">열기</span></span>
+        </button>
+      </div>
+      <div class="doc-entry" id="doc-member-cert">
+        <div class="doc-entry-left">
+          <div class="doc-entry-date">Membership</div>
+          <div class="doc-entry-name">Member Certificate</div>
+          <div class="doc-sub-line">Signed URL · expires in 24h</div>
+        </div>
+        <button class="doc-entry-btn" data-signed-doc="member-certificate">
+          <span class="doc-btn-label"><span data-lang="en">Open</span><span data-lang="ko">열기</span></span>
+        </button>
+      </div>
+
+      <div class="doc-section-title">Quarterly Letters</div>
+      <div id="qletters-container">
+        <div class="doc-empty" id="qletters-loading">Loading&hellip;</div>
+      </div>
+
+      <div class="doc-section-title">Vault Verification</div>
+      <div id="vverif-container">
+        <div class="doc-empty" id="vverif-loading">Loading&hellip;</div>
+      </div>
 
     </div>
 
@@ -1801,6 +1951,19 @@
   </div>
 </nav>
 
+<!-- Modal + toast roots -->
+<div class="au-modal-backdrop" id="au-modal" role="dialog" aria-modal="true" aria-labelledby="au-modal-title">
+  <div class="au-modal">
+    <button class="au-modal-close" id="au-modal-close" aria-label="Close">×</button>
+    <div class="au-modal-eyebrow" id="au-modal-eyebrow">—</div>
+    <div class="au-modal-title" id="au-modal-title">—</div>
+    <div class="au-modal-meta" id="au-modal-meta"></div>
+    <div class="au-modal-body" id="au-modal-body"></div>
+    <div class="au-modal-actions" id="au-modal-actions" style="display:none;"></div>
+  </div>
+</div>
+<div class="au-toast-stack" id="au-toast-stack"></div>
+
 <script src="/_scripts/shared.js"></script>
 <script>
 (function () {
@@ -1812,6 +1975,67 @@
   /* ─── KRW / date formatters ────────────────────────────────────── */
   var fmKrw = TACC.fmKrw;
   var fmDate = TACC.fmDate;
+
+  /* ─── Toast / modal helpers ────────────────────────────────────── */
+  function toast(msg, kind) {
+    var stack = document.getElementById('au-toast-stack');
+    if (!stack) return;
+    var el = document.createElement('div');
+    el.className = 'au-toast' + (kind === 'error' ? ' error' : '');
+    el.textContent = msg;
+    stack.appendChild(el);
+    setTimeout(function () {
+      el.style.transition = 'opacity 280ms ease, transform 280ms ease';
+      el.style.opacity = '0';
+      el.style.transform = 'translateX(20px)';
+    }, 2600);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 3000);
+  }
+
+  var _modalKeyHandler = null;
+  function openModal(opts) {
+    var bd = document.getElementById('au-modal');
+    if (!bd) return;
+    document.getElementById('au-modal-eyebrow').textContent = opts.eyebrow || '';
+    document.getElementById('au-modal-title').textContent = opts.title || '';
+    document.getElementById('au-modal-meta').textContent = opts.meta || '';
+    var body = document.getElementById('au-modal-body');
+    body.innerHTML = '';
+    if (opts.bodyHtml) body.innerHTML = opts.bodyHtml;
+    else if (opts.bodyText) body.textContent = opts.bodyText;
+    var actions = document.getElementById('au-modal-actions');
+    actions.innerHTML = '';
+    if (opts.actions && opts.actions.length) {
+      actions.style.display = 'flex';
+      opts.actions.forEach(function (a) {
+        var b = document.createElement('button');
+        b.className = a.kind === 'primary' ? 'btn-primary' : 'btn-ghost';
+        b.textContent = a.label;
+        b.addEventListener('click', function () {
+          if (a.onClick) a.onClick(closeModal);
+        });
+        actions.appendChild(b);
+      });
+    } else {
+      actions.style.display = 'none';
+    }
+    bd.classList.add('open');
+    _modalKeyHandler = function (e) { if (e.key === 'Escape') closeModal(); };
+    document.addEventListener('keydown', _modalKeyHandler);
+    if (opts.onOpen) opts.onOpen();
+  }
+  function closeModal() {
+    var bd = document.getElementById('au-modal');
+    if (bd) bd.classList.remove('open');
+    if (_modalKeyHandler) {
+      document.removeEventListener('keydown', _modalKeyHandler);
+      _modalKeyHandler = null;
+    }
+  }
+  document.getElementById('au-modal-close').addEventListener('click', closeModal);
+  document.getElementById('au-modal').addEventListener('click', function (e) {
+    if (e.target === this) closeModal();
+  });
 
   /* ─── Tab switching ────────────────────────────────────────────── */
   function switchTab(tab) {
@@ -2185,23 +2409,48 @@
     if (ackBtn) {
       ackBtn.addEventListener('click', function () {
         var ccId = activeCall.id;
-        ackBtn.disabled = true;
-        ackBtn.textContent = '—';
-        fetch('/api/v2?resource=member&op=ack-capital-call', {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ capital_call_id: ccId })
-        })
-        .then(function (r) { return r.json(); })
-        .then(function () {
-          var statusEl = card.querySelector('.cc-status');
-          if (statusEl) { statusEl.textContent = 'ACKNOWLEDGED'; statusEl.className = 'cc-status acknowledged'; }
-          ackBtn.style.display = 'none';
-        })
-        .catch(function () {
-          ackBtn.disabled = false;
-          ackBtn.textContent = 'Acknowledge Receipt';
+        var refLabel = activeCall.ref || ccId;
+        var amt = activeCall.amount_display || '';
+        openModal({
+          eyebrow: 'Capital Call · Acknowledgement',
+          title: 'Acknowledge ' + refLabel,
+          meta: amt ? amt : '',
+          bodyHtml: '<p class="au-modal-confirm-text">Acknowledge capital call <strong>' + esc(refLabel) + '</strong>' + (amt ? ' for <strong>' + esc(amt) + '</strong>' : '') + '? This records your wire intent.</p>' +
+                    '<p style="font-family:var(--font-ui);font-size:13px;color:var(--muted);">A confirmation entry will be added to your Account History. The wire itself remains pending until cleared by the operator.</p>',
+          actions: [
+            { kind: 'ghost', label: 'Cancel', onClick: function (close) { close(); } },
+            { kind: 'primary', label: 'Confirm Acknowledgement', onClick: function (close) {
+              ackBtn.disabled = true;
+              ackBtn.textContent = '—';
+              fetch('/api/v2?resource=member&op=ack-capital-call', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ capital_call_id: ccId })
+              })
+              .then(function (r) {
+                if (!r.ok) throw new Error('http ' + r.status);
+                return r.json();
+              })
+              .then(function (resp) {
+                var statusEl = card.querySelector('.cc-status');
+                var when = (resp && resp.acknowledged_at) ? new Date(resp.acknowledged_at) : new Date();
+                if (statusEl) {
+                  statusEl.textContent = 'ACKNOWLEDGED · ' + fmDate(when, window._lang);
+                  statusEl.className = 'cc-status acknowledged';
+                }
+                ackBtn.style.display = 'none';
+                close();
+                toast('Acknowledged');
+              })
+              .catch(function () {
+                ackBtn.disabled = false;
+                ackBtn.textContent = 'Acknowledge Receipt';
+                close();
+                toast('Could not acknowledge', 'error');
+              });
+            } }
+          ]
         });
       });
     }
@@ -2432,17 +2681,79 @@
     if (TACC.isIOS) {
       document.querySelectorAll('.doc-btn-label').forEach(function (el) { el.innerHTML = '<span data-lang="en">View</span><span data-lang="ko">보기</span>'; });
     }
+    loadQuarterlyLetters();
+    loadVaultVerifications();
   }
 
   document.querySelectorAll('.doc-entry-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var docId = btn.getAttribute('data-doc-id');
-      if (!docId) return;
+      var signedDoc = btn.getAttribute('data-signed-doc');
+      if (!docId && !signedDoc) return;
 
       btn.classList.add('loading');
       var labelEl = btn.querySelector('.doc-btn-label');
+      var origHtml = labelEl ? labelEl.innerHTML : '';
       if (labelEl) labelEl.innerHTML = '<span class="doc-entry-btn-spinner">⟳</span>';
 
+      function openUrl(url) {
+        window.open(url, '_blank', 'noopener');
+      }
+
+      function done() {
+        btn.classList.remove('loading');
+        btn.classList.add('done');
+        if (labelEl) labelEl.textContent = '✓';
+        setTimeout(function () {
+          btn.classList.remove('done');
+          if (labelEl) labelEl.innerHTML = origHtml || (TACC.isIOS
+            ? '<span data-lang="en">View</span><span data-lang="ko">보기</span>'
+            : '<span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span>');
+        }, 1500);
+      }
+      function fail() {
+        btn.classList.remove('loading');
+        if (labelEl) labelEl.innerHTML = origHtml;
+        toast('Document unavailable', 'error');
+      }
+
+      if (signedDoc) {
+        // Signed-URL flow with fallback
+        var url = '/api/v2?resource=member&op=' + encodeURIComponent(signedDoc) + '-url';
+        var fy = btn.getAttribute('data-fiscal-year');
+        if (fy) url += '&fiscal_year=' + encodeURIComponent(fy);
+        fetch(url, { credentials: 'same-origin' })
+          .then(function (r) {
+            if (r.status === 404) return { _fallback: true };
+            if (!r.ok) throw new Error('http ' + r.status);
+            return r.json();
+          })
+          .then(function (j) {
+            if (j && j.signed_url) {
+              openUrl(j.signed_url);
+              done();
+              return;
+            }
+            // fallback: try legacy stored URL on member data
+            var fb = null;
+            if (signedDoc === 'tax-statement' && memberData && memberData.tax_statements) {
+              var ts = memberData.tax_statements[fy] || memberData.tax_statements['2025'];
+              if (ts && ts.url) fb = ts.url;
+            } else if (signedDoc === 'member-certificate' && memberData) {
+              fb = (memberData.certificate && memberData.certificate.url) || memberData.member_certificate_url || null;
+            }
+            if (fb) {
+              openUrl(fb);
+              done();
+            } else {
+              fail();
+            }
+          })
+          .catch(fail);
+        return;
+      }
+
+      // Legacy /api/doc download
       var a = document.createElement('a');
       a.href = '/api/doc?id=' + encodeURIComponent(docId);
       a.download = '';
@@ -2450,47 +2761,180 @@
       a.click();
       document.body.removeChild(a);
 
-      setTimeout(function () {
-        btn.classList.remove('loading');
-        btn.classList.add('done');
-        if (labelEl) labelEl.textContent = '✓';
-        setTimeout(function () {
-          btn.classList.remove('done');
-          if (labelEl) labelEl.innerHTML = TACC.isIOS
-            ? '<span data-lang="en">View</span><span data-lang="ko">보기</span>'
-            : '<span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span>';
-        }, 1500);
-      }, 1000);
+      setTimeout(done, 1000);
     });
   });
+
+  /* ─── Quarterly Letters ────────────────────────────────────────── */
+  function quarterLabel(dateIso) {
+    if (!dateIso) return '—';
+    var dt = new Date(dateIso);
+    if (isNaN(dt.getTime())) return '—';
+    var q = Math.floor(dt.getMonth() / 3) + 1;
+    return 'Q' + q + ' ' + dt.getFullYear();
+  }
+
+  function loadQuarterlyLetters() {
+    fetch('/api/v2?resource=member&op=letters', { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        var letters = (j && (j.letters || (Array.isArray(j) ? j : []))) || [];
+        renderQuarterlyLetters(letters);
+      })
+      .catch(function () {
+        var c = document.getElementById('qletters-container');
+        if (c) c.innerHTML = '<div class="doc-empty">Unable to load letters.</div>';
+      });
+  }
+
+  function renderQuarterlyLetters(letters) {
+    var c = document.getElementById('qletters-container');
+    if (!c) return;
+    if (!letters.length) {
+      c.innerHTML = '<div class="doc-empty">No quarterly letters published yet.</div>';
+      return;
+    }
+    c.innerHTML = '';
+    letters.forEach(function (letter) {
+      var unread = !letter.read_at;
+      var row = document.createElement('div');
+      row.className = 'qletter-row' + (unread ? ' unread' : '');
+      var sent = letter.sent_at ? fmDate(letter.sent_at, window._lang) : '';
+      row.innerHTML =
+        '<div class="ql-left">' +
+          '<div class="ql-eyebrow">' + esc(quarterLabel(letter.sent_at) + (sent ? ' · ' + sent : '')) + '</div>' +
+          '<div class="ql-subj">' + esc(letter.subject || 'Quarterly Letter') + '</div>' +
+        '</div>' +
+        '<div class="ql-status">' + (unread ? 'Unread' : ('Read' + (letter.read_at ? ' · ' + fmDate(letter.read_at, window._lang) : ''))) + '</div>';
+
+      row.addEventListener('click', function () {
+        openModal({
+          eyebrow: quarterLabel(letter.sent_at) + ' · Quarterly Letter',
+          title: letter.subject || 'Quarterly Letter',
+          meta: sent ? 'Sent ' + sent : '',
+          bodyHtml: letter.html_body || '<p>(No content)</p>'
+        });
+        if (unread && letter.id) {
+          fetch('/api/v2?resource=member&op=mark-letter-read', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ letter_id: letter.id })
+          })
+          .then(function (r) { return r.json(); })
+          .then(function (j) {
+            unread = false;
+            row.classList.remove('unread');
+            var ts = (j && j.read_at) ? fmDate(j.read_at, window._lang) : fmDate(Date.now(), window._lang);
+            row.querySelector('.ql-status').textContent = 'Read · ' + ts;
+          })
+          .catch(function () {});
+        }
+      });
+
+      c.appendChild(row);
+    });
+  }
+
+  /* ─── Vault verifications (read-only list) ────────────────────── */
+  function loadVaultVerifications() {
+    fetch('/api/v2?resource=member&op=vault-verifications', { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        var items = (j && (j.vault_verifications || j.verifications || (Array.isArray(j) ? j : []))) || [];
+        var c = document.getElementById('vverif-container');
+        if (!c) return;
+        if (!items.length) {
+          c.innerHTML = '<div class="doc-empty">First report will publish following the 2026 annual review.</div>';
+          return;
+        }
+        c.innerHTML = '';
+        items.forEach(function (item) {
+          var entry = document.createElement('div');
+          entry.className = 'doc-entry';
+          entry.innerHTML =
+            '<div class="doc-entry-left">' +
+              '<div class="doc-entry-date">' + esc(String(item.year || '')) + '</div>' +
+              '<div class="doc-entry-name">' + esc(item.title || 'Vault Verification') + '</div>' +
+              (item.summary ? '<div class="doc-sub-line">' + esc(item.summary) + '</div>' : '') +
+            '</div>' +
+            '<button class="doc-entry-btn" type="button">' +
+              '<span class="doc-btn-label"><span data-lang="en">Open</span><span data-lang="ko">열기</span></span>' +
+            '</button>';
+          var btn = entry.querySelector('button');
+          btn.addEventListener('click', function () {
+            var url = item.download_url || (item.blob_pathname ? '/api/doc?blob=' + encodeURIComponent(item.blob_pathname) : null);
+            if (url) window.open(url, '_blank', 'noopener');
+            else toast('Report unavailable', 'error');
+          });
+          c.appendChild(entry);
+        });
+      })
+      .catch(function () {
+        var c = document.getElementById('vverif-container');
+        if (c) c.innerHTML = '<div class="doc-empty">Unable to load vault verification records.</div>';
+      });
+  }
 
   /* ─── MESSAGES ─────────────────────────────────────────────────── */
   function renderMessages(d) {
     var container = document.getElementById('messages-container');
-    var msgs = d.messages || [];
+    // Accept both legacy array and { items, unread_count } shape
+    var raw = d.messages || [];
+    var msgs = Array.isArray(raw) ? raw : (raw.items || []);
     if (!msgs.length) return;
 
     document.getElementById('msg-empty').style.display = 'none';
 
+    // Unread badge in tab header
+    var unread = msgs.filter(function (m) { return !(m.read || m.read_at); }).length;
+    if (unread > 0) {
+      document.querySelectorAll('[data-tab="messages"]').forEach(function (t) {
+        if (t.querySelector('.msg-tab-badge')) return;
+        var badge = document.createElement('span');
+        badge.className = 'msg-tab-badge';
+        badge.textContent = unread;
+        badge.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-left:8px;background:var(--goldA);color:#0a0a0a;font-family:var(--font-mono);font-size:9px;letter-spacing:0;border-radius:9px;font-weight:600;vertical-align:middle;';
+        t.appendChild(badge);
+      });
+    }
+
     msgs.forEach(function (m) {
       var card = document.createElement('div');
       var typeClass = m.type || 'gold';
-      card.className = 'msg-card ' + typeClass + (m.read ? '' : ' unread');
+      var isRead = !!(m.read || m.read_at);
+      card.className = 'msg-card ' + typeClass + (isRead ? '' : ' unread');
+
+      var sentAt = m.sent_at || m.date;
+      var dateLabel = sentAt ? (typeof sentAt === 'string' && sentAt.length <= 12 ? sentAt : fmDate(sentAt, window._lang)) : '—';
+      var fromLabel = m.from_label || (m.from === 'system' ? 'System' : 'TKJ · Partner');
 
       card.innerHTML =
         '<div class="msg-header">' +
           '<div class="msg-unread-dot"></div>' +
-          '<div class="msg-subject">' + (m.subject || '—') + '</div>' +
-          '<div class="msg-date">' + (m.date || '—') + '</div>' +
+          '<div class="msg-subject">' + esc(m.subject || '—') + '</div>' +
+          '<div class="msg-date">' + esc(dateLabel) + '</div>' +
         '</div>' +
         '<div class="msg-body">' +
+          '<div style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.18em;color:var(--muted);text-transform:uppercase;margin:18px 0 8px;">From: ' + esc(fromLabel) + '</div>' +
           '<p class="msg-body-text">' + (m.body || '') + '</p>' +
           '<a class="msg-reply-link" href="mailto:members@theaurumcc.com?subject=Re: ' + encodeURIComponent(m.subject || '') + '">Reply by email</a>' +
         '</div>';
 
       card.querySelector('.msg-header').addEventListener('click', function () {
+        var wasUnread = card.classList.contains('unread');
         card.classList.toggle('expanded');
-        card.classList.remove('unread');
+        if (wasUnread && card.classList.contains('expanded')) {
+          card.classList.remove('unread');
+          if (m.id) {
+            fetch('/api/v2?resource=member&op=ack-message', {
+              method: 'POST',
+              credentials: 'same-origin',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message_id: m.id })
+            }).catch(function () {});
+          }
+        }
       });
 
       container.appendChild(card);

@@ -360,6 +360,31 @@
     </div>
   </div>
 
+  <!-- Statements: signed-URL ops -->
+  <div class="doc-group" data-reveal data-delay="150">
+    <div class="doc-section-title">Statements</div>
+    <div class="doc-entry">
+      <div class="doc-entry-left">
+        <div class="doc-entry-date">FY 2025</div>
+        <div class="doc-entry-name">Annual Tax Statement</div>
+        <div class="doc-entry-type">Signed URL · expires in 24h</div>
+      </div>
+      <button class="doc-entry-btn" data-signed-doc="tax-statement" data-fiscal-year="2025">
+        <span class="doc-btn-label"><span data-lang="en">Open</span><span data-lang="ko">열기</span></span>
+      </button>
+    </div>
+    <div class="doc-entry">
+      <div class="doc-entry-left">
+        <div class="doc-entry-date">Membership</div>
+        <div class="doc-entry-name">Member Certificate</div>
+        <div class="doc-entry-type">Signed URL · expires in 24h</div>
+      </div>
+      <button class="doc-entry-btn" data-signed-doc="member-certificate">
+        <span class="doc-btn-label"><span data-lang="en">Open</span><span data-lang="ko">열기</span></span>
+      </button>
+    </div>
+  </div>
+
   <!-- Reporting: quarterly letters -->
   <div class="doc-group" data-reveal data-delay="200">
     <div class="doc-section-title">Reporting</div>
@@ -433,6 +458,73 @@
     if (isIOS && labelEl) labelEl.textContent = 'View';
     attachDownloadHandler(btn);
   });
+
+  /* ─── Signed-URL doc handlers (tax statement / member cert) ───── */
+  var memberCache = null;
+  document.querySelectorAll('.doc-entry-btn[data-signed-doc]').forEach(function (btn) {
+    var labelEl = btn.querySelector('.doc-btn-label');
+    var origHtml = labelEl ? labelEl.innerHTML : '';
+    btn.addEventListener('click', function () {
+      var kind = btn.getAttribute('data-signed-doc');
+      var fy = btn.getAttribute('data-fiscal-year');
+      btn.classList.add('loading');
+      if (labelEl) labelEl.innerHTML = '<span class="doc-entry-btn-spinner">&#x27F3;</span>';
+
+      var url = '/api/v2?resource=member&op=' + encodeURIComponent(kind) + '-url';
+      if (fy) url += '&fiscal_year=' + encodeURIComponent(fy);
+
+      fetch(url, { credentials: 'same-origin' })
+        .then(function (r) {
+          if (r.status === 404) return { _fallback: true };
+          if (!r.ok) throw new Error('http ' + r.status);
+          return r.json();
+        })
+        .then(function (j) {
+          if (j && j.signed_url) {
+            window.open(j.signed_url, '_blank', 'noopener');
+            finish(true);
+            return;
+          }
+          // fallback: legacy stored url
+          var fb = null;
+          if (memberCache) {
+            if (kind === 'tax-statement' && memberCache.tax_statements) {
+              var ts = memberCache.tax_statements[fy] || memberCache.tax_statements['2025'];
+              if (ts && ts.url) fb = ts.url;
+            } else if (kind === 'member-certificate') {
+              fb = (memberCache.certificate && memberCache.certificate.url) || memberCache.member_certificate_url || null;
+            }
+          }
+          if (fb) {
+            window.open(fb, '_blank', 'noopener');
+            finish(true);
+          } else {
+            finish(false);
+          }
+        })
+        .catch(function () { finish(false); });
+
+      function finish(success) {
+        btn.classList.remove('loading');
+        if (success) {
+          btn.classList.add('done');
+          if (labelEl) labelEl.textContent = '✓';
+        } else if (labelEl) {
+          labelEl.innerHTML = '<span data-lang="en">Unavailable</span><span data-lang="ko">미제공</span>';
+        }
+        setTimeout(function () {
+          btn.classList.remove('done');
+          if (labelEl) labelEl.innerHTML = origHtml;
+        }, 1800);
+      }
+    });
+  });
+
+  // Cache member data for fallback resolution
+  fetch('/api/v2?resource=member&op=me', { credentials: 'same-origin' })
+    .then(function (r) { return r.json(); })
+    .then(function (d) { memberCache = d; })
+    .catch(function () {});
 
   function attachDownloadHandler(btn) {
     var labelEl = btn.querySelector('.doc-btn-label');

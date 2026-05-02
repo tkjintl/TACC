@@ -751,8 +751,9 @@
       </div>
 
       <div class="field-group">
-        <label class="field-label" for="passport">Passport / NRIC Number</label>
+        <label class="field-label" for="passport" id="passport-label">Passport / NRIC Number</label>
         <input class="input-field" type="text" id="passport" name="passport" required>
+        <span style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.14em;color:var(--dim);text-transform:uppercase;margin-top:4px;" id="passport-hint">Singapore residents: enter NRIC. All others: enter passport number.</span>
       </div>
 
       <div class="field-group">
@@ -1006,6 +1007,11 @@
       notice.classList.remove('visible');
       document.getElementById('check-korea-feta').checked = false;
     }
+    // Passport vs NRIC label flip
+    var lbl = document.getElementById('passport-label');
+    var hint = document.getElementById('passport-hint');
+    if (lbl) lbl.textContent = val === 'SG' ? 'NRIC Number' : 'Passport Number';
+    if (hint) hint.style.display = val ? 'none' : 'inline';
   });
 
   /* ─── Step navigation ────────────────────────────────────────── */

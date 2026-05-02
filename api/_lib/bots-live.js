@@ -32,6 +32,8 @@ async function _validateEmail(type, lead, extra) {
     else if (type === 'funded_confirmation') await Email.sendFundedConfirmation(lead);
     else if (type === 'quarterly_letter')    await Email.sendQuarterlyLetterNotification(lead, extra);
     else if (type === 'vault_verification')  await Email.sendVaultVerificationNotification(lead, extra);
+    else if (type === 'password_reset')      await Email.sendPasswordReset(lead, extra && extra.code ? extra.code : extra);
+    else if (type === 'partner_notice')      await Email.sendPartnerNotice({ ...lead, _notice: (extra && extra.notice) || 'Synthetic partner notice' });
     else return { ok: false, type, issues: [`unknown email type: ${type}`] };
   } finally {
     Email._PREVIEW.enabled = false;
@@ -60,6 +62,10 @@ async function _validateEmail(type, lead, extra) {
   }
   if (type === 'funded_confirmation') {
     if (lead.member_number != null && !html.includes(String(lead.member_number))) issues.push('html: member number missing');
+  }
+  if (type === 'password_reset') {
+    const code = extra && extra.code ? extra.code : (typeof extra === 'string' ? extra : null);
+    if (code && !html.includes(code)) issues.push('html: reset code missing');
   }
   return { ok: issues.length === 0, type, issues, subject: cap.subject, html_len: html.length, text_len: text.length };
 }
@@ -159,7 +165,8 @@ async function _createPersonaLead(template, now) {
   return lead;
 }
 
-export async function startBots() {
+export async function startBots(opts = {}) {
+  const count = Math.max(1, Math.min(20, opts.count || 6));
   const state = await getBotsState();
   const now = Date.now();
   // Reset state, spin up fresh personas.
@@ -169,13 +176,17 @@ export async function startBots() {
   state.tick_count = 0;
   state.actions_count = 0;
   state.estimated_upstash_cmds = 0;
+  state.mode = opts.count && opts.count > 10 ? 'stress' : 'normal';
 
-  // Create 6 fresh personas at the inquiry stage, plus 2 already mid-flow
-  // (so the user sees some at later stages immediately).
+  // Build a persona pool large enough for the requested count by cycling
+  // template archetypes (each gets a numeric suffix) so stress mode has 20.
   state.personas = [];
   let cmds = 0;
-  for (let i = 0; i < 6; i++) {
-    const tpl = PERSONA_TEMPLATES[i];
+  for (let i = 0; i < count; i++) {
+    const baseTpl = PERSONA_TEMPLATES[i % PERSONA_TEMPLATES.length];
+    const tpl = i < PERSONA_TEMPLATES.length
+      ? baseTpl
+      : { ...baseTpl, name: baseTpl.name + ' #' + (Math.floor(i / PERSONA_TEMPLATES.length) + 1) };
     const lead = await _createPersonaLead(tpl, now - i * 1000);
     state.personas.push({
       slot: i,
@@ -194,6 +205,13 @@ export async function startBots() {
 
   await saveBotsState(state);
   return { ok: true, state, started: state.personas.length };
+}
+
+// Stress mode — spawns 20 personas instead of the default 6. All other tick
+// logic is shared with the regular bots harness; stress mode mostly stress-
+// tests Redis throughput + concurrent advancement bookkeeping.
+export async function startBotsStress() {
+  return startBots({ count: 20 });
 }
 
 export async function resetBots() {

@@ -393,6 +393,21 @@ body { font-family: var(--font-ui); font-size: 14px; line-height: 1.5; overflow-
   .dt td.name-col::before { display: none; }
 }
 
+/* ─── Recipient pill picker (Communications) ───────────────────────── */
+.recip-picker { display: flex; flex-direction: column; gap: 8px; }
+.recip-pills { display: flex; flex-wrap: wrap; gap: 6px; min-height: 4px; }
+.recip-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 8px; font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.08em; color: var(--goldB);
+  border: 1px solid var(--goldBorderS); background: var(--goldMuted);
+}
+.recip-pill button {
+  background: transparent; border: 0; color: var(--muted); cursor: pointer;
+  font-family: var(--font-mono); font-size: 12px; padding: 0 0 0 2px; line-height: 1;
+}
+.recip-pill button:hover { color: var(--red); }
+
 /* ─── Slide-in detail drawer ───────────────────────────────────────── */
 .dr-backdrop {
   position: fixed; inset: 0; background: rgba(7,7,6,0.7); z-index: 300;
@@ -1261,13 +1276,32 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
   </div>
 
   <h2 class="h2">Bar Registry</h2>
+  <!-- Totals header -->
+  <div id="bar-totals" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:14px;">
+    <div class="four-col-cell"><div class="four-col-lbl">Total Weight</div><div class="four-col-val" id="bar-tot-kg">— kg</div></div>
+    <div class="four-col-cell"><div class="four-col-lbl">Cost Basis</div><div class="four-col-val" id="bar-tot-cost">—</div></div>
+    <div class="four-col-cell"><div class="four-col-lbl">Current Value</div><div class="four-col-val" id="bar-tot-value">—</div></div>
+  </div>
+  <!-- Filter row -->
+  <div class="flt-row">
+    <select id="bar-flt-refiner"><option value="">All refiners</option></select>
+    <select id="bar-flt-custody"><option value="">All custody</option></select>
+    <select id="bar-flt-member"><option value="">All members</option></select>
+    <input class="input-field" type="number" id="bar-flt-year-min" placeholder="Year ≥" style="max-width:120px;">
+    <input class="input-field" type="number" id="bar-flt-year-max" placeholder="Year ≤" style="max-width:120px;">
+    <button class="b b--sm" id="bar-flt-clear">Clear</button>
+  </div>
   <div class="dt-wrap">
     <table class="dt" id="bar-table">
       <thead>
-        <tr><th>Serial</th><th>Refiner</th><th>Year</th><th>Weight</th><th>Owner</th><th>Custody</th><th>Last Verified</th></tr>
+        <tr>
+          <th>Serial</th><th>Refiner</th><th>Year</th><th>Weight (kg)</th>
+          <th>Member#</th><th>Member</th><th>Custody</th><th>Last Verified</th>
+          <th>Cost Basis</th><th>Current Value</th>
+        </tr>
       </thead>
       <tbody id="bar-tbody">
-        <tr><td colspan="7"><div class="skel" style="margin:14px;"></div></td></tr>
+        <tr><td colspan="10"><div class="skel" style="margin:14px;"></div></td></tr>
       </tbody>
     </table>
   </div>
@@ -1312,8 +1346,12 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
 
   <!-- DM form -->
   <form class="compose-form" id="form-dm">
-    <div class="field-group"><label class="field-label">Recipient</label>
-      <select class="input-field" id="dm-to"><option value="">Select…</option></select>
+    <div class="field-group"><label class="field-label">Recipients</label>
+      <div class="recip-picker" data-form="dm">
+        <select class="input-field recip-quick"><option value="">— select —</option><option value="all-funded">All Funded Members</option><option value="all-leads">All Active Leads</option><option value="custom">Custom (multi-select)</option></select>
+        <div class="recip-pills" data-pills></div>
+        <select class="input-field recip-add" style="display:none;"><option value="">+ Add member…</option></select>
+      </div>
     </div>
     <div class="field-group"><label class="field-label">Subject</label>
       <input class="input-field" id="dm-subject" placeholder="e.g., Quarterly call invitation">
@@ -1326,7 +1364,7 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;">
       <button type="button" class="b">Save Draft</button>
-      <button type="submit" class="b b--gold">Send</button>
+      <button type="submit" class="b b--gold" id="dm-submit">Send to 0 members</button>
     </div>
   </form>
 
@@ -1336,17 +1374,38 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
     <div class="field-group"><label class="field-label">Due Date</label><input class="input-field" type="date" id="cap-due"></div>
     <div class="field-group"><label class="field-label">Reason</label><textarea class="input-field" id="cap-reason" placeholder="Reserve replenishment after Q2 deployment…"></textarea></div>
     <div class="field-group"><label class="field-label">Recipients</label>
-      <select class="input-field" id="cap-to"><option value="all">All Funded Members</option></select>
+      <div class="recip-picker" data-form="cap">
+        <select class="input-field recip-quick"><option value="all-funded" selected>All Funded Members</option><option value="custom">Custom (multi-select)</option></select>
+        <div class="recip-pills" data-pills></div>
+        <select class="input-field recip-add" style="display:none;"><option value="">+ Add member…</option></select>
+      </div>
     </div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;"><button type="submit" class="b b--gold">Issue Capital Call</button></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;"><button type="submit" class="b b--gold" id="cap-submit">Issue to 0 members</button></div>
   </form>
 
   <!-- Quarterly -->
   <form class="compose-form" id="form-qtr" style="display:none;">
-    <div class="field-group"><label class="field-label">Quarter</label><select class="input-field" id="qtr-q"><option>Q1 2026</option><option>Q2 2026</option><option>Q3 2026</option><option>Q4 2026</option></select></div>
-    <div class="field-group"><label class="field-label">NAV (USD)</label><input class="input-field" id="qtr-nav" placeholder="20,400,000"></div>
-    <div class="field-group"><label class="field-label">Narrative</label><textarea class="input-field" id="qtr-body" rows="6"></textarea></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;"><button type="submit" class="b b--gold">Send Quarterly Letter</button></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="field-group"><label class="field-label">Quarter</label><select class="input-field" id="qtr-q"><option value="1">Q1</option><option value="2">Q2</option><option value="3">Q3</option><option value="4">Q4</option></select></div>
+      <div class="field-group"><label class="field-label">Year</label><input class="input-field" type="number" id="qtr-year" min="2024" max="2099"></div>
+    </div>
+    <div class="field-group"><label class="field-label">NAV (USD millions, 1 decimal)</label><input class="input-field" type="number" step="0.1" id="qtr-nav" placeholder="20.4"></div>
+    <div class="field-group"><label class="field-label">Subject</label><input class="input-field" id="qtr-subject" placeholder="auto-generated"></div>
+    <div class="field-group">
+      <label class="field-label">Narrative <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;">· markdown: **bold**, *italic*, blank line = paragraph</span></label>
+      <textarea class="input-field" id="qtr-body" rows="10" placeholder="Dear partner,&#10;&#10;The fund closed the quarter at..."></textarea>
+    </div>
+    <div class="field-group"><label class="field-label">Recipients</label>
+      <div class="recip-picker" data-form="qtr">
+        <select class="input-field recip-quick"><option value="all-funded" selected>All Funded Members</option><option value="custom">Custom (multi-select)</option></select>
+        <div class="recip-pills" data-pills></div>
+        <select class="input-field recip-add" style="display:none;"><option value="">+ Add member…</option></select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button type="button" class="b" id="qtr-preview">Preview</button>
+      <button type="submit" class="b b--gold" id="qtr-submit">Send to 0 members</button>
+    </div>
   </form>
 
   <!-- Vault verification -->
@@ -1542,11 +1601,18 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
      ADMIN PROFILE
      ═══════════════════════════════════════════════════════════════════ */
   // Admin profile (uses /api/me, NOT a v2 op)
+  // Default-hide Tools (dev) until backend confirms dev_mode === true
+  (function(){
+    var wrap = document.querySelector('.ah-tools-wrap');
+    if (wrap) wrap.style.display = 'none';
+  })();
   adminFetch('/api/me')
     .then(function(r){ return r.json(); })
     .then(function(d){
       var em = document.getElementById('admin-email');
       if (em && d && d.email) em.textContent = d.email;
+      var wrap = document.querySelector('.ah-tools-wrap');
+      if (wrap) wrap.style.display = (d && d.dev_mode === true) ? '' : 'none';
     })
     .catch(function(){});
 
@@ -1643,6 +1709,7 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
       lastTickerTs = Date.now();
       // also distribute stats across UI
       window._tacc_stats = stats; renderTodayKpis(stats); renderFundFromStats(stats);
+      try { document.dispatchEvent(new CustomEvent('tacc:stats')); } catch (e) {}
     });
     document.getElementById('fund-sync').textContent = new Date().toLocaleTimeString('en-GB');
   }
@@ -1923,9 +1990,16 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
         } else if (op === 'remind') {
           promise = api('bulk-approve', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ leadIds: ids, action: 'send-reminder' }) }).then(function(r){ return r.json(); });
         } else if (op === 'decline') {
-          // Backend has no bulk-decline — issue per-lead soft-delete in parallel.
+          // Per-lead decline-lead in parallel (gracefully fall back to soft-delete if backend lacks it).
           promise = Promise.all(ids.map(function(id){
-            return api('soft-delete-lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ leadId: id, reason: 'bulk decline' }) }).then(function(r){ return r.json(); });
+            return api('decline-lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ leadId: id, reason: 'Bulk decline · admin queue clean-up' }) })
+              .then(function(r){ return r.json(); })
+              .then(function(d){
+                if (d && d.ok === false && (d.error || '').toLowerCase().indexOf('unknown') !== -1) {
+                  return api('soft-delete-lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ leadId: id, reason: 'bulk decline' }) }).then(function(r){ return r.json(); });
+                }
+                return d;
+              });
           })).then(function(arr){ return { ok: true, results: arr }; });
         } else {
           promise = Promise.reject(new Error('unknown bulk op'));
@@ -2181,7 +2255,8 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
       case 'inquiry':
         return [
           { op: 'approve-issue-code', label: 'Approve · Issue Code', kind: 'b--green' },
-          { op: 'decline', label: 'Decline', kind: 'b--red' }
+          { op: 'decline', label: 'Decline', kind: 'b--red' },
+          { op: 'remove-queue', label: 'Remove from Queue', kind: 'b--red' }
         ];
       case 'invited':
         return [
@@ -2191,7 +2266,8 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
       case 'nda_pending':
         return [
           { op: 'approve-nda', label: 'Approve NDA', kind: 'b--green' },
-          { op: 'reject-nda', label: 'Reject NDA', kind: 'b--red' }
+          { op: 'reject-nda', label: 'Reject NDA', kind: 'b--red' },
+          { op: 'decline', label: 'Decline', kind: 'b--red' }
         ];
       case 'subscribed':
         return [{ op: 'issue-wire', label: 'Issue Wire Instructions', kind: 'b--gold' }];
@@ -2218,7 +2294,8 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
   // Mirrors api/v2.js handleAdmin switch.
   var STAGE_OP_MAP = {
     'approve-issue-code':  { op: 'approve' },
-    'decline':             { op: 'soft-delete-lead', needsReason: true, reasonField: 'reason' },
+    'decline':             { op: 'decline-lead', custom: 'decline' },
+    'remove-queue':        { op: 'soft-delete-lead', custom: 'remove' },
     'approve-nda':         { op: 'approve-nda' },
     'reject-nda':          { op: 'reject-nda', needsReason: true, reasonField: 'reason' },
     'issue-wire':          { op: 'wire-issue' }, // handled via openWireModal
@@ -2242,6 +2319,8 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
     if (uiOp === 'issue-capital-call'){ closeDrawer(); goTab('comms'); var t=document.querySelector('[data-compose="cap"]'); if(t) t.click(); return; }
     if (uiOp === 'mark-wire-received') return openWireReceivedModal(lid, lead);
     if (uiOp === 'mark-cleared-admit') return openWireClearedModal(lid, lead);
+    if (spec.custom === 'decline')     return openDeclineModal(lid, lead);
+    if (spec.custom === 'remove')      return openRemoveQueueModal(lid, lead);
 
     if (spec.destructive) return confirmDestructive(uiOp.replace(/-/g,' ') + '?', spec.op, lid, spec.reasonField || 'reason');
     if (spec.needsReason) return promptReason(uiOp.replace(/-/g,' '), spec.op, lid, spec.reasonField || 'reason');
@@ -2363,6 +2442,56 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
         api('add-position', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
           .then(function(r){ return r.json(); })
           .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : 'Position added', d.ok === false ? 'error' : 'success'); if (d.ok !== false) { closeDrawer(); loadPipeline(); loadMembers(); } })
+          .catch(function(){ toast('Failed', 'error'); })
+          .finally(hideModal);
+      } }
+    ]);
+  }
+
+  function openDeclineModal(lid, lead) {
+    var name = (lead && lead.name) || 'lead';
+    showModal('Decline · ' + name, [
+      '<div class="field-group"><label class="field-label">Reason (required, ≥ 8 chars)</label>',
+        '<textarea class="input-field" id="decline-reason" rows="4" placeholder="Internal note — does not get sent to the lead"></textarea>',
+      '</div>',
+      '<p style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.06em;line-height:1.6;margin-top:6px;">This will mark the lead declined and notify nobody. The lead remains visible in pipeline as <em>declined</em> for record-keeping. Continue?</p>'
+    ].join(''), [
+      { label: 'Cancel', kind: '', cb: hideModal },
+      { label: 'Decline Lead', kind: 'b--red', cb: function(){
+        var reason = (document.getElementById('decline-reason').value || '').trim();
+        if (reason.length < 8) { toast('Reason must be at least 8 characters', 'error'); return; }
+        api('decline-lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ leadId: lid, reason: reason }) })
+          .then(function(r){ return r.json(); })
+          .then(function(d){
+            if (d && d.ok === false) {
+              if ((d.error || '').toLowerCase().indexOf('unknown') !== -1) {
+                toast('decline-lead op not yet on backend — falling back', 'error');
+                return;
+              }
+              toast(d.error || 'Failed', 'error');
+              return;
+            }
+            toast('Declined · ' + name, 'success');
+            closeDrawer(); loadPipeline(); loadDecisionLanes();
+          })
+          .catch(function(){ toast('Decline failed', 'error'); })
+          .finally(hideModal);
+      } }
+    ]);
+  }
+
+  function openRemoveQueueModal(lid, lead) {
+    var name = (lead && lead.name) || 'lead';
+    showModal('Remove from Queue · ' + name, [
+      '<p style="font-family:var(--font-mono);font-size:11px;color:var(--red);letter-spacing:0.08em;line-height:1.6;">This soft-deletes the lead from the active pipeline. Distinct from <em>Decline</em> — used to clear noise (duplicates, test rows) without setting a declined status.</p>',
+      '<div class="field-group" style="margin-top:10px;"><label class="field-label">Reason / memo</label><input class="input-field" id="rmq-reason" placeholder="Optional"></div>'
+    ].join(''), [
+      { label: 'Cancel', kind: '', cb: hideModal },
+      { label: 'Remove', kind: 'b--red', cb: function(){
+        var reason = document.getElementById('rmq-reason').value || 'Removed from queue';
+        api('soft-delete-lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ leadId: lid, reason: reason }) })
+          .then(function(r){ return r.json(); })
+          .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : 'Removed', d.ok === false ? 'error' : 'success'); if (d.ok !== false) { closeDrawer(); loadPipeline(); } })
           .catch(function(){ toast('Failed', 'error'); })
           .finally(hideModal);
       } }
@@ -2499,7 +2628,7 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
         var inv = p.invested_usd != null ? p.invested_usd : p.invested_krw;
         var mk  = p.marked_usd != null   ? p.marked_usd   : p.marked_krw;
         var irr = p.target_irr_pct != null ? p.target_irr_pct : p.irr_pct;
-        return '<tr><td>' + esc(p.deal_name) + '</td><td><span class="pill pill--' + (p.status === 'live' || p.status === 'active' ? 'green' : 'muted') + '">' + esc(p.status) + '</span></td><td class="mono-col">' + fmtUsd(inv) + '</td><td class="mono-col">' + fmtUsd(mk) + '</td><td class="mono-col">' + (irr || 0) + '%</td></tr>';
+        return '<tr><td data-lbl="Deal" class="name-col">' + esc(p.deal_name) + '</td><td data-lbl="Status"><span class="pill pill--' + (p.status === 'live' || p.status === 'active' ? 'green' : 'muted') + '">' + esc(p.status) + '</span></td><td data-lbl="Invested" class="mono-col">' + fmtUsd(inv) + '</td><td data-lbl="Marked" class="mono-col">' + fmtUsd(mk) + '</td><td data-lbl="Target IRR" class="mono-col">' + (irr || 0) + '%</td></tr>';
       }).join('');
       html += '</tbody></table></div></div>';
     }
@@ -2513,12 +2642,22 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
         var due    = c.due_date  || c.due_at;
         var amt    = c.amount_usd != null ? c.amount_usd : c.amount_krw;
         var stat   = c.acknowledged_at ? 'paid' : (c.status || 'pending');
-        return '<tr><td class="mono-col">' + (issued ? new Date(issued).toLocaleDateString('en-GB') : '—') + '</td><td class="mono-col">' + fmtUsd(amt) + '</td><td class="mono-col">' + (due ? new Date(due).toLocaleDateString('en-GB') : '—') + '</td><td><span class="pill pill--' + (stat === 'paid' ? 'green' : 'amber') + '">' + esc(stat) + '</span></td></tr>';
+        return '<tr><td data-lbl="Issued" class="mono-col">' + (issued ? new Date(issued).toLocaleDateString('en-GB') : '—') + '</td><td data-lbl="Amount" class="mono-col">' + fmtUsd(amt) + '</td><td data-lbl="Due" class="mono-col">' + (due ? new Date(due).toLocaleDateString('en-GB') : '—') + '</td><td data-lbl="Status"><span class="pill pill--' + (stat === 'paid' ? 'green' : 'amber') + '">' + esc(stat) + '</span></td></tr>';
       }).join('');
       html += '</tbody></table></div>';
     } else {
       html += '<div class="lane-empty">No capital calls</div>';
     }
+    html += '</div>';
+
+    // Documents
+    var fy = new Date().getFullYear() - 1;
+    html += '<div class="dr-section"><div class="dr-section-title">Documents</div>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:8px;">' +
+      '<button class="b b--sm" data-doc="tax" data-mid="' + esc(m.id) + '" data-fy="' + fy + '">Tax Statement (FY ' + fy + ')</button>' +
+      '<button class="b b--sm" data-doc="cert" data-mid="' + esc(m.id) + '">Member Certificate</button>' +
+    '</div>';
+    html += '<p style="font-family:var(--font-mono);font-size:10px;color:var(--dim);margin-top:8px;letter-spacing:0.08em;">Signed link expires in 24h. Tax statement is generated in Korean (Korean members default). Contact partner for SG / EN copy.</p>';
     html += '</div>';
 
     // Audit — humanized
@@ -2543,6 +2682,28 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
     '</div>';
 
     el.innerHTML = html;
+
+    // Document download buttons → fetch signed URL, open in new tab
+    el.querySelectorAll('[data-doc]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var kind = btn.dataset.doc;
+        var mid = btn.dataset.mid;
+        var fy = btn.dataset.fy;
+        var op = kind === 'tax' ? ('tax-statement-signed-url?leadId=' + encodeURIComponent(mid) + '&fiscal_year=' + encodeURIComponent(fy)) : ('member-certificate-url?leadId=' + encodeURIComponent(mid));
+        var orig = btn.textContent; btn.disabled = true; btn.textContent = 'Generating…';
+        api(op)
+          .then(function(r){ return r.json(); })
+          .then(function(d){
+            btn.disabled = false; btn.textContent = orig;
+            if (!d || d.ok === false || !d.signed_url) {
+              toast((d && d.error) || 'Document not available yet', 'error');
+              return;
+            }
+            window.open(d.signed_url, '_blank', 'noopener');
+          })
+          .catch(function(){ btn.disabled = false; btn.textContent = orig; toast('Failed to generate link', 'error'); });
+      });
+    });
   }
 
   document.getElementById('mem-search').addEventListener('input', renderMemberList);
@@ -2613,20 +2774,102 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
   /* ═══════════════════════════════════════════════════════════════════
      VAULT & LTV
      ═══════════════════════════════════════════════════════════════════ */
+  var _allBars = [];
+  function renderBars() {
+    var tb = document.getElementById('bar-tbody');
+    var fr = document.getElementById('bar-flt-refiner').value;
+    var fc = document.getElementById('bar-flt-custody').value;
+    var fm = document.getElementById('bar-flt-member').value;
+    var ymin = parseInt(document.getElementById('bar-flt-year-min').value, 10);
+    var ymax = parseInt(document.getElementById('bar-flt-year-max').value, 10);
+    var bars = _allBars.filter(function(b){
+      if (fr && (b.refiner || '') !== fr) return false;
+      if (fc && (b.custody_location || b.custody || '') !== fc) return false;
+      if (fm && String(b.member_number || b.member_no || '') !== String(fm)) return false;
+      if (isFinite(ymin) && Number(b.year) < ymin) return false;
+      if (isFinite(ymax) && Number(b.year) > ymax) return false;
+      return true;
+    });
+    if (!bars.length) {
+      tb.innerHTML = '<tr><td colspan="10"><div class="empty"><div class="empty-title">No bars match</div><div class="empty-hint">Adjust filters or wait for next funded admission</div></div></td></tr>';
+      return;
+    }
+    tb.innerHTML = bars.map(function(b){
+      var memNo = b.member_number || b.member_no || '—';
+      var memName = b.member_name || '—';
+      var custody = b.custody_location || b.custody || 'Singapore';
+      var verified = b.last_verified_at ? relTime(b.last_verified_at) : '—';
+      var cost = b.cost_basis_usd != null ? fmtUsd(b.cost_basis_usd) : '—';
+      var val = b.current_value_usd != null ? fmtUsd(b.current_value_usd) : '—';
+      return '<tr>' +
+        '<td class="mono-col" data-lbl="Serial">' + esc(b.serial || '—') + '</td>' +
+        '<td data-lbl="Refiner">' + esc(b.refiner || '—') + '</td>' +
+        '<td class="mono-col" data-lbl="Year">' + esc(b.year || '—') + '</td>' +
+        '<td class="mono-col" data-lbl="Weight">' + fmt(b.weight_kg || 0, 3) + '</td>' +
+        '<td class="mono-col" data-lbl="Member#">#' + esc(memNo) + '</td>' +
+        '<td data-lbl="Member">' + esc(memName) + '</td>' +
+        '<td data-lbl="Custody">' + esc(custody) + '</td>' +
+        '<td class="mono-col" data-lbl="Last Verified">' + verified + '</td>' +
+        '<td class="mono-col" data-lbl="Cost Basis">' + cost + '</td>' +
+        '<td class="mono-col" data-lbl="Current Value">' + val + '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  function populateBarFilters() {
+    var refSel = document.getElementById('bar-flt-refiner');
+    var cusSel = document.getElementById('bar-flt-custody');
+    var memSel = document.getElementById('bar-flt-member');
+    var refs = {}, cus = {}, mems = {};
+    _allBars.forEach(function(b){
+      if (b.refiner) refs[b.refiner] = true;
+      var c = b.custody_location || b.custody; if (c) cus[c] = true;
+      var mn = b.member_number || b.member_no;
+      if (mn) mems[mn] = (b.member_name || ('#' + mn));
+    });
+    refSel.innerHTML = '<option value="">All refiners</option>' + Object.keys(refs).sort().map(function(k){ return '<option value="' + esc(k) + '">' + esc(k) + '</option>'; }).join('');
+    cusSel.innerHTML = '<option value="">All custody</option>' + Object.keys(cus).sort().map(function(k){ return '<option value="' + esc(k) + '">' + esc(k) + '</option>'; }).join('');
+    memSel.innerHTML = '<option value="">All members</option>' + Object.keys(mems).sort(function(a,b){ return Number(a)-Number(b); }).map(function(k){ return '<option value="' + esc(k) + '">#' + esc(k) + ' · ' + esc(mems[k]) + '</option>'; }).join('');
+  }
+
+  var _barFiltersWired = false;
+  function wireBarFilters() {
+    if (_barFiltersWired) return;
+    _barFiltersWired = true;
+    ['bar-flt-refiner','bar-flt-custody','bar-flt-member','bar-flt-year-min','bar-flt-year-max'].forEach(function(id){
+      var el = document.getElementById(id); if (el) el.addEventListener('input', renderBars);
+      if (el) el.addEventListener('change', renderBars);
+    });
+    var clr = document.getElementById('bar-flt-clear');
+    if (clr) clr.addEventListener('click', function(){
+      ['bar-flt-refiner','bar-flt-custody','bar-flt-member','bar-flt-year-min','bar-flt-year-max'].forEach(function(id){ var el = document.getElementById(id); if (el) el.value = ''; });
+      renderBars();
+    });
+  }
+
   function loadVault() {
+    wireBarFilters();
+    var tb = document.getElementById('bar-tbody');
     api('vault-bars')
       .then(function(r){ return r.json(); })
       .then(function(d){
-        var bars = (d && d.bars) || [];
-        var tb = document.getElementById('bar-tbody');
-        if (!bars.length) { tb.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-title">No bars registered yet</div><div class="empty-hint">Bars appear once members fund</div></div></td></tr>'; return; }
-        tb.innerHTML = bars.map(function(b){
-          return '<tr><td class="mono-col">' + esc(b.serial) + '</td><td>' + esc(b.refiner) + '</td><td class="mono-col">' + esc(b.year) + '</td><td class="mono-col">' + fmt(b.weight_kg, 3) + ' kg</td><td>#' + esc(b.member_no || '—') + '</td><td>' + esc(b.custody || 'Singapore') + '</td><td class="mono-col">' + (b.last_verified_at ? relTime(b.last_verified_at) : '—') + '</td></tr>';
-        }).join('');
+        if (!d || d.ok === false) {
+          tb.innerHTML = '<tr><td colspan="10"><div class="empty"><div class="empty-title">No bars yet — bars register on funded admission</div><div class="empty-hint">Bar registry will populate after first funded member</div></div></td></tr>';
+          return;
+        }
+        _allBars = (d.bars) || [];
+        document.getElementById('bar-tot-kg').textContent = fmt(d.total_kg || 0, 2) + ' kg';
+        document.getElementById('bar-tot-cost').textContent = fmtUsd(d.total_cost_basis_usd || 0);
+        document.getElementById('bar-tot-value').textContent = fmtUsd(d.total_value_usd || 0);
+        if (!_allBars.length) {
+          tb.innerHTML = '<tr><td colspan="10"><div class="empty"><div class="empty-title">No bars yet — bars register on funded admission</div><div class="empty-hint">Bar registry will populate after first funded member</div></div></td></tr>';
+          return;
+        }
+        populateBarFilters();
+        renderBars();
       })
       .catch(function(){
-        // TODO: wire to /api/v2?resource=admin&op=vault-bars when backend ships
-        document.getElementById('bar-tbody').innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-title">Bar registry pending</div><div class="empty-hint">Backend endpoint not yet available</div></div></td></tr>';
+        tb.innerHTML = '<tr><td colspan="10"><div class="empty"><div class="empty-title">No bars yet — bars register on funded admission</div><div class="empty-hint">Backend endpoint pending</div></div></td></tr>';
       });
 
     // LTV monitoring
@@ -2638,7 +2881,7 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
         var ltvUsed = (drawn && ceil) ? (drawn / ceil * 100) : 0;
         var pill = ltvUsed > 80 ? 'red' : ltvUsed > 75 ? 'red' : ltvUsed > 70 ? 'amber' : ltvUsed > 60 ? 'gold' : 'green';
         var status = ltvUsed > 80 ? 'CRITICAL' : ltvUsed > 75 ? 'HIGH' : ltvUsed > 70 ? 'WATCH' : 'OK';
-        return '<tr><td>' + esc(m.name) + '</td><td class="mono-col">' + (m.ltv_approved_pct || 0) + '%</td><td class="mono-col">' + fmtUsd(ceil) + '</td><td class="mono-col">' + fmtUsd(drawn) + '</td><td class="mono-col">' + fmtUsd(ceil - drawn) + '</td><td><span class="pill pill--' + pill + '">' + status + '</span></td></tr>';
+        return '<tr><td class="name-col" data-lbl="Member">' + esc(m.name) + '</td><td class="mono-col" data-lbl="LTV Approved">' + (m.ltv_approved_pct || 0) + '%</td><td class="mono-col" data-lbl="Ceiling">' + fmtUsd(ceil) + '</td><td class="mono-col" data-lbl="Drawn">' + fmtUsd(drawn) + '</td><td class="mono-col" data-lbl="Available">' + fmtUsd(ceil - drawn) + '</td><td data-lbl="Status"><span class="pill pill--' + pill + '">' + status + '</span></td></tr>';
       }).join('');
     } else {
       ltvTb.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-title">No members to monitor</div><div class="empty-hint">Funded members appear here</div></div></td></tr>';
@@ -2659,30 +2902,95 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
     });
   });
 
+  // ── Recipient picker state ───────────────────────────────────────────
+  var recipState = { dm: { mode: '', custom: [] }, cap: { mode: 'all-funded', custom: [] }, qtr: { mode: 'all-funded', custom: [] } };
+
   function populateRecipientSelects() {
-    var dmTo = document.getElementById('dm-to');
-    var capTo = document.getElementById('cap-to');
-    var opts = '<option value="">— select —</option>' +
-      '<option value="all-funded">All Funded Members</option>' +
-      '<option value="all-leads">All Active Leads</option>' +
-      allMembers.map(function(m){ return '<option value="member:' + esc(m.id) + '">' + esc(m.name) + ' (#' + (m.member_no || '—') + ')</option>'; }).join('');
-    dmTo.innerHTML = opts;
-    capTo.innerHTML = '<option value="all-funded">All Funded Members</option>' +
-      allMembers.map(function(m){ return '<option value="member:' + esc(m.id) + '">' + esc(m.name) + '</option>'; }).join('');
+    document.querySelectorAll('.recip-picker').forEach(function(p){
+      var addSel = p.querySelector('.recip-add');
+      addSel.innerHTML = '<option value="">+ Add member…</option>' +
+        allMembers.map(function(m){ return '<option value="' + esc(m.id) + '">' + esc(m.name) + ' (#' + (m.member_no || '—') + ')</option>'; }).join('');
+    });
+    refreshAllRecipUI();
   }
 
-  // Translate the recipient select value (member:ID | all-funded | all-leads) → backend recipients param
-  function resolveRecipients(selectVal) {
-    if (!selectVal) return null;
-    if (selectVal === 'all-funded' || selectVal === 'all-leads' || selectVal === 'all') return 'all';
-    if (selectVal.indexOf('member:') === 0) return [selectVal.slice(7)];
-    return [selectVal];
+  function recipCount(form) {
+    var st = recipState[form];
+    if (!st) return 0;
+    if (st.mode === 'all-funded') return (allMembers || []).length;
+    if (st.mode === 'all-leads')  return (allLeads || []).length;
+    if (st.mode === 'custom')     return st.custom.length;
+    return 0;
   }
+
+  function recipResolve(form) {
+    var st = recipState[form]; if (!st || !st.mode) return null;
+    if (st.mode === 'all-funded' || st.mode === 'all-leads') return 'all';
+    if (st.mode === 'custom') return st.custom.slice();
+    return null;
+  }
+
+  function refreshRecipUI(form) {
+    var picker = document.querySelector('.recip-picker[data-form="' + form + '"]');
+    if (!picker) return;
+    var st = recipState[form];
+    var pills = picker.querySelector('[data-pills]');
+    var add = picker.querySelector('.recip-add');
+    pills.innerHTML = '';
+    if (st.mode === 'custom') {
+      add.style.display = '';
+      st.custom.forEach(function(id){
+        var m = (allMembers || []).find(function(x){ return x.id === id; });
+        var name = m ? m.name : id;
+        var span = document.createElement('span'); span.className = 'recip-pill';
+        span.innerHTML = esc(name) + '<button type="button" data-rm="' + esc(id) + '" aria-label="remove">×</button>';
+        pills.appendChild(span);
+      });
+    } else {
+      add.style.display = 'none';
+    }
+    // submit button label
+    var n = recipCount(form);
+    var submit = document.getElementById(form + '-submit');
+    if (submit) {
+      var verb = form === 'cap' ? 'Issue to' : 'Send to';
+      submit.textContent = verb + ' ' + n + ' member' + (n === 1 ? '' : 's');
+      submit.disabled = !st.mode || n === 0;
+    }
+  }
+  function refreshAllRecipUI() { ['dm','cap','qtr'].forEach(refreshRecipUI); }
+
+  document.querySelectorAll('.recip-picker').forEach(function(picker){
+    var form = picker.dataset.form;
+    var quick = picker.querySelector('.recip-quick');
+    var add = picker.querySelector('.recip-add');
+    var pills = picker.querySelector('[data-pills]');
+    quick.addEventListener('change', function(){
+      recipState[form].mode = quick.value;
+      if (quick.value !== 'custom') recipState[form].custom = [];
+      refreshRecipUI(form);
+    });
+    add.addEventListener('change', function(){
+      var v = add.value; add.value = '';
+      if (!v) return;
+      var st = recipState[form];
+      if (st.custom.indexOf(v) === -1) st.custom.push(v);
+      refreshRecipUI(form);
+    });
+    pills.addEventListener('click', function(e){
+      var id = e.target && e.target.dataset && e.target.dataset.rm;
+      if (!id) return;
+      recipState[form].custom = recipState[form].custom.filter(function(x){ return x !== id; });
+      refreshRecipUI(form);
+    });
+    // initialize from default
+    recipState[form].mode = quick.value || '';
+  });
 
   document.getElementById('form-dm').addEventListener('submit', function(e){
     e.preventDefault();
-    var recipients = resolveRecipients(document.getElementById('dm-to').value);
-    if (!recipients) { toast('Select a recipient', 'error'); return; }
+    var recipients = recipResolve('dm');
+    if (!recipients || (Array.isArray(recipients) && !recipients.length)) { toast('Select recipients', 'error'); return; }
     var payload = {
       recipients: recipients,
       subject: document.getElementById('dm-subject').value,
@@ -2691,35 +2999,98 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
     };
     api('send-message', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
       .then(function(r){ return r.json(); })
-      .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : ('Sent to ' + (d.sent_to || 0)), d.ok === false ? 'error' : 'success'); if (d.ok !== false) { e.target.reset(); loadSent(); } })
+      .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : ('Sent to ' + (d.sent_to || 0)), d.ok === false ? 'error' : 'success'); if (d.ok !== false) { e.target.reset(); recipState.dm = { mode: '', custom: [] }; refreshAllRecipUI(); loadSent(); } })
       .catch(function(){ toast('Send failed', 'error'); });
   });
   document.getElementById('form-cap').addEventListener('submit', function(e){
     e.preventDefault();
+    var recipients = recipResolve('cap');
+    if (!recipients || (Array.isArray(recipients) && !recipients.length)) { toast('Select recipients', 'error'); return; }
     var amt = parseFloat((document.getElementById('cap-amount').value || '').replace(/,/g,''));
     var due = document.getElementById('cap-due').value;
     var reason = document.getElementById('cap-reason').value || '';
     if (!isFinite(amt) || amt <= 0) { toast('Enter a valid amount', 'error'); return; }
     if (!due) { toast('Pick a due date', 'error'); return; }
     var ref = 'CC-' + new Date().getFullYear() + '-Q' + (Math.floor(new Date().getMonth() / 3) + 1) + '-' + Math.floor(Math.random() * 900 + 100);
-    var payload = { ref: ref, amount_usd: amt, due_date: due, notes: reason };
+    var payload = { ref: ref, amount_usd: amt, due_date: due, notes: reason, recipients: recipients };
     api('issue-capital-call', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
       .then(function(r){ return r.json(); })
-      .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : ('Capital call issued to ' + (d.issued_to || 0)), d.ok === false ? 'error' : 'success'); if (d.ok !== false) e.target.reset(); })
+      .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : ('Capital call issued to ' + (d.issued_to || 0)), d.ok === false ? 'error' : 'success'); if (d.ok !== false) { e.target.reset(); recipState.cap = { mode: 'all-funded', custom: [] }; refreshAllRecipUI(); } })
       .catch(function(){ toast('Failed', 'error'); });
   });
+
+  // Markdown-aware renderer (paragraphs, **bold**, *italic*, line-breaks)
+  function renderMarkdownish(src) {
+    var safe = esc(src || '');
+    safe = safe.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    safe = safe.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    var paras = safe.split(/\n{2,}/).map(function(p){ return '<p>' + p.replace(/\n/g, '<br>') + '</p>'; });
+    return paras.join('');
+  }
+
+  function buildQuarterlyDraft() {
+    var quarter = parseInt(document.getElementById('qtr-q').value, 10) || 1;
+    var year = parseInt(document.getElementById('qtr-year').value, 10) || new Date().getFullYear();
+    var navM = parseFloat(document.getElementById('qtr-nav').value);
+    var subjEl = document.getElementById('qtr-subject');
+    var subject = (subjEl.value || '').trim() || ('Q' + quarter + ' ' + year + ' — Partner Update');
+    var narrative = document.getElementById('qtr-body').value || '';
+    var navLine = isFinite(navM) ? ('$' + navM.toFixed(1) + 'M') : '—';
+    var html_body = '<section class="qtr-letter">' +
+      '<header><h1>Q' + quarter + ' ' + year + ' — Partner Update</h1>' +
+      '<p class="nav-line"><strong>NAV:</strong> ' + navLine + '</p></header>' +
+      renderMarkdownish(narrative) +
+      '</section>';
+    return { quarter: quarter, year: year, subject: subject, html_body: html_body, navM: navM };
+  }
+
+  // Auto-fill subject + NAV from stats
+  (function wireQuarterlyAutofill(){
+    var qSel = document.getElementById('qtr-q');
+    var ySel = document.getElementById('qtr-year');
+    var subj = document.getElementById('qtr-subject');
+    var nav  = document.getElementById('qtr-nav');
+    if (!qSel || !ySel || !subj || !nav) return;
+    if (!ySel.value) ySel.value = new Date().getFullYear();
+    if (!qSel.value) qSel.value = String(Math.floor(new Date().getMonth() / 3) + 1);
+    function syncSubject() {
+      if (!subj.dataset.touched) {
+        subj.value = 'Q' + qSel.value + ' ' + ySel.value + ' — Partner Update';
+      }
+    }
+    qSel.addEventListener('change', syncSubject);
+    ySel.addEventListener('change', syncSubject);
+    subj.addEventListener('input', function(){ subj.dataset.touched = '1'; });
+    syncSubject();
+    // Prefill NAV from stats when available (USD millions, 1dp)
+    var s = window._tacc_stats; if (s && s.nav_usd && !nav.value) nav.value = (s.nav_usd / 1e6).toFixed(1);
+    document.addEventListener('tacc:stats', function(){
+      var st = window._tacc_stats;
+      if (st && st.nav_usd && !nav.dataset.touched && !nav.value) nav.value = (st.nav_usd / 1e6).toFixed(1);
+    });
+    nav.addEventListener('input', function(){ nav.dataset.touched = '1'; });
+  })();
+
+  document.getElementById('qtr-preview').addEventListener('click', function(){
+    var d = buildQuarterlyDraft();
+    var n = recipCount('qtr');
+    var html = '<div style="background:var(--surface);padding:18px;border:1px solid var(--border);max-height:60vh;overflow:auto;font-family:var(--font-ui);font-size:14px;line-height:1.6;color:var(--text);">' + d.html_body + '</div>' +
+      '<p style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-top:10px;letter-spacing:0.08em;">Subject: ' + esc(d.subject) + ' · Recipients: ' + n + ' · Per-member statement summary appended server-side.</p>';
+    showModal('Preview · Quarterly Letter', html, [
+      { label: 'Close', kind: '', cb: hideModal }
+    ]);
+  });
+
   document.getElementById('form-qtr').addEventListener('submit', function(e){
     e.preventDefault();
-    var quarter = parseInt(document.getElementById('qtr-q').value, 10);
-    var year = new Date().getFullYear();
-    var subject = 'Q' + quarter + ' ' + year + ' Quarterly Letter';
-    var nav = parseFloat((document.getElementById('qtr-nav').value || '').replace(/,/g,''));
-    var narrative = document.getElementById('qtr-body').value || '';
-    var html_body = '<p><strong>NAV:</strong> $' + (isFinite(nav) ? nav.toLocaleString() : '—') + '</p>' + '<div>' + (narrative.replace(/\n/g, '<br>')) + '</div>';
-    var payload = { quarter: quarter, year: year, subject: subject, html_body: html_body };
+    var recipients = recipResolve('qtr');
+    if (!recipients || (Array.isArray(recipients) && !recipients.length)) { toast('Select recipients', 'error'); return; }
+    var d = buildQuarterlyDraft();
+    var payload = { quarter: d.quarter, year: d.year, subject: d.subject, html_body: d.html_body, recipients: recipients };
+    if (isFinite(d.navM)) payload.nav_usd = Math.round(d.navM * 1e6);
     api('send-quarterly-letter', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
       .then(function(r){ return r.json(); })
-      .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : ('Letter sent to ' + (d.sent_to || 0)), d.ok === false ? 'error' : 'success'); if (d.ok !== false) { e.target.reset(); loadSent(); } })
+      .then(function(d2){ toast(d2.ok === false ? (d2.error||'Failed') : ('Letter sent to ' + (d2.sent_to || 0)), d2.ok === false ? 'error' : 'success'); if (d2.ok !== false) { e.target.reset(); recipState.qtr = { mode: 'all-funded', custom: [] }; refreshAllRecipUI(); loadSent(); } })
       .catch(function(){ toast('Failed', 'error'); });
   });
   document.getElementById('form-vv').addEventListener('submit', function(e){
@@ -2763,10 +3134,90 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
         if (!items.length) { tb.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-title">No messages sent yet</div><div class="empty-hint">Compose above to begin</div></div></td></tr>'; return; }
         tb.innerHTML = items.map(function(m){
           var typeClr = m.type === 'amber' ? 'amber' : m.type === 'blue' ? 'blue' : 'gold';
-          return '<tr><td>' + esc(m.subject || '—') + '</td><td><span class="pill pill--' + typeClr + '">' + esc(m.type || 'dm') + '</span></td><td class="mono-col">' + (m.recipient_count || 1) + '</td><td class="mono-col">' + (m.sent_at ? new Date(m.sent_at).toLocaleDateString('en-GB') : '—') + '</td><td class="mono-col">' + (m.read_count || 0) + ' / ' + (m.recipient_count || 1) + '</td><td><button class="b b--sm" data-msg-id="' + esc(m.id) + '">View</button></td></tr>';
+          return '<tr>' +
+            '<td data-lbl="Subject">' + esc(m.subject || '—') + '</td>' +
+            '<td data-lbl="Type"><span class="pill pill--' + typeClr + '">' + esc(m.type || 'dm') + '</span></td>' +
+            '<td class="mono-col" data-lbl="Recipients">' + (m.recipient_count || 1) + '</td>' +
+            '<td class="mono-col" data-lbl="Sent">' + (m.sent_at ? new Date(m.sent_at).toLocaleDateString('en-GB') : '—') + '</td>' +
+            '<td class="mono-col" data-lbl="Read">' + (m.read_count || 0) + ' / ' + (m.recipient_count || 1) + '</td>' +
+            '<td data-lbl=""><button class="b b--sm" data-receipts="' + esc(m.id) + '" data-subject="' + esc(m.subject || '') + '">View receipts</button></td>' +
+          '</tr>';
         }).join('');
+        tb.querySelectorAll('[data-receipts]').forEach(function(btn){
+          btn.addEventListener('click', function(){ openReadReceiptsModal(btn.dataset.receipts, btn.dataset.subject); });
+        });
       })
       .catch(function(){});
+  }
+
+  function openReadReceiptsModal(messageId, subject) {
+    if (!messageId) { toast('Missing message id', 'error'); return; }
+    showModal('Read receipts · ' + (subject || messageId), '<div id="rr-content"><div class="skel" style="margin:14px;"></div></div>', [
+      { label: 'Close', kind: '', cb: hideModal }
+    ]);
+    api('read-receipt?messageId=' + encodeURIComponent(messageId))
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        var box = document.getElementById('rr-content');
+        if (!box) return;
+        if (!d || d.ok === false) {
+          box.innerHTML = '<div class="empty"><div class="empty-title">Receipts unavailable</div><div class="empty-hint">' + esc((d && d.error) || 'Backend not yet wired') + '</div></div>';
+          return;
+        }
+        var recipients = (d.recipients || []).slice().sort(function(a,b){
+          var ar = a.read_at ? new Date(a.read_at).getTime() : 0;
+          var br = b.read_at ? new Date(b.read_at).getTime() : 0;
+          return br - ar;
+        });
+        var lastRead = recipients.find(function(r){ return r.read_at; });
+        var head = '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em;">' +
+          '<span><strong style="color:var(--goldA)">' + (d.read_count || 0) + ' of ' + (d.total || recipients.length) + '</strong> read</span>' +
+          (lastRead ? '<span>last read ' + relTime(lastRead.read_at) + '</span>' : '<span>no reads yet</span>') +
+        '</div>';
+        var unread = [];
+        var rows = recipients.map(function(r){
+          if (!r.read_at) unread.push(r.leadId);
+          var sentTs = d.sent_at ? new Date(d.sent_at).getTime() : null;
+          var ttr = '—';
+          if (r.read_at && sentTs) {
+            var diff = (new Date(r.read_at).getTime() - sentTs) / 1000;
+            if (diff < 60) ttr = Math.round(diff) + 's';
+            else if (diff < 3600) ttr = Math.round(diff/60) + 'm';
+            else if (diff < 86400) ttr = Math.round(diff/3600) + 'h';
+            else ttr = Math.round(diff/86400) + 'd';
+          }
+          return '<tr>' +
+            '<td data-lbl="Name">' + esc(r.name || '—') + '</td>' +
+            '<td class="mono-col" data-lbl="Member#">#' + (r.member_no || r.member_number || '—') + '</td>' +
+            '<td class="mono-col" data-lbl="Read at">' + (r.read_at ? new Date(r.read_at).toLocaleString('en-GB', { timeZone: 'Asia/Singapore' }) : '—') + '</td>' +
+            '<td class="mono-col" data-lbl="Time-to-read">' + ttr + '</td>' +
+          '</tr>';
+        }).join('');
+        var table = '<div class="dt-wrap"><table class="dt"><thead><tr><th>Name</th><th>Member#</th><th>Read at (SGT)</th><th>Time-to-read</th></tr></thead><tbody>' + (rows || '<tr><td colspan="4"><div class="empty"><div class="empty-title">No recipients</div></div></td></tr>') + '</tbody></table></div>';
+        var foot = unread.length
+          ? '<div style="display:flex;justify-content:flex-end;margin-top:14px;"><button class="b b--gold b--sm" id="rr-remind">Send reminder to ' + unread.length + ' unread</button></div>'
+          : '';
+        box.innerHTML = head + table + foot;
+        var btn = document.getElementById('rr-remind');
+        if (btn) {
+          btn.addEventListener('click', function(){
+            btn.disabled = true; btn.textContent = 'Sending…';
+            api('send-message', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+              recipients: unread,
+              subject: 'Reminder · ' + (subject || 'pending message'),
+              body: 'Just a gentle reminder — please review the previous communication at your convenience.',
+              type: 'amber'
+            }) })
+              .then(function(r){ return r.json(); })
+              .then(function(d2){ toast(d2.ok === false ? (d2.error || 'Failed') : 'Reminder sent to ' + (d2.sent_to || 0), d2.ok === false ? 'error' : 'success'); btn.disabled = false; btn.textContent = 'Send reminder to ' + unread.length + ' unread'; })
+              .catch(function(){ toast('Failed', 'error'); btn.disabled = false; });
+          });
+        }
+      })
+      .catch(function(){
+        var box = document.getElementById('rr-content');
+        if (box) box.innerHTML = '<div class="empty"><div class="empty-title">Receipts unavailable</div><div class="empty-hint">Network error</div></div>';
+      });
   }
 
   /* ═══════════════════════════════════════════════════════════════════
@@ -2786,7 +3237,7 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
           var name = x.name || x.lead_name || x.target_name || x.leadId || '—';
           var reason = x.reason || x.message || x.type || '—';
           var muteKey = (x.leadId || x.lead_id || '') + '|' + (x.type || '');
-          return '<tr><td><span class="pill pill--' + pill + '">' + esc(sev) + '</span></td><td class="mono-col">' + relTime(x.created_at || x.at) + '</td><td>' + esc(name) + '</td><td>' + esc(reason) + '</td><td><button class="b b--sm" data-mute="' + esc(muteKey) + '">Mute</button></td></tr>';
+          return '<tr><td data-lbl="Severity"><span class="pill pill--' + pill + '">' + esc(sev) + '</span></td><td data-lbl="Age" class="mono-col">' + relTime(x.created_at || x.at) + '</td><td data-lbl="Lead/Member">' + esc(name) + '</td><td data-lbl="Reason">' + esc(reason) + '</td><td data-lbl=""><button class="b b--sm" data-mute="' + esc(muteKey) + '">Mute</button></td></tr>';
         }).join('');
         tb.querySelectorAll('[data-mute]').forEach(function(b){
           b.addEventListener('click', function(){
@@ -2812,7 +3263,7 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
         var tb = document.getElementById('audit-tbody');
         if (!items.length) { tb.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-title">No audit events</div><div class="empty-hint">Actions are logged here</div></div></td></tr>'; return; }
         tb.innerHTML = items.map(function(e){
-          return '<tr><td class="mono-col">' + (e.at ? new Date(e.at).toLocaleString('en-GB', { timeZone: 'Asia/Singapore' }) : '—') + '</td><td>' + esc(e.actor || 'system') + '</td><td>' + esc(e.action || '') + '</td><td>' + esc(e.target_name || e.target || e.leadId || '—') + '</td><td>' + esc(e.memo || '') + '</td></tr>';
+          return '<tr><td data-lbl="Timestamp" class="mono-col">' + (e.at ? new Date(e.at).toLocaleString('en-GB', { timeZone: 'Asia/Singapore' }) : '—') + '</td><td data-lbl="Actor">' + esc(e.actor || 'system') + '</td><td data-lbl="Action">' + esc(e.action || '') + '</td><td data-lbl="Target">' + esc(e.target_name || e.target || e.leadId || '—') + '</td><td data-lbl="Memo">' + esc(e.memo || '') + '</td></tr>';
         }).join('');
       })
       .catch(function(){
@@ -2821,7 +3272,51 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
   }
 
   document.getElementById('audit-export').addEventListener('click', function(){
-    window.open('/api/v2?resource=admin&op=audit-search&format=csv', '_blank');
+    var q = (document.getElementById('audit-search').value || '').trim();
+    var actor = (document.getElementById('audit-actor').value || '').trim();
+    var from = (document.getElementById('audit-from').value || '').trim();
+    var to   = (document.getElementById('audit-to').value || '').trim();
+    var qs = ['format=csv'];
+    if (q) qs.push('q=' + encodeURIComponent(q));
+    if (actor) qs.push('actor=' + encodeURIComponent(actor));
+    if (from) qs.push('from=' + encodeURIComponent(from));
+    if (to) qs.push('to=' + encodeURIComponent(to));
+    var url = '/api/v2?resource=admin&op=audit-search&' + qs.join('&');
+    var fname = 'audit-' + new Date().toISOString().slice(0,10) + '.csv';
+    // First try to fetch — verify content-type. If JSON returned, do client-side conversion.
+    var btn = this; btn.disabled = true; var orig = btn.textContent; btn.textContent = 'Exporting…';
+    adminFetch(url)
+      .then(function(r){
+        var ct = (r.headers.get('content-type') || '').toLowerCase();
+        return r.text().then(function(text){ return { ct: ct, text: text }; });
+      })
+      .then(function(res){
+        var blob;
+        if (res.ct.indexOf('csv') !== -1) {
+          blob = new Blob([res.text], { type: 'text/csv' });
+        } else {
+          // Fallback: parse JSON entries → CSV
+          var data = {};
+          try { data = JSON.parse(res.text); } catch (e) {}
+          var rows = (data.entries || data.events || []);
+          var headers = ['at','actor','action','target','target_name','memo'];
+          var csv = headers.join(',') + '\n' + rows.map(function(e){
+            return headers.map(function(h){
+              var v = e[h] == null ? '' : String(e[h]);
+              if (/[",\n]/.test(v)) v = '"' + v.replace(/"/g, '""') + '"';
+              return v;
+            }).join(',');
+          }).join('\n');
+          blob = new Blob([csv], { type: 'text/csv' });
+        }
+        var u = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = u; a.download = fname; document.body.appendChild(a); a.click();
+        setTimeout(function(){ URL.revokeObjectURL(u); a.remove(); }, 100);
+        toast('Exported ' + fname, 'success');
+      })
+      .catch(function(){ toast('Export failed', 'error'); })
+      .finally(function(){ btn.disabled = false; btn.textContent = orig; });
   });
 
   /* ═══════════════════════════════════════════════════════════════════
@@ -3109,6 +3604,12 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
           '<button class="b" id="bots-tick-now">⏭ Tick Now</button>' +
           '<button class="b b--red" id="bots-reset">⟲ Reset</button>' +
         '</div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:14px;">' +
+          '<button class="b b--sm" id="bots-race-test">▶ Race Test</button>' +
+          '<button class="b b--sm" id="bots-subscription-test">▶ Subscription Test</button>' +
+          '<button class="b b--sm" id="bots-softdelete-test">▶ Soft-Delete Test</button>' +
+          '<button class="b b--sm" id="bots-stress">▶ Stress (20 personas)</button>' +
+        '</div>' +
         '<div id="bots-summary" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:14px;">Click "Start Live Bots" — spawns 6 personas. Each tick advances ~3 of them.</div>' +
         '<div style="font-family:var(--font-mono);font-size:10px;color:var(--goldA);letter-spacing:0.18em;margin-bottom:8px;">▼ PERSONAS (live)</div>' +
         '<div id="bots-personas" style="background:var(--near);border:1px solid var(--goldBorderS);padding:10px 14px;margin-bottom:14px;font-family:var(--font-mono);font-size:11px;line-height:1.7;">No bots running.</div>' +
@@ -3126,6 +3627,10 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
       simModal.querySelector('#bots-tick-now').addEventListener('click', tickLiveBotsNow);
       simModal.querySelector('#bots-reset').addEventListener('click', resetLiveBots);
       simModal.querySelector('#bots-copy').addEventListener('click', copyBotsLog);
+      simModal.querySelector('#bots-race-test').addEventListener('click', function(){ runBotLabTest('run-race-test', 'Race Test'); });
+      simModal.querySelector('#bots-subscription-test').addEventListener('click', function(){ runBotLabTest('run-subscription-test', 'Subscription Test'); });
+      simModal.querySelector('#bots-softdelete-test').addEventListener('click', function(){ runBotLabTest('run-softdelete-test', 'Soft-Delete Test'); });
+      simModal.querySelector('#bots-stress').addEventListener('click', startLiveBotsStress);
     }
     simModal.style.display = 'flex';
     refreshLiveBotsStatus();
@@ -3199,6 +3704,52 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
       logEl.value = liveLog.join('\n');
       logEl.scrollTop = logEl.scrollHeight;
     }
+  }
+
+  // Generic test runner — fires a Bot Lab test op, dumps log_text into the
+  // live event textarea, and toasts the pass/fail result.
+  function runBotLabTest(op, label) {
+    var btn = simModal.querySelector('#bots-' + (
+      op === 'run-race-test' ? 'race-test' :
+      op === 'run-subscription-test' ? 'subscription-test' :
+      op === 'run-softdelete-test' ? 'softdelete-test' : 'race-test'));
+    if (btn) { btn.disabled = true; var prev = btn.textContent; btn.textContent = label + '…'; }
+    api(op, { method: 'POST' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (btn) { btn.disabled = false; btn.textContent = prev; }
+        var pass = !!(d && d.ok);
+        var logEl = simModal.querySelector('#bots-log');
+        var header = '─── ' + label + ' (' + (pass ? 'PASS' : 'FAIL') + ') @ ' + new Date().toLocaleTimeString() + ' ───';
+        var text = (d && d.log_text) || JSON.stringify(d, null, 2);
+        liveLog.push(header);
+        text.split('\n').forEach(function(ln){ liveLog.push(ln); });
+        if (logEl) { logEl.value = liveLog.join('\n'); logEl.scrollTop = logEl.scrollHeight; }
+        toast(label + ' ' + (pass ? 'PASS' : 'FAIL'), pass ? 'success' : 'error');
+      })
+      .catch(function(e){
+        if (btn) { btn.disabled = false; btn.textContent = prev; }
+        toast(label + ' threw: ' + (e && e.message || 'error'), 'error');
+      });
+  }
+
+  function startLiveBotsStress() {
+    if (!confirm('Stress mode spawns 20 personas. This burns more Upstash commands. Continue?')) return;
+    var btn = simModal.querySelector('#bots-stress');
+    btn.disabled = true; btn.textContent = 'Spawning 20…';
+    api('bot-start-stress', { method: 'POST' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        btn.disabled = false; btn.textContent = '▶ Stress (20 personas)';
+        if (!d || !d.ok) { toast((d && d.error) || 'Stress start failed', 'error'); return; }
+        toast('Stress mode · ' + (d.started || 0) + ' personas', 'success');
+        liveLog = ['STRESS BOTS STARTED at ' + new Date().toLocaleTimeString() + ' · ' + (d.started || 0) + ' personas'];
+        refreshLiveBotsStatus();
+        if (liveTickTimer) clearInterval(liveTickTimer);
+        liveTickTimer = setInterval(tickLiveBotsNow, liveTickInterval);
+        if (typeof loadPipeline === 'function') loadPipeline();
+      })
+      .catch(function(){ btn.disabled = false; btn.textContent = '▶ Stress (20 personas)'; toast('Stress start failed', 'error'); });
   }
 
   function startLiveBots() {

@@ -137,7 +137,15 @@ function injectContext(html, lead) {
 export default async function handler(req, res) {
   if (req.method !== 'GET') return methodNotAllowed(res);
 
-  const { id } = getQuery(req);
+  const q = getQuery(req);
+
+  // Signed-blob op: short-lived JWT-protected access to private blobs.
+  // Query: ?op=signed-blob&token=<JWT>
+  if (q.op === 'signed-blob') {
+    return handleSignedBlob(req, res, q);
+  }
+
+  const { id } = q;
   if (!id) return authFail(res);
 
   const lead = await getSession(req);
@@ -377,6 +385,60 @@ async function handleVaultVerification(req, res, id, lead) {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   res.end(html);
+}
+
+// ── Signed-blob handler ──────────────────────────────────────────────────────
+// Verifies a short-lived JWT (from _lib/signed-url.js) and proxies the blob.
+// No cookie auth required — possession of the unexpired token is the auth.
+
+async function handleSignedBlob(req, res, q) {
+  const token = String(q.token || '').trim();
+  if (!token) return notFound(res);
+
+  let claims;
+  try {
+    const { verifySignedBlobToken } = await import('./_lib/signed-url.js');
+    claims = await verifySignedBlobToken(token);
+  } catch (e) {
+    console.warn('[doc/signed-blob] verify failed:', e && e.message);
+  }
+  if (!claims || !claims.pathname) {
+    res.statusCode = 401;
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-store');
+    return res.end(JSON.stringify({ ok: false, error: 'invalid or expired token', code: 'EXPIRED_TOKEN' }));
+  }
+
+  // Pathname allowlist — only blobs under known prefixes can be served.
+  const allowed = [
+    /^certificates\//,
+    /^tax-statements\//,
+    /^vault\//,
+    /^data-export\//,
+  ];
+  if (!allowed.some((r) => r.test(claims.pathname))) {
+    res.statusCode = 403;
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-store');
+    return res.end(JSON.stringify({ ok: false, error: 'pathname not allowed', code: 'FORBIDDEN_PATHNAME' }));
+  }
+
+  let buf;
+  try {
+    buf = await getBlob(claims.pathname);
+  } catch (e) {
+    console.warn('[doc/signed-blob] getBlob failed:', e && e.message);
+    return notFound(res);
+  }
+
+  // Filename for browser save dialog
+  const base = claims.pathname.split('/').pop() || 'document.pdf';
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `inline; filename="${base}"`);
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  res.end(buf);
 }
 
 // ── HTML escape helper (for doc.js templates) ─────────────────────────────────

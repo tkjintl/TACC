@@ -12,7 +12,10 @@ import {
   addMessage,
   globalAuditAppend,
   recountStages,
+  setJSON,
 } from './_lib/storage.js';
+import { trimErrorsOlderThan } from './_lib/error-shape.js';
+import { CRON_LAST_KEY } from './health.js';
 
 const DAY = 86400 * 1000;
 
@@ -21,6 +24,14 @@ function authorized(req) {
   if (!secret) return true;
   const header = req.headers.authorization || req.headers.Authorization || '';
   return header === `Bearer ${secret}`;
+}
+
+async function recordCronRun(job, payload) {
+  try {
+    await setJSON(CRON_LAST_KEY(job), { at: Date.now(), ...(payload || {}) });
+  } catch (e) {
+    console.warn('[cron] recordCronRun failed:', e && e.message);
+  }
 }
 
 export default async function handler(req, res) {
@@ -37,6 +48,7 @@ export default async function handler(req, res) {
           target_name: 'Compliance scan',
           next: r,
         });
+        await recordCronRun(job, { added: r.added, total: r.total });
         return ok(res, { ok: true, job, ...r });
       }
 
@@ -79,19 +91,23 @@ export default async function handler(req, res) {
           target_name: 'Capital call reminders',
           next: { reminded },
         });
+        await recordCronRun(job, { reminded });
         return ok(res, { ok: true, job, reminded });
       }
 
       case 'stale-data-audit': {
         // Recount stage counters and emit a heartbeat audit.
         const counts = await recountStages();
+        // Trim recent-errors set to 7d window so the sorted set doesn't grow unbounded
+        const trimmed = await trimErrorsOlderThan(Date.now() - 7 * DAY);
         await globalAuditAppend({
           actor: 'cron', action: 'stale_data_audit',
           target_type: 'system', target_id: 'counters',
           target_name: 'Counter recount',
-          next: counts,
+          next: { counts, errors_trimmed: trimmed },
         });
-        return ok(res, { ok: true, job, counts });
+        await recordCronRun(job, { counts, errors_trimmed: trimmed });
+        return ok(res, { ok: true, job, counts, errors_trimmed: trimmed });
       }
 
       default:

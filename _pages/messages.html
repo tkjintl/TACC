@@ -323,7 +323,8 @@
       var badge = document.getElementById('member-badge');
       if (badge && d.member_number) badge.textContent = '#' + d.member_number;
 
-      var msgs = d.messages || [];
+      var raw = d.messages || [];
+      var msgs = Array.isArray(raw) ? raw : (raw.items || []);
       if (!msgs.length) return;
 
       document.getElementById('msg-empty').style.display = 'none';
@@ -332,27 +333,53 @@
       msgs.forEach(function (m) {
         var card = document.createElement('div');
         var typeClass = m.type || 'gold';
-        card.className = 'msg-card ' + typeClass + (m.read ? '' : ' unread');
+        var isRead = !!(m.read || m.read_at);
+        card.className = 'msg-card ' + typeClass + (isRead ? '' : ' unread');
+
+        var sentAt = m.sent_at || m.date;
+        var dateLabel = sentAt
+          ? (typeof sentAt === 'string' && sentAt.length <= 12 ? sentAt : TACC.fmDate(sentAt, window._lang))
+          : '—';
+        var fromLabel = m.from_label || (m.from === 'system' ? 'System' : 'TKJ · Partner');
 
         card.innerHTML =
           '<div class="msg-header">' +
             '<div class="msg-unread-dot" aria-label="Unread"></div>' +
-            '<div class="msg-subject">' + (m.subject || '—') + '</div>' +
-            '<div class="msg-date">' + (m.date || '—') + '</div>' +
+            '<div class="msg-subject">' + escHtml(m.subject || '—') + '</div>' +
+            '<div class="msg-date">' + escHtml(dateLabel) + '</div>' +
           '</div>' +
           '<div class="msg-body">' +
+            '<div style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.18em;color:var(--muted);text-transform:uppercase;margin-top:14px;">From: ' + escHtml(fromLabel) + '</div>' +
             '<p class="msg-body-text">' + (m.body || '') + '</p>' +
             '<a class="msg-reply-link" href="mailto:members@theaurumcc.com?subject=Re: ' + encodeURIComponent(m.subject || '') + '">↩ &nbsp;Reply by email</a>' +
           '</div>';
 
         card.querySelector('.msg-header').addEventListener('click', function () {
+          var wasUnread = card.classList.contains('unread');
           card.classList.toggle('expanded');
-          card.classList.remove('unread');
-          card.querySelector('.msg-unread-dot').style.display = 'none';
+          if (wasUnread && card.classList.contains('expanded')) {
+            card.classList.remove('unread');
+            var dot = card.querySelector('.msg-unread-dot');
+            if (dot) dot.style.display = 'none';
+            if (m.id) {
+              fetch('/api/v2?resource=member&op=ack-message', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message_id: m.id })
+              }).catch(function () {});
+            }
+          }
         });
 
         container.appendChild(card);
       });
+
+      function escHtml(s) {
+        return String(s == null ? '' : s)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
     })
     .catch(function () {
       document.getElementById('loading-state').style.display = 'none';

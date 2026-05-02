@@ -444,15 +444,25 @@ export async function broadcastVaultVerification(vv) {
 
 // ── Tax statements ────────────────────────────────────────────────────────────
 
-export async function saveTaxStatementUrl(leadId, fiscalYear, url) {
+/**
+ * saveTaxStatementUrl(leadId, fiscalYear, urlOrRecord)
+ *   urlOrRecord: string url (legacy) OR
+ *   { url, pathname, format, generated_at, blob_pathname, ... }
+ * Stored under lead.tax_statements[FY]. Always upgraded to object form so
+ * downstream readers (signed-URL refresh) can re-sign by pathname.
+ */
+export async function saveTaxStatementUrl(leadId, fiscalYear, urlOrRecord) {
   const lead = await getLead(leadId);
   if (!lead) throw new Error(`saveTaxStatementUrl: lead ${leadId} not found`);
   lead.tax_statements = lead.tax_statements || {};
-  lead.tax_statements[String(fiscalYear)] = url;
+  const record = typeof urlOrRecord === 'string'
+    ? { url: urlOrRecord, generated_at: new Date().toISOString(), fiscal_year: fiscalYear }
+    : { generated_at: new Date().toISOString(), fiscal_year: fiscalYear, ...urlOrRecord };
+  lead.tax_statements[String(fiscalYear)] = record;
   await appendAudit(lead, {
     actor:  'system',
     action: 'tax_statement_generated',
-    next:   { fiscal_year: fiscalYear, url },
+    next:   { fiscal_year: fiscalYear, url: record.url, pathname: record.pathname || null, format: record.format || null },
   });
   await saveLead(lead);
 }
