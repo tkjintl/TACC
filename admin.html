@@ -2941,7 +2941,7 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
      ═══════════════════════════════════════════════════════════════════ */
   var simModal = null;
   var liveTickTimer = null;
-  var liveTickInterval = 60000; // 60s default
+  var liveTickInterval = 3000; // 3s — visible movement, ~24k cmds/hr at peak
   var liveLog = [];               // local rolling log
 
   var STAGE_PILL_MAP = {
@@ -2961,13 +2961,14 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
       simModal.innerHTML = '<div style="background:var(--surface);border:1px solid var(--border);max-width:880px;width:100%;max-height:92vh;overflow:auto;padding:28px;display:flex;flex-direction:column;">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">' +
           '<div><div style="font-family:var(--font-display);font-size:24px;font-weight:300;">Live Bots</div>' +
-          '<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;margin-top:4px;">PERSISTENT PERSONAS · 60s TICK · ~20 UPSTASH CMDS/TICK · ~1.2K/HR</div></div>' +
+          '<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;margin-top:4px;">PERSISTENT PERSONAS · 3s TICK · VISIBLE MOTION · CLOSE TAB TO PAUSE</div></div>' +
           '<button class="b b--sm" id="sim-close">✕ Close</button>' +
         '</div>' +
-        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">' +
-          '<button class="b b--gold" id="bots-start">▶ Start Live Bots</button>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:14px;">' +
+          '<button class="b b--gold" id="bots-start">▶ Start</button>' +
           '<button class="b b--red" id="bots-stop">■ Stop</button>' +
           '<button class="b" id="bots-tick-now">⏭ Tick Now</button>' +
+          '<button class="b b--red" id="bots-reset">⟲ Reset</button>' +
         '</div>' +
         '<div id="bots-summary" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:14px;">Click "Start Live Bots" — spawns 6 personas. Each tick advances ~3 of them.</div>' +
         '<div style="font-family:var(--font-mono);font-size:10px;color:var(--goldA);letter-spacing:0.18em;margin-bottom:8px;">▼ PERSONAS (live)</div>' +
@@ -2984,6 +2985,7 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
       simModal.querySelector('#bots-start').addEventListener('click', startLiveBots);
       simModal.querySelector('#bots-stop').addEventListener('click', stopLiveBots);
       simModal.querySelector('#bots-tick-now').addEventListener('click', tickLiveBotsNow);
+      simModal.querySelector('#bots-reset').addEventListener('click', resetLiveBots);
       simModal.querySelector('#bots-copy').addEventListener('click', copyBotsLog);
     }
     simModal.style.display = 'flex';
@@ -3070,6 +3072,27 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
         if (typeof loadActivityTimeline === 'function') loadActivityTimeline();
       })
       .catch(function(){ btn.disabled = false; btn.textContent = '▶ Start Live Bots'; toast('Start failed', 'error'); });
+  }
+
+  function resetLiveBots() {
+    if (!confirm('Reset will soft-delete all 6 personas and respawn fresh. Continue?')) return;
+    var btn = simModal.querySelector('#bots-reset');
+    btn.disabled = true; btn.textContent = 'Resetting…';
+    if (liveTickTimer) { clearInterval(liveTickTimer); liveTickTimer = null; }
+    api('bots-reset', { method: 'POST' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        btn.disabled = false; btn.textContent = '⟲ Reset';
+        if (!d || !d.ok) { toast((d && d.error) || 'Reset failed', 'error'); return; }
+        toast('Reset · ' + (d.removed || 0) + ' wiped, ' + (d.started || 0) + ' fresh', 'success');
+        liveLog = ['BOTS RESET at ' + new Date().toLocaleTimeString()];
+        refreshLiveBotsStatus();
+        if (liveTickTimer) clearInterval(liveTickTimer);
+        liveTickTimer = setInterval(tickLiveBotsNow, liveTickInterval);
+        if (typeof loadPipeline === 'function') loadPipeline();
+        if (typeof loadActivityTimeline === 'function') loadActivityTimeline();
+      })
+      .catch(function(){ btn.disabled = false; btn.textContent = '⟲ Reset'; toast('Reset failed', 'error'); });
   }
 
   function stopLiveBots() {

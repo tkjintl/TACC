@@ -391,6 +391,7 @@ async function handleAdmin(req, res, op) {
     case 'bots-stop':               return adminBotsStop(req, res, session);
     case 'bots-tick':               return adminBotsTick(req, res, session);
     case 'bots-status':             return adminBotsStatus(req, res, session);
+    case 'bots-reset':              return adminBotsReset(req, res, session);
     case 'flush-spot-cache':        return adminFlushSpotCache(req, res, session);
     case 'backfill-investor-profile': return adminBackfillInvestorProfile(req, res, session);
     // ── Phase 4 ─────────────────────────────────────────────────────────────
@@ -1245,6 +1246,14 @@ async function adminBotsStatus(req, res, session) {
     const { getBotsState, summarizePersonas } = await import('./_lib/bots-live.js');
     const state = await getBotsState();
     return ok(res, { ok: true, state, personas: summarizePersonas(state) });
+  } catch (e) { return serverError(res, e); }
+}
+async function adminBotsReset(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  try {
+    const { resetBots } = await import('./_lib/bots-live.js');
+    const r = await resetBots();
+    return ok(res, r);
   } catch (e) { return serverError(res, e); }
 }
 

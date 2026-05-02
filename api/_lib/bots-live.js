@@ -38,12 +38,13 @@ const PERSONA_TEMPLATES = [
 const ALLOC_BY_WEALTH = { '5_10m':'2', '10_25m':'3_5', '25_50m':'5_10', '50m_plus':'10_plus' };
 const PHONE_PREFIX = { KR:'+82 10', SG:'+65 9', HK:'+852 6', JP:'+81 90' };
 
-// How many ticks each persona spends at each stage before advancing.
-// Pace 'fast' = aggressive (1-2 ticks per stage), slow = cautious (3-5 ticks).
+// Ticks each persona spends at each stage before being eligible to advance.
+// Tuned so the pipeline visibly moves on a 3-second tick: fast personas land
+// in funded in ~1 minute; slow personas in ~3 minutes.
 const PACE_DELAY = {
-  fast:   { min: 1, max: 2 },
-  medium: { min: 2, max: 3 },
-  slow:   { min: 3, max: 5 },
+  fast:   { min: 0, max: 1 },
+  medium: { min: 1, max: 2 },
+  slow:   { min: 1, max: 3 },
 };
 
 function _delay(pace) {
@@ -136,6 +137,33 @@ export async function startBots() {
 
   await saveBotsState(state);
   return { ok: true, state, started: state.personas.length };
+}
+
+export async function resetBots() {
+  // Soft-delete all persona leads, wipe state, restart fresh
+  const state = await getBotsState();
+  const personaIds = (state.personas || []).map((p) => p.leadId).filter(Boolean);
+  let removed = 0;
+  for (const id of personaIds) {
+    try {
+      const lead = await getLead(id);
+      if (lead) {
+        const stage = resolveLeadStage(lead);
+        lead.deleted_at = Date.now();
+        lead.deleted_reason = 'bot_reset';
+        await saveLead(lead);
+        if (stage) await transitionStage(lead, stage, null);
+        removed++;
+      }
+    } catch {}
+  }
+  // Wipe state and start fresh (creates 6 new personas)
+  await saveBotsState({
+    auto_mode: 'off', started_at: null, last_tick_at: null,
+    tick_count: 0, actions_count: 0, estimated_upstash_cmds: 0, personas: [],
+  });
+  const fresh = await startBots();
+  return { ok: true, removed, ...fresh };
 }
 
 export async function stopBots() {
