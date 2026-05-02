@@ -203,13 +203,15 @@
     pointer-events: auto;
   }
 
-  /* The wordmark — sits beneath the particle field */
+  /* The wordmark — sits beneath the particle field. Push it down further
+     now that the Au glyph centers at h*0.28 (was 0.42) so the gap reads
+     as deliberate spacing, not crowded composition. */
   .wordmark {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    margin-top: clamp(180px, 32vh, 280px);
+    margin-top: clamp(280px, 46vh, 440px);
     opacity: 0;
     transform: translateY(8px);
     animation: rise 1400ms 1200ms var(--ease-entrance) forwards;
@@ -352,7 +354,7 @@
   @media (max-width: 768px) {
     .nav-meta { display: none; }
     .nav { padding: 16px var(--pad-x); }
-    .wordmark { margin-top: clamp(140px, 26vh, 200px); }
+    .wordmark { margin-top: clamp(220px, 38vh, 320px); }
     .center-inner { gap: 28px; }
     .cta { padding: 14px 24px; font-size: 11px; letter-spacing: 0.26em; }
     .foot-line { font-size: 8.5px; letter-spacing: 0.18em; }
@@ -372,7 +374,7 @@
   }
 
   @media (max-width: 375px) {
-    .wordmark { margin-top: 130px; }
+    .wordmark { margin-top: 200px; }
     .wordmark .title { font-size: 28px; }
     .center-inner { gap: 22px; }
   }
@@ -520,14 +522,15 @@
 
   // ── Shapes ────────────────────────────────────────────────
   const shapes = [
-    // Au monogram — italic serif
+    // Au monogram — italic serif. Centered at h*0.28 so it lives in the upper
+    // half and leaves clean breathing room above the wordmark below.
     (o, w, h) => {
       const fs = Math.min(w * 0.36, h * 0.62);
       o.fillStyle = '#fff';
       o.font = `300 italic ${fs}px "Cormorant Garamond", Georgia, serif`;
       o.textAlign = 'center';
       o.textBaseline = 'middle';
-      o.fillText('Au', w / 2, h * 0.42);
+      o.fillText('Au', w / 2, h * 0.28);
     },
     // Wordmark — AURUM
     (o, w, h) => {
@@ -537,15 +540,15 @@
       o.textAlign = 'center';
       o.textBaseline = 'middle';
       o.letterSpacing = '0.18em';
-      o.fillText('AURUM', w / 2, h * 0.40);
+      o.fillText('AURUM', w / 2, h * 0.26);
       // hairline
-      o.fillRect(w / 2 - fs * 1.4, h * 0.40 + fs * 0.65, fs * 2.8, 1.5);
+      o.fillRect(w / 2 - fs * 1.4, h * 0.26 + fs * 0.65, fs * 2.8, 1.5);
       o.font = `300 italic ${fs * 0.32}px "Cormorant Garamond", Georgia, serif`;
-      o.fillText('1 kg · LBMA · Singapore', w / 2, h * 0.40 + fs * 0.95);
+      o.fillText('1 kg · LBMA · Singapore', w / 2, h * 0.26 + fs * 0.95);
     },
     // Kilo bar silhouette — trapezoid with chamfered corners
     (o, w, h) => {
-      const cx = w / 2, cy = h * 0.42;
+      const cx = w / 2, cy = h * 0.28;
       const bw = Math.min(w * 0.34, h * 0.46);
       const bh = bw * 0.55;
       const ch = bh * 0.18; // chamfer
@@ -574,7 +577,7 @@
     },
     // Seal frame — circle with Au
     (o, w, h) => {
-      const cx = w / 2, cy = h * 0.42;
+      const cx = w / 2, cy = h * 0.28;
       const r = Math.min(w, h) * 0.20;
       o.fillStyle = '#fff';
       // ring
