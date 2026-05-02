@@ -386,6 +386,7 @@ async function handleAdmin(req, res, op) {
     case 'wipe-demo':               return adminWipeDemo(req, res, session);
     case 'stage-index-backfill':    return adminStageIndexBackfill(req, res, session);
     case 'run-audit':               return adminRunAudit(req, res, session);
+    case 'run-simulation':          return adminRunSimulation(req, res, session);
     case 'flush-spot-cache':        return adminFlushSpotCache(req, res, session);
     case 'backfill-investor-profile': return adminBackfillInvestorProfile(req, res, session);
     // ── Phase 4 ─────────────────────────────────────────────────────────────
@@ -1205,6 +1206,17 @@ async function adminFlushSpotCache(req, res, session) {
     const r = await fetch(`${url}/`, { method: 'POST', headers, body });
     const j = await r.json();
     return ok(res, { ok: true, flushed: j });
+  } catch (e) {
+    return serverError(res, e);
+  }
+}
+
+async function adminRunSimulation(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  try {
+    const { runSimulation } = await import('./_lib/simulation.js');
+    const result = await runSimulation(session);
+    return ok(res, result);
   } catch (e) {
     return serverError(res, e);
   }

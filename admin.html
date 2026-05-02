@@ -799,6 +799,7 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
       <button class="ah-btn" id="cmdk-btn" data-tip="Cmd+K">Search</button>
       <button class="ah-btn" id="seed-btn">Seed Demo</button>
       <button class="ah-btn ah-btn--danger" id="wipe-btn">Wipe Demo</button>
+      <button class="ah-btn" id="sim-btn" data-tip="Run platform simulation">▶ Start Simulation</button>
       <button class="ah-btn" id="audit-btn" data-tip="Audit log">Audit</button>
       <a href="/portfolio" class="ah-btn">Portal</a>
       <a href="/api/v2?resource=session&op=logout" class="ah-btn ah-btn--danger" data-no-transition>Sign Out</a>
@@ -2934,6 +2935,81 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
     }
   }
   document.getElementById('audit-btn').addEventListener('click', openAuditModal);
+
+  /* ═══════════════════════════════════════════════════════════════════
+     START SIMULATION — single button, runs ~20 events server-side, log
+     ═══════════════════════════════════════════════════════════════════ */
+  var simModal = null;
+  function openSimModal() {
+    if (!simModal) {
+      simModal = document.createElement('div');
+      simModal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;padding:20px;';
+      simModal.innerHTML = '<div style="background:var(--surface);border:1px solid var(--border);max-width:780px;width:100%;max-height:92vh;overflow:auto;padding:28px;display:flex;flex-direction:column;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">' +
+          '<div><div style="font-family:var(--font-display);font-size:24px;font-weight:300;">Start Simulation</div>' +
+          '<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;margin-top:4px;">ONE-SHOT · 20 EVENTS · ~150 UPSTASH CMDS · NO BACKGROUND TIMERS</div></div>' +
+          '<button class="b b--sm" id="sim-close">✕ Close</button>' +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">' +
+          '<button class="b b--gold" id="sim-run">▶ Run Simulation</button>' +
+          '<button class="b" id="sim-copy" disabled>📋 Copy Log</button>' +
+        '</div>' +
+        '<div id="sim-summary" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:10px;">Click "Run Simulation" — 5 new signups · 4 approvals · 3 NDA uploads · 3 NDA approvals · 2 wires issued · 1 received · 1 funded</div>' +
+        '<textarea id="sim-log" readonly style="flex:1;min-height:420px;background:var(--near);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:11px;padding:14px;line-height:1.5;resize:vertical;white-space:pre;overflow:auto;">No simulation yet. Click "Run Simulation".</textarea>' +
+      '</div>';
+      document.body.appendChild(simModal);
+      simModal.addEventListener('click', function(e){ if (e.target === simModal) simModal.style.display = 'none'; });
+      simModal.querySelector('#sim-close').addEventListener('click', function(){ simModal.style.display = 'none'; });
+      simModal.querySelector('#sim-run').addEventListener('click', runSimulation);
+      simModal.querySelector('#sim-copy').addEventListener('click', copySimLog);
+    }
+    simModal.style.display = 'flex';
+  }
+  function runSimulation() {
+    var runBtn = simModal.querySelector('#sim-run');
+    var copyBtn = simModal.querySelector('#sim-copy');
+    var sumEl = simModal.querySelector('#sim-summary');
+    var logEl = simModal.querySelector('#sim-log');
+    runBtn.disabled = true; runBtn.textContent = 'Running…';
+    sumEl.textContent = 'Running ~20 events server-side (3-6 sec)…';
+    logEl.value = 'Running…';
+    api('run-simulation', { method: 'POST' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        runBtn.disabled = false; runBtn.textContent = '▶ Run Simulation';
+        if (!d || !d.ok) { sumEl.textContent = 'Failed: ' + (d && d.error || 'unknown'); return; }
+        sumEl.innerHTML = '<span style="color:var(--green);font-weight:500;">Done</span> · ' + (d.elapsed_ms || 0) + 'ms · funded=' + (d.counts && d.counts.funded) + ' total=' + (d.counts && d.counts.total);
+        logEl.value = d.log_text || JSON.stringify(d, null, 2);
+        copyBtn.disabled = false;
+        // Refresh dashboard views
+        if (typeof loadPipeline === 'function') loadPipeline();
+        if (typeof loadDecisionLanes === 'function') loadDecisionLanes();
+        if (typeof loadActivityTimeline === 'function') loadActivityTimeline();
+        if (typeof loadMembers === 'function') loadMembers();
+      })
+      .catch(function(e){
+        runBtn.disabled = false; runBtn.textContent = '▶ Run Simulation';
+        sumEl.textContent = 'Failed: ' + (e && e.message || 'network');
+      });
+  }
+  function copySimLog() {
+    var logEl = simModal.querySelector('#sim-log');
+    var copyBtn = simModal.querySelector('#sim-copy');
+    logEl.select();
+    var done = false;
+    try { done = document.execCommand('copy'); } catch (e) {}
+    if (!done && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(logEl.value).then(function(){
+        copyBtn.textContent = '✓ Copied'; setTimeout(function(){ copyBtn.textContent = '📋 Copy Log'; }, 1500);
+      }).catch(function(){ toast('Copy failed', 'error'); });
+    } else if (done) {
+      copyBtn.textContent = '✓ Copied';
+      setTimeout(function(){ copyBtn.textContent = '📋 Copy Log'; }, 1500);
+    } else {
+      toast('Copy failed', 'error');
+    }
+  }
+  document.getElementById('sim-btn').addEventListener('click', openSimModal);
 
 })();
 </script>
