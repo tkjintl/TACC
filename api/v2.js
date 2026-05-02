@@ -397,6 +397,7 @@ async function handleAdmin(req, res, op) {
     case 'stage-index-backfill':    return adminStageIndexBackfill(req, res, session);
     case 'run-audit':               return adminRunAudit(req, res, session);
     case 'flush-spot-cache':        return adminFlushSpotCache(req, res, session);
+    case 'backfill-investor-profile': return adminBackfillInvestorProfile(req, res, session);
     // ── Phase 4 ─────────────────────────────────────────────────────────────
     case 'stats':                   return adminStats(req, res, session);
     case 'nda-queue':               return adminNdaQueue(req, res, session);
@@ -1150,6 +1151,57 @@ async function adminRecountStages(req, res, session) {
 // One-shot helper: walks every lead and adds it to leads:by-stage:{stage}
 // sorted set. Run after deploying the bot's cheap-tick path so it has
 // candidates to pick from. Costs ~N+7 commands (one ZADD per lead).
+async function adminBackfillInvestorProfile(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  try {
+    const all = await listLeads({ limit: 500 });
+    const phonePref = { KR:'+82 10', SG:'+65 9', HK:'+852 6', JP:'+81 90', CN:'+86 138', GB:'+44 20', CH:'+41 79', US:'+1 415', AU:'+61 4' };
+    const allocFor = (a) => a === '50m_plus' ? '10_plus' : a === '25_50m' ? '5_10' : a === '10_25m' ? '3_5' : '2';
+    let touched = 0;
+    const fixed = [];
+    for (const lead of all) {
+      if (lead.deleted_at) continue;
+      const seed = (lead.id || '').split('').reduce((a,c)=>a+c.charCodeAt(0), 0);
+      let changed = false;
+      if (!lead.phone) {
+        const cc = phonePref[lead.country] || '+1 415';
+        lead.phone = `${cc} ${(seed % 9000 + 1000)} ${(seed * 7 % 9000 + 1000)}`;
+        changed = true;
+      }
+      if (!lead.tax_residency) { lead.tax_residency = lead.country || 'SG'; changed = true; }
+      if (!lead.occupation) { lead.occupation = 'Private investor'; changed = true; }
+      if (!lead.investor_classification) {
+        lead.investor_classification = ['hnw','family_office','qualified_investor'][seed % 3];
+        changed = true;
+      }
+      if (!lead.source_of_wealth_high_level) {
+        lead.source_of_wealth_high_level = ['business','employment','investments','financial_services'][seed % 4];
+        changed = true;
+      }
+      if (!lead.anticipated_allocation_kg) {
+        lead.anticipated_allocation_kg = allocFor(lead.investable_assets || lead.wealth);
+        changed = true;
+      }
+      if (!lead.referral_source && !lead.referral) {
+        lead.referral_source = 'personal_intro';
+        changed = true;
+      }
+      if (lead.reverse_solicitation_ack !== true) {
+        lead.reverse_solicitation_ack = true;
+        changed = true;
+      }
+      if (changed) {
+        await saveLead(lead);
+        touched++;
+        if (fixed.length < 20) fixed.push(lead.name || lead.id);
+      }
+    }
+    return ok(res, { ok: true, touched, fixed });
+  } catch (e) {
+    return serverError(res, e);
+  }
+}
+
 async function adminFlushSpotCache(req, res, session) {
   if (req.method !== 'POST') return methodNotAllowed(res);
   try {

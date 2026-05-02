@@ -189,16 +189,20 @@ export async function runPlatformAudit(session) {
     checks.push(row('activity (24h)', 'fail', e.message));
   }
 
-  // 16. Exceptions detector hook — vault verification age
+  // 16. Vault verification age — read the actual storage key
   try {
-    const lastVV = await getJSON('vault_verification:last_published_at');
-    const ageDays = lastVV ? Math.round((Date.now() - lastVV) / 86400000) : null;
-    if (ageDays === null) {
+    const { getLastVaultVerification } = await import('./storage.js');
+    const lastVV = await getLastVaultVerification();
+    const ts = lastVV && (lastVV.published_at || lastVV.at || (typeof lastVV === 'number' ? lastVV : null));
+    if (!ts) {
       checks.push(row('vault verification', 'warn', 'no verification published'));
-    } else if (ageDays > 90) {
-      checks.push(row('vault verification', 'fail', `${ageDays}d old — overdue`));
     } else {
-      checks.push(row('vault verification', 'pass', `${ageDays}d old`));
+      const ageDays = Math.round((Date.now() - ts) / 86400000);
+      if (ageDays > 90) {
+        checks.push(row('vault verification', 'fail', `${ageDays}d old — overdue`));
+      } else {
+        checks.push(row('vault verification', 'pass', `${ageDays}d old`));
+      }
     }
   } catch (e) {
     checks.push(row('vault verification', 'warn', e.message));
