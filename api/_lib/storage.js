@@ -37,6 +37,14 @@ function memCall(cmd) {
   const [op, ...a] = cmd;
   switch (op.toUpperCase()) {
     case 'SET': {
+      // Honour NX (set-if-absent). If present, return null when key already set.
+      const nx = a.includes('NX');
+      if (nx) {
+        const ttl = s.ttls.get(a[0]);
+        const expired = ttl && Date.now() > ttl;
+        if (expired) { s.kv.delete(a[0]); s.ttls.delete(a[0]); }
+        if (s.kv.has(a[0])) return null;
+      }
       s.kv.set(a[0], a[1]);
       // Handle EX option: ['SET', key, value, 'EX', seconds]
       const exIdx = a.indexOf('EX');
@@ -545,12 +553,19 @@ function memCallExt(cmd) {
       return v;
     }
     case 'SET': {
-      // Support EX option used by addComplianceFlag/withIdempotency
+      // Support EX + NX options (NX = set-if-not-exists, returns null on collision)
+      const nx = a.includes('NX');
+      if (nx) {
+        const ttl = s.ttls.get(a[0]);
+        const expired = ttl && Date.now() > ttl;
+        if (expired) { s.kv.delete(a[0]); s.ttls.delete(a[0]); }
+        if (s.kv.has(a[0])) return null;
+      }
       s.kv.set(a[0], a[1]);
       const exIdx = a.indexOf('EX');
       if (exIdx >= 0 && a[exIdx + 1]) {
         s.ttls.set(a[0], Date.now() + Number(a[exIdx + 1]) * 1000);
-      } else {
+      } else if (!nx) {
         s.ttls.delete(a[0]);
       }
       return 'OK';
@@ -916,20 +931,184 @@ export async function getMessageHistory(leadId, { limit = 50, offset = 0 } = {})
 }
 
 // ── Idempotency ──────────────────────────────────────────────────────────────
+//
+// Two-phase SET-NX guard:
+//   1. SET idem:{key} "__pending__" NX EX 120  → returns "OK" (we won), null (lost).
+//   2a. Winner runs fn, then SET idem:{key} <result> EX <ttl>.
+//   2b. Loser polls up to 5x at 200ms reading the same key. If a non-pending
+//       value appears, return it with cached:true. If polling exhausts (the
+//       winner crashed mid-flight), graceful-degrade by running fn ourselves.
+//
+// This closes the GET-then-SET race that allowed two concurrent calls within
+// the same idempotency window to both execute the underlying side-effect.
 
 const IDEM_KEY = (k) => `idem:${k}`;
+const IDEM_PENDING = '__pending__';
+
+async function _idemPoll(key, attempts = 5, intervalMs = 200) {
+  for (let i = 0; i < attempts; i++) {
+    await new Promise((r) => setTimeout(r, intervalMs));
+    const v = await callExt(['GET', IDEM_KEY(key)]);
+    if (v == null) return null;
+    if (v === IDEM_PENDING) continue;
+    try { return typeof v === 'object' ? v : JSON.parse(v); } catch { return v; }
+  }
+  return null;
+}
 
 export async function withIdempotency(key, ttlSeconds, fn) {
   if (!key) return fn();
-  const existing = await callExt(['GET', IDEM_KEY(key)]);
-  if (existing) {
-    try { return typeof existing === 'object' ? existing : JSON.parse(existing); } catch { return existing; }
-  }
-  const result = await fn();
+  const ttl = String(ttlSeconds || 60);
+  // Atomic claim. SET NX returns "OK" on win, null on lose.
+  let claimed;
   try {
-    await callExt(['SET', IDEM_KEY(key), JSON.stringify(result), 'EX', String(ttlSeconds || 60)]);
-  } catch {}
-  return result;
+    claimed = await callExt(['SET', IDEM_KEY(key), IDEM_PENDING, 'NX', 'EX', ttl]);
+  } catch {
+    // KV failure → degrade: run fn (no idempotency guarantee).
+    return fn();
+  }
+  if (claimed === 'OK' || claimed === true) {
+    // Winner — execute the wrapped fn and cache its result.
+    let result;
+    try {
+      result = await fn();
+    } catch (e) {
+      // Release the claim on failure so a retry can proceed.
+      try { await callExt(['DEL', IDEM_KEY(key)]); } catch {}
+      throw e;
+    }
+    try {
+      await callExt(['SET', IDEM_KEY(key), JSON.stringify(result), 'EX', ttl]);
+    } catch {}
+    return result;
+  }
+  // Lost claim — poll for the winner's cached result.
+  const polled = await _idemPoll(key);
+  if (polled != null) {
+    if (polled && typeof polled === 'object') return { ...polled, cached: true };
+    return polled;
+  }
+  // Polling exhausted — winner stalled or crashed. Graceful degrade.
+  return fn();
+}
+
+// ── Atomic member# allocation ────────────────────────────────────────────────
+//
+// Prior to this counter, member# was assigned via getStageCounts().funded + 1
+// at wire-cleared time — a non-atomic read-then-write that could collide under
+// concurrent admin actions. We now use a Redis INCR counter so allocation is
+// race-safe across function instances.
+//
+// Key: counter:member_number_next   → next number to hand out (starts at 1).
+// Caller flow:
+//   const n = await allocateNextMemberNumber(); // INCR returns post-increment value
+//   if (n === null) return error('cohort full');
+//   ... assign to lead ...
+// On rollback (e.g. lead lookup fails after allocation), call
+// releaseMemberNumber(n) to DECR back. Best-effort; if a process crashes mid-
+// flight a number may be skipped. Cohort gaps are acceptable; collisions are
+// not.
+
+const MEMBER_NUMBER_COUNTER_KEY = 'counter:member_number_next';
+const MEMBER_NUMBER_CAP = 100;
+
+export async function allocateNextMemberNumber(cap = MEMBER_NUMBER_CAP) {
+  // INCR on a fresh key starts at 1. If it returns >cap, decrement back and
+  // signal cohort-full to caller.
+  const v = await callExt(['INCR', MEMBER_NUMBER_COUNTER_KEY]);
+  const n = parseInt(v, 10);
+  if (!Number.isFinite(n)) {
+    // Counter corrupted — refuse to allocate.
+    return null;
+  }
+  if (n > cap) {
+    try { await callExt(['DECR', MEMBER_NUMBER_COUNTER_KEY]); } catch {}
+    return null;
+  }
+  return n;
+}
+
+export async function releaseMemberNumber(n) {
+  if (!Number.isInteger(n) || n < 1) return;
+  try { await callExt(['DECR', MEMBER_NUMBER_COUNTER_KEY]); } catch {}
+}
+
+export async function getMemberNumberCounter() {
+  const v = await callExt(['GET', MEMBER_NUMBER_COUNTER_KEY]);
+  const n = parseInt(v || '0', 10);
+  return Number.isFinite(n) ? n : 0;
+}
+
+/**
+ * recountMemberNumberCounter()
+ * Scans funded leads and SETs counter:member_number_next to max(member_number)+1
+ * (or 1 if no funded leads). Run once after deploying the atomic counter to
+ * backfill from the legacy non-atomic allocation.
+ * Returns { previous, next, max_assigned, funded_count }.
+ */
+export async function recountMemberNumberCounter() {
+  const all = await listLeads({ limit: 1000 });
+  const funded = all.filter((l) => l.status === 'funded' && Number.isInteger(l.member_number));
+  const maxAssigned = funded.reduce((m, l) => Math.max(m, l.member_number || 0), 0);
+  const previous = await getMemberNumberCounter();
+  const next = maxAssigned + 1;
+  await callExt(['SET', MEMBER_NUMBER_COUNTER_KEY, String(next)]);
+  return { previous, next, max_assigned: maxAssigned, funded_count: funded.length };
+}
+
+// ── Tax-statement legacy migration ───────────────────────────────────────────
+//
+// Old leads stored tax_statements[fy] as a bare URL string. New code expects
+// an object { url, pathname, format, generated_at, ... }. Walk all leads and
+// upgrade strings to objects in-place. Idempotent — already-object entries
+// are skipped.
+
+export async function migrateLegacyTaxStatements() {
+  const all = await listLeads({ limit: 1000 });
+  let migrated = 0;
+  let skipped = 0;
+  const errors = [];
+  for (const lead of all) {
+    if (!lead || !lead.tax_statements || typeof lead.tax_statements !== 'object') {
+      skipped++;
+      continue;
+    }
+    let dirty = false;
+    for (const fy of Object.keys(lead.tax_statements)) {
+      const v = lead.tax_statements[fy];
+      if (typeof v === 'string') {
+        const generatedAt = lead.created_at
+          ? (typeof lead.created_at === 'number' ? new Date(lead.created_at).toISOString() : String(lead.created_at))
+          : new Date().toISOString();
+        lead.tax_statements[fy] = {
+          url:           v,
+          pathname:      null,
+          format:        'legacy',
+          generated_at:  generatedAt,
+          fiscal_year:   parseInt(fy, 10) || fy,
+          legacy:        true,
+        };
+        dirty = true;
+        migrated++;
+      } else if (v && typeof v === 'object') {
+        // Already object form — skip. (Per-field count this as skipped.)
+        skipped++;
+      }
+    }
+    if (dirty) {
+      try {
+        await appendAudit(lead, {
+          actor:  'system',
+          action: 'tax_statements_migrated',
+          memo:   'legacy string→object form',
+        });
+        await saveLead(lead);
+      } catch (e) {
+        errors.push({ leadId: lead.id, error: e && e.message });
+      }
+    }
+  }
+  return { ok: true, migrated, skipped, errors };
 }
 
 // ── Vault verification: global state ──────────────────────────────────────────

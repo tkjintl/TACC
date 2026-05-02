@@ -80,6 +80,46 @@
   border: 1px solid var(--border);
   margin-bottom: 8px;
 }
+@media (prefers-reduced-motion: reduce) {
+  .msg-skeleton { animation: none; }
+}
+
+/* Error state — soft, with retry */
+.msg-error {
+  padding: 36px 28px;
+  text-align: center;
+  border: 1px solid var(--redBd);
+  background: rgba(176,94,86,0.04);
+  margin: 12px 0;
+}
+.msg-error-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.msg-error-hint {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.msg-error-retry {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--goldA);
+  background: transparent;
+  border: 1px solid var(--goldBorderS);
+  padding: 9px 18px;
+  cursor: pointer;
+  transition: background var(--dur-fast) ease;
+}
+.msg-error-retry:hover { background: var(--goldMuted); }
 
 /* ─── Message cards ─────────────────────────────────────────────────── */
 .msg-empty {
@@ -249,6 +289,18 @@
 
 @media (max-width: 375px) {
   .page-content { padding: 86px 14px 120px; }
+  .msg-header { padding: 14px 16px; gap: 10px; }
+  .msg-subject { font-size: 16px; }
+  .msg-body { padding: 0 16px 18px; }
+  .msg-date { font-size: 8px; }
+  .mobile-nav { padding: 8px 16px max(8px, env(safe-area-inset-bottom)); }
+  .mobile-nav-item { min-width: 44px; }
+}
+@media (max-width: 320px) {
+  .page-nav { padding: 12px 12px; }
+  .member-badge { font-size: 9px; padding: 3px 6px; letter-spacing: 0.08em; }
+  .page-content { padding: 80px 12px 120px; }
+  .msg-subject { font-size: 15px; }
 }
 </style>
 </head>
@@ -284,7 +336,17 @@
 
   <!-- Messages container -->
   <div id="messages-container" style="display:none;">
-    <div id="msg-empty" class="msg-empty">No correspondence at this time.</div>
+    <div id="msg-empty" class="msg-empty">
+      <div style="font-family:var(--font-display);font-size:22px;color:var(--muted);margin-bottom:10px;">No correspondence yet</div>
+      <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.18em;color:var(--dim);text-transform:uppercase;">Quarterly letters and partner notes will arrive here</div>
+    </div>
+  </div>
+
+  <!-- Error state -->
+  <div id="error-state" class="msg-error" style="display:none;">
+    <div class="msg-error-title">Couldn't load messages</div>
+    <div class="msg-error-hint">Network or server unavailable</div>
+    <button class="msg-error-retry" id="msg-retry">Retry</button>
   </div>
 
 </main>
@@ -314,8 +376,15 @@
 (function () {
   'use strict';
 
-  fetch('/api/v2?resource=member&op=me', { credentials: 'same-origin' })
-    .then(function (r) { return r.json(); })
+  function loadMessages() {
+    document.getElementById('loading-state').style.display = 'block';
+    document.getElementById('messages-container').style.display = 'none';
+    document.getElementById('error-state').style.display = 'none';
+    fetch('/api/v2?resource=member&op=me', { credentials: 'same-origin' })
+    .then(function (r) {
+      if (!r.ok) throw new Error('http ' + r.status);
+      return r.json();
+    })
     .then(function (d) {
       document.getElementById('loading-state').style.display = 'none';
       document.getElementById('messages-container').style.display = 'block';
@@ -325,10 +394,14 @@
 
       var raw = d.messages || [];
       var msgs = Array.isArray(raw) ? raw : (raw.items || []);
-      if (!msgs.length) return;
 
-      document.getElementById('msg-empty').style.display = 'none';
+      // Clear any previously rendered cards (retry case) — keep the empty placeholder.
       var container = document.getElementById('messages-container');
+      Array.prototype.slice.call(container.querySelectorAll('.msg-card')).forEach(function (n) { n.remove(); });
+
+      var emptyEl = document.getElementById('msg-empty');
+      if (!msgs.length) { emptyEl.style.display = 'block'; return; }
+      emptyEl.style.display = 'none';
 
       msgs.forEach(function (m) {
         var card = document.createElement('div');
@@ -383,8 +456,12 @@
     })
     .catch(function () {
       document.getElementById('loading-state').style.display = 'none';
-      document.getElementById('messages-container').style.display = 'block';
+      document.getElementById('messages-container').style.display = 'none';
+      document.getElementById('error-state').style.display = 'block';
     });
+  }
+  document.getElementById('msg-retry').addEventListener('click', loadMessages);
+  loadMessages();
 }());
 </script>
 </body>

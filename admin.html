@@ -120,7 +120,7 @@ body { font-family: var(--font-ui); font-size: 14px; line-height: 1.5; overflow-
 @keyframes panelIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
 @media (max-width: 768px) {
-  .ah-row1 { padding: 0 14px; height: 50px; }
+  .ah-row1 { padding: 0 14px; height: 50px; gap: 8px; }
   .ah-email { display: none; }
   .ah-sub { display: none; }
   .ah-btn { padding: 5px 8px; font-size: 8px; }
@@ -128,6 +128,60 @@ body { font-family: var(--font-ui); font-size: 14px; line-height: 1.5; overflow-
   .ah-tab { padding: 10px 14px; font-size: 9px; }
   .ap-wrap { padding-top: 138px; }
   .ap { padding: 20px 14px 80px; }
+}
+/* 480px and down: collapse Tools labels + keep header on one row */
+@media (max-width: 480px) {
+  .ah-right { gap: 6px; }
+  .ah-btn { padding: 5px 7px; font-size: 8px; letter-spacing: 0.1em; }
+  .lang-tog .lang-btn { padding: 3px 5px; font-size: 8px; }
+  /* Hide Search button on tiny screens — Cmd+K still works on physical keyboards;
+     critical actions (Tools, Portal, Sign Out) stay visible. */
+  #cmdk-btn { display: none; }
+  .ah-tools-menu { right: -4px; min-width: 180px; }
+}
+/* 380px and down — iPhone SE / Android small */
+@media (max-width: 380px) {
+  .ah-row1 { padding: 0 10px; gap: 6px; }
+  .ah-left { gap: 8px; }
+  .ah-title { font-size: 9px; letter-spacing: 0.2em; }
+  .seal { transform: scale(0.85); }
+  .ah-btn { padding: 4px 6px; font-size: 7px; }
+  .tk { min-width: 96px; padding: 6px 10px; }
+  .tk-val { font-size: 12px; }
+  .ah-tab { padding: 9px 12px; font-size: 8px; letter-spacing: 0.14em; }
+  .ap { padding: 16px 12px 80px; }
+  /* KPI tiles — single column to give the 28px display value room */
+  .kpi-grid { grid-template-columns: 1fr; }
+  .kpi { min-height: 88px; padding: 14px 14px; }
+  .kpi-val { font-size: 24px; }
+  .kpi-val--display { font-size: 26px; }
+  /* Fund hero — single column + smaller display */
+  .fhero-primary, .fhero-secondary { grid-template-columns: 1fr; }
+  .fhp { padding: 14px 14px; border-right: 0; border-bottom: 1px solid var(--border); }
+  .fhp:last-child { border-bottom: 0; }
+  .fhp-val { font-size: 26px; }
+  .four-col { grid-template-columns: 1fr; }
+  .four-col-cell { border-bottom: 1px solid var(--border); }
+  /* Tabs scroll horizontally — already configured; just shrink padding */
+  /* Filter row stack */
+  .flt-row { gap: 6px; }
+  .flt-row > * { flex: 1 1 100%; }
+  /* Drawer header tighter */
+  .dr-hdr { padding: 12px 14px; }
+  .dr-body { padding: 14px; }
+  .dr-actions { padding: 10px 14px; }
+  /* Section heading */
+  .sh { font-size: 22px; }
+  .h2 { font-size: 18px; }
+}
+/* 320px — iPhone SE 1st gen */
+@media (max-width: 320px) {
+  .ah-row1 { padding: 0 8px; }
+  .ah-title { font-size: 8px; }
+  .ah-btn { padding: 3px 5px; font-size: 7px; letter-spacing: 0.08em; }
+  .tk { min-width: 86px; padding: 5px 8px; }
+  .ah-tab { padding: 8px 10px; }
+  .lang-tog { display: none; }
 }
 
 /* ─── Section heading ──────────────────────────────────────────────── */
@@ -703,6 +757,18 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
 @keyframes shim { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 .skel-row { padding: 12px 16px; border-bottom: 1px solid var(--border); }
 .skel-row .skel { height: 14px; max-width: 70%; }
+/* Inline placeholder: shimmer over a value cell while it shows "—". */
+.is-loading {
+  position: relative; color: var(--dim) !important;
+}
+.is-loading::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(197,165,114,0.06) 50%, transparent 100%);
+  background-size: 200% 100%; animation: shim 1.4s infinite; pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skel, .is-loading::after { animation: none; }
+}
 
 /* ─── Toast ────────────────────────────────────────────────────────── */
 .toast {
@@ -1709,6 +1775,12 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
       lastTickerTs = Date.now();
       // also distribute stats across UI
       window._tacc_stats = stats; renderTodayKpis(stats); renderFundFromStats(stats);
+      // If stats payload was empty (fetch failed), surface a soft error on Fund posture line.
+      if (!results[1]) {
+        var pr = document.getElementById('posture-reason');
+        if (pr) pr.textContent = 'Couldn\'t reach stats endpoint — values may be stale';
+        clearFundLoading();
+      }
       try { document.dispatchEvent(new CustomEvent('tacc:stats')); } catch (e) {}
     });
     document.getElementById('fund-sync').textContent = new Date().toLocaleTimeString('en-GB');
@@ -1857,7 +1929,7 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
         if (items[0]) document.getElementById('op-last-action').textContent = relTime(items[0].at);
       })
       .catch(function(){
-        document.getElementById('lane-timeline').innerHTML = '<div class="err"><div class="err-msg">Activity feed unavailable</div></div>';
+        document.getElementById('lane-timeline').innerHTML = '<div class="err"><div class="err-msg">Couldn\'t load activity</div><button class="b b--sm" onclick="loadActivityTimeline()">Retry</button></div>';
       });
   }
 
@@ -2712,8 +2784,17 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
   /* ═══════════════════════════════════════════════════════════════════
      FUND tab — derived from stats
      ═══════════════════════════════════════════════════════════════════ */
+  // Mark fund / KPI value cells as loading until first render
+  (function markFundLoading(){
+    var ids = ['fhp-nav','fhp-nav-sub','fhp-gold','fhp-gold-sub','fhp-ltv','fhp-ltv-sub','fhp-yield','fhp-yield-sub','fhs-pnl','fhs-deployed','fhs-sora','fhs-seats','ltv-pct','lg-drawn','lg-avail','lg-margin','xau-kg','xau-cost','xau-fx','kpi-aum','kpi-members','kpi-gold','kpi-ltv'];
+    ids.forEach(function(id){ var el = document.getElementById(id); if (el && /^[\s—\-——]*$/.test(el.textContent || '')) el.classList.add('is-loading'); });
+  })();
+  function clearFundLoading(){
+    document.querySelectorAll('.is-loading').forEach(function(el){ el.classList.remove('is-loading'); });
+  }
   function renderFundFromStats(s) {
     if (!s) return;
+    clearFundLoading();
     document.getElementById('fhp-nav').textContent = fmtUsd(s.nav_usd || 20000000);
     document.getElementById('fhp-nav-sub').textContent = (s.nav_7d_pct != null ? ((s.nav_7d_pct >= 0 ? '+' : '') + Number(s.nav_7d_pct).toFixed(2) + '% / 7d') : '—');
     document.getElementById('fhp-gold').textContent = fmt(s.gold_kg || 0, 1) + ' kg';

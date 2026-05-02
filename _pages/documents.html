@@ -148,6 +148,56 @@
   text-transform: uppercase;
 }
 
+/* Loading skeletons for letter / vault rows */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.doc-skel {
+  height: 56px;
+  background: linear-gradient(90deg, var(--surface) 25%, rgba(255,255,255,0.04) 50%, var(--surface) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .doc-skel { animation: none; }
+}
+
+/* Soft error w/ retry */
+.doc-error {
+  padding: 22px 18px;
+  border: 1px solid var(--redBd);
+  background: rgba(176,94,86,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+.doc-error-msg {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.doc-error-retry {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--goldA);
+  background: transparent;
+  border: 1px solid var(--goldBorderS);
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background var(--dur-fast) ease;
+}
+.doc-error-retry:hover { background: var(--goldMuted); }
+
 /* ─── Reporting section extras ──────────────────────────────────────── */
 .doc-entry-eyebrow {
   font-family: var(--font-mono);
@@ -254,6 +304,19 @@
 
 @media (max-width: 375px) {
   .page-content { padding: 86px 14px 120px; }
+  .doc-entry { padding: 14px 0; gap: 10px; }
+  .doc-entry-name { font-size: 16px; }
+  .doc-entry-btn { padding: 9px 14px; font-size: 8px; letter-spacing: 0.14em; min-height: 36px; }
+  .mobile-nav { padding: 8px 16px max(8px, env(safe-area-inset-bottom)); }
+  .mobile-nav-item { min-width: 44px; }
+}
+@media (max-width: 320px) {
+  .page-nav { padding: 12px 12px; }
+  .member-badge { font-size: 9px; padding: 3px 6px; letter-spacing: 0.08em; }
+  .page-content { padding: 80px 12px 120px; }
+  .doc-section-title { font-size: 8px; letter-spacing: 0.18em; }
+  .doc-entry { flex-direction: column; align-items: stretch; }
+  .doc-entry-btn { align-self: flex-start; }
 }
 </style>
 </head>
@@ -389,7 +452,8 @@
   <div class="doc-group" data-reveal data-delay="200">
     <div class="doc-section-title">Reporting</div>
     <div id="letters-container">
-      <div class="doc-empty" id="letters-loading" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.16em;color:var(--dim);text-transform:uppercase;padding:20px 0;">Loading&hellip;</div>
+      <div class="doc-skel"></div>
+      <div class="doc-skel"></div>
     </div>
   </div>
 
@@ -397,7 +461,7 @@
   <div class="doc-group" data-reveal data-delay="300">
     <div class="doc-section-title">Vault Verification</div>
     <div id="vault-container">
-      <div class="doc-empty" id="vault-loading" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.16em;color:var(--dim);text-transform:uppercase;padding:20px 0;">Loading&hellip;</div>
+      <div class="doc-skel"></div>
     </div>
   </div>
 
@@ -562,15 +626,25 @@
   }
 
   function loadLetters() {
+    var c = document.getElementById('letters-container');
+    if (c) c.innerHTML = '<div class="doc-skel"></div><div class="doc-skel"></div>';
     fetch('/api/v2?resource=member&op=letters', { credentials: 'same-origin' })
-      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        if (!r.ok) throw new Error('http ' + r.status);
+        return r.json();
+      })
       .then(function (data) {
         var letters = Array.isArray(data) ? data : (data.letters || []);
         renderLetters(letters);
       })
       .catch(function () {
-        var c = document.getElementById('letters-container');
-        if (c) c.innerHTML = '<div class="doc-empty">Unable to load letters.</div>';
+        if (c) c.innerHTML =
+          '<div class="doc-error">' +
+            '<span class="doc-error-msg">Couldn\'t load quarterly letters</span>' +
+            '<button class="doc-error-retry" id="letters-retry">Retry</button>' +
+          '</div>';
+        var btn = document.getElementById('letters-retry');
+        if (btn) btn.addEventListener('click', loadLetters);
       });
   }
 
@@ -623,15 +697,25 @@
 
   /* ─── Vault verifications ──────────────────────────────────────── */
   function loadVaultVerifications() {
+    var c = document.getElementById('vault-container');
+    if (c) c.innerHTML = '<div class="doc-skel"></div>';
     fetch('/api/v2?resource=member&op=vault-verifications', { credentials: 'same-origin' })
-      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        if (!r.ok) throw new Error('http ' + r.status);
+        return r.json();
+      })
       .then(function (data) {
         var items = Array.isArray(data) ? data : (data.verifications || []);
         renderVaultVerifications(items);
       })
       .catch(function () {
-        var c = document.getElementById('vault-container');
-        if (c) c.innerHTML = '<div class="doc-empty">Unable to load vault verification records.</div>';
+        if (c) c.innerHTML =
+          '<div class="doc-error">' +
+            '<span class="doc-error-msg">Couldn\'t load vault verifications</span>' +
+            '<button class="doc-error-retry" id="vault-retry">Retry</button>' +
+          '</div>';
+        var btn = document.getElementById('vault-retry');
+        if (btn) btn.addEventListener('click', loadVaultVerifications);
       });
   }
 

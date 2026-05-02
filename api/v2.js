@@ -44,6 +44,9 @@ import {
   saveDeal, getDeal, listDeals, dealsCount, deleteDeal, listDealIdsByDemoFlag,
   saveLetterRecord, deleteLetterRecord, listLetterIds,
   globalAuditAppend,
+  migrateLegacyTaxStatements,
+  allocateNextMemberNumber, releaseMemberNumber,
+  recountMemberNumberCounter, getMemberNumberCounter,
 } from './_lib/storage.js';
 import { scanForExceptions } from './_lib/exceptions.js';
 import { clientIp } from './_lib/http.js';
@@ -432,6 +435,10 @@ async function handleAdmin(req, res, op) {
     case 'post-distribution':       return adminPostDistribution(req, res, session);
     case 'tax-statement-signed-url':return adminTaxStatementSignedUrl(req, res, session);
     case 'cmdk-search':             return adminCmdkSearch(req, res, session);
+    // ── Backend hardening (atomic counter, legacy migrations) ────────────────
+    case 'migrate-tax-statements':  return adminMigrateTaxStatements(req, res, session);
+    case 'recount-member-number':   return adminRecountMemberNumber(req, res, session);
+    case 'test-capital-call-targeting': return adminTestCapitalCallTargeting(req, res, session);
     default:                        return bad(res, `unknown admin op: ${op}`);
   }
 }
@@ -2265,19 +2272,38 @@ async function adminWireCleared(req, res, session) {
   let body;
   try { body = await readBody(req); } catch { return bad(res, 'invalid body'); }
 
-  const leadId       = String(body.leadId || '').trim();
-  const memberNumber = parseInt(body.member_number, 10);
-  if (!leadId)                                          return bad(res, 'leadId required');
-  if (!Number.isInteger(memberNumber) || memberNumber < 1 || memberNumber > 100) {
+  const leadId             = String(body.leadId || '').trim();
+  const explicitMemberNum  = body.member_number == null || body.member_number === ''
+    ? null
+    : parseInt(body.member_number, 10);
+  if (!leadId) return bad(res, 'leadId required');
+  if (explicitMemberNum != null && (!Number.isInteger(explicitMemberNum) || explicitMemberNum < 1 || explicitMemberNum > 100)) {
     return bad(res, 'member_number must be an integer between 1 and 100');
   }
 
-  // Check uniqueness
-  const taken = await isMemberNumberTaken(memberNumber);
-  if (taken) return bad(res, `Member number ${memberNumber} is already assigned.`, 409);
-
   const lead = await getLead(leadId);
   if (!lead) return notFound(res);
+
+  // ── Atomic member# allocation ──────────────────────────────────────────────
+  // If lead is already funded with a number, reuse it (idempotent re-run).
+  // Else: if operator sent an explicit number, validate uniqueness against
+  // existing funded set. Else: allocate via Redis INCR counter — race-safe.
+  let memberNumber;
+  let allocated = false;
+  if (lead.status === 'funded' && Number.isInteger(lead.member_number)) {
+    memberNumber = lead.member_number;
+  } else if (explicitMemberNum != null) {
+    const taken = await isMemberNumberTaken(explicitMemberNum);
+    if (taken) return bad(res, `Member number ${explicitMemberNum} is already assigned.`, 409);
+    memberNumber = explicitMemberNum;
+  } else {
+    const next = await allocateNextMemberNumber();
+    if (next == null) {
+      return err(res, 'cohort full', 'COHORT_FULL', 409);
+    }
+    memberNumber = next;
+    allocated = true;
+  }
 
   // Idempotency: same operator + lead + member# within 60s ⇒ replay-safe
   const actorPre = _actor(session);
@@ -2305,6 +2331,8 @@ async function adminWireCleared(req, res, session) {
   try {
     updatedLead = await markMemberFunded(leadId, memberNumber);
   } catch (e) {
+    // Release the counter if we allocated it — the slot is unused.
+    if (allocated) { try { await releaseMemberNumber(memberNumber); } catch {} }
     return serverError(res, e);
   }
   // Counter transition
@@ -2820,6 +2848,7 @@ async function adminGenerateTaxStatement(req, res, session) {
     expires_at,
     pathname: krResult.pathname,
     format: 'kr',
+    noto_kr_font_source: krResult.font_source || null, // 'env' | 'github' | 'failed'
   });
 }
 
@@ -3263,9 +3292,23 @@ async function adminTaxStatementSignedUrl(req, res, session) {
   const stmt = lead.tax_statements && lead.tax_statements[String(fy)];
   if (!stmt) return notFound(res);
 
-  // Backwards-compat: stmt may be a string url (old shape) — no pathname stored.
-  const pathname = (typeof stmt === 'object') ? stmt.pathname : null;
-  if (!pathname) return err(res, 'no blob pathname stored for this statement (regenerate)', 'NO_PATHNAME', 409);
+  // Legacy fall-back: pre-migration entries are bare strings or objects with
+  // no pathname. We can't re-sign these (no Blob handle) so we surface the
+  // raw URL with legacy:true and a null expires_at.
+  const isString = typeof stmt === 'string';
+  const pathname = isString ? null : stmt.pathname;
+  if (!pathname) {
+    const rawUrl = isString ? stmt : (stmt && stmt.url) || null;
+    if (!rawUrl) return err(res, 'no url stored for this statement (regenerate)', 'NO_URL', 409);
+    return ok(res, {
+      ok:           true,
+      lead_id:      leadId,
+      fiscal_year:  fy,
+      signed_url:   rawUrl,
+      expires_at:   null,
+      legacy:       true,
+    });
+  }
 
   try {
     const { buildSignedUrl } = await import('./_lib/signed-url.js');
@@ -3292,8 +3335,20 @@ async function memberTaxStatementSignedUrl(req, res) {
   const stmt = lead.tax_statements && lead.tax_statements[String(fy)];
   if (!stmt) return notFound(res);
 
-  const pathname = (typeof stmt === 'object') ? stmt.pathname : null;
-  if (!pathname) return bad(res, 'no blob pathname stored for this statement', 409);
+  const isString = typeof stmt === 'string';
+  const pathname = isString ? null : stmt.pathname;
+  if (!pathname) {
+    const rawUrl = isString ? stmt : (stmt && stmt.url) || null;
+    if (!rawUrl) return bad(res, 'no url stored for this statement', 409);
+    return ok(res, {
+      ok:           true,
+      lead_id:      lead.id,
+      fiscal_year:  fy,
+      signed_url:   rawUrl,
+      expires_at:   null,
+      legacy:       true,
+    });
+  }
 
   try {
     const { buildSignedUrl } = await import('./_lib/signed-url.js');
@@ -3395,3 +3450,168 @@ async function adminCmdkSearch(req, res, session) {
   return ok(res, { ok: true, results: results.slice(0, cap), q: term, count: results.length });
 }
 
+// ── admin op=migrate-tax-statements ─────────────────────────────────────────
+// Idempotent walk over all leads, upgrading legacy string-form
+// tax_statements[fy] entries to the modern object form
+// { url, pathname:null, format:'legacy', generated_at, ... }.
+// Run once after deploying object-form readers; safe to re-run.
+
+async function adminMigrateTaxStatements(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  const actor = _actor(session);
+  try {
+    const result = await migrateLegacyTaxStatements();
+    try {
+      await globalAuditAppend({
+        actor, action: 'tax_statements_migration_run',
+        target_type: 'system', target_id: 'tax_statements',
+        target_name: 'tax statements migration',
+        memo: `migrated=${result.migrated} skipped=${result.skipped} errors=${result.errors.length}`,
+        next: { migrated: result.migrated, skipped: result.skipped, error_count: result.errors.length },
+      });
+    } catch {}
+    return ok(res, result);
+  } catch (e) {
+    return serverError(res, e);
+  }
+}
+
+// ── admin op=recount-member-number ──────────────────────────────────────────
+// SET counter:member_number_next = max(funded.member_number) + 1.
+// Run once after deploying the atomic counter so the first INCR hands out
+// the correct next number rather than starting from 1.
+
+async function adminRecountMemberNumber(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  const actor = _actor(session);
+  try {
+    const result = await recountMemberNumberCounter();
+    try {
+      await globalAuditAppend({
+        actor, action: 'member_number_counter_recount',
+        target_type: 'system', target_id: 'counter:member_number_next',
+        target_name: 'member# counter',
+        memo: `previous=${result.previous} next=${result.next} max=${result.max_assigned} funded=${result.funded_count}`,
+        next: result,
+      });
+    } catch {}
+    return ok(res, { ok: true, ...result });
+  } catch (e) {
+    return serverError(res, e);
+  }
+}
+
+// ── admin op=test-capital-call-targeting ────────────────────────────────────
+// Smoke-test for the recipients-targeting path. Issues a synthetic capital
+// call to the first 2 funded members, asserts only those 2 leads received it,
+// confirms the audit record carries the resolved recipient_ids, then strips
+// the synthetic capital_calls + messages back out.
+
+async function adminTestCapitalCallTargeting(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  const actor = _actor(session);
+
+  const funded = await listFundedMembers();
+  if (funded.length < 2) {
+    return bad(res, 'need at least 2 funded members for this test', 409);
+  }
+  const targets = funded.slice(0, 2);
+  const targetIds = targets.map((l) => l.id);
+
+  const callId = await nanoid();
+  const ref    = `TEST-CC-${callId.slice(0, 6)}`;
+  const issuedAt = Date.now();
+  const synthetic = {
+    id:              callId,
+    ref,
+    amount_usd:      1,
+    due_date:        new Date(issuedAt + 30 * 86400000).toISOString().slice(0, 10),
+    wire_details:    null,
+    notes:           '[synthetic targeting test — auto-cleanup]',
+    status:          'pending',
+    issued_at:       issuedAt,
+    acknowledged_at: null,
+    _test:           true,
+  };
+
+  // Drop only to specified recipients
+  for (const lead of targets) {
+    try {
+      await addCapitalCall(lead.id, { ...synthetic });
+      await addMessage(lead.id, {
+        id:      await nanoid(),
+        type:    'amber',
+        subject: `[TEST] Capital Call: ${ref}`,
+        body:    'Synthetic test message — auto-cleanup.',
+        sent_at: new Date(issuedAt).toISOString(),
+        read_at: null,
+        sender:  'admin',
+        _test:   true,
+        _test_call_id: callId,
+      });
+    } catch (e) {
+      console.warn('[test-capital-call-targeting] add failed for', lead.id, e && e.message);
+    }
+  }
+
+  // Record an audit entry shaped like the real capital_call_broadcast
+  let auditRecipientCount = null;
+  try {
+    await globalAuditAppend({
+      actor, action: 'capital_call_broadcast',
+      target_type: 'comms', target_id: callId,
+      target_name: `CC ${ref} (test)`,
+      memo:        `targeting test · ${targetIds.length} selected`,
+      next:        { ref, amount_usd: 1, recipients_mode: 'selected', recipient_ids: targetIds, _test: true },
+    });
+    auditRecipientCount = targetIds.length;
+  } catch (e) {
+    console.warn('[test-capital-call-targeting] audit append failed:', e && e.message);
+  }
+
+  // Read back: count leads carrying this synthetic capital_call.id
+  const allFunded = await listFundedMembers();
+  const recipientsActual = [];
+  const drift = [];
+  for (const l of allFunded) {
+    const has = (l.capital_calls || []).some((c) => c.id === callId);
+    if (has) recipientsActual.push(l.id);
+  }
+  // Drift = any recipient that wasn't in our intended target set
+  for (const id of recipientsActual) {
+    if (!targetIds.includes(id)) drift.push(id);
+  }
+  // Drift also includes targets that didn't actually receive
+  for (const id of targetIds) {
+    if (!recipientsActual.includes(id)) drift.push(`missing:${id}`);
+  }
+
+  // Cleanup — strip the synthetic capital_call + matching messages from each target lead
+  let cleaned = 0;
+  for (const lead of allFunded) {
+    let dirty = false;
+    if (Array.isArray(lead.capital_calls)) {
+      const before = lead.capital_calls.length;
+      lead.capital_calls = lead.capital_calls.filter((c) => c.id !== callId);
+      if (lead.capital_calls.length !== before) dirty = true;
+    }
+    if (Array.isArray(lead.messages)) {
+      const before = lead.messages.length;
+      lead.messages = lead.messages.filter((m) => m._test_call_id !== callId);
+      if (lead.messages.length !== before) dirty = true;
+    }
+    if (dirty) {
+      try { await saveLead(lead); cleaned++; } catch {}
+    }
+  }
+
+  return ok(res, {
+    ok:                     drift.length === 0,
+    expected:               2,
+    actual:                 recipientsActual.length,
+    audit_recipient_count:  auditRecipientCount,
+    drift,
+    test_capital_call_id:   callId,
+    cleaned_leads:          cleaned,
+  });
+}

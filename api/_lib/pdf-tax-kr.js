@@ -24,35 +24,65 @@ const LINE = '#2A2520';
 
 // Noto Sans CJK KR Regular (subset is ~10MB; full OTF is ~17MB). We use the
 // Google Fonts static-host Noto Sans KR Regular which is ~5MB and ships
-// Hangul + Latin in a single TTF. Override with NOTO_KR_FONT_URL if needed.
-const FONT_URLS = [
-  process.env.NOTO_KR_FONT_URL,
+// Hangul + Latin in a single TTF.
+//
+// OPERATOR: vendor the .otf to Vercel Blob and set NOTO_KR_FONT_URL to the
+// public URL to avoid the cold-start GitHub fetch. Recommended pattern:
+//   NOTO_KR_FONT_URL=https://<your-blob-store>.public.blob.vercel-storage.com/fonts/NotoSansCJKkr-Regular.otf
+// File: googlefonts/noto-cjk Sans/OTF/Korean/NotoSansCJKkr-Regular.otf (~17MB).
+const ENV_FONT_URL = process.env.NOTO_KR_FONT_URL || '';
+const GITHUB_FONT_URLS = [
   // GitHub raw of Google's fonts (well-known stable URL for Noto Sans KR Regular).
   'https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/Korean/NotoSansCJKkr-Regular.otf',
   'https://raw.githubusercontent.com/googlefonts/noto-cjk/main/Sans/OTF/Korean/NotoSansCJKkr-Regular.otf',
-].filter(Boolean);
+];
 
 let _fontPromise = null;
 let _fontBuf = null;
+let _fontSource = null; // 'env' | 'github' | 'failed' | null (not loaded yet)
+
+export function getKoreanFontSource() { return _fontSource; }
+
+async function _tryFetch(url) {
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(20_000) });
+    if (!r.ok) return null;
+    const ab = await r.arrayBuffer();
+    if (ab.byteLength < 1000) return null; // sanity check
+    return Buffer.from(ab);
+  } catch (e) {
+    console.warn('[pdf-tax-kr] font fetch failed for', url, e && e.message);
+    return null;
+  }
+}
 
 async function loadKoreanFont() {
   if (_fontBuf) return _fontBuf;
   if (_fontPromise) return _fontPromise;
   _fontPromise = (async () => {
-    for (const url of FONT_URLS) {
-      try {
-        const r = await fetch(url, { signal: AbortSignal.timeout(20_000) });
-        if (!r.ok) continue;
-        const ab = await r.arrayBuffer();
-        if (ab.byteLength < 1000) continue; // sanity check
-        _fontBuf = Buffer.from(ab);
+    // 1. Operator-vendored URL via env (preferred).
+    if (ENV_FONT_URL) {
+      const buf = await _tryFetch(ENV_FONT_URL);
+      if (buf) {
+        _fontBuf = buf;
+        _fontSource = 'env';
         return _fontBuf;
-      } catch (e) {
-        console.warn('[pdf-tax-kr] font fetch failed for', url, e && e.message);
+      }
+      console.warn('[pdf-tax-kr] NOTO_KR_FONT_URL fetch failed, falling through to GitHub');
+    }
+    // 2. GitHub raw fallback (fragile on cold start; can fail under rate limit).
+    for (const url of GITHUB_FONT_URLS) {
+      const buf = await _tryFetch(url);
+      if (buf) {
+        _fontBuf = buf;
+        _fontSource = 'github';
+        return _fontBuf;
       }
     }
-    // None worked — fall back to null so caller renders Latin-only.
+    // 3. None worked — caller renders Latin-only.
     _fontBuf = null;
+    _fontSource = 'failed';
+    console.error('[pdf-tax-kr] all font sources failed; rendering in Latin-only mode');
     return null;
   })();
   return _fontPromise;
@@ -241,5 +271,5 @@ export async function generateKoreanTaxStatement(lead, fiscalYear, opts = {}) {
   const pathname = `tax-statements/${lead.id}/${fiscalYear}-kr-${Date.now().toString(36)}.pdf`;
   const { url } = await putBlob(pathname, buffer, 'application/pdf');
 
-  return { buffer, url, pathname };
+  return { buffer, url, pathname, font_source: _fontSource };
 }

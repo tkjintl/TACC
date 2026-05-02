@@ -639,6 +639,22 @@
   .page-content { padding: 86px 14px 120px; }
   .section-title { font-size: clamp(22px, 7vw, 32px); }
   .spot-strip { flex-direction: column; align-items: flex-start; gap: 4px; }
+  /* Tighten kilo input gap so + - and number all fit comfortably */
+  .kilo-input-wrap { gap: 14px; margin: 28px 0; }
+  .kilo-display { min-width: 96px; }
+  .calc-display { padding: 18px 18px; }
+  .calc-row { padding: 8px 0; flex-wrap: wrap; }
+  .calc-value { font-size: 14px; }
+  .ltv-card { padding: 18px 14px; }
+  .form-grid { gap: 16px; }
+}
+@media (max-width: 320px) {
+  .page-nav { padding: 12px 12px; }
+  .member-badge { font-size: 9px; padding: 3px 6px; letter-spacing: 0.08em; }
+  .page-content { padding: 80px 12px 120px; }
+  .kilo-input-wrap { gap: 10px; }
+  .kilo-stepper { width: 50px; height: 50px; font-size: 18px; }
+  .kilo-display { min-width: 84px; }
 }
 </style>
 </head>
@@ -948,17 +964,22 @@
 
   /* ─── Spot price ─────────────────────────────────────────────── */
   function loadSpot() {
+    var el = document.getElementById('spot-value');
+    var upd = document.getElementById('spot-updated');
+    if (el) { el.textContent = 'Loading…'; el.style.color = ''; }
+    if (upd) upd.textContent = '';
     fetch('/api/v2?resource=public&op=spot', { credentials: 'same-origin' })
-      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        if (!r.ok) throw new Error('http ' + r.status);
+        return r.json();
+      })
       .then(function (d) {
         spotUSD = parseFloat(d.spot_usd || d.price || 0);
         sgdRate = parseFloat(d.sgd_rate || sgdRate);
-        var el = document.getElementById('spot-value');
         if (el) {
           TACC.flashGoldPrice(el, spotUSD);
           el.textContent = '$' + spotUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
-        var upd = document.getElementById('spot-updated');
         if (upd) {
           var now = new Date();
           upd.textContent = 'Updated ' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0') + ' SGT';
@@ -966,8 +987,12 @@
         updateCalc();
       })
       .catch(function () {
-        var el = document.getElementById('spot-value');
-        if (el) el.textContent = 'Unavailable';
+        if (el) {
+          el.innerHTML = '<span style="color:var(--muted);">Spot unavailable</span> ' +
+            '<button type="button" id="spot-retry" style="margin-left:10px;font-family:var(--font-mono);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--goldA);background:transparent;border:1px solid var(--goldBorderS);padding:4px 10px;cursor:pointer;">Retry</button>';
+          var btn = document.getElementById('spot-retry');
+          if (btn) btn.addEventListener('click', loadSpot);
+        }
       });
   }
 
