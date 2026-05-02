@@ -1724,8 +1724,18 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
     if (wrap) wrap.style.display = 'none';
   })();
   adminFetch('/api/me')
-    .then(function(r){ return r.json(); })
+    .then(function(r){
+      // Not authenticated → redirect to /login (avoids the broken-page state
+      // where the admin shell loads but every fetch 401s and the operator
+      // sees a wall of "unauthorized" everywhere).
+      if (r.status === 401 || r.status === 403) {
+        window.location.replace('/login?next=' + encodeURIComponent(location.pathname + location.search + location.hash));
+        return null;
+      }
+      return r.json();
+    })
     .then(function(d){
+      if (!d) return;
       var em = document.getElementById('admin-email');
       if (em && d && d.email) em.textContent = d.email;
       var wrap = document.querySelector('.ah-tools-wrap');

@@ -270,16 +270,20 @@ body::before {
       });
     }
 
-    tryLogin('member-login', '/portfolio')
+    // Honour ?next= so the operator lands back where they were (e.g. /admin#pipeline)
+    var nextParam = new URLSearchParams(location.search).get('next');
+    var safeNext = nextParam && nextParam.indexOf('/') === 0 && nextParam.indexOf('//') !== 0 ? nextParam : null;
+
+    tryLogin('member-login', safeNext || '/portfolio')
       .then(function (res) {
         if (res.ok) return res;
-        return tryLogin('admin-login', '/admin');
+        return tryLogin('admin-login', safeNext || '/admin');
       })
       .then(function (res) {
         if (!res.ok) throw new Error('auth');
         veil.classList.add('covering');
         setTimeout(function () {
-          window.location.href = res.redirect;
+          window.location.href = safeNext || res.redirect;
         }, 290);
       })
       .catch(function () {
