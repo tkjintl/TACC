@@ -804,8 +804,8 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
     </div>
   </div>
   <div class="ah-ticker" id="ticker">
-    <div class="tk"><span class="tk-lbl">XAU/USD</span><span class="tk-val" id="tk-xau">—</span><span class="tk-delta" id="tk-xau-d">—</span></div>
-    <div class="tk"><span class="tk-lbl">KRW/kg</span><span class="tk-val" id="tk-krw-kg">—</span><span class="tk-delta" id="tk-krw-kg-d">—</span></div>
+    <div class="tk"><span class="tk-lbl">Spot Gold</span><span class="tk-val" id="tk-xau">—</span><span class="tk-delta" id="tk-xau-d">—</span></div>
+    <div class="tk"><span class="tk-lbl">Gold (KRW/kg)</span><span class="tk-val" id="tk-krw-kg">—</span><span class="tk-delta" id="tk-krw-kg-d">—</span></div>
     <div class="tk"><span class="tk-lbl">Fund NAV</span><span class="tk-val" id="tk-nav">—</span><span class="tk-delta" id="tk-nav-d">—</span></div>
     <div class="tk"><span class="tk-lbl">Gold Held</span><span class="tk-val" id="tk-gold">—</span><span class="tk-delta" id="tk-gold-d">—</span></div>
     <div class="tk"><span class="tk-lbl">LTV Used</span><span class="tk-val" id="tk-ltv">—</span><span class="tk-delta" id="tk-ltv-d">—</span></div>
@@ -1553,25 +1553,37 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
       var spot = results[0] || {};
       var stats = results[1] || {};
       // XAU
-      if (spot.xau_usd) {
-        var px = Number(spot.xau_usd);
+      // Spot Gold per oz. Spot endpoint returns price_usd_per_oz; stats also has xau_usd_oz.
+      var xauOz = Number(spot.price_usd_per_oz || spot.xau_usd_oz || stats.xau_usd_oz || stats.xau_usd) || 0;
+      if (xauOz) {
         var prev = lastSpot;
-        lastSpot = px;
+        lastSpot = xauOz;
         var el = document.getElementById('tk-xau');
-        el.textContent = '$' + fmt(px, 2);
-        if (prev && prev !== px) {
-          var up = px > prev;
+        el.textContent = '$' + fmt(xauOz, 2) + '/oz';
+        if (prev && prev !== xauOz) {
+          var up = xauOz > prev;
           el.style.color = up ? 'var(--green)' : 'var(--red)';
           setTimeout(function(){ el.style.color = ''; }, 1800);
         }
-        var d = spot.xau_daily_pct;
+        var d = spot.xau_daily_pct != null ? spot.xau_daily_pct : stats.xau_daily_pct;
         if (d != null) {
           var dEl = document.getElementById('tk-xau-d');
           dEl.textContent = (d >= 0 ? '+' : '') + Number(d).toFixed(2) + '%';
           dEl.className = 'tk-delta ' + (d > 0 ? 'up' : d < 0 ? 'dn' : 'flat');
         }
       }
-      if (spot.krw_per_kg) document.getElementById('tk-krw-kg').textContent = '₩' + fmt(spot.krw_per_kg / 1e8, 1) + '억';
+      // KRW per kg of gold. Spot endpoint returns xau_krw_kg; stats has krw_per_kg.
+      var krwKg = Number(spot.xau_krw_kg || stats.krw_per_kg) || 0;
+      if (krwKg) {
+        var krwEl = document.getElementById('tk-krw-kg');
+        krwEl.textContent = '₩' + fmt(krwKg / 1e8, 2) + '億';
+      }
+      // USD/KRW pair shown as the delta line under KRW/kg
+      var usdKrw = Number(spot.usd_krw || stats.usd_krw) || 0;
+      if (usdKrw) {
+        var krDeltaEl = document.getElementById('tk-krw-kg-d');
+        if (krDeltaEl) krDeltaEl.textContent = '₩' + fmt(usdKrw, 1) + '/$';
+      }
       if (stats.nav_usd) document.getElementById('tk-nav').textContent = fmtUsd(stats.nav_usd);
       if (stats.gold_kg != null) document.getElementById('tk-gold').textContent = fmt(stats.gold_kg, 1) + ' kg';
       if (stats.ltv_pct != null) document.getElementById('tk-ltv').textContent = fmt(stats.ltv_pct, 1) + '%';
