@@ -9,6 +9,8 @@ import {
   pickOneByStage,
   getStageCounts,
   stageIndexBackfill,
+  listLeads,
+  resolveLeadStage,
 } from './storage.js';
 
 const PROFILES = [
@@ -61,22 +63,32 @@ async function createSignup(now, log) {
   return lead;
 }
 
+// One-time listLeads cache shared across the simulation run so advanceOne
+// has a fallback when stage indexes are out of sync.
+let _allCache = null;
+const _advancedIds = new Set();
+
+async function _candidatesForStage(stage) {
+  if (!_allCache) _allCache = await listLeads({ limit: 200 });
+  return _allCache.filter((l) => !l.deleted_at && resolveLeadStage(l) === stage);
+}
+
 async function advanceOne(stage, kind, session, log) {
   let candidate = null;
-  // Look up to 6 candidates; prefer demo/bot leads but accept any non-deleted
-  // lead so simulation works on existing seeded data too.
-  let firstAny = null;
+  // First try the cheap stage-index path
   for (let skip = 0; skip < 6 && !candidate; skip++) {
     const c = await pickOneByStage(stage, { skip });
     if (!c) break;
     if (c.deleted_at) continue;
-    if (!firstAny) firstAny = c;
-    if (c.demo || c.bot_generated || (c.id || '').startsWith('demo_')) {
-      candidate = c;
-    }
+    candidate = c;
   }
-  if (!candidate) candidate = firstAny;
+  // Fallback — scan in-memory cache if index returned nothing
+  if (!candidate) {
+    const list = await _candidatesForStage(stage);
+    candidate = list.find((l) => !_advancedIds.has(l.id)) || null;
+  }
   if (!candidate) return false;
+  _advancedIds.add(candidate.id);
 
   const actor = (session && session.email) || 'sim';
   if (kind === 'approve') {
@@ -161,6 +173,10 @@ export async function runSimulation(session) {
   log.push(`AURUM TACC — SIMULATION RUN`);
   log.push(`Started: ${new Date(start).toISOString()}`);
   log.push(``);
+
+  // 0. Reset per-run state
+  _allCache = null;
+  _advancedIds.clear();
 
   // 0. Self-heal stage indexes — ensures pickOneByStage finds candidates
   // from legacy seeded data that pre-dates the indexed transitionStage path.
