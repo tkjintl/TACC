@@ -799,6 +799,7 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
       <button class="ah-btn" id="cmdk-btn" data-tip="Cmd+K">Search</button>
       <button class="ah-btn" id="seed-btn">Seed Demo</button>
       <button class="ah-btn ah-btn--danger" id="wipe-btn">Wipe Demo</button>
+      <button class="ah-btn" id="audit-btn" data-tip="Audit log">Audit</button>
       <button class="ah-btn" id="bot-btn" data-tip="Test scenarios">Bot Lab</button>
       <a href="/portfolio" class="ah-btn">Portal</a>
       <a href="/api/v2?resource=session&op=logout" class="ah-btn ah-btn--danger" data-no-transition>Sign Out</a>
@@ -2880,6 +2881,11 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
           '<button class="b b--sm" id="bot-close">✕ Close</button>' +
         '</div>' +
         '<div id="bot-status" style="background:var(--near);border:1px solid var(--border);padding:14px;margin-bottom:18px;font-family:var(--font-mono);font-size:11px;line-height:1.7;">Loading…</div>' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
+          '<div style="font-family:var(--font-mono);font-size:11px;color:var(--goldA);letter-spacing:0.18em;">▼ AUDIT REPORT</div>' +
+          '<button class="b b--sm" id="bot-recent-load" style="font-size:10px;padding:4px 10px;">⟳ Refresh</button>' +
+        '</div>' +
+        '<div id="bot-recent" style="background:var(--near);border:1px solid var(--goldBorderS);padding:10px 14px;margin-bottom:18px;max-height:240px;overflow:auto;font-family:var(--font-mono);font-size:10.5px;line-height:1.65;">Loading…</div>' +
         '<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;margin-bottom:8px;">AUTO-RUN · SERVER WALKS LEADS THROUGH PIPELINE WHILE TAB OPEN</div>' +
         '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:8px;">' +
           '<button class="b b--sm" data-auto-mode="off">■ Stop</button>' +
@@ -2897,11 +2903,6 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
         '</div>' +
         '<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;margin-bottom:8px;">SCENARIOS (one-shot batched)</div>' +
         '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:18px;" id="bot-scenarios">Loading…</div>' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
-          '<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;">RECENT BOT ACTIVITY (audit tracker)</div>' +
-          '<button class="b b--sm" id="bot-recent-load" style="font-size:10px;padding:4px 10px;">Load (1 cmd)</button>' +
-        '</div>' +
-        '<div id="bot-recent" style="background:var(--near);border:1px solid var(--border);padding:10px 14px;margin-bottom:18px;max-height:200px;overflow:auto;font-family:var(--font-mono);font-size:10.5px;line-height:1.65;">Click "Load" to fetch recent events. (Saves Upstash usage when audit not needed.)</div>' +
         '<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;margin-bottom:8px;">UPSTASH BUDGET</div>' +
         '<div id="bot-audit" style="font-family:var(--font-mono);font-size:11px;line-height:1.6;color:var(--text);margin-bottom:14px;">Run an action to populate.</div>' +
         '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">' +
@@ -2935,6 +2936,7 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
     }
     botModal.style.display = 'flex';
     refreshBotStatus();
+    loadBotRecent();
   }
   function closeBotLab() { if (botModal) botModal.style.display = 'none'; }
 
@@ -3071,6 +3073,14 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
       .catch(function(){ toast('Scenario failed', 'error'); });
   }
   document.getElementById('bot-btn').addEventListener('click', openBotLab);
+  document.getElementById('audit-btn').addEventListener('click', function(){
+    // Jump to Compliance tab and scroll to audit log section
+    goTab('compliance');
+    setTimeout(function(){
+      var el = document.getElementById('audit-tbody');
+      if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 200);
+  });
 
   // Auto-resume browser timer if auto_mode is already on (e.g., reload)
   setTimeout(function(){
