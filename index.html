@@ -522,16 +522,20 @@
 
   // ── Shapes ────────────────────────────────────────────────
   const shapes = [
-    // Au monogram — upright serif (was italic; italic 'u' was reading as an
-    // inverted 'a' at particle-sample density). Weight bumped 300→500 so
-    // both glyphs have enough stroke for the silhouette to read clearly.
+    // Au monogram — upright serif. Stroke + fill fattens both letters so the
+    // particle sampler hits enough pixels on every stroke (the thin diagonal
+    // of the A and the curve of the u were under-sampled at fill-only).
     // Centered at h*0.28 — upper third, with breathing room above the wordmark.
     (o, w, h) => {
       const fs = Math.min(w * 0.36, h * 0.62);
       o.fillStyle = '#fff';
+      o.strokeStyle = '#fff';
+      o.lineWidth = fs * 0.045;
+      o.lineJoin = 'round';
       o.font = `400 ${fs}px "Cormorant Garamond", Georgia, serif`;
       o.textAlign = 'center';
       o.textBaseline = 'middle';
+      o.strokeText('Au', w / 2, h * 0.28);
       o.fillText('Au', w / 2, h * 0.28);
     },
     // Wordmark — AURUM
