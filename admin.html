@@ -1496,11 +1496,12 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
   /* ═══════════════════════════════════════════════════════════════════
      ADMIN PROFILE
      ═══════════════════════════════════════════════════════════════════ */
-  api('me')
+  // Admin profile (uses /api/me, NOT a v2 op)
+  adminFetch('/api/me')
     .then(function(r){ return r.json(); })
     .then(function(d){
       var em = document.getElementById('admin-email');
-      if (d && d.email) em.textContent = d.email;
+      if (em && d && d.email) em.textContent = d.email;
     })
     .catch(function(){});
 
@@ -1672,16 +1673,22 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
     api('activity-feed&limit=50')
       .then(function(r){ return r.json(); })
       .then(function(d){
-        var items = (d && d.events) || [];
+        var items = (d && (d.entries || d.events)) || [];
         var el = document.getElementById('lane-timeline');
         document.getElementById('lane-tl-count').textContent = items.length;
         if (!items.length) { el.innerHTML = '<div class="lane-empty">No recent activity</div>'; return; }
         el.innerHTML = items.map(function(e){
-          var color = e.kind === 'wire' ? 'green' : e.kind === 'reject' ? 'red' : e.kind === 'message' ? 'blue' : '';
+          var act = String(e.action || '').toLowerCase();
+          var color = /wire|cleared|funded/.test(act) ? 'green'
+                    : /reject|decline|revoke/.test(act) ? 'red'
+                    : /message|letter|verification/.test(act) ? 'blue'
+                    : /capital|nda/.test(act) ? 'gold' : '';
+          var actionLabel = act.replace(/_/g, ' ');
+          var target = e.target_name || e.target || '';
           return '<div class="tl-row">' +
             '<div class="tl-icon ' + color + '"></div>' +
-            '<div class="tl-text"><strong>' + esc(e.actor || 'system') + '</strong> ' + esc(e.action || '') +
-              (e.target ? ' <strong>' + esc(e.target) + '</strong>' : '') + '</div>' +
+            '<div class="tl-text"><strong>' + esc(e.actor || 'system') + '</strong> ' + esc(actionLabel) +
+              (target ? ' <strong>' + esc(target) + '</strong>' : '') + '</div>' +
             '<div class="tl-time">' + relTime(e.at) + '</div>' +
           '</div>';
         }).join('');
@@ -1714,7 +1721,7 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
     api('leads')
       .then(function(r){ return r.json(); })
       .then(function(d){
-        allLeads = (d && d.leads) || [];
+        allLeads = ((d && d.leads) || []).map(function(l){ l.stage = resolveLeadStageClient(l); return l; });
         renderStageCounts();
         renderPipeTable();
         document.getElementById('badge-pipeline').textContent = allLeads.filter(function(l){ return l.stage !== 'funded'; }).length;
@@ -1811,13 +1818,26 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
   function confirmBulk(op, verb) {
     var ids = Object.keys(selectedLeads);
     if (!ids.length) return;
+    // Map UI bulk op to backend bulk-approve action, or per-lead loop for decline.
     showModal('Confirm bulk action', '<p style="font-family:var(--font-mono);font-size:12px;color:var(--muted);">' + verb + ' <strong style="color:var(--text)">' + ids.length + '</strong> lead(s)?</p>', [
       { label: 'Cancel', kind: '', cb: hideModal },
       { label: verb, kind: 'b--gold', cb: function(){
-        api('bulk-' + op, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ lead_ids: ids }) })
-          .then(function(r){ return r.json(); })
+        var promise;
+        if (op === 'approve') {
+          promise = api('bulk-approve', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ leadIds: ids, action: 'issue-code' }) }).then(function(r){ return r.json(); });
+        } else if (op === 'remind') {
+          promise = api('bulk-approve', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ leadIds: ids, action: 'send-reminder' }) }).then(function(r){ return r.json(); });
+        } else if (op === 'decline') {
+          // Backend has no bulk-decline — issue per-lead soft-delete in parallel.
+          promise = Promise.all(ids.map(function(id){
+            return api('soft-delete-lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ leadId: id, reason: 'bulk decline' }) }).then(function(r){ return r.json(); });
+          })).then(function(arr){ return { ok: true, results: arr }; });
+        } else {
+          promise = Promise.reject(new Error('unknown bulk op'));
+        }
+        promise
           .then(function(d){
-            toast(d.error ? d.error : 'Bulk ' + op + ' applied (' + ids.length + ')', d.error ? 'error' : 'success');
+            toast(d.ok === false ? (d.error || 'Failed') : 'Bulk ' + op + ' applied (' + ids.length + ')', d.ok === false ? 'error' : 'success');
             selectedLeads = {}; updateBulkStrip(); loadPipeline();
           })
           .catch(function(){ toast('Bulk action failed', 'error'); })
@@ -1844,13 +1864,36 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
 
     api('lead-detail&leadId=' + encodeURIComponent(id))
       .then(function(r){ return r.json(); })
-      .then(function(d){ if (d.error) throw d.error; renderLeadDrawer(d.lead || d); })
+      .then(function(d){
+        if (!d || d.ok === false) throw (d && d.error) || 'lead-detail-failed';
+        var lead = d.lead || d;
+        // Backend returns audit + computed as siblings. Merge for the renderer.
+        if (d.audit && !lead.audit) lead.audit = d.audit;
+        if (d.computed) lead._computed = d.computed;
+        // Derive a pipeline stage from status/wire/nda the way the backend does.
+        lead.stage = resolveLeadStageClient(lead);
+        renderLeadDrawer(lead);
+      })
       .catch(function(){
         // Fallback to list data
         var lead = allLeads.find(function(l){ return l.id === id; });
-        if (lead) renderLeadDrawer(lead);
+        if (lead) { lead.stage = resolveLeadStageClient(lead); renderLeadDrawer(lead); }
         else document.getElementById('dr-body').innerHTML = '<div class="err"><div class="err-msg">Lead not found</div></div>';
       });
+  }
+
+  // Mirror api/portfolio.js + api/_lib/storage.js _resolveStage
+  function resolveLeadStageClient(l) {
+    if (!l) return 'inquiry';
+    if (l.status === 'funded') return 'funded';
+    var w = l.wire || {};
+    if (w.reference && w.received_at && !w.cleared_at) return 'wire_received';
+    if (w.reference && !w.received_at) return 'wire_issued';
+    if (l.status === 'subscribed') return 'subscribed';
+    var nda = l.nda_state || 'awaiting';
+    if (nda === 'uploaded') return 'nda_pending';
+    if (l.status === 'inquiry') return 'inquiry';
+    return 'invited';
   }
   function closeDrawer() {
     dr.classList.remove('open'); drBd.classList.remove('open');
@@ -1952,61 +1995,155 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
     }
   }
 
-  function runStageAction(op, lid, lead) {
-    if (op === 'issue-wire') return openWireModal(lid);
-    if (op === 'reject-nda') return promptReason('Reject NDA', 'reject-nda', lid);
-    if (op === 'decline') return promptReason('Decline lead', 'decline', lid);
-    if (op === 'revoke-access') return confirmDestructive('Revoke access?', 'revoke-access', lid);
-    // Default: simple POST
-    var memo = '';
-    if (op === 'wire-reminder' || op === 'resend-admission') memo = 'Reminder sent';
-    api(op, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ lead_id: lid, memo: memo }) })
+  // Map UI action → { backendOp, extraPayload }
+  // Mirrors api/v2.js handleAdmin switch.
+  var STAGE_OP_MAP = {
+    'approve-issue-code':  { op: 'approve' },
+    'decline':             { op: 'soft-delete-lead', needsReason: true, reasonField: 'reason' },
+    'approve-nda':         { op: 'approve-nda' },
+    'reject-nda':          { op: 'reject-nda', needsReason: true, reasonField: 'reason' },
+    'issue-wire':          { op: 'wire-issue' }, // handled via openWireModal
+    'mark-wire-received':  { op: 'wire-received', needsAmount: true },
+    'wire-reminder':       { op: 'send-wire-reminder' },
+    'mark-cleared-admit':  { op: 'wire-cleared', needsMemberNumber: true },
+    'add-position':        { op: 'add-position' }, // handled via openPositionModal
+    'issue-capital-call':  { op: 'issue-capital-call' }, // routed to comms tab
+    'send-message':        { op: 'send-message' }, // routed to comms tab
+    'resend-admission':    { op: 'resend-admission' },
+    'revoke-access':       { op: 'revoke-access', needsReason: true, reasonField: 'reason', destructive: true }
+  };
+
+  function runStageAction(uiOp, lid, lead) {
+    var spec = STAGE_OP_MAP[uiOp];
+    if (!spec) { toast('Unknown action: ' + uiOp, 'error'); return; }
+
+    if (uiOp === 'issue-wire')        return openWireModal(lid, lead);
+    if (uiOp === 'add-position')      return openPositionModal(lid, lead);
+    if (uiOp === 'send-message')      { closeDrawer(); goTab('comms'); return; }
+    if (uiOp === 'issue-capital-call'){ closeDrawer(); goTab('comms'); var t=document.querySelector('[data-compose="cap"]'); if(t) t.click(); return; }
+    if (uiOp === 'mark-wire-received') return openWireReceivedModal(lid, lead);
+    if (uiOp === 'mark-cleared-admit') return openWireClearedModal(lid, lead);
+
+    if (spec.destructive) return confirmDestructive(uiOp.replace(/-/g,' ') + '?', spec.op, lid, spec.reasonField || 'reason');
+    if (spec.needsReason) return promptReason(uiOp.replace(/-/g,' '), spec.op, lid, spec.reasonField || 'reason');
+
+    // Plain POST { leadId }
+    api(spec.op, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ leadId: lid }) })
       .then(function(r){ return r.json(); })
       .then(function(d){
-        toast(d.error ? d.error : 'Done', d.error ? 'error' : 'success');
-        if (!d.error) { closeDrawer(); loadPipeline(); loadDecisionLanes(); loadActivityTimeline(); }
+        toast(d.ok === false ? (d.error || 'Failed') : 'Done', d.ok === false ? 'error' : 'success');
+        if (d.ok !== false) { closeDrawer(); loadPipeline(); loadDecisionLanes(); loadActivityTimeline(); }
       })
       .catch(function(){ toast('Action failed', 'error'); });
   }
 
-  function promptReason(title, op, lid) {
+  function promptReason(title, op, lid, reasonField) {
+    var field = reasonField || 'reason';
     showModal(title, '<div class="field-group"><label class="field-label">Reason / memo</label><textarea class="input-field" id="reason-input" placeholder="Optional"></textarea></div>', [
       { label: 'Cancel', kind: '', cb: hideModal },
       { label: 'Submit', kind: 'b--red', cb: function(){
-        var memo = document.getElementById('reason-input').value;
-        api(op, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ lead_id: lid, memo: memo }) })
+        var reason = document.getElementById('reason-input').value || '';
+        var payload = { leadId: lid };
+        payload[field] = reason;
+        if (op === 'reject-nda') payload.notes = reason;
+        api(op, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
           .then(function(r){ return r.json(); })
-          .then(function(d){ toast(d.error ? d.error : 'Done', d.error ? 'error' : 'success'); if (!d.error) { closeDrawer(); loadPipeline(); } })
+          .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : 'Done', d.ok === false ? 'error' : 'success'); if (d.ok !== false) { closeDrawer(); loadPipeline(); loadDecisionLanes(); } })
           .catch(function(){ toast('Failed', 'error'); })
           .finally(hideModal);
       } }
     ]);
   }
-  function confirmDestructive(title, op, lid) {
-    showModal(title, '<p style="font-family:var(--font-mono);font-size:12px;color:var(--red);letter-spacing:0.1em;">This action is irreversible. Type CONFIRM to proceed.</p><input class="input-field" id="confirm-input" placeholder="CONFIRM">', [
+  function confirmDestructive(title, op, lid, reasonField) {
+    var field = reasonField || 'reason';
+    showModal(title, '<p style="font-family:var(--font-mono);font-size:12px;color:var(--red);letter-spacing:0.1em;">This action is irreversible. Type CONFIRM to proceed.</p><input class="input-field" id="confirm-input" placeholder="CONFIRM"><div class="field-group" style="margin-top:10px;"><label class="field-label">Reason</label><input class="input-field" id="confirm-reason" placeholder="Optional"></div>', [
       { label: 'Cancel', kind: '', cb: hideModal },
       { label: 'Confirm', kind: 'b--red', cb: function(){
         if (document.getElementById('confirm-input').value !== 'CONFIRM') { toast('Type CONFIRM exactly', 'error'); return; }
-        api(op, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ lead_id: lid }) })
+        var payload = { leadId: lid };
+        payload[field] = document.getElementById('confirm-reason').value || '';
+        api(op, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
           .then(function(r){ return r.json(); })
-          .then(function(d){ toast(d.error ? d.error : 'Access revoked', d.error ? 'error' : 'success'); if (!d.error) { closeDrawer(); loadPipeline(); } })
+          .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : 'Done', d.ok === false ? 'error' : 'success'); if (d.ok !== false) { closeDrawer(); loadPipeline(); } })
           .catch(function(){ toast('Failed', 'error'); })
           .finally(hideModal);
       } }
     ]);
   }
-  function openWireModal(lid) {
+  function openWireModal(lid, lead) {
+    var kg = (lead && lead.subscription && lead.subscription.kg_requested) || 1;
+    var spotPerKg = 112000; // fallback
+    var defaultAmount = Math.round(kg * spotPerKg);
     showModal('Issue Wire Instructions', [
+      '<div class="field-group"><label class="field-label">Subscription</label><div style="font-family:var(--font-mono);font-size:12px;color:var(--muted)">' + kg + ' kg requested</div></div>',
       '<div class="field-group"><label class="field-label">LTV %</label><input class="input-field" type="number" id="wire-ltv" min="50" max="75" value="70"></div>',
-      '<div class="field-group"><label class="field-label">Amount (USD)</label><input class="input-field" id="wire-amount" placeholder="auto"></div>',
-      '<div class="field-group"><label class="field-label">Reference</label><input class="input-field" id="wire-ref" value="TACC-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random()*900)+100) + '"></div>'
+      '<div class="field-group"><label class="field-label">Amount (USD)</label><input class="input-field" id="wire-amount" value="' + defaultAmount + '"></div>'
     ].join(''), [
       { label: 'Cancel', kind: '', cb: hideModal },
       { label: 'Issue', kind: 'b--gold', cb: function(){
-        var payload = { lead_id: lid, ltv_pct: parseFloat(document.getElementById('wire-ltv').value), amount_usd: parseFloat(document.getElementById('wire-amount').value) || null, wire_ref: document.getElementById('wire-ref').value };
-        api('issue-wire', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
+        var payload = { leadId: lid, amount_usd: parseFloat(document.getElementById('wire-amount').value) || null };
+        api('wire-issue', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
           .then(function(r){ return r.json(); })
-          .then(function(d){ toast(d.error ? d.error : 'Wire issued', d.error ? 'error' : 'success'); if (!d.error) { closeDrawer(); loadPipeline(); } })
+          .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : 'Wire issued', d.ok === false ? 'error' : 'success'); if (d.ok !== false) { closeDrawer(); loadPipeline(); } })
+          .catch(function(){ toast('Failed', 'error'); })
+          .finally(hideModal);
+      } }
+    ]);
+  }
+  function openWireReceivedModal(lid, lead) {
+    var prefill = (lead && lead.wire && lead.wire.amount_usd) || '';
+    showModal('Mark Wire Received', [
+      '<div class="field-group"><label class="field-label">Amount Received (USD)</label><input class="input-field" type="number" id="wr-amount" value="' + prefill + '" required></div>',
+      '<p style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">This records the inbound wire. Use Mark Cleared to admit the member afterwards.</p>'
+    ].join(''), [
+      { label: 'Cancel', kind: '', cb: hideModal },
+      { label: 'Mark Received', kind: 'b--green', cb: function(){
+        var amt = parseFloat(document.getElementById('wr-amount').value);
+        if (!isFinite(amt) || amt <= 0) { toast('Enter a valid amount', 'error'); return; }
+        api('wire-received', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ leadId: lid, amount_usd: amt }) })
+          .then(function(r){ return r.json(); })
+          .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : 'Wire marked received', d.ok === false ? 'error' : 'success'); if (d.ok !== false) { closeDrawer(); loadPipeline(); } })
+          .catch(function(){ toast('Failed', 'error'); })
+          .finally(hideModal);
+      } }
+    ]);
+  }
+  function openWireClearedModal(lid, lead) {
+    // Suggest next member number from already-funded members.
+    var taken = (allMembers || []).map(function(m){ return m.member_number || 0; });
+    var next = 1; while (taken.indexOf(next) !== -1 && next < 100) next++;
+    showModal('Mark Cleared & Admit Member', [
+      '<div class="field-group"><label class="field-label">Member Number (1–100)</label><input class="input-field" type="number" id="wc-num" min="1" max="100" value="' + next + '" required></div>',
+      '<p style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">This admits the member, generates a certificate and sends the funded confirmation email. Idempotent on member number — must be unique.</p>'
+    ].join(''), [
+      { label: 'Cancel', kind: '', cb: hideModal },
+      { label: 'Admit', kind: 'b--gold', cb: function(){
+        var n = parseInt(document.getElementById('wc-num').value, 10);
+        if (!Number.isInteger(n) || n < 1 || n > 100) { toast('Enter a valid member number', 'error'); return; }
+        api('wire-cleared', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ leadId: lid, member_number: n }) })
+          .then(function(r){ return r.json(); })
+          .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : 'Member admitted', d.ok === false ? 'error' : 'success'); if (d.ok !== false) { closeDrawer(); loadPipeline(); loadMembers(); } })
+          .catch(function(){ toast('Failed', 'error'); })
+          .finally(hideModal);
+      } }
+    ]);
+  }
+  function openPositionModal(lid, lead) {
+    showModal('Add Position', [
+      '<div class="field-group"><label class="field-label">Deal Name</label><input class="input-field" id="pos-deal" required></div>',
+      '<div class="field-group"><label class="field-label">Asset Class</label><input class="input-field" id="pos-class" placeholder="private_credit / mezz_debt / pre_ipo_equity"></div>',
+      '<div class="field-group"><label class="field-label">Invested (USD)</label><input class="input-field" type="number" id="pos-amt" required></div>'
+    ].join(''), [
+      { label: 'Cancel', kind: '', cb: hideModal },
+      { label: 'Add', kind: 'b--gold', cb: function(){
+        var dn  = document.getElementById('pos-deal').value.trim();
+        var ac  = document.getElementById('pos-class').value.trim();
+        var amt = parseFloat(document.getElementById('pos-amt').value);
+        if (!dn || !isFinite(amt) || amt <= 0) { toast('Deal name and amount required', 'error'); return; }
+        var payload = { leadId: lid, position: { deal_name: dn, asset_class: ac || 'private_credit', amount_usd: amt, invested_usd: amt, marked_usd: amt, status: 'active' } };
+        api('add-position', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
+          .then(function(r){ return r.json(); })
+          .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : 'Position added', d.ok === false ? 'error' : 'success'); if (d.ok !== false) { closeDrawer(); loadPipeline(); loadMembers(); } })
           .catch(function(){ toast('Failed', 'error'); })
           .finally(hideModal);
       } }
@@ -2023,7 +2160,20 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
     api('members')
       .then(function(r){ return r.json(); })
       .then(function(d){
-        allMembers = (d && d.members) || [];
+        var raw = (d && d.members) || [];
+        // Normalize backend shape → renderer shape
+        allMembers = raw.map(function(m){
+          return Object.assign({}, m, {
+            id:                m.leadId || m.id,
+            member_no:         m.member_number,
+            gold_kg:           m.kg,
+            ltv_approved_pct:  m.ltv_pct != null ? m.ltv_pct : 0,
+            admitted_at:       m.joined_at,
+            // USD-denominated credit ceiling/draw — display via fmtUsd
+            credit_ceiling_usd: m.credit_ceiling_usd || 0,
+            credit_outstanding_usd: m.credit_outstanding_usd || 0
+          });
+        });
         document.getElementById('badge-members').textContent = allMembers.length;
         renderMemberList();
         populateRecipientSelects();
@@ -2068,7 +2218,24 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
 
     api('lead-detail&leadId=' + encodeURIComponent(id))
       .then(function(r){ return r.json(); })
-      .then(function(d){ renderMemberDetailHtml(d.lead || d.member || m); })
+      .then(function(d){
+        var lead = d.lead || d.member || m;
+        // Merge audit + computed siblings
+        if (d.audit && !lead.audit) lead.audit = d.audit;
+        var c = d.computed || {};
+        // Project to renderer's expected shape (member-list summary fields)
+        lead.id                = lead.id || lead.leadId || m.id;
+        lead.member_no         = lead.member_number || m.member_no;
+        lead.gold_kg           = c.kg || (lead.subscription && lead.subscription.kg_requested) || (lead.bars||[]).length || m.gold_kg || 0;
+        lead.ltv_approved_pct  = lead.ltv_approved_pct || c.ltv_pct || m.ltv_approved_pct || 0;
+        lead.admitted_at       = lead.funded_at || lead.admitted_at || m.admitted_at;
+        lead.gold_value_usd    = (lead.gold_kg || 0) * 112000;
+        lead.gold_cost_usd     = (lead.subscription && lead.subscription.usd_amount) || lead.gold_value_usd;
+        lead.ltv_ceiling_krw   = lead.credit_ceiling_usd || 0;
+        lead.ltv_drawn_krw     = lead.credit_outstanding_usd || 0;
+        lead.wealth_tier       = lead.wealth || lead.investable_assets || '—';
+        renderMemberDetailHtml(lead);
+      })
       .catch(function(){ renderMemberDetailHtml(m); });
   }
   function renderMemberDetailHtml(m) {
@@ -2272,36 +2439,70 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
       allMembers.map(function(m){ return '<option value="member:' + esc(m.id) + '">' + esc(m.name) + '</option>'; }).join('');
   }
 
+  // Translate the recipient select value (member:ID | all-funded | all-leads) → backend recipients param
+  function resolveRecipients(selectVal) {
+    if (!selectVal) return null;
+    if (selectVal === 'all-funded' || selectVal === 'all-leads' || selectVal === 'all') return 'all';
+    if (selectVal.indexOf('member:') === 0) return [selectVal.slice(7)];
+    return [selectVal];
+  }
+
   document.getElementById('form-dm').addEventListener('submit', function(e){
     e.preventDefault();
-    var payload = { to: document.getElementById('dm-to').value, subject: document.getElementById('dm-subject').value, body: document.getElementById('dm-body').value, type: document.getElementById('dm-type').value };
+    var recipients = resolveRecipients(document.getElementById('dm-to').value);
+    if (!recipients) { toast('Select a recipient', 'error'); return; }
+    var payload = {
+      recipients: recipients,
+      subject: document.getElementById('dm-subject').value,
+      body: document.getElementById('dm-body').value,
+      type: document.getElementById('dm-type').value || 'gold'
+    };
     api('send-message', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
       .then(function(r){ return r.json(); })
-      .then(function(d){ toast(d.error ? d.error : 'Sent', d.error ? 'error' : 'success'); if (!d.error) { e.target.reset(); loadSent(); } })
+      .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : ('Sent to ' + (d.sent_to || 0)), d.ok === false ? 'error' : 'success'); if (d.ok !== false) { e.target.reset(); loadSent(); } })
       .catch(function(){ toast('Send failed', 'error'); });
   });
   document.getElementById('form-cap').addEventListener('submit', function(e){
     e.preventDefault();
-    var payload = { to: document.getElementById('cap-to').value, amount_krw: parseFloat(document.getElementById('cap-amount').value.replace(/,/g,'')), due_at: document.getElementById('cap-due').value, reason: document.getElementById('cap-reason').value };
+    var amt = parseFloat((document.getElementById('cap-amount').value || '').replace(/,/g,''));
+    var due = document.getElementById('cap-due').value;
+    var reason = document.getElementById('cap-reason').value || '';
+    if (!isFinite(amt) || amt <= 0) { toast('Enter a valid amount', 'error'); return; }
+    if (!due) { toast('Pick a due date', 'error'); return; }
+    var ref = 'CC-' + new Date().getFullYear() + '-Q' + (Math.floor(new Date().getMonth() / 3) + 1) + '-' + Math.floor(Math.random() * 900 + 100);
+    var payload = { ref: ref, amount_krw: amt, due_date: due, notes: reason };
     api('issue-capital-call', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
       .then(function(r){ return r.json(); })
-      .then(function(d){ toast(d.error ? d.error : 'Capital call issued', d.error ? 'error' : 'success'); if (!d.error) e.target.reset(); })
+      .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : ('Capital call issued to ' + (d.issued_to || 0)), d.ok === false ? 'error' : 'success'); if (d.ok !== false) e.target.reset(); })
       .catch(function(){ toast('Failed', 'error'); });
   });
   document.getElementById('form-qtr').addEventListener('submit', function(e){
     e.preventDefault();
-    var payload = { quarter: document.getElementById('qtr-q').value, nav_usd: parseFloat(document.getElementById('qtr-nav').value.replace(/,/g,'')), narrative: document.getElementById('qtr-body').value };
+    var quarter = parseInt(document.getElementById('qtr-q').value, 10);
+    var year = new Date().getFullYear();
+    var subject = 'Q' + quarter + ' ' + year + ' Quarterly Letter';
+    var nav = parseFloat((document.getElementById('qtr-nav').value || '').replace(/,/g,''));
+    var narrative = document.getElementById('qtr-body').value || '';
+    var html_body = '<p><strong>NAV:</strong> $' + (isFinite(nav) ? nav.toLocaleString() : '—') + '</p>' + '<div>' + (narrative.replace(/\n/g, '<br>')) + '</div>';
+    var payload = { quarter: quarter, year: year, subject: subject, html_body: html_body };
     api('send-quarterly-letter', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
       .then(function(r){ return r.json(); })
-      .then(function(d){ toast(d.error ? d.error : 'Quarterly letter sent', d.error ? 'error' : 'success'); if (!d.error) e.target.reset(); })
+      .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : ('Letter sent to ' + (d.sent_to || 0)), d.ok === false ? 'error' : 'success'); if (d.ok !== false) { e.target.reset(); loadSent(); } })
       .catch(function(){ toast('Failed', 'error'); });
   });
   document.getElementById('form-vv').addEventListener('submit', function(e){
     e.preventDefault();
-    var payload = { title: document.getElementById('vv-form-title').value, summary: document.getElementById('vv-form-sum').value, pdf_url: document.getElementById('vv-form-pdf').value, published_at: document.getElementById('vv-form-date').value };
+    var year = parseInt((document.getElementById('vv-form-date').value || '').slice(0,4), 10) || new Date().getFullYear();
+    var payload = {
+      title: document.getElementById('vv-form-title').value,
+      year: year,
+      summary: document.getElementById('vv-form-sum').value,
+      blob_pathname: document.getElementById('vv-form-pdf').value || null
+    };
+    if (!payload.title) { toast('Title required', 'error'); return; }
     api('publish-vault-verification', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
       .then(function(r){ return r.json(); })
-      .then(function(d){ toast(d.error ? d.error : 'Published', d.error ? 'error' : 'success'); if (!d.error) e.target.reset(); })
+      .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : ('Published to ' + (d.sent_to || 0)), d.ok === false ? 'error' : 'success'); if (d.ok !== false) e.target.reset(); })
       .catch(function(){ toast('Failed', 'error'); });
   });
   document.getElementById('publish-vv-btn').addEventListener('click', function(){
@@ -2310,10 +2511,22 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
   });
 
   function loadSent() {
-    api('messages')
+    // Backend has no admin op=messages. Use op=letters for the quarterly-letter ledger.
+    api('letters')
       .then(function(r){ return r.json(); })
       .then(function(d){
-        var items = (d && d.messages) || [];
+        var items = (d && (d.letters || d.messages)) || [];
+        // Normalize letter shape → renderer shape (which expects subject/type/recipient_count/sent_at/read_count)
+        items = items.map(function(l){
+          return {
+            id: l.id,
+            subject: l.subject || ('Q' + l.quarter + ' ' + l.year),
+            type: 'blue',
+            recipient_count: l.recipient_count || 0,
+            sent_at: l.sent_at,
+            read_count: l.read_count || 0
+          };
+        });
         var tb = document.getElementById('sent-tbody');
         if (!items.length) { tb.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-title">No messages sent yet</div><div class="empty-hint">Compose above to begin</div></div></td></tr>'; return; }
         tb.innerHTML = items.map(function(m){
@@ -2331,17 +2544,27 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
     api('exceptions')
       .then(function(r){ return r.json(); })
       .then(function(d){
-        var items = (d && d.exceptions) || [];
+        // Backend returns { ok, flags: [...] }
+        var items = (d && (d.flags || d.exceptions)) || [];
         var tb = document.getElementById('exc-tbody');
         if (!items.length) { tb.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-title">No active exceptions</div><div class="empty-hint">All clear</div></div></td></tr>'; return; }
         tb.innerHTML = items.map(function(x){
-          var pill = x.severity === 'red' || x.severity === 'critical' ? 'red' : x.severity === 'amber' ? 'amber' : 'green';
-          return '<tr><td><span class="pill pill--' + pill + '">' + esc(x.severity || 'info') + '</span></td><td class="mono-col">' + relTime(x.created_at || x.at) + '</td><td>' + esc(x.name || '—') + '</td><td>' + esc(x.reason || '—') + '</td><td><button class="b b--sm" data-mute="' + esc(x.id) + '">Mute</button></td></tr>';
+          var sev = x.severity || x.level || 'info';
+          var pill = sev === 'red' || sev === 'critical' ? 'red' : sev === 'amber' ? 'amber' : 'green';
+          var name = x.name || x.lead_name || x.target_name || x.leadId || '—';
+          var reason = x.reason || x.message || x.type || '—';
+          var muteKey = (x.leadId || x.lead_id || '') + '|' + (x.type || '');
+          return '<tr><td><span class="pill pill--' + pill + '">' + esc(sev) + '</span></td><td class="mono-col">' + relTime(x.created_at || x.at) + '</td><td>' + esc(name) + '</td><td>' + esc(reason) + '</td><td><button class="b b--sm" data-mute="' + esc(muteKey) + '">Mute</button></td></tr>';
         }).join('');
         tb.querySelectorAll('[data-mute]').forEach(function(b){
           b.addEventListener('click', function(){
-            api('mute-exception', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: b.dataset.mute, duration: '30d' }) })
-              .then(function(){ toast('Muted 30d', 'success'); loadCompliance(); }).catch(function(){ toast('Failed', 'error'); });
+            var parts = (b.dataset.mute || '').split('|');
+            var leadId = parts[0]; var type = parts[1];
+            if (!leadId || !type) { toast('Cannot mute: missing leadId/type', 'error'); return; }
+            api('mute-exception', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ leadId: leadId, type: type, duration: '30d' }) })
+              .then(function(r){ return r.json(); })
+              .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : 'Muted 30d', d.ok === false ? 'error' : 'success'); loadCompliance(); })
+              .catch(function(){ toast('Failed', 'error'); });
           });
         });
       })
@@ -2352,11 +2575,12 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
     api('audit-search')
       .then(function(r){ return r.json(); })
       .then(function(d){
-        var items = (d && d.events) || [];
+        // Backend returns { ok, entries }
+        var items = (d && (d.entries || d.events)) || [];
         var tb = document.getElementById('audit-tbody');
         if (!items.length) { tb.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-title">No audit events</div><div class="empty-hint">Actions are logged here</div></div></td></tr>'; return; }
         tb.innerHTML = items.map(function(e){
-          return '<tr><td class="mono-col">' + (e.at ? new Date(e.at).toLocaleString('en-GB', { timeZone: 'Asia/Singapore' }) : '—') + '</td><td>' + esc(e.actor || 'system') + '</td><td>' + esc(e.action || '') + '</td><td>' + esc(e.target || '—') + '</td><td>' + esc(e.memo || '') + '</td></tr>';
+          return '<tr><td class="mono-col">' + (e.at ? new Date(e.at).toLocaleString('en-GB', { timeZone: 'Asia/Singapore' }) : '—') + '</td><td>' + esc(e.actor || 'system') + '</td><td>' + esc(e.action || '') + '</td><td>' + esc(e.target_name || e.target || e.leadId || '—') + '</td><td>' + esc(e.memo || '') + '</td></tr>';
         }).join('');
       })
       .catch(function(){

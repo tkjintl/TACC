@@ -24,10 +24,12 @@ export default async function handler(req, res) {
   try { body = await readBody(req); }
   catch { return bad(res, 'invalid body'); }
 
-  // Validate required fields
-  const name    = String(body.name    || '').trim();
+  // Validate required fields. Accept both new and legacy field names.
+  const name    = String(body.name    || body.full_name || '').trim();
   const email   = String(body.email   || '').trim().toLowerCase();
   const country = String(body.country || '').trim();
+  const wealth  = String(body.wealth  || body.investable_assets || '').trim();
+  const referral = String(body.referral || body.referral_source || '').trim();
 
   if (!name)                                       return bad(res, 'missing field: name');
   if (!email)                                      return bad(res, 'missing field: email');
@@ -54,9 +56,10 @@ export default async function handler(req, res) {
     email,
     name,
     country,
-    wealth:     String(body.wealth     || '').trim() || null,
+    wealth:     wealth || null,
     occupation: String(body.occupation || '').trim() || null,
-    referral:   String(body.referral   || '').trim() || null,
+    referral:   referral || null,
+    reverse_solicitation_ack: body.reverse_solicitation_ack === true,
     status:     'inquiry',
     member_number: null,
     code:            null,

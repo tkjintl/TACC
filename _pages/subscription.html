@@ -1157,7 +1157,23 @@
     btn.disabled = true;
     btn.textContent = '—';
 
-    var payload = Object.assign({}, formData, { esig: esig });
+    // Translate front-end formData → backend contract (api/subscription.js)
+    var payload = {
+      kg_requested:                  Number(formData.kilos),
+      legal_name:                    formData.legalName,
+      passport_number:               formData.passport,
+      nationality:                   (formData.nationality || '').toUpperCase(),
+      tax_residency:                 (formData.taxResidency || '').toUpperCase(),
+      accredited_investor_basis:     formData.aiStatus,
+      korean_reverse_solicitation:   !!formData.koreaFeta,
+      source_of_wealth:              formData.sourceWealth || '',
+      electronic_signature:          esig,
+      im_read:                       true,
+      qualified_investor_confirm:    true,
+      illiquidity_confirm:           true,
+      ltv_acknowledged:              true,
+      capital_call_acknowledged:     true
+    };
 
     fetch('/api/subscription', {
       method: 'POST',

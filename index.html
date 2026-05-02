@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="lang-en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
 <meta name="theme-color" content="#070706">
-<title>The Aurum Century Club — A Founding Membership in Physical Gold</title>
-<meta name="description" content="One hundred founding seats. Physical gold. Singapore VCC. By introduction only.">
+<title>The Aurum Century Club — The Kilo</title>
+<meta name="description" content="The Kilo. Physical gold as the foundation. Private capital as the return. A Singapore programme for a founding cohort of one hundred.">
 <meta name="robots" content="noindex, nofollow">
-<meta property="og:title" content="The Aurum Century Club">
-<meta property="og:description" content="A founding membership in physical gold. One hundred seats. Singapore VCC.">
+<meta property="og:title" content="The Aurum Century Club — The Kilo">
+<meta property="og:description" content="Physical gold as the foundation. Private capital as the return. One hundred founding seats. Singapore VCC. By introduction only.">
 <meta property="og:type" content="website">
 <link rel="canonical" href="https://www.theaurumcc.com/">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23070706'/><rect x='4' y='4' width='24' height='24' fill='none' stroke='%23C5A572' stroke-width='1'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='14' font-style='italic' fill='%23C5A572'>Au</text></svg>">
@@ -81,11 +81,16 @@
 .hero-headline {
   font-family: var(--font-display);
   font-weight: 300;
-  font-size: clamp(52px, 8vw, 96px);
-  line-height: 1.05;
-  letter-spacing: 0.04em;
+  font-size: clamp(64px, 11vw, 156px);
+  line-height: 0.98;
+  letter-spacing: -0.01em;
   color: var(--text);
   margin-bottom: 36px;
+}
+
+.hero-headline em {
+  font-style: italic;
+  font-weight: 400;
 }
 
 .hero-headline .word {
@@ -98,18 +103,42 @@
 
 .hero-sub {
   font-family: var(--font-display);
-  font-size: clamp(17px, 2.2vw, 21px);
+  font-size: clamp(18px, 2.2vw, 22px);
   font-weight: 300;
   color: var(--muted);
-  letter-spacing: 0.02em;
-  max-width: 540px;
-  line-height: 1.7;
-  margin-bottom: 52px;
+  letter-spacing: 0.01em;
+  max-width: 560px;
+  line-height: 1.65;
+  margin-bottom: 40px;
   opacity: 0;
   transform: translateY(12px);
   transition: opacity 500ms var(--ease-entrance),
               transform 500ms var(--ease-entrance);
 }
+
+.hero-sub em {
+  font-style: italic;
+  color: var(--goldC);
+}
+
+.hero-meta {
+  display: flex;
+  gap: clamp(20px, 4vw, 56px);
+  align-items: baseline;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--muted);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  flex-wrap: wrap;
+  margin-bottom: 44px;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 500ms var(--ease-entrance),
+              transform 500ms var(--ease-entrance);
+}
+
+.hero-meta .dot { color: var(--goldA); }
 
 .hero-cta {
   opacity: 0;
@@ -152,82 +181,295 @@
   margin: 0 auto;
 }
 
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 32px;
+}
+
+.section-divider .num {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--goldA);
+  letter-spacing: 0;
+}
+
+.section-divider .line {
+  flex: 0 0 36px;
+  height: 1px;
+  background: var(--goldBorderS);
+}
+
 .section-eyebrow {
   font-family: var(--font-mono);
   font-size: 10px;
-  letter-spacing: 0.25em;
+  letter-spacing: 0.28em;
   color: var(--muted);
   text-transform: uppercase;
-  margin-bottom: 20px;
+}
+
+.section-eyebrow .ko {
+  font-family: 'Noto Serif KR', serif;
+  letter-spacing: 0.16em;
+  color: var(--dim);
+  font-size: 12px;
+  margin-left: 12px;
 }
 
 .section-heading {
   font-family: var(--font-display);
   font-weight: 300;
-  font-size: clamp(36px, 5vw, 60px);
-  letter-spacing: 0.04em;
-  line-height: 1.1;
-  margin-bottom: 52px;
+  font-size: clamp(36px, 5.4vw, 68px);
+  letter-spacing: -0.005em;
+  line-height: 1.08;
+  margin-bottom: 32px;
+  max-width: 22ch;
 }
 
-/* ─── Fund section ─────────────────────────────────────────────────── */
-.fund-section {
-  border-top: 1px solid var(--border);
-}
-
-.fund-body {
-  max-width: 680px;
-}
-
-.fund-body p {
-  font-family: var(--font-display);
-  font-size: 19px;
+.section-heading em {
+  font-style: italic;
   font-weight: 400;
-  line-height: 1.8;
-  color: rgba(237,232,223,0.80);
-  margin-bottom: 28px;
 }
 
-.fund-body p:last-child {
+.section-lede {
+  font-family: var(--font-display);
+  font-size: clamp(18px, 1.6vw, 21px);
+  font-weight: 400;
+  line-height: 1.75;
+  color: rgba(237,232,223,0.78);
+  max-width: 60ch;
   margin-bottom: 0;
 }
 
-.fund-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  background: var(--border);
-  margin-top: 64px;
+.section-lede em {
+  font-style: italic;
+  color: var(--goldC);
+}
+
+/* ─── Origin / Gap diagram ─────────────────────────────────────────── */
+.origin-section { border-top: 1px solid var(--border); }
+
+.gap-diagram {
+  margin-top: clamp(56px, 7vh, 96px);
+  padding: clamp(28px, 3.5vw, 56px);
   border: 1px solid var(--border);
-}
-
-.fund-stat {
   background: var(--surface);
-  padding: 32px 28px;
+  transition: border-color var(--dur-slow) ease;
 }
 
-.fund-stat-value {
+.gap-diagram:hover { border-color: var(--goldBorderS); }
+
+.gap-diagram-h {
   font-family: var(--font-mono);
-  font-size: 28px;
-  color: var(--goldB);
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-  margin-bottom: 10px;
+  font-size: 10px;
+  color: var(--goldA);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  margin-bottom: 36px;
+  text-align: center;
 }
 
-.fund-stat-label {
-  font-family: var(--font-ui);
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  color: var(--muted);
+.gap-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: clamp(20px, 3vw, 48px);
+  align-items: center;
+}
+
+.gap-side {
+  text-align: center;
+}
+
+.gap-side .glyph {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(48px, 6vw, 72px);
+  color: var(--goldA);
+  line-height: 1;
+  margin-bottom: 14px;
+  font-weight: 400;
+}
+
+.gap-side .glyph.us { color: var(--goldD); }
+
+.gap-side .label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--text);
   text-transform: uppercase;
-  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.gap-side .desc {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.gap-walls {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.gap-wall {
+  text-align: center;
+  padding: 14px 6px;
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,0.30);
+}
+
+.gap-wall .x {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--goldA);
+  margin-bottom: 6px;
+  line-height: 1;
+}
+
+.gap-wall .label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.20em;
+  color: var(--text);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.gap-wall .desc {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-style: italic;
+  color: var(--dim);
+  line-height: 1.45;
+}
+
+.gap-bridge {
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: clamp(17px, 1.8vw, 22px);
+  color: var(--muted);
+  font-weight: 300;
+}
+
+.gap-bridge em {
+  font-style: italic;
+  color: var(--goldC);
+}
+
+.gap-bridge .seal-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px; height: 26px;
+  border: 1px solid var(--goldBorderS);
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--goldA);
+  font-size: 13px;
+  margin-right: 10px;
+  vertical-align: middle;
 }
 
 @media (max-width: 768px) {
-  .fund-stats {
-    grid-template-columns: 1fr;
-  }
+  .gap-row { grid-template-columns: 1fr; gap: 28px; }
+  .gap-walls { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ─── Forces (Three forces. One fund.) ─────────────────────────────── */
+.forces-section { border-top: 1px solid var(--border); }
+
+.forces-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  margin-top: clamp(56px, 7vh, 88px);
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.force-card {
+  background: var(--near);
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+}
+
+.force-card .num {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--goldA);
+  margin-bottom: 18px;
+}
+
+.force-card h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(28px, 3vw, 38px);
+  letter-spacing: -0.005em;
+  color: var(--text);
+  margin-bottom: 8px;
+  line-height: 1.1;
+}
+
+.force-card .force-tag {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 16px;
+  color: var(--goldC);
+  margin-bottom: 22px;
+  line-height: 1.4;
+}
+
+.force-card p {
+  font-family: var(--font-display);
+  font-size: 16px;
+  line-height: 1.7;
+  color: rgba(237,232,223,0.72);
+  margin-bottom: 24px;
+}
+
+.force-card p em {
+  font-style: italic;
+  color: var(--goldC);
+}
+
+.force-card .chips {
+  margin-top: auto;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  text-transform: uppercase;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.forces-closer {
+  margin-top: clamp(48px, 6vh, 72px);
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: clamp(22px, 2.4vw, 28px);
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+}
+
+.forces-closer em {
+  font-style: italic;
+  color: var(--goldC);
+}
+
+@media (max-width: 768px) {
+  .forces-grid { grid-template-columns: 1fr; }
 }
 
 /* ─── Cohort section ───────────────────────────────────────────────── */
@@ -236,17 +478,51 @@
   text-align: center;
 }
 
+.cohort-hero {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.cohort-hero .live {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(96px, 16vw, 200px);
+  line-height: 0.95;
+  color: var(--goldC);
+  letter-spacing: -0.04em;
+  text-shadow: 0 0 32px rgba(227,193,135,0.16);
+  font-variant-numeric: tabular-nums;
+}
+
+.cohort-hero .slash,
+.cohort-hero .cap {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(56px, 9vw, 110px);
+  color: var(--dim);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
 .seat-grid {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
   gap: 6px;
   max-width: 600px;
-  margin: 0 auto 48px;
+  margin: 36px auto 28px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,0.30);
 }
 
 .seat {
   aspect-ratio: 1;
-  background: var(--surface);
+  background: rgba(197,165,114,0.04);
   border: 1px solid var(--border);
   transition: background 600ms var(--ease-entrance),
               border-color 600ms var(--ease-entrance),
@@ -254,32 +530,710 @@
 }
 
 .seat.filled {
-  background: var(--goldMuted);
-  border-color: var(--goldBorderS);
+  background: var(--goldC);
+  border-color: var(--goldBorderM);
+  box-shadow: 0 0 8px rgba(227,193,135,0.25);
 }
 
-.seat.filled:hover {
-  box-shadow: 0 0 8px rgba(197,165,114,0.2);
+.cohort-closer {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(18px, 1.8vw, 22px);
+  color: var(--goldC);
+  margin-bottom: 12px;
 }
 
-.cohort-count {
-  font-family: var(--font-mono);
-  font-size: clamp(48px, 6vw, 64px);
-  color: var(--goldB);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  margin-bottom: 16px;
-}
+.cohort-closer em { color: var(--goldA); font-weight: 400; }
 
 .cohort-sub {
-  font-family: var(--font-ui);
-  font-size: 13px;
-  letter-spacing: 0.16em;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.28em;
   color: var(--muted);
   text-transform: uppercase;
 }
 
-/* ─── Vault section ────────────────────────────────────────────────── */
+/* ─── Qualifier (3-column: hold / deploys / receive) ───────────────── */
+.qualifier-section { border-top: 1px solid var(--border); }
+
+.qual-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  margin-top: clamp(56px, 7vh, 88px);
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.qual-card {
+  background: var(--near);
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+}
+
+.qual-card .stage {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  color: var(--goldA);
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.qual-card .stage .num {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--goldA);
+  letter-spacing: 0;
+}
+
+.qual-card h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(24px, 2.6vw, 30px);
+  color: var(--text);
+  margin-bottom: 22px;
+  line-height: 1.15;
+}
+
+.qual-card h3 em {
+  font-style: italic;
+  color: var(--goldA);
+}
+
+.qual-card p {
+  font-family: var(--font-display);
+  font-size: 16px;
+  line-height: 1.75;
+  color: rgba(237,232,223,0.72);
+  margin-bottom: 16px;
+}
+
+.qual-card p:last-child { margin-bottom: 0; }
+
+.qual-card p em { font-style: italic; color: var(--goldC); }
+
+@media (max-width: 768px) {
+  .qual-grid { grid-template-columns: 1fr; }
+}
+
+/* ─── Mechanism (Two jobs: protects / earns) ───────────────────────── */
+.mechanism-section { border-top: 1px solid var(--border); }
+
+.jobs-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  margin-top: clamp(56px, 7vh, 88px);
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.job-card {
+  background: var(--near);
+  padding: 44px 36px;
+}
+
+.job-card .job-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  color: var(--goldA);
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+
+.job-card h3 {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(32px, 3.4vw, 44px);
+  letter-spacing: -0.005em;
+  color: var(--text);
+  margin-bottom: 10px;
+  line-height: 1.05;
+}
+
+.job-card h3 em { font-style: italic; color: var(--goldA); font-weight: 400; }
+
+.job-card .job-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 22px;
+}
+
+.job-card p {
+  font-family: var(--font-display);
+  font-size: 17px;
+  line-height: 1.75;
+  color: rgba(237,232,223,0.78);
+}
+
+.job-card p em { font-style: italic; color: var(--goldC); }
+
+@media (max-width: 768px) {
+  .jobs-pair { grid-template-columns: 1fr; }
+}
+
+/* Flow strip (4 steps: deposit → custody → pledge → deploy) */
+.flow-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  margin-top: 56px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.flow-step {
+  background: var(--near);
+  padding: 28px 22px;
+}
+
+.flow-step .roman {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--goldA);
+  margin-bottom: 8px;
+}
+
+.flow-step .action {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.28em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.flow-step h4 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 19px;
+  color: var(--text);
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+
+.flow-step h4 em { font-style: italic; color: var(--goldC); }
+
+.flow-step .meta {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+
+.flow-step .value {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  color: var(--goldB);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.flow-step .value .sub {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .flow-strip { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 430px) {
+  .flow-strip { grid-template-columns: 1fr; }
+}
+
+/* ─── Engines (Two engines. One NAV.) ──────────────────────────────── */
+.engines-section { border-top: 1px solid var(--border); }
+
+.engines-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  margin-top: clamp(56px, 7vh, 88px);
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.engine-card {
+  background: var(--near);
+  padding: 40px 32px;
+}
+
+.engine-card .h {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  color: var(--goldA);
+  text-transform: uppercase;
+  margin-bottom: 22px;
+}
+
+.engine-card h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(24px, 2.6vw, 30px);
+  color: var(--text);
+  margin-bottom: 22px;
+  line-height: 1.2;
+}
+
+.engine-card h3 em { font-style: italic; color: var(--goldC); }
+
+.engine-card p {
+  font-family: var(--font-display);
+  font-size: 16px;
+  line-height: 1.75;
+  color: rgba(237,232,223,0.72);
+}
+
+.engine-card p em { font-style: italic; color: var(--goldC); }
+
+.engines-sum {
+  margin-top: clamp(48px, 6vh, 72px);
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: clamp(22px, 2.4vw, 28px);
+  font-weight: 300;
+  color: var(--muted);
+}
+
+.engines-sum em { font-style: italic; color: var(--goldC); }
+
+@media (max-width: 768px) {
+  .engines-pair { grid-template-columns: 1fr; }
+}
+
+/* ─── Simplification (Four walls. One subscription.) ───────────────── */
+.simp-section { border-top: 1px solid var(--border); }
+
+.walls-vis {
+  margin-top: clamp(56px, 7vh, 88px);
+  padding: 36px 28px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.walls-vis-h {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--goldA);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.walls-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.wall-cell {
+  text-align: center;
+  padding: 22px 12px;
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,0.30);
+}
+
+.wall-cell .x {
+  font-family: var(--font-display);
+  font-size: 28px;
+  color: var(--goldA);
+  margin-bottom: 8px;
+  line-height: 1;
+}
+
+.wall-cell .label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--text);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.wall-cell .desc {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.walls-result {
+  margin-top: 24px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--dim);
+}
+
+.walls-arrow {
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 28px;
+  color: var(--goldA);
+  margin: 18px 0;
+}
+
+.simp-replace {
+  padding: 36px 28px;
+  border: 1px solid var(--goldBorderS);
+  background: rgba(197,165,114,0.03);
+}
+
+.simp-replace-h {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  color: var(--goldB);
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.simp-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.simp-cell {
+  background: var(--near);
+  padding: 22px 16px;
+  text-align: center;
+}
+
+.simp-cell .k {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.simp-cell .v {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.simp-cell .v em { font-style: italic; color: var(--goldC); }
+
+.simp-closer {
+  margin-top: 22px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.28em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .walls-grid { grid-template-columns: 1fr 1fr; }
+  .simp-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* ─── Opening Book (Two positions) ─────────────────────────────────── */
+.book-section { border-top: 1px solid var(--border); }
+
+.deals-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  margin-top: clamp(56px, 7vh, 88px);
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.deal-card {
+  background: var(--near);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.deal-band {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.deal-band .l { color: var(--goldA); }
+.deal-band .r { color: var(--muted); font-style: italic; font-family: var(--font-display); letter-spacing: 0; font-size: 13px; text-transform: none; }
+
+.deal-body { padding: 32px 28px; flex: 1; }
+
+.deal-cap {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.deal-name {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(22px, 2.4vw, 28px);
+  color: var(--text);
+  line-height: 1.2;
+  margin-bottom: 14px;
+}
+
+.deal-name em { font-style: italic; color: var(--goldC); }
+
+.deal-tag {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--goldB);
+  margin-bottom: 18px;
+  line-height: 1.45;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed var(--border);
+}
+
+.deal-card p {
+  font-family: var(--font-display);
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(237,232,223,0.72);
+  margin-bottom: 14px;
+}
+
+.deal-card p em { font-style: italic; color: var(--goldC); }
+
+.deal-foot {
+  display: flex;
+  justify-content: space-between;
+  padding: 18px 28px;
+  border-top: 1px solid var(--border);
+  background: rgba(0,0,0,0.20);
+}
+
+.deal-foot .k {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.deal-foot .v {
+  font-family: var(--font-display);
+  font-size: 19px;
+  color: var(--goldC);
+  font-variant-numeric: tabular-nums;
+}
+
+.deal-foot .v.italic {
+  font-style: italic;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.deals-summary {
+  margin-top: 36px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.deals-summary .cell {
+  background: var(--near);
+  padding: 28px 22px;
+  text-align: center;
+}
+
+.deals-summary .k {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.deals-summary .v {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 3vw, 36px);
+  color: var(--text);
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+
+.deals-summary .v em { font-style: italic; color: var(--goldC); }
+
+.deals-summary .s {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.deals-disclaimer {
+  margin-top: 28px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--dim);
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .deals-grid { grid-template-columns: 1fr; }
+  .deals-summary { grid-template-columns: 1fr; }
+}
+
+/* ─── Numbers strip ────────────────────────────────────────────────── */
+.numbers-section {
+  border-top: 1px solid var(--border);
+  padding: clamp(60px, 9vh, 100px) var(--pad-x);
+  max-width: calc(var(--content-max) + var(--pad-x) * 2);
+  margin: 0 auto;
+}
+
+.numbers-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.numbers-grid .cell {
+  background: var(--near);
+  padding: 32px 22px;
+  text-align: center;
+}
+
+.numbers-grid .k {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.numbers-grid .v {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 4vw, 48px);
+  color: var(--goldC);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.numbers-grid .v em { font-style: italic; }
+
+@media (max-width: 768px) {
+  .numbers-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* ─── Path (4 steps to admission) ──────────────────────────────────── */
+.path-section { border-top: 1px solid var(--border); }
+
+.path-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  margin-top: clamp(56px, 7vh, 88px);
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.path-step {
+  background: var(--near);
+  padding: 32px 22px;
+}
+
+.path-step .num {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 22px;
+  color: var(--goldA);
+  margin-bottom: 12px;
+}
+
+.path-step .stage {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.28em;
+  color: var(--goldB);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.path-step h4 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 20px;
+  color: var(--text);
+  margin-bottom: 10px;
+  line-height: 1.25;
+}
+
+.path-step h4 em { font-style: italic; color: var(--goldC); }
+
+.path-step p {
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: rgba(237,232,223,0.65);
+}
+
+.path-step p em { font-style: italic; color: var(--goldC); }
+
+@media (max-width: 768px) {
+  .path-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 430px) {
+  .path-grid { grid-template-columns: 1fr; }
+}
+
+/* ─── Vault & Custody ──────────────────────────────────────────────── */
 .vault-section {
   border-top: 1px solid var(--border);
 }
@@ -289,6 +1243,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 80px;
   align-items: start;
+  margin-top: 36px;
 }
 
 @media (max-width: 768px) {
@@ -298,18 +1253,12 @@
   }
 }
 
-.world-map-wrap {
-  position: relative;
-}
+.world-map-wrap { position: relative; }
 
-.world-map-svg {
-  width: 100%;
-  opacity: 0.55;
-}
+.world-map-svg { width: 100%; opacity: 0.55; }
 
 .sg-dot-wrap {
   position: absolute;
-  /* Singapore approx position */
   left: 66%;
   top: 51%;
   transform: translate(-50%, -50%);
@@ -346,9 +1295,7 @@
   z-index: 10;
 }
 
-.sg-dot-wrap:hover .sg-tooltip {
-  opacity: 1;
-}
+.sg-dot-wrap:hover .sg-tooltip { opacity: 1; }
 
 .sg-tooltip-title {
   font-family: var(--font-mono);
@@ -366,38 +1313,31 @@
   line-height: 1.9;
 }
 
-.vault-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
+.vault-stats { display: flex; flex-direction: column; }
 
 .vault-stat {
   padding: 28px 0;
   border-bottom: 1px solid var(--border);
 }
 
-.vault-stat:first-child {
-  padding-top: 0;
-}
-
-.vault-stat:last-child {
-  border-bottom: none;
-}
+.vault-stat:first-child { padding-top: 0; }
+.vault-stat:last-child { border-bottom: none; }
 
 .vault-stat-value {
   font-family: var(--font-display);
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 400;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.01em;
   color: var(--text);
   margin-bottom: 6px;
 }
 
+.vault-stat-value em { font-style: italic; color: var(--goldC); }
+
 .vault-stat-label {
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.18em;
   color: var(--muted);
   text-transform: uppercase;
 }
@@ -410,20 +1350,49 @@
   padding-bottom: var(--gap-section);
 }
 
+.closing-seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px; height: 56px;
+  border: 1px solid var(--goldBorderS);
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--goldA);
+  font-size: 26px;
+  margin: 0 auto 32px;
+}
+
 .closing-section .section-heading {
   max-width: 720px;
   margin-left: auto;
   margin-right: auto;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  text-align: center;
 }
 
-.closing-sub {
+.closing-rule {
+  width: 60px;
+  height: 1px;
+  background: var(--goldBorderS);
+  margin: 8px auto 24px;
+}
+
+.closing-tag {
   font-family: var(--font-display);
+  font-style: italic;
   font-size: 18px;
-  font-weight: 300;
   color: var(--muted);
-  letter-spacing: 0.02em;
-  margin-bottom: 48px;
+  margin-bottom: 36px;
+}
+
+.closing-foot {
+  margin-top: 28px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.28em;
+  color: var(--dim);
+  text-transform: uppercase;
 }
 
 /* ─── Footer ───────────────────────────────────────────────────────── */
@@ -456,6 +1425,14 @@ footer {
   text-transform: uppercase;
 }
 
+.footer-program {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
 .footer-legal {
   font-family: var(--font-ui);
   font-size: 11px;
@@ -466,15 +1443,9 @@ footer {
 }
 
 @media (max-width: 768px) {
-  footer {
-    flex-direction: column;
-    gap: 32px;
-  }
-  .footer-legal {
-    text-align: left;
-  }
-  /* Nav: collapse CTA text on small screens */
-  .nav-actions a.btn-primary span { display: none; }
+  footer { flex-direction: column; gap: 32px; }
+  .footer-legal { text-align: left; }
+  .nav-actions a.btn-primary span.cta-text { display: none; }
 }
 
 /* ─── Nav visible on scroll ────────────────────────────────────────── */
@@ -489,58 +1460,40 @@ footer {
     padding: 100px 20px 80px;
   }
   .hero-headline {
-    font-size: clamp(36px, 10vw, 56px);
+    font-size: clamp(46px, 14vw, 68px);
   }
   .hero-sub {
     font-size: 16px;
   }
-  /* CTA full width */
   .hero-cta .btn-primary {
     width: 100%;
     justify-content: center;
   }
-  /* Seat grid: shrink cells so 10×10 fits viewport */
-  .seat-grid {
-    gap: 4px;
-    max-width: 100%;
-  }
-  /* Nav: hide wordmark sub on very small screens */
+  .seat-grid { gap: 4px; max-width: 100%; padding: 8px; }
   .nav-wordmark-sub { display: none; }
-  .fund-stats { grid-template-columns: 1fr; }
   .section {
     padding-left: 20px;
     padding-right: 20px;
   }
-  .closing-section .btn-primary {
-    width: 100%;
-    justify-content: center;
-  }
-  /* Scroll hint hidden on mobile */
+  .section-heading { font-size: clamp(30px, 9vw, 44px); }
+  .closing-section .btn-primary { width: 100%; justify-content: center; }
   .hero-scroll-hint { display: none; }
+  .gap-walls { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 390px) {
-  .hero-headline {
-    font-size: clamp(32px, 9vw, 44px);
-  }
-  .seat-grid {
-    gap: 3px;
-  }
+  .hero-headline { font-size: 44px; }
+  .seat-grid { gap: 3px; }
 }
 
 @media (max-width: 375px) {
-  .hero-headline {
-    font-size: 32px;
-  }
+  .hero-headline { font-size: 40px; }
   .nav-wordmark-title { font-size: 10px; }
-  .seat-grid {
-    gap: 3px;
-    max-width: calc(100vw - 40px);
-  }
+  .seat-grid { gap: 3px; max-width: calc(100vw - 40px); }
 }
 </style>
 </head>
-<body>
+<body class="lang-en">
 
 <!-- Page veil for transitions -->
 <div class="page-veil" id="page-veil"></div>
@@ -561,7 +1514,7 @@ footer {
   </a>
   <div class="nav-actions">
     <a href="/login" class="btn-ghost" style="padding:9px 18px;font-size:11px;">Member Sign In</a>
-    <a href="/interest" class="btn-primary" style="padding:10px 22px;font-size:11px;">Inquire</a>
+    <a href="/interest" class="btn-primary" style="padding:10px 22px;font-size:11px;"><span class="cta-text">Inquire</span></a>
   </div>
 </nav>
 
@@ -569,14 +1522,28 @@ footer {
 <section class="hero" role="banner">
   <canvas id="ambient-canvas" aria-hidden="true"></canvas>
   <div class="hero-inner">
-    <p class="hero-eyebrow" id="hero-eyebrow">The Aurum Century Club &nbsp;·&nbsp; Founding Round</p>
-    <h1 class="hero-headline" id="hero-headline" aria-label="A Founding Membership in Physical Gold">
-      <span class="word">A</span><span class="word"> </span><span class="word">Founding</span><span class="word"> </span><span class="word">Membership</span><br>
-      <span class="word">in</span><span class="word"> </span><span class="word gold-gradient">Physical</span><span class="word"> </span><span class="word gold-gradient">Gold</span>
+    <p class="hero-eyebrow" id="hero-eyebrow">
+      <span data-lang="en">The Aurum Century Club &nbsp;·&nbsp; The Founding Round</span><span data-lang="ko">아우럼 센추리 클럽 &nbsp;·&nbsp; 창립 라운드</span>
+    </p>
+    <h1 class="hero-headline" id="hero-headline" aria-label="The Kilo">
+      <span data-lang="en">
+        <span class="word">The</span><span class="word">&nbsp;</span><span class="word"><em>Kilo.</em></span>
+      </span>
+      <span data-lang="ko">
+        <span class="word">한</span><span class="word">&nbsp;</span><span class="word"><em>킬로그램.</em></span>
+      </span>
     </h1>
     <p class="hero-sub" id="hero-sub">
-      A founding membership in physical gold. One hundred seats. Singapore VCC.
+      <span data-lang="en">Physical gold as the foundation. Private capital as the return. A Singapore programme for a founding cohort of <em>one hundred.</em></span>
+      <span data-lang="ko">실물 금이 기반. 사모(私募) 자본이 수익. 소수의 <em>창립 100인</em>을 위한 싱가포르 프로그램.</span>
     </p>
+    <div class="hero-meta" id="hero-meta">
+      <span><span data-lang="en">Singapore VCC</span><span data-lang="ko">싱가포르 VCC</span></span>
+      <span class="dot">·</span>
+      <span><span data-lang="en">Qualified Investors Only</span><span data-lang="ko">적격 투자자 전용</span></span>
+      <span class="dot">·</span>
+      <span><span data-lang="en">By Introduction</span><span data-lang="ko">초청제</span></span>
+    </div>
     <div class="hero-cta" id="hero-cta">
       <a href="/interest" class="btn-primary">Inquire</a>
     </div>
@@ -587,87 +1554,538 @@ footer {
   </div>
 </section>
 
-<!-- Fund Structure -->
-<section class="section fund-section" aria-labelledby="fund-heading">
-  <div class="section-eyebrow" data-reveal>Structure</div>
-  <h2 class="section-heading" id="fund-heading" data-reveal data-delay="100">
-    Built for<br><em class="gold-gradient">Permanence</em>
-  </h2>
-  <div class="fund-body">
-    <p data-reveal data-delay="200">
-      The Aurum Century Club is a Singapore Variable Capital Company deploying member capital into physical gold — specifically LBMA Good Delivery bars, one kilogram each, held in allocated custody in Singapore's Free Trade Zone. Aurum manages the vehicle. Members hold interests in it. The gold does not move unless you do.
-    </p>
-    <p data-reveal data-delay="300">
-      Every subscription participates in a credit facility of up to 75% LTV against the gold collateral — a structural feature of the vehicle, not an election. The facility funds private credit deployments selected by the investment committee. Members are not required to draw on it, but the returns it generates flow to all holders.
-    </p>
-    <p data-reveal data-delay="400">
-      The return architecture is three-layered: gold appreciation over time, private credit yield from the LTV facility, and the LTV arbitrage itself. The vehicle targets a net IRR of approximately 15% per annum. This figure is illustrative and not a guarantee. A hurdle of 8% per annum, compounding, applies. Carry is 20% after a full 100% catch-up. Management fee is 2% per annum on committed capital.
-    </p>
-    <p data-reveal data-delay="500">
-      The Founding Round is limited to one hundred members. The vehicle does not reopen. Once the cohort is full, no further subscriptions are accepted on founding terms.
-    </p>
+<!-- I · ORIGIN -->
+<section class="section origin-section" aria-labelledby="origin-heading">
+  <div class="section-divider" data-reveal>
+    <span class="num">I.</span>
+    <span class="line"></span>
+    <span class="section-eyebrow"><span data-lang="en">Origin</span><span data-lang="ko">서장</span><span class="ko" data-lang="en">서장</span></span>
   </div>
+  <h2 class="section-heading" id="origin-heading" data-reveal data-delay="100">
+    <span data-lang="en">The deals were there.<br><em>We built the mechanism.</em></span>
+    <span data-lang="ko">거래는 이미 있었습니다.<br><em>저희는 그것을 담을 구조를 만들었습니다.</em></span>
+  </h2>
+  <p class="section-lede" data-reveal data-delay="200">
+    <span data-lang="en">The partners behind Aurum sourced US private positions across two decades and placed them, one transaction at a time, with a small group of Korean investors. <em>The capital was ready. The deals were available.</em> What was missing was the mechanism to hold them.</span>
+    <span data-lang="ko">Aurum의 파트너들은 지난 20년에 걸쳐 미국 사모 시장의 포지션을 발굴해, 한국 자산가들에게 한 건씩 직접 연결해 왔습니다. <em>자본은 준비돼 있었고, 거래도 존재했습니다.</em> 부족했던 것은 그것들을 담아낼 구조였습니다.</span>
+  </p>
 
-  <div class="fund-stats" data-reveal data-delay="200">
-    <div class="fund-stat">
-      <div class="fund-stat-value">~15%</div>
-      <div class="fund-stat-label">Target Net IRR<br><span style="font-size:9px;opacity:0.6;">Illustrative, not guaranteed</span></div>
+  <div class="gap-diagram" data-reveal data-delay="300">
+    <div class="gap-diagram-h"><span data-lang="en">The Gap &nbsp;·&nbsp; Direct Route</span><span data-lang="ko">격차 &nbsp;·&nbsp; 직접 경로</span></div>
+    <div class="gap-row">
+      <div class="gap-side">
+        <div class="glyph">韓</div>
+        <div class="label"><span data-lang="en">Korean HNW</span><span data-lang="ko">한국 자산가</span></div>
+        <div class="desc"><span data-lang="en">Capital ready. Direct-deal appetite, no path.</span><span data-lang="ko">자본은 준비. 직접 투자 의향. 그러나 길은 없음.</span></div>
+      </div>
+      <div class="gap-walls">
+        <div class="gap-wall">
+          <div class="x">×</div>
+          <div class="label"><span data-lang="en">Filings</span><span data-lang="ko">신고</span></div>
+          <div class="desc"><span data-lang="en">incremental per-deal compliance work</span><span data-lang="ko">거래마다 누적되는 규제 업무</span></div>
+        </div>
+        <div class="gap-wall">
+          <div class="x">×</div>
+          <div class="label"><span data-lang="en">Caps</span><span data-lang="ko">한도</span></div>
+          <div class="desc"><span data-lang="en">pool and concentration limits</span><span data-lang="ko">풀·집중도 제한</span></div>
+        </div>
+        <div class="gap-wall">
+          <div class="x">×</div>
+          <div class="label"><span data-lang="en">Reviews</span><span data-lang="ko">심사</span></div>
+          <div class="desc"><span data-lang="en">compliance review on each wire</span><span data-lang="ko">송금마다 컴플라이언스 검토</span></div>
+        </div>
+        <div class="gap-wall">
+          <div class="x">×</div>
+          <div class="label"><span data-lang="en">Access</span><span data-lang="ko">접근</span></div>
+          <div class="desc"><span data-lang="en">closed to single tickets</span><span data-lang="ko">단독 티켓에는 닫혀 있음</span></div>
+        </div>
+      </div>
+      <div class="gap-side">
+        <div class="glyph us">美</div>
+        <div class="label"><span data-lang="en">US Institutional</span><span data-lang="ko">미국 기관 시장</span></div>
+        <div class="desc"><span data-lang="en">Closed primaries. Curated books. Relationship-gated.</span><span data-lang="ko">비공개 1차 시장. 선별된 도서. 관계 기반 진입.</span></div>
+      </div>
     </div>
-    <div class="fund-stat">
-      <div class="fund-stat-value">8% p.a.</div>
-      <div class="fund-stat-label">Hurdle Rate<br><span style="font-size:9px;opacity:0.6;">Compounding, preferred return</span></div>
-    </div>
-    <div class="fund-stat">
-      <div class="fund-stat-value">75% LTV</div>
-      <div class="fund-stat-label">Credit Facility<br><span style="font-size:9px;opacity:0.6;">Against gold collateral</span></div>
+    <div class="gap-bridge">
+      <span class="seal-inline"><em>Au</em></span>
+      <span data-lang="en">Aurum is <em>the fund built to hold them.</em></span>
+      <span data-lang="ko">Aurum은 <em>그것들을 담기 위해 만들어진 펀드입니다.</em></span>
     </div>
   </div>
 </section>
 
-<!-- Founding Cohort -->
+<!-- II · THE FORM (Three Forces) -->
+<section class="section forces-section" aria-labelledby="forces-heading">
+  <div class="section-divider" data-reveal>
+    <span class="num">II.</span>
+    <span class="line"></span>
+    <span class="section-eyebrow"><span data-lang="en">The Form</span><span data-lang="ko">형태</span><span class="ko" data-lang="en">형태</span></span>
+  </div>
+  <h2 class="section-heading" id="forces-heading" data-reveal data-delay="100">
+    <span data-lang="en">Three forces.<br><em>One fund.</em></span>
+    <span data-lang="ko">세 가지 힘.<br><em>하나의 펀드.</em></span>
+  </h2>
+  <p class="section-lede" data-reveal data-delay="200">
+    <span data-lang="en">The decision was not what to build. The decision was where. Three answers came into alignment at one place — Singapore. <em>The combination is what is new.</em></span>
+    <span data-lang="ko">질문은 '무엇을 만들 것인가'가 아니었다. '어디서 만들 것인가'였다. 세 가지 답이 한 곳에서 맞물렸다 — 싱가포르. <em>그 조합이 새로운 것이다.</em></span>
+  </p>
+
+  <div class="forces-grid">
+    <article class="force-card" data-reveal data-delay="200">
+      <div class="num">I.</div>
+      <h3><span data-lang="en">Access</span><span data-lang="ko">접근</span></h3>
+      <p class="force-tag"><span data-lang="en">The deals that do not advertise.</span><span data-lang="ko">광고하지 않는 거래.</span></p>
+      <p>
+        <span data-lang="en">Pre-IPO secondaries and disciplined US private credit clear through <em>relationships, not brokered channels.</em> The partners behind Aurum have built those relationships across two decades. Members inherit the relationship — not the brokerage.</span>
+        <span data-lang="ko">프리-IPO 세컨더리와 절제된 미국 사모 크레딧은 <em>관계를 통해서만 닿을 수 있습니다 — 중개 채널이 아닙니다.</em> Aurum의 파트너들은 그 관계를 20년에 걸쳐 구축해 왔습니다. 회원이 물려받는 것은 관계 자체이지, 중개가 아닙니다.</span>
+      </p>
+      <div class="chips"><span data-lang="en">Sourced &nbsp;·&nbsp; Direct &nbsp;·&nbsp; Curated</span><span data-lang="ko">발굴 &nbsp;·&nbsp; 직접 &nbsp;·&nbsp; 선별</span></div>
+    </article>
+
+    <article class="force-card" data-reveal data-delay="300">
+      <div class="num">II.</div>
+      <h3><span data-lang="en">Singapore</span><span data-lang="ko">싱가포르</span></h3>
+      <p class="force-tag"><span data-lang="en">Capital grows where it sits.</span><span data-lang="ko">자본은 머무는 곳에서 자란다.</span></p>
+      <p>
+        <span data-lang="en">A Singapore Variable Capital Company holds offshore investments outside the per-deal repatriation cycle. Income and gains accumulate at the fund level — <em>the growth stays where it is, compounding, not recurring.</em> World-class regulatory framework.</span>
+        <span data-lang="ko">싱가포르 가변자본회사(VCC) 구조는 해외 투자 자산을 거래마다 본국으로 송환하는 과정 밖에서 보유합니다. 수익과 이익은 펀드 레벨에서 누적됩니다 — <em>자본은 그 자리에 머물며 복리로 쌓이고, 매번 다시 시작하지 않습니다.</em> 세계적 수준의 규제 체계.</span>
+      </p>
+      <div class="chips"><span data-lang="en">Singapore &nbsp;·&nbsp; Regulated &nbsp;·&nbsp; Established</span><span data-lang="ko">싱가포르 &nbsp;·&nbsp; 규제 &nbsp;·&nbsp; 안정</span></div>
+    </article>
+
+    <article class="force-card" data-reveal data-delay="400">
+      <div class="num">III.</div>
+      <h3><span data-lang="en">Gold</span><span data-lang="ko">금</span></h3>
+      <p class="force-tag"><span data-lang="en">Not the gift. The asset.</span><span data-lang="ko">선물이 아니다. 자산이다.</span></p>
+      <p>
+        <span data-lang="en">In Korea, gold is the wedding token, the quiet inheritance — bought domestically <em>at a premium few realise.</em> Across a generation, the asset has appreciated against every G10 currency. Singapore is the world's deepest bullion market.</span>
+        <span data-lang="ko">한국에서 금은 혼수, 조용한 상속. 국내에서 <em>적지 않은 프리미엄을 얹어</em> 매입됩니다. 한 세대에 걸쳐 G10 통화 모두에 대해 가치가 상승했습니다. 싱가포르는 세계에서 가장 깊은 금괴 시장입니다.</span>
+      </p>
+      <div class="chips"><span data-lang="en">Institutional &nbsp;·&nbsp; Allocated &nbsp;·&nbsp; SG Hub</span><span data-lang="ko">기관급 &nbsp;·&nbsp; 할당 &nbsp;·&nbsp; 싱가포르 허브</span></div>
+    </article>
+  </div>
+
+  <p class="forces-closer" data-reveal data-delay="500">
+    <span data-lang="en">Access opens. Singapore holds. <em>Gold protects.</em></span>
+    <span data-lang="ko">접근이 열린다. 싱가포르가 보유한다. <em>금이 지킨다.</em></span>
+  </p>
+</section>
+
+<!-- FOUNDING 100 cohort -->
 <section class="section cohort-section" aria-labelledby="cohort-heading">
-  <div class="section-eyebrow" data-reveal>Founding Round</div>
-  <h2 class="section-heading" id="cohort-heading" data-reveal data-delay="100">One Hundred<br>Founding Seats</h2>
-  <div class="seat-grid" id="seat-grid" role="img" aria-label="Seat availability grid" data-reveal data-delay="200">
+  <div class="section-eyebrow" data-reveal style="text-align:center;display:block;margin-bottom:18px;">
+    <span data-lang="en">The Founding Round</span><span data-lang="ko">창립 100인</span>
+  </div>
+  <h2 class="section-heading" id="cohort-heading" data-reveal data-delay="100" style="text-align:center;margin-left:auto;margin-right:auto;">
+    <span data-lang="en">One Hundred<br>Founding <em>Seats.</em></span>
+    <span data-lang="ko">창립 100인의<br><em>자리.</em></span>
+  </h2>
+  <div class="cohort-hero" data-reveal data-delay="200">
+    <span class="live" id="live-count">—</span><span class="slash">/</span><span class="cap">100</span>
+  </div>
+  <div class="seat-grid" id="seat-grid" role="img" aria-label="Seat availability grid" data-reveal data-delay="300">
     <!-- 100 seats rendered by JS -->
   </div>
-  <div class="cohort-count" id="cohort-count" data-reveal data-delay="300">— / 100</div>
-  <p class="cohort-sub" data-reveal data-delay="400">The Founding Round closes Q3 2026.</p>
-  <div id="close-countdown" style="margin-top:16px;min-height:18px;" aria-live="polite"></div>
+  <p class="cohort-closer" data-reveal data-delay="400">
+    <span data-lang="en">Once full, <em>the book closes.</em></span>
+    <span data-lang="ko">정원이 차면, <em>모집이 마감됩니다.</em></span>
+  </p>
+  <p class="cohort-sub" data-reveal data-delay="500">
+    <span data-lang="en">First Close &nbsp;·&nbsp; Q3 2026</span><span data-lang="ko">첫 마감 &nbsp;·&nbsp; 2026년 3분기</span>
+  </p>
+  <div id="close-countdown" style="margin-top:14px;min-height:18px;" aria-live="polite"></div>
 </section>
 
-<!-- Vault & Custody -->
+<!-- III · QUALIFIER -->
+<section class="section qualifier-section" aria-labelledby="qual-heading">
+  <div class="section-divider" data-reveal>
+    <span class="num">III.</span>
+    <span class="line"></span>
+    <span class="section-eyebrow"><span data-lang="en">The Qualifier</span><span data-lang="ko">자격</span><span class="ko" data-lang="en">자격</span></span>
+  </div>
+  <h2 class="section-heading" id="qual-heading" data-reveal data-delay="100">
+    <span data-lang="en">One kilogram.<br><em>The Founding 100.</em></span>
+    <span data-lang="ko">한 킬로.<br><em>창립 100인.</em></span>
+  </h2>
+  <p class="section-lede" data-reveal data-delay="200">
+    <span data-lang="en">Physical gold is the qualifier. Private capital access is the product. What follows is what each <em>Century Club member</em> will receive at launch.</span>
+    <span data-lang="ko">자격의 기준은 실물 금. 제공되는 것은 사모 자본 접근. 아래는 모든 <em>센추리 클럽 회원</em>이 출범 시 받게 되는 것입니다.</span>
+  </p>
+
+  <div class="qual-grid">
+    <article class="qual-card" data-reveal data-delay="200">
+      <div class="stage"><span class="num">I.</span><span><span data-lang="en">You Hold</span><span data-lang="ko">보유</span></span></div>
+      <h3><span data-lang="en">What <em>you hold.</em></span><span data-lang="ko">회원이 <em>보유하는 것.</em></span></h3>
+      <p>
+        <span data-lang="en">Institutional-grade physical gold — LBMA Good Delivery one-kilogram bars at 999.9 fineness, allocated to the member's name and held in segregated custody at Malca-Amit's Singapore Free Trade Zone facility — <em>fully insured,</em> serial-identified.</span>
+        <span data-lang="ko">기관급 실물 금 — LBMA 굿 딜리버리 999.9 순도의 1킬로그램 금괴. 회원 명의로 할당되어 Malca-Amit 싱가포르 자유무역지구 시설의 분리 보관소에서 보관됩니다 — <em>완전 보험 가입,</em> 일련번호 기록.</span>
+      </p>
+      <p>
+        <span data-lang="en">The bar collateralises a credit line at a Singapore institutional bank. The metal never moves; the credit it unlocks deploys.</span>
+        <span data-lang="ko">금괴는 싱가포르 기관 은행의 신용 한도를 담보합니다. 금속은 움직이지 않고, 그것이 풀어내는 신용만 운용됩니다.</span>
+      </p>
+    </article>
+
+    <article class="qual-card" data-reveal data-delay="300">
+      <div class="stage"><span class="num">II.</span><span><span data-lang="en">Aurum Deploys</span><span data-lang="ko">운용</span></span></div>
+      <h3><span data-lang="en">What <em>Aurum does with it.</em></span><span data-lang="ko">Aurum이 <em>하는 일.</em></span></h3>
+      <p>
+        <span data-lang="en">Credit deploys into <em>two sleeves:</em> pre-IPO growth equity and US mid-market private credit, with selective access to <em>institutional real estate</em> deals. A standing <em>20% reserve</em> is held in cash and short-dated US Treasuries.</span>
+        <span data-lang="ko">신용은 <em>두 갈래로 운용됩니다:</em> 프리-IPO 성장 주식과 미국 중형 사모 크레딧, 그리고 선별적 <em>기관급 부동산</em> 거래 접근. <em>20% 상시 유보분</em>은 현금 및 단기 미국 국채로 보유합니다.</span>
+      </p>
+      <p>
+        <span data-lang="en"><em>Reinvestment is the default path</em> — fund-level returns compound across vintages.</span>
+        <span data-lang="ko"><em>재투자가 기본 경로</em> — 펀드 레벨 수익이 빈티지를 가로질러 복리로 쌓입니다.</span>
+      </p>
+    </article>
+
+    <article class="qual-card" data-reveal data-delay="400">
+      <div class="stage"><span class="num">III.</span><span><span data-lang="en">You Receive</span><span data-lang="ko">수령</span></span></div>
+      <h3><span data-lang="en">What <em>you receive.</em></span><span data-lang="ko">회원이 <em>받는 것.</em></span></h3>
+      <p>
+        <span data-lang="en">Direct allocation in Aurum Fund deal flow. A kilogram of gold in your name, working as collateral while it appreciates. <em>One Singapore subscription</em> in place of the compounding paperwork that comes with every direct deal.</span>
+        <span data-lang="ko">Aurum 펀드의 거래 흐름에 직접 할당. 회원 명의의 금 1킬로그램이 가치 상승과 동시에 담보로 일합니다. <em>거래마다 누적되는 서류 작업을 단 한 번의 싱가포르 구독</em>으로 대체.</span>
+      </p>
+    </article>
+  </div>
+</section>
+
+<!-- IV · MECHANISM -->
+<section class="section mechanism-section" aria-labelledby="mech-heading">
+  <div class="section-divider" data-reveal>
+    <span class="num">IV.</span>
+    <span class="line"></span>
+    <span class="section-eyebrow"><span data-lang="en">Mechanism</span><span data-lang="ko">메커니즘</span><span class="ko" data-lang="en">메커니즘</span></span>
+  </div>
+  <h2 class="section-heading" id="mech-heading" data-reveal data-delay="100">
+    <span data-lang="en">One kilogram.<br><em>Two jobs.</em></span>
+    <span data-lang="ko">한 킬로.<br><em>두 가지 역할.</em></span>
+  </h2>
+  <p class="section-lede" data-reveal data-delay="200">
+    <span data-lang="en">A single kilogram does <em>two jobs at once</em> — it protects the member, and it funds the deal pipeline through a Singapore credit line. <em>No bank, no family office, no product in Asia combines the two.</em></span>
+    <span data-lang="ko">한 킬로의 금이 <em>동시에 두 역할을 합니다</em> — 회원을 보호하고, 싱가포르 신용 한도를 통해 거래 파이프라인에 자금을 공급합니다. <em>아시아의 어떤 은행도, 패밀리 오피스도, 상품도 이 둘을 결합하지 않습니다.</em></span>
+  </p>
+
+  <div class="jobs-pair">
+    <article class="job-card" data-reveal data-delay="200">
+      <div class="job-eyebrow"><span data-lang="en">Job One &nbsp;·&nbsp; Protection</span><span data-lang="ko">역할 1 &nbsp;·&nbsp; 보호</span></div>
+      <h3><span data-lang="en">The bar <em>protects.</em></span><span data-lang="ko">금괴는 <em>지킨다.</em></span></h3>
+      <div class="job-tag"><span data-lang="en">Allocated &nbsp;·&nbsp; Unmoved &nbsp;·&nbsp; Insured</span><span data-lang="ko">보호 &nbsp;·&nbsp; 부동 &nbsp;·&nbsp; 불변</span></div>
+      <p>
+        <span data-lang="en">Allocated and segregated at Malca-Amit's Singapore Free Trade Zone facility. <em>Serial-identified.</em> Fully insured under Malca-Amit's institutional insurance programme. The member's name on the certificate. A minimum equity covenant of 50% and a maximum LTV ceiling of 75% with conservative monitoring and member alerts well before any margin threshold. <em>The metal is still, and it is safe.</em></span>
+        <span data-lang="ko">Malca-Amit 싱가포르 자유무역지구 시설에 할당·분리 보관. <em>일련번호 기록.</em> 완전 보험. 회원 명의의 보관 증서. 50% 최소 자기자본 약정과 75% LTV 상한, 보수적인 모니터링과 마진 임계 도달 한참 전 회원 알림. <em>금속은 정지해 있고, 안전합니다.</em></span>
+      </p>
+    </article>
+    <article class="job-card" data-reveal data-delay="300">
+      <div class="job-eyebrow"><span data-lang="en">Job Two &nbsp;·&nbsp; Production</span><span data-lang="ko">역할 2 &nbsp;·&nbsp; 생산</span></div>
+      <h3><span data-lang="en">The credit <em>earns.</em></span><span data-lang="ko">신용은 <em>일한다.</em></span></h3>
+      <div class="job-tag"><span data-lang="en">Deployed &nbsp;·&nbsp; Productive &nbsp;·&nbsp; Compounding</span><span data-lang="ko">생산 &nbsp;·&nbsp; 운용 &nbsp;·&nbsp; 가동</span></div>
+      <p>
+        <span data-lang="en">A credit line collateralised by the bar at <em>institutional pricing.</em> Proceeds deploy into pre-IPO equity and US private credit at <em>~15% base IRR target,</em> net of fees. Illustrative; not a guarantee.</span>
+        <span data-lang="ko">금괴를 담보로 한 <em>기관급 가격의</em> 신용 한도. 자금은 프리-IPO 주식과 미국 사모 크레딧에 운용됩니다 — 수수료 차감 후 <em>약 15% 기본 IRR 목표.</em> 예시이며 보장이 아닙니다.</span>
+      </p>
+    </article>
+  </div>
+
+  <div class="flow-strip" data-reveal data-delay="300">
+    <div class="flow-step">
+      <div class="roman">I.</div>
+      <div class="action"><span data-lang="en">Deposit</span><span data-lang="ko">예치</span></div>
+      <h4><span data-lang="en">Member <em>gold bar.</em></span><span data-lang="ko">회원 <em>금괴.</em></span></h4>
+      <div class="meta"><span data-lang="en">LBMA Good Delivery · serial-identified</span><span data-lang="ko">LBMA 굿 딜리버리 · 일련번호</span></div>
+      <div class="value">1 kg<span class="sub"><span data-lang="en">Allocated</span><span data-lang="ko">할당</span></span></div>
+    </div>
+    <div class="flow-step">
+      <div class="roman">II.</div>
+      <div class="action"><span data-lang="en">Custody</span><span data-lang="ko">보관</span></div>
+      <h4><span data-lang="en">Singapore <em>FTZ.</em></span><span data-lang="ko">싱가포르 <em>FTZ.</em></span></h4>
+      <div class="meta"><span data-lang="en">Malca-Amit · segregated · insured</span><span data-lang="ko">Malca-Amit · 분리 · 보험</span></div>
+      <div class="value"><span data-lang="en">Allocated</span><span data-lang="ko">할당</span><span class="sub"><span data-lang="en">Segregated</span><span data-lang="ko">분리</span></span></div>
+    </div>
+    <div class="flow-step">
+      <div class="roman">III.</div>
+      <div class="action"><span data-lang="en">Pledge → Credit</span><span data-lang="ko">담보 → 신용</span></div>
+      <h4><span data-lang="en">Credit <em>line.</em></span><span data-lang="ko">신용 <em>한도.</em></span></h4>
+      <div class="meta"><span data-lang="en">SG institutional · 50–75% LTV band</span><span data-lang="ko">싱가포르 기관 · 50–75% LTV</span></div>
+      <div class="value"><span data-lang="en">Working</span><span data-lang="ko">가동</span><span class="sub"><span data-lang="en">Capital</span><span data-lang="ko">자본</span></span></div>
+    </div>
+    <div class="flow-step">
+      <div class="roman">IV.</div>
+      <div class="action"><span data-lang="en">Deploy</span><span data-lang="ko">운용</span></div>
+      <h4><span data-lang="en">Two <em>sleeves.</em></span><span data-lang="ko">두 <em>갈래.</em></span></h4>
+      <div class="meta"><span data-lang="en">Pre-IPO equity · US private credit</span><span data-lang="ko">프리-IPO 주식 · 미국 사모 크레딧</span></div>
+      <div class="value">~15%<span class="sub"><span data-lang="en">Base IRR · Net</span><span data-lang="ko">기본 IRR · 순</span></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ENGINES — still under §IV -->
+<section class="section engines-section" aria-labelledby="engines-heading">
+  <div class="section-divider" data-reveal>
+    <span class="num">·</span>
+    <span class="line"></span>
+    <span class="section-eyebrow"><span data-lang="en">Compounding</span><span data-lang="ko">복리</span><span class="ko" data-lang="en">복리</span></span>
+  </div>
+  <h2 class="section-heading" id="engines-heading" data-reveal data-delay="100">
+    <span data-lang="en">Two engines.<br><em>One NAV.</em></span>
+    <span data-lang="ko">두 개의 엔진.<br><em>하나의 NAV.</em></span>
+  </h2>
+  <p class="section-lede" data-reveal data-delay="200">
+    <span data-lang="en">The kilogram becomes <em>two compounding instruments at once.</em> The metal appreciates on its own arc. The credit it generates compounds on the pipeline's. The member's NAV is the sum.</span>
+    <span data-lang="ko">한 킬로는 동시에 <em>두 개의 복리 자산</em>이 됩니다. 금속은 자신의 궤적으로 가치가 오릅니다. 그것이 생성한 신용은 파이프라인의 궤적으로 복리됩니다. 회원의 NAV는 그 합입니다.</span>
+  </p>
+
+  <div class="engines-pair">
+    <article class="engine-card" data-reveal data-delay="200">
+      <div class="h"><span data-lang="en">Engine I &nbsp;·&nbsp; The Gold Floor</span><span data-lang="ko">엔진 I &nbsp;·&nbsp; 금 바닥</span></div>
+      <h3><span data-lang="en">Compounds at the rate of <em>money supply.</em></span><span data-lang="ko"><em>통화 공급</em>의 속도로 복리.</span></h3>
+      <p>
+        <span data-lang="en">The kilogram appreciates passively against won, dollar, yen — the asymmetry that makes Korean families hold it in the first place. Aurum doesn't accelerate it. It simply <em>stops the metal from sitting idle.</em></span>
+        <span data-lang="ko">한 킬로는 원, 달러, 엔 모두에 대해 수동적으로 가치가 오릅니다 — 애초에 한국 가정이 금을 보유하는 이유인 비대칭. Aurum은 그 속도를 가속하지 않습니다. 그저 <em>금속이 가만히 놓여 있는 상태를 끝낼 뿐입니다.</em></span>
+      </p>
+    </article>
+    <article class="engine-card" data-reveal data-delay="300">
+      <div class="h"><span data-lang="en">Engine II &nbsp;·&nbsp; The Pipeline</span><span data-lang="ko">엔진 II &nbsp;·&nbsp; 파이프라인</span></div>
+      <h3><span data-lang="en">Compounds at the rate of <em>the deal book.</em></span><span data-lang="ko"><em>거래 북</em>의 속도로 복리.</span></h3>
+      <p>
+        <span data-lang="en">The credit drawn against the bar deploys into pre-IPO equity at 18–25% and private credit at 10–14% gross. <em>The bar grows the floor; the deals grow the ceiling.</em> Illustrative ranges.</span>
+        <span data-lang="ko">금괴를 담보로 인출한 신용은 18–25%의 프리-IPO 주식과 10–14% 그로스의 사모 크레딧에 운용됩니다. <em>금괴는 바닥을 올리고, 거래는 천장을 올립니다.</em> 예시 범위.</span>
+      </p>
+    </article>
+  </div>
+
+  <p class="engines-sum" data-reveal data-delay="400">
+    <span data-lang="en">The metal sits still. The capital works. <em>The NAV is the sum.</em></span>
+    <span data-lang="ko">금속은 정지. 자본은 가동. <em>NAV는 그 합.</em></span>
+  </p>
+</section>
+
+<!-- V · SIMPLIFICATION -->
+<section class="section simp-section" aria-labelledby="simp-heading">
+  <div class="section-divider" data-reveal>
+    <span class="num">V.</span>
+    <span class="line"></span>
+    <span class="section-eyebrow"><span data-lang="en">Simplification</span><span data-lang="ko">단순화</span><span class="ko" data-lang="en">단순화</span></span>
+  </div>
+  <h2 class="section-heading" id="simp-heading" data-reveal data-delay="100">
+    <span data-lang="en">Four walls.<br><em>One subscription.</em></span>
+    <span data-lang="ko">네 개의 벽.<br><em>하나의 구독.</em></span>
+  </h2>
+  <p class="section-lede" data-reveal data-delay="200">
+    <span data-lang="en">Capital deployed deal-by-deal hits four practical walls. Each wall generates paperwork that compounds with every transaction. <em>One Singapore subscription replaces all of it.</em></span>
+    <span data-lang="ko">거래마다 직접 운용되는 자본은 네 개의 실질적 벽을 만납니다. 각 벽은 거래마다 누적되는 서류 작업을 만듭니다. <em>단 한 번의 싱가포르 구독이 그 모두를 대체합니다.</em></span>
+  </p>
+
+  <div class="walls-vis" data-reveal data-delay="300">
+    <div class="walls-vis-h"><span data-lang="en">Direct Route &nbsp;·&nbsp; Blocked</span><span data-lang="ko">직접 경로 &nbsp;·&nbsp; 차단</span></div>
+    <div class="walls-grid">
+      <div class="wall-cell">
+        <div class="x">×</div>
+        <div class="label"><span data-lang="en">Filings</span><span data-lang="ko">신고</span></div>
+        <div class="desc"><span data-lang="en">per-deal regulatory filings</span><span data-lang="ko">거래마다 규제 신고</span></div>
+      </div>
+      <div class="wall-cell">
+        <div class="x">×</div>
+        <div class="label"><span data-lang="en">Caps</span><span data-lang="ko">한도</span></div>
+        <div class="desc"><span data-lang="en">pool & concentration limits</span><span data-lang="ko">풀·집중도 제한</span></div>
+      </div>
+      <div class="wall-cell">
+        <div class="x">×</div>
+        <div class="label"><span data-lang="en">Reviews</span><span data-lang="ko">심사</span></div>
+        <div class="desc"><span data-lang="en">compliance review per wire</span><span data-lang="ko">송금마다 컴플라이언스 검토</span></div>
+      </div>
+      <div class="wall-cell">
+        <div class="x">×</div>
+        <div class="label"><span data-lang="en">Access</span><span data-lang="ko">접근</span></div>
+        <div class="desc"><span data-lang="en">closed to single tickets</span><span data-lang="ko">단독 티켓에는 닫혀 있음</span></div>
+      </div>
+    </div>
+    <p class="walls-result">
+      <span data-lang="en">— each direct deal, another wall. each wall, another year of paperwork.</span>
+      <span data-lang="ko">— 직접 거래마다 또 하나의 벽. 벽마다 또 한 해의 서류 작업.</span>
+    </p>
+  </div>
+
+  <div class="walls-arrow" data-reveal>↓</div>
+
+  <div class="simp-replace" data-reveal>
+    <div class="simp-replace-h"><span data-lang="en">Single-Filing Route &nbsp;·&nbsp; Aurum Funds</span><span data-lang="ko">단일 신고 경로 &nbsp;·&nbsp; Aurum 펀드</span></div>
+    <div class="simp-grid">
+      <div class="simp-cell">
+        <div class="k"><span data-lang="en">Subscription</span><span data-lang="ko">구독</span></div>
+        <div class="v"><span data-lang="en">One filing <em>at entry.</em></span><span data-lang="ko"><em>진입 시</em> 한 번의 신고.</span></div>
+      </div>
+      <div class="simp-cell">
+        <div class="k"><span data-lang="en">Bank Cycle</span><span data-lang="ko">은행 사이클</span></div>
+        <div class="v"><span data-lang="en">One <em>designated</em> channel.</span><span data-lang="ko"><em>지정된</em> 한 채널.</span></div>
+      </div>
+      <div class="simp-cell">
+        <div class="k"><span data-lang="en">Reporting</span><span data-lang="ko">보고</span></div>
+        <div class="v"><span data-lang="en">One <em>annual</em> report.</span><span data-lang="ko"><em>연 1회</em> 보고서.</span></div>
+      </div>
+      <div class="simp-cell">
+        <div class="k"><span data-lang="en">Redemption</span><span data-lang="ko">환매</span></div>
+        <div class="v"><span data-lang="en">One <em>at exit.</em></span><span data-lang="ko"><em>회수 시</em> 한 번.</span></div>
+      </div>
+    </div>
+    <div class="simp-closer"><span data-lang="en">One Subscription &nbsp;·&nbsp; Member Obligations Remain Unchanged</span><span data-lang="ko">한 번의 구독 &nbsp;·&nbsp; 회원 의무는 변동 없음</span></div>
+  </div>
+</section>
+
+<!-- VI · OPENING BOOK -->
+<section class="section book-section" aria-labelledby="book-heading">
+  <div class="section-divider" data-reveal>
+    <span class="num">VI.</span>
+    <span class="line"></span>
+    <span class="section-eyebrow"><span data-lang="en">Opening Book</span><span data-lang="ko">개시 도서</span><span class="ko" data-lang="en">개시 도서</span></span>
+  </div>
+  <h2 class="section-heading" id="book-heading" data-reveal data-delay="100">
+    <span data-lang="en">Two positions.<br><em>One opening book.</em></span>
+    <span data-lang="ko">두 개의 포지션.<br><em>하나의 개시 도서.</em></span>
+  </h2>
+  <p class="section-lede" data-reveal data-delay="200">
+    <span data-lang="en">Aurum has sourced two positions of the kind that rarely clear an open market. The fund forms around them. Participating members receive <em>pro-rata allocation in both</em> at first close.</span>
+    <span data-lang="ko">Aurum은 공개 시장에서 좀처럼 정리되지 않는 두 개의 포지션을 발굴했습니다. 펀드는 그 둘을 중심으로 형성됩니다. 참여 회원은 첫 마감에 <em>두 포지션에 대해 비례 할당</em>을 받습니다.</span>
+  </p>
+
+  <div class="deals-grid">
+    <article class="deal-card" data-reveal data-delay="200">
+      <div class="deal-band">
+        <span class="l"><span data-lang="en">Position № 01</span><span data-lang="ko">포지션 № 01</span></span>
+        <span class="r"><span data-lang="en">late-stage secondary</span><span data-lang="ko">후기 단계 세컨더리</span></span>
+      </div>
+      <div class="deal-body">
+        <div class="deal-cap"><span data-lang="en">Foundation Models &nbsp;·&nbsp; Enterprise AI</span><span data-lang="ko">파운데이션 모델 &nbsp;·&nbsp; 엔터프라이즈 AI</span></div>
+        <h3 class="deal-name"><span data-lang="en"><em>The AI assistant</em><br>businesses run on.</span><span data-lang="ko"><em>기업이 운영에 사용하는</em><br>AI 어시스턴트.</span></h3>
+        <div class="deal-tag"><span data-lang="en">Used inside Fortune 500 firms. Revenue growing at a rare pace.</span><span data-lang="ko">포춘 500대 기업이 사용. 보기 드문 속도로 매출 성장.</span></div>
+        <p>
+          <span data-lang="en">A genuinely scarce secondary opportunity at current valuation. Aurum routes through a <em>direct co-investor relationship.</em></span>
+          <span data-lang="ko">현 밸류에이션 기준으로 진정으로 희소한 세컨더리 기회. Aurum은 <em>직접 공동투자 관계</em>를 통해 접근합니다.</span>
+        </p>
+        <p>
+          <span data-lang="en">Primary market is closed; secondary allocations are tightly curated. <em>Names disclosed under NDA.</em></span>
+          <span data-lang="ko">프라이머리 시장은 마감, 세컨더리 할당은 엄격하게 큐레이션됩니다. <em>회사명은 NDA 하 공개.</em></span>
+        </p>
+      </div>
+      <div class="deal-foot">
+        <div>
+          <div class="k"><span data-lang="en">Aurum Allocation</span><span data-lang="ko">Aurum 할당</span></div>
+          <div class="v">$10M</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="k"><span data-lang="en">Target</span><span data-lang="ko">목표</span></div>
+          <div class="v italic"><span data-lang="en">at close</span><span data-lang="ko">마감 시</span></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="deal-card" data-reveal data-delay="300">
+      <div class="deal-band">
+        <span class="l"><span data-lang="en">Position № 02</span><span data-lang="ko">포지션 № 02</span></span>
+        <span class="r"><span data-lang="en">pre-IPO crossover</span><span data-lang="ko">프리-IPO 크로스오버</span></span>
+      </div>
+      <div class="deal-body">
+        <div class="deal-cap"><span data-lang="en">Defense &nbsp;·&nbsp; AI</span><span data-lang="ko">방위 &nbsp;·&nbsp; AI</span></div>
+        <h3 class="deal-name"><span data-lang="en"><em>Autonomous defence systems</em><br>used by allied governments.</span><span data-lang="ko"><em>동맹국 정부가 운용하는</em><br>자율 방위 시스템.</span></h3>
+        <div class="deal-tag"><span data-lang="en">Active US and allied contracts. Pre-IPO crossover round.</span><span data-lang="ko">미국 및 동맹국 계약 진행. 프리-IPO 크로스오버 라운드.</span></div>
+        <p>
+          <span data-lang="en">Dual-use sector with structural tailwinds and a clear path to liquidity. <em>Closes quickly.</em></span>
+          <span data-lang="ko">구조적 순풍을 받는 듀얼유즈 섹터, 명확한 유동화 경로. <em>빠르게 마감됩니다.</em></span>
+        </p>
+        <p>
+          <span data-lang="en">Aurum routes through a late-stage crossover round; strategic ticket available because of an LP's partial reallocation. <em>Names disclosed under NDA.</em></span>
+          <span data-lang="ko">Aurum은 후기 단계 크로스오버 라운드를 통해 접근, 한 LP의 부분 재할당으로 전략적 티켓 확보. <em>회사명은 NDA 하 공개.</em></span>
+        </p>
+      </div>
+      <div class="deal-foot">
+        <div>
+          <div class="k"><span data-lang="en">Aurum Allocation</span><span data-lang="ko">Aurum 할당</span></div>
+          <div class="v">$10M</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="k"><span data-lang="en">Target</span><span data-lang="ko">목표</span></div>
+          <div class="v italic"><span data-lang="en">at close</span><span data-lang="ko">마감 시</span></div>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div class="deals-summary" data-reveal>
+    <div class="cell">
+      <div class="k"><span data-lang="en">Opening Book</span><span data-lang="ko">개시 도서</span></div>
+      <div class="v"><em>$20</em>M</div>
+      <div class="s"><span data-lang="en">two positions · closed together</span><span data-lang="ko">두 포지션 · 동시 마감</span></div>
+    </div>
+    <div class="cell">
+      <div class="k"><span data-lang="en">Per Position</span><span data-lang="ko">포지션당</span></div>
+      <div class="v"><em>$10</em>M</div>
+      <div class="s"><span data-lang="en">Aurum Funds allocation</span><span data-lang="ko">Aurum 펀드 할당</span></div>
+    </div>
+    <div class="cell">
+      <div class="k"><span data-lang="en">Close Timing</span><span data-lang="ko">마감 시기</span></div>
+      <div class="v">Q3 <em>'26</em></div>
+      <div class="s"><span data-lang="en">subject to deal timing</span><span data-lang="ko">거래 일정에 따름</span></div>
+    </div>
+  </div>
+
+  <p class="deals-disclaimer" data-reveal>
+    <span data-lang="en">Sourced positions as of MMXXVI Q1 — subject to availability and final terms at close. Specifics under NDA.</span>
+    <span data-lang="ko">MMXXVI Q1 기준 발굴 포지션 — 가용성 및 최종 조건은 마감 시 결정. 세부사항은 NDA 하 공개.</span>
+  </p>
+</section>
+
+<!-- NUMBERS strip -->
+<section class="numbers-section" aria-label="Headline numbers">
+  <div class="numbers-grid" data-reveal>
+    <div class="cell">
+      <div class="k"><span data-lang="en">Base IRR</span><span data-lang="ko">기본 IRR</span></div>
+      <div class="v">~<em>15</em>%</div>
+    </div>
+    <div class="cell">
+      <div class="k"><span data-lang="en">Upside IRR</span><span data-lang="ko">상방 IRR</span></div>
+      <div class="v"><em>18–25</em>%</div>
+    </div>
+    <div class="cell">
+      <div class="k"><span data-lang="en">Minimum</span><span data-lang="ko">최소</span></div>
+      <div class="v"><em>1</em> kg<em>+</em></div>
+    </div>
+    <div class="cell">
+      <div class="k"><span data-lang="en">Term</span><span data-lang="ko">기간</span></div>
+      <div class="v"><em>5–7</em> yr</div>
+    </div>
+  </div>
+  <p style="text-align:center;font-family:var(--font-display);font-style:italic;font-size:13px;color:var(--dim);margin-top:20px;">
+    <span data-lang="en">Targets are illustrative and not guaranteed. A hurdle of 8% per annum (compounding) applies; carry is 20% after a 100% catch-up; management fee is 2% per annum on committed capital.</span>
+    <span data-lang="ko">목표 수치는 예시이며 보장되지 않습니다. 연 8% 허들(복리)이 적용되며, 100% 캐치업 이후 20% 캐리. 관리 수수료는 약정 자본의 연 2%.</span>
+  </p>
+</section>
+
+<!-- VAULT & CUSTODY -->
 <section class="section vault-section" aria-labelledby="vault-heading">
-  <div class="section-eyebrow" data-reveal>Custody</div>
-  <h2 class="section-heading" id="vault-heading" data-reveal data-delay="100">Your Gold.<br><em class="gold-gradient">Singapore. Allocated.</em></h2>
+  <div class="section-divider" data-reveal>
+    <span class="num">·</span>
+    <span class="line"></span>
+    <span class="section-eyebrow"><span data-lang="en">Custody</span><span data-lang="ko">보관</span><span class="ko" data-lang="en">보관</span></span>
+  </div>
+  <h2 class="section-heading" id="vault-heading" data-reveal data-delay="100">
+    <span data-lang="en">Your gold.<br><em>Singapore. Allocated.</em></span>
+    <span data-lang="ko">회원의 금.<br><em>싱가포르. 할당.</em></span>
+  </h2>
   <div class="vault-layout">
     <div class="world-map-wrap" data-reveal data-delay="150">
-      <!-- Simplified world map SVG -->
       <svg class="world-map-svg" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect width="800" height="420" fill="#070706"/>
-        <!-- Continental outlines simplified -->
-        <!-- North America -->
         <path d="M60,80 L180,70 L210,90 L220,130 L200,160 L190,200 L170,230 L150,260 L120,270 L90,250 L70,220 L55,190 L50,150 L55,110 Z" fill="#1a1a18" stroke="#2a2a28" stroke-width="0.8"/>
-        <!-- South America -->
         <path d="M155,265 L195,260 L210,290 L215,320 L205,360 L185,390 L160,400 L140,380 L130,350 L135,310 L140,280 Z" fill="#1a1a18" stroke="#2a2a28" stroke-width="0.8"/>
-        <!-- Europe -->
         <path d="M330,55 L390,50 L410,65 L415,85 L400,100 L375,105 L355,100 L335,85 L325,70 Z" fill="#1a1a18" stroke="#2a2a28" stroke-width="0.8"/>
-        <!-- Africa -->
         <path d="M330,115 L395,110 L420,130 L435,165 L430,210 L420,250 L400,290 L375,310 L350,305 L325,280 L310,245 L305,205 L315,165 L320,135 Z" fill="#1a1a18" stroke="#2a2a28" stroke-width="0.8"/>
-        <!-- Asia (large mass) -->
         <path d="M415,45 L560,40 L620,55 L660,70 L675,95 L665,125 L635,145 L590,155 L545,160 L500,155 L460,145 L430,130 L410,105 L405,75 Z" fill="#1a1a18" stroke="#2a2a28" stroke-width="0.8"/>
-        <!-- Southeast Asia / Indochina -->
         <path d="M540,160 L580,158 L595,175 L590,200 L575,215 L555,212 L540,195 L535,175 Z" fill="#1a1a18" stroke="#2a2a28" stroke-width="0.8"/>
-        <!-- Malay Peninsula + Singapore area -->
         <path d="M556,200 L570,198 L576,215 L570,232 L558,238 L548,228 L546,212 Z" fill="#1a1a18" stroke="#2a2a28" stroke-width="0.8"/>
-        <!-- Australia -->
         <path d="M580,270 L660,260 L695,275 L710,300 L705,335 L685,360 L650,370 L610,360 L580,335 L565,305 L568,280 Z" fill="#1a1a18" stroke="#2a2a28" stroke-width="0.8"/>
-        <!-- UK/Ireland simplified -->
         <path d="M330,60 L345,58 L350,68 L342,78 L330,75 Z" fill="#1a1a18" stroke="#2a2a28" stroke-width="0.8"/>
-        <!-- Japan -->
         <path d="M640,85 L655,80 L665,90 L658,105 L645,108 L637,97 Z" fill="#1a1a18" stroke="#2a2a28" stroke-width="0.8"/>
       </svg>
-      <!-- Singapore dot -->
       <div class="sg-dot-wrap">
         <div class="sg-dot"></div>
         <div class="sg-tooltip">
@@ -676,42 +2094,107 @@ footer {
             Singapore Free Trade Zone<br>
             LBMA Good Delivery<br>
             Fully Insured<br>
-            Allocated &amp; Segregated Custody
+            Allocated &amp; Segregated
           </div>
         </div>
       </div>
     </div>
     <div class="vault-stats">
       <div class="vault-stat" data-reveal data-delay="200">
-        <div class="vault-stat-value">999.9 Fineness</div>
-        <div class="vault-stat-label">LBMA Good Delivery Standard</div>
+        <div class="vault-stat-value"><em>999.9</em> Fineness</div>
+        <div class="vault-stat-label">LBMA Good Delivery</div>
       </div>
       <div class="vault-stat" data-reveal data-delay="300">
-        <div class="vault-stat-value">1 Kilogram Per Bar</div>
+        <div class="vault-stat-value"><em>1 kg</em> per Bar</div>
         <div class="vault-stat-label">Physical · Serial-Numbered</div>
       </div>
       <div class="vault-stat" data-reveal data-delay="400">
-        <div class="vault-stat-value">Segregated · Allocated</div>
+        <div class="vault-stat-value">Segregated · <em>Allocated</em></div>
         <div class="vault-stat-label">Not pooled. Not lent. Yours.</div>
       </div>
       <div class="vault-stat" data-reveal data-delay="500">
-        <div class="vault-stat-value">Singapore FTZ</div>
+        <div class="vault-stat-value">Singapore <em>FTZ</em></div>
         <div class="vault-stat-label">Malca-Amit · Fully Insured</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Closing CTA -->
-<section class="section closing-section" aria-labelledby="closing-heading">
-  <div class="section-eyebrow" data-reveal>First Close</div>
-  <h2 class="section-heading" id="closing-heading" data-reveal data-delay="100">
-    The Founding Round<br>closes <em class="gold-gradient">Q3 2026.</em>
+<!-- THE PATH (4 steps to admission) -->
+<section class="section path-section" aria-labelledby="path-heading">
+  <div class="section-divider" data-reveal>
+    <span class="num">·</span>
+    <span class="line"></span>
+    <span class="section-eyebrow"><span data-lang="en">The Path</span><span data-lang="ko">절차</span><span class="ko" data-lang="en">절차</span></span>
+  </div>
+  <h2 class="section-heading" id="path-heading" data-reveal data-delay="100">
+    <span data-lang="en">Four steps.<br><em>One conversation.</em></span>
+    <span data-lang="ko">네 단계.<br><em>하나의 대화.</em></span>
   </h2>
-  <p class="closing-sub" data-reveal data-delay="200">Enquiries by introduction only.</p>
-  <div data-reveal data-delay="300">
+  <p class="section-lede" data-reveal data-delay="200">
+    <span data-lang="en">Admission is by <em>private process.</em> Each step is completed before the next is offered. The full memo is shared only after invitation.</span>
+    <span data-lang="ko">진입은 <em>비공개 절차</em>로 진행됩니다. 각 단계가 완료된 후에야 다음 단계가 제공됩니다. 투자 메모 전체는 초청 후에만 공유됩니다.</span>
+  </p>
+
+  <div class="path-grid">
+    <div class="path-step" data-reveal data-delay="200">
+      <div class="num">I.</div>
+      <div class="stage"><span data-lang="en">Indicate</span><span data-lang="ko">표명</span></div>
+      <h4><span data-lang="en">Submit a <em>brief inquiry.</em></span><span data-lang="ko">간단한 <em>문의 제출.</em></span></h4>
+      <p>
+        <span data-lang="en">A short form to the partners. On verification, you receive an <em>invitation code.</em></span>
+        <span data-lang="ko">파트너들에게 보내는 짧은 양식. 검증 후 <em>초대 코드</em>가 발송됩니다.</span>
+      </p>
+    </div>
+    <div class="path-step" data-reveal data-delay="300">
+      <div class="num">II.</div>
+      <div class="stage">NDA</div>
+      <h4><span data-lang="en">Sign the <em>NDA.</em></span><span data-lang="ko"><em>NDA</em> 서명.</span></h4>
+      <p>
+        <span data-lang="en">The code unlocks the full deck and detailed access to the two opening positions.</span>
+        <span data-lang="ko">코드로 전체 자료와 두 개시 포지션에 대한 상세 접근이 열립니다.</span>
+      </p>
+    </div>
+    <div class="path-step" data-reveal data-delay="400">
+      <div class="num">III.</div>
+      <div class="stage">IOI</div>
+      <h4><span data-lang="en">Indicate your <em>commitment.</em></span><span data-lang="ko"><em>참여 의사</em> 표명.</span></h4>
+      <p>
+        <span data-lang="en">A short Indication of Interest confirms readiness to deploy at first close.</span>
+        <span data-lang="ko">짧은 IOI로 첫 마감 시 운용 준비가 확인됩니다.</span>
+      </p>
+    </div>
+    <div class="path-step" data-reveal data-delay="500">
+      <div class="num">IV.</div>
+      <div class="stage"><span data-lang="en">Admitted</span><span data-lang="ko">승인</span></div>
+      <h4><span data-lang="en">Partner <em>approval.</em></span><span data-lang="ko">파트너 <em>승인.</em></span></h4>
+      <p>
+        <span data-lang="en">On approval, your seat in the Founding 100 is reserved and onboarding begins.</span>
+        <span data-lang="ko">승인 시 창립 100인의 자리가 예약되고 온보딩이 시작됩니다.</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- CLOSING -->
+<section class="section closing-section" aria-labelledby="closing-heading">
+  <div class="closing-seal" data-reveal><em>Au</em></div>
+  <h2 class="section-heading" id="closing-heading" data-reveal data-delay="100">
+    <span data-lang="en">The book opens <em>now.</em><br>It closes <em>at one hundred.</em></span>
+    <span data-lang="ko">도서는 <em>지금</em> 열립니다.<br><em>100인</em>에서 마감됩니다.</span>
+  </h2>
+  <div class="closing-rule" data-reveal data-delay="200"></div>
+  <p class="closing-tag" data-reveal data-delay="300">
+    <span data-lang="en">Each conversation begins at the same place.</span>
+    <span data-lang="ko">모든 대화는 같은 곳에서 시작됩니다.</span>
+  </p>
+  <div data-reveal data-delay="400">
     <a href="/interest" class="btn-primary">Inquire</a>
   </div>
+  <p class="closing-foot" data-reveal data-delay="500">
+    <span data-lang="en">Qualified &nbsp;·&nbsp; By Invitation &nbsp;·&nbsp; Confidential</span>
+    <span data-lang="ko">적격 &nbsp;·&nbsp; 초청제 &nbsp;·&nbsp; 기밀</span>
+  </p>
 </section>
 
 <!-- Footer -->
@@ -720,6 +2203,7 @@ footer {
     <div class="seal"><em>Au</em></div>
     <div class="footer-meta">
       <span class="footer-company">TACC Pte Ltd · Singapore</span>
+      <span class="footer-program">Century Club &nbsp;·&nbsp; MMXXVI</span>
     </div>
   </div>
   <p class="footer-legal">
@@ -733,8 +2217,14 @@ footer {
   'use strict';
 
   // Language
-  const lang = localStorage.getItem('lang');
-  if (lang) document.documentElement.lang = lang;
+  const savedLang = localStorage.getItem('lang');
+  if (savedLang === 'ko') {
+    document.documentElement.lang = 'ko';
+    document.documentElement.classList.remove('lang-en');
+    document.documentElement.classList.add('lang-ko');
+    document.body.classList.remove('lang-en');
+    document.body.classList.add('lang-ko');
+  }
 
   // Page veil transition
   const veil = document.getElementById('page-veil');
@@ -754,30 +2244,27 @@ footer {
   const eyebrow = document.getElementById('hero-eyebrow');
   const headline = document.getElementById('hero-headline');
   const sub = document.getElementById('hero-sub');
+  const meta = document.getElementById('hero-meta');
   const cta = document.getElementById('hero-cta');
   const scrollHint = document.getElementById('hero-scroll');
 
   function runEntrance() {
-    // 600ms: fade loader
     setTimeout(function () {
       loader.style.opacity = '0';
       setTimeout(function () { loader.style.display = 'none'; }, 400);
     }, 600);
 
-    // 700ms: nav slides in
     setTimeout(function () {
       nav.style.transition = 'transform 500ms var(--ease-entrance), opacity 500ms var(--ease-entrance)';
       nav.style.transform = 'translateY(0)';
       nav.style.opacity = '1';
     }, 700);
 
-    // 900ms: eyebrow
     setTimeout(function () {
       eyebrow.style.opacity = '1';
       eyebrow.style.transform = 'translateY(0)';
     }, 900);
 
-    // 1100ms: headline words stagger
     const words = headline.querySelectorAll('.word');
     words.forEach(function (word, i) {
       setTimeout(function () {
@@ -786,19 +2273,21 @@ footer {
       }, 1100 + i * 60);
     });
 
-    // 1400ms: sub
     setTimeout(function () {
       sub.style.opacity = '1';
       sub.style.transform = 'translateY(0)';
     }, 1400);
 
-    // 1700ms: CTA
+    setTimeout(function () {
+      meta.style.opacity = '1';
+      meta.style.transform = 'translateY(0)';
+    }, 1600);
+
     setTimeout(function () {
       cta.style.opacity = '1';
       cta.style.transform = 'translateY(0)';
-    }, 1700);
+    }, 1800);
 
-    // Scroll hint
     setTimeout(function () {
       scrollHint.style.opacity = '0.6';
     }, 2400);
@@ -859,14 +2348,13 @@ footer {
       }
     });
 
-    // Respect reduced motion
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       cancelAnimationFrame(raf);
       canvas.style.display = 'none';
     }
   }
 
-  // Scroll reveal via IntersectionObserver
+  // Scroll reveal
   const revealEls = document.querySelectorAll('[data-reveal]');
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver(function (entries) {
@@ -884,9 +2372,8 @@ footer {
 
   // Cohort grid
   const grid = document.getElementById('seat-grid');
-  const countEl = document.getElementById('cohort-count');
+  const liveCount = document.getElementById('live-count');
 
-  // Render 100 seat cells
   for (let i = 0; i < 100; i++) {
     const seat = document.createElement('div');
     seat.className = 'seat';
@@ -894,14 +2381,12 @@ footer {
     grid.appendChild(seat);
   }
 
-  // Fetch live count
   fetch('/api/v2?resource=public&op=stats')
     .then(function (r) { return r.json(); })
     .then(function (data) {
       const count = parseInt(data.founding_count || data.count || 0, 10);
       const seats = grid.querySelectorAll('.seat');
 
-      // Detect newly admitted members since last page load
       const prevCount = parseInt(sessionStorage.getItem('au_grid_admitted') || '0', 10);
       const newlyFilled = count > prevCount ? count - prevCount : 0;
       sessionStorage.setItem('au_grid_admitted', String(count));
@@ -909,29 +2394,27 @@ footer {
       for (let i = 0; i < count && i < 100; i++) {
         setTimeout(function (idx) {
           seats[idx].classList.add('filled');
-          // Animate newly-filled cells
           if (newlyFilled > 0 && idx >= count - newlyFilled) {
             animateNewGridSeat(seats[idx]);
           }
         }, i * 18, i);
       }
-      if (countEl) {
+      if (liveCount) {
         setTimeout(function () {
-          countEl.textContent = count + ' / 100';
+          liveCount.textContent = count;
         }, count * 18 + 200);
       }
     })
     .catch(function () {
-      if (countEl) countEl.textContent = '— / 100';
+      if (liveCount) liveCount.textContent = '—';
     });
 
   function animateNewGridSeat(seatEl) {
     seatEl.style.backgroundColor = '#FFD700';
     seatEl.style.transition = 'background-color 1.6s ease';
     setTimeout(function () {
-      seatEl.style.backgroundColor = 'var(--goldB)';
+      seatEl.style.backgroundColor = 'var(--goldC)';
     }, 100);
-    // Ripple overlay
     const rect = seatEl.getBoundingClientRect();
     const ripple = document.createElement('div');
     ripple.style.cssText = [
@@ -972,8 +2455,8 @@ footer {
         if (data.closed === true) {
           cdEl.style.cssText = [
             'font-family:var(--font-mono)',
-            'font-size:9px',
-            'letter-spacing:0.22em',
+            'font-size:9.5px',
+            'letter-spacing:0.28em',
             'color:var(--goldA)',
             'text-transform:uppercase'
           ].join(';');
@@ -988,14 +2471,13 @@ footer {
         cdEl.style.cssText = [
           'font-family:var(--font-mono)',
           'font-size:10px',
-          'letter-spacing:0.2em',
+          'letter-spacing:0.24em',
           'color:var(--muted)',
           'text-transform:uppercase'
         ].join(';');
         cdEl.textContent = 'First Close · ' + days + ' Days';
       })
       .catch(function () {
-        // Silent — countdown is non-critical
         cdEl.style.display = 'none';
       });
   }());

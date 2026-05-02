@@ -474,11 +474,15 @@
     submitBtn.textContent = '—';
 
     const payload = {
+      // Send both legacy and current field names so backend stays compatible.
+      name: name,
       full_name: name,
       email: email,
       country: country,
+      wealth: assets,
       investable_assets: assets,
       occupation: document.getElementById('occupation').value.trim(),
+      referral: document.getElementById('referral').value || '',
       referral_source: document.getElementById('referral').value || '',
       reverse_solicitation_ack: true
     };
