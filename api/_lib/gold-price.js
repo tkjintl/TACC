@@ -103,8 +103,9 @@ export async function getXauUsd() {
       return { ...staleKey, stale: true };
     }
     // Demo fallback: hardcoded spot so the platform renders without API keys.
-    // ~May 2026 spot ≈ $3,500/oz. Replace by setting METALS_API_KEY or GOLDAPI_KEY.
-    pricePerOz = 3500;
+    // May 2026 spot ≈ $4,700/oz. Override by setting GOLD_SPOT_FALLBACK env var
+    // or by configuring METALS_API_KEY / GOLDAPI_KEY for real-time pricing.
+    pricePerOz = Number(process.env.GOLD_SPOT_FALLBACK) || 4700;
   }
 
   const spotPerOz = pricePerOz;

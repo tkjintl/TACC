@@ -3073,14 +3073,78 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
       .catch(function(){ toast('Scenario failed', 'error'); });
   }
   document.getElementById('bot-btn').addEventListener('click', openBotLab);
-  document.getElementById('audit-btn').addEventListener('click', function(){
-    // Jump to Compliance tab and scroll to audit log section
-    goTab('compliance');
-    setTimeout(function(){
-      var el = document.getElementById('audit-tbody');
-      if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 200);
-  });
+  /* ═══════════════════════════════════════════════════════════════════
+     AUDIT BUTTON — runs platform self-test, returns copyable log
+     ═══════════════════════════════════════════════════════════════════ */
+  var auditModal = null;
+  function openAuditModal() {
+    if (!auditModal) {
+      auditModal = document.createElement('div');
+      auditModal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;padding:20px;';
+      auditModal.innerHTML = '<div style="background:var(--surface);border:1px solid var(--border);max-width:780px;width:100%;max-height:92vh;overflow:auto;padding:28px;display:flex;flex-direction:column;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">' +
+          '<div><div style="font-family:var(--font-display);font-size:24px;font-weight:300;">Platform Audit</div>' +
+          '<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;margin-top:4px;">RUNS A FULL SELF-TEST · GENERATES COPYABLE ISSUE LOG</div></div>' +
+          '<button class="b b--sm" id="audit-close">✕ Close</button>' +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">' +
+          '<button class="b b--gold" id="audit-run">▶ Run Audit</button>' +
+          '<button class="b" id="audit-copy" disabled>📋 Copy Log</button>' +
+        '</div>' +
+        '<div id="audit-summary" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:10px;">Click "Run Audit" to test the platform end-to-end.</div>' +
+        '<textarea id="audit-log" readonly style="flex:1;min-height:420px;background:var(--near);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:11px;padding:14px;line-height:1.5;resize:vertical;white-space:pre;overflow:auto;">No audit yet. Click "Run Audit" to start.</textarea>' +
+      '</div>';
+      document.body.appendChild(auditModal);
+      auditModal.addEventListener('click', function(e){ if (e.target === auditModal) auditModal.style.display = 'none'; });
+      auditModal.querySelector('#audit-close').addEventListener('click', function(){ auditModal.style.display = 'none'; });
+      auditModal.querySelector('#audit-run').addEventListener('click', runPlatformAudit);
+      auditModal.querySelector('#audit-copy').addEventListener('click', copyAuditLog);
+    }
+    auditModal.style.display = 'flex';
+  }
+  function runPlatformAudit() {
+    var runBtn = auditModal.querySelector('#audit-run');
+    var copyBtn = auditModal.querySelector('#audit-copy');
+    var sumEl = auditModal.querySelector('#audit-summary');
+    var logEl = auditModal.querySelector('#audit-log');
+    runBtn.disabled = true; runBtn.textContent = 'Running…';
+    sumEl.textContent = 'Running platform self-test (~30 Upstash cmds)…';
+    logEl.value = 'Running checks…';
+    api('run-audit', { method: 'POST' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        runBtn.disabled = false; runBtn.textContent = '▶ Run Audit';
+        if (!d || !d.ok) { sumEl.textContent = 'Audit failed: ' + (d && d.error || 'unknown'); return; }
+        var s = d.summary || {};
+        var color = s.fail > 0 ? 'var(--red)' : s.warn > 0 ? 'var(--amber)' : 'var(--green)';
+        sumEl.innerHTML = '<span style="color:' + color + ';font-weight:500;">Health ' + (s.health_pct || 0) + '%</span> · ' +
+          s.pass + ' pass · ' + s.warn + ' warn · ' + s.fail + ' fail · ' + s.total + ' total · ' + (d.elapsed_ms || 0) + 'ms';
+        logEl.value = d.log_text || JSON.stringify(d, null, 2);
+        copyBtn.disabled = false;
+      })
+      .catch(function(e){
+        runBtn.disabled = false; runBtn.textContent = '▶ Run Audit';
+        sumEl.textContent = 'Audit failed: ' + (e && e.message || 'network');
+      });
+  }
+  function copyAuditLog() {
+    var logEl = auditModal.querySelector('#audit-log');
+    var copyBtn = auditModal.querySelector('#audit-copy');
+    logEl.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    if (!ok && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(logEl.value).then(function(){
+        copyBtn.textContent = '✓ Copied'; setTimeout(function(){ copyBtn.textContent = '📋 Copy Log'; }, 1500);
+      }).catch(function(){ toast('Copy failed', 'error'); });
+    } else if (ok) {
+      copyBtn.textContent = '✓ Copied';
+      setTimeout(function(){ copyBtn.textContent = '📋 Copy Log'; }, 1500);
+    } else {
+      toast('Copy failed', 'error');
+    }
+  }
+  document.getElementById('audit-btn').addEventListener('click', openAuditModal);
 
   // Auto-resume browser timer if auto_mode is already on (e.g., reload)
   setTimeout(function(){
