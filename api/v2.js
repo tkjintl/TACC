@@ -393,6 +393,8 @@ async function handleAdmin(req, res, op) {
     case 'bot-reset':               return (await import('./_lib/bot-handlers.js')).botReset(req, res, session);
     case 'bot-set-auto':            return (await import('./_lib/bot-handlers.js')).botSetAuto(req, res);
     case 'bot-auto-tick':           return (await import('./_lib/bot-handlers.js')).botAutoTick(req, res, session);
+    case 'bot-recent':              return (await import('./_lib/bot-handlers.js')).botRecent(req, res);
+    case 'stage-index-backfill':    return adminStageIndexBackfill(req, res, session);
     // ── Phase 4 ─────────────────────────────────────────────────────────────
     case 'stats':                   return adminStats(req, res, session);
     case 'nda-queue':               return adminNdaQueue(req, res, session);
@@ -1137,6 +1139,21 @@ async function adminRecountStages(req, res, session) {
   try {
     const counts = await recountStages();
     return ok(res, { ok: true, counts });
+  } catch (e) {
+    return serverError(res, e);
+  }
+}
+
+// ── admin op=stage-index-backfill ────────────────────────────────────────────
+// One-shot helper: walks every lead and adds it to leads:by-stage:{stage}
+// sorted set. Run after deploying the bot's cheap-tick path so it has
+// candidates to pick from. Costs ~N+7 commands (one ZADD per lead).
+async function adminStageIndexBackfill(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  try {
+    const { stageIndexBackfill } = await import('./_lib/storage.js');
+    const result = await stageIndexBackfill();
+    return ok(res, { ok: true, ...result });
   } catch (e) {
     return serverError(res, e);
   }

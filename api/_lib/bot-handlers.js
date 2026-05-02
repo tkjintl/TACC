@@ -34,20 +34,28 @@ async function readBody(req) {
 
 export async function botStatus(req, res) {
   if (req.method !== 'GET') return methodNotAllowed(res);
+  // CHEAP — only reads bot:state. ~1 Upstash cmd. No audit fetch here.
   const state = await getBotState();
-  // Pull last 30 bot-actor audit events for the live feed.
-  let recent = [];
-  try {
-    const all = await globalAuditList({ limit: 100 });
-    recent = (all || []).filter((e) => e && (e.action === 'inquiry_received' || e.action === 'approve' || e.action === 'nda_uploaded' || e.action === 'nda_approved' || e.action === 'subscription_submitted' || e.action === 'wire_instructions_sent' || e.action === 'wire_received' || e.action === 'wire_cleared')).slice(0, 30);
-  } catch {}
   return ok(res, {
     ok: true,
     state,
     scenarios: Object.keys(SCENARIOS).map((k) => ({ key: k, ...SCENARIOS[k], apply: undefined })),
     intervals_ms: AUTO_INTERVALS_MS,
-    recent,
   });
+}
+
+export async function botRecent(req, res) {
+  if (req.method !== 'GET') return methodNotAllowed(res);
+  // Separate explicit op so the audit panel only hits Redis on demand.
+  let recent = [];
+  try {
+    const all = await globalAuditList({ limit: 60 });
+    recent = (all || []).filter((e) => e && [
+      'inquiry_received','approve','nda_uploaded','nda_approved','subscription_submitted',
+      'wire_instructions_sent','wire_received','wire_cleared'
+    ].indexOf(e.action) >= 0).slice(0, 30);
+  } catch {}
+  return ok(res, { ok: true, recent });
 }
 
 export async function botSetAuto(req, res) {

@@ -689,7 +689,48 @@ export async function getActivityFeed({ limit = 50 } = {}) {
 // ── Stage counters ────────────────────────────────────────────────────────────
 
 const STAGE_KEY = (stage) => `counter:stage:${stage}`;
+const STAGE_INDEX_KEY = (stage) => `leads:by-stage:${stage}`;
 const STAGES = ['inquiry', 'invited', 'nda_pending', 'subscribed', 'wire_issued', 'wire_received', 'funded'];
+
+async function _stageIndexAdd(leadId, stage) {
+  if (!leadId || !stage || !STAGES.includes(stage)) return;
+  await callExt(['ZADD', STAGE_INDEX_KEY(stage), String(Date.now()), leadId]);
+}
+
+async function _stageIndexRem(leadId, stage) {
+  if (!leadId || !stage || !STAGES.includes(stage)) return;
+  await callExt(['ZREM', STAGE_INDEX_KEY(stage), leadId]);
+}
+
+/**
+ * pickOneByStage(stage)
+ * Cheap lookup — returns the oldest lead in a stage (~3 Upstash cmds vs listLeads's ~200).
+ * Returns null if none.
+ */
+export async function pickOneByStage(stage, opts = {}) {
+  const skip = opts.skip || 0;
+  const ids = await callExt(['ZRANGE', STAGE_INDEX_KEY(stage), String(skip), String(skip)]);
+  const id = Array.isArray(ids) && ids[0];
+  if (!id) return null;
+  return getLead(id);
+}
+
+/**
+ * stageIndexBackfill()
+ * One-shot: walk all leads and populate stage indexes. Idempotent (ZADD on
+ * existing member just updates score). Run after first deploy of this feature.
+ */
+export async function stageIndexBackfill() {
+  const all = await listLeads({ limit: 1000 });
+  let added = 0;
+  for (const l of all) {
+    const stage = _resolveStage(l);
+    if (!stage) continue;
+    await _stageIndexAdd(l.id, stage);
+    added++;
+  }
+  return { added };
+}
 
 export async function getStageCounts() {
   const out = {};
@@ -721,6 +762,11 @@ export async function transitionStage(lead, fromStage, toStage) {
   if (fromStage === toStage) return;
   if (fromStage) await _stageIncr(fromStage, -1);
   if (toStage)   await _stageIncr(toStage,   +1);
+  // Maintain per-stage sorted-set indexes so cheap pickOneByStage() works
+  if (lead && lead.id) {
+    if (fromStage) await _stageIndexRem(lead.id, fromStage);
+    if (toStage)   await _stageIndexAdd(lead.id, toStage);
+  }
   await appendAudit(lead, {
     actor:  'system',
     action: 'stage_transition',

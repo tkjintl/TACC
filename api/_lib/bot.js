@@ -22,6 +22,8 @@ import {
   addComplianceFlag,
   getJSON,
   setJSON,
+  pickOneByStage,
+  getStageCounts,
 } from './storage.js';
 
 const BOT_STATE_KEY = 'bot:state';
@@ -184,15 +186,16 @@ export const SCENARIOS = {
   },
 };
 
-// Auto-mode configuration. Speeds chosen so daily Upstash cost stays under free tier.
-//   slow:   1 tick / 5 min  → 288/day × ~8 cmds = ~2,300 cmds/day
-//   medium: 1 tick / 2 min  → 720/day × ~8 cmds = ~5,800 cmds/day
-//   fast:   1 tick / 30 sec → 2,880/day × ~8 cmds = ~23,000 cmds/day  ⚠ exceeds 10k free
+// Auto-mode configuration. Each tick is now ~6-8 Upstash cmds (uses stage
+// indexes — no full listLeads scan). Daily ceilings (assuming tab open all day):
+//   slow:   1 tick / 30 min → 48/day  × ~7 cmds = ~340 cmds/day
+//   medium: 1 tick / 10 min → 144/day × ~7 cmds = ~1,000 cmds/day
+//   fast:   1 tick / 2 min  → 720/day × ~7 cmds = ~5,000 cmds/day
 export const AUTO_INTERVALS_MS = {
   off: 0,
-  slow: 5 * 60 * 1000,
-  medium: 2 * 60 * 1000,
-  fast: 30 * 1000,
+  slow: 30 * 60 * 1000,
+  medium: 10 * 60 * 1000,
+  fast: 2 * 60 * 1000,
 };
 
 // Realistic weighted action mix for an automated platform simulation.
@@ -267,18 +270,41 @@ async function _autoNewSignup(now) {
     audit: [],
   };
   await saveLead(lead);
+  // Add to stage index so subsequent ticks can pick this lead by stage.
+  await transitionStage(lead, null, 'inquiry');
   await appendAudit(lead, { actor: 'system', action: 'inquiry_received' });
   return { kind: 'new_signup', leadId: id, leadName: lead.name };
 }
 
+// Stage-indexed cheap candidate fetch. Each call is ~3 Upstash cmds:
+//   1× ZRANGE leads:by-stage:{stage} 0 0  (1)
+//   1× GET lead:{id}                       (1)
+// Compared to listLeads which is 1 ZREVRANGE + N GETs (~200 cmds for N=200).
 async function _autoAdvanceLead(kind, session) {
-  const all = await listLeads({ limit: 200 });
-  const demoOnly = all.filter((l) => !l.deleted_at && (l.demo || l.bot_generated));
+  const STAGE_FOR_KIND = {
+    approve_to_invited:   'inquiry',
+    upload_nda:           'invited',
+    approve_nda:          'nda_pending',
+    submit_subscription:  'subscribed',
+    wire_issue:           'subscribed',
+    wire_received:        'wire_issued',
+    wire_cleared:         'wire_received',
+  };
+  const stage = STAGE_FOR_KIND[kind];
+  if (!stage) return null;
 
+  // Skip past non-demo leads (rare). Try first 3 candidates max to limit cost.
   let candidate = null;
+  for (let skip = 0; skip < 3 && !candidate; skip++) {
+    const c = await pickOneByStage(stage, { skip });
+    if (!c) return null;
+    if (c.deleted_at) continue;
+    if (!(c.demo || c.bot_generated)) continue;
+    candidate = c;
+  }
+  if (!candidate) return null;
+
   if (kind === 'approve_to_invited') {
-    candidate = demoOnly.find((l) => l.status === 'inquiry');
-    if (!candidate) return null;
     const code = 'BOT' + Math.random().toString(36).slice(2, 6).toUpperCase();
     candidate.status = 'invited';
     candidate.code = code;
@@ -289,28 +315,26 @@ async function _autoAdvanceLead(kind, session) {
     return { kind, leadId: candidate.id, leadName: candidate.name };
   }
   if (kind === 'upload_nda') {
-    candidate = demoOnly.find((l) => l.status === 'invited' && l.nda_state === 'awaiting');
-    if (!candidate) return null;
+    if (candidate.nda_state !== 'awaiting') return null;
     candidate.nda_state = 'uploaded';
     candidate.nda_uploaded_at = Date.now();
     candidate.nda_url = 'https://example.com/demo-nda.pdf';
     await saveLead(candidate);
+    await transitionStage(candidate, 'invited', 'nda_pending');
     await appendAudit(candidate, { actor: 'system', action: 'nda_uploaded' });
     return { kind, leadId: candidate.id, leadName: candidate.name };
   }
   if (kind === 'approve_nda') {
-    candidate = demoOnly.find((l) => l.nda_state === 'uploaded');
-    if (!candidate) return null;
     candidate.nda_state = 'approved';
     candidate.nda_approved_at = Date.now();
     if (candidate.status === 'invited') candidate.status = 'subscribed';
     await saveLead(candidate);
+    await transitionStage(candidate, 'nda_pending', 'subscribed');
     await appendAudit(candidate, { actor: (session && session.email) || 'tkj', action: 'nda_approved' });
     return { kind, leadId: candidate.id, leadName: candidate.name };
   }
   if (kind === 'submit_subscription') {
-    candidate = demoOnly.find((l) => l.status === 'subscribed' && !l.subscription);
-    if (!candidate) return null;
+    if (candidate.subscription && candidate.subscription.submitted_at) return null;
     const kg = parseFloat(candidate.anticipated_allocation_kg === '10_plus' ? '10' : (candidate.anticipated_allocation_kg || '2').split('_')[0]) || 2;
     candidate.subscription = {
       kg_requested: kg,
@@ -325,8 +349,7 @@ async function _autoAdvanceLead(kind, session) {
     return { kind, leadId: candidate.id, leadName: candidate.name };
   }
   if (kind === 'wire_issue') {
-    candidate = demoOnly.find((l) => l.status === 'subscribed' && (!l.wire || !l.wire.reference));
-    if (!candidate) return null;
+    if (candidate.wire && candidate.wire.reference) return null;
     candidate.wire = candidate.wire || {};
     candidate.wire.reference = `TACC-${candidate.id.slice(-8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
     candidate.wire.instructions_sent_at = Date.now();
@@ -337,8 +360,7 @@ async function _autoAdvanceLead(kind, session) {
     return { kind, leadId: candidate.id, leadName: candidate.name };
   }
   if (kind === 'wire_received') {
-    candidate = demoOnly.find((l) => l.wire && l.wire.reference && !l.wire.received_at);
-    if (!candidate) return null;
+    if (!candidate.wire || candidate.wire.received_at) return null;
     candidate.wire.received_at = Date.now();
     await saveLead(candidate);
     await transitionStage(candidate, 'wire_issued', 'wire_received');
@@ -346,14 +368,15 @@ async function _autoAdvanceLead(kind, session) {
     return { kind, leadId: candidate.id, leadName: candidate.name };
   }
   if (kind === 'wire_cleared') {
-    candidate = demoOnly.find((l) => l.wire && l.wire.received_at && !l.wire.cleared_at);
-    if (!candidate) return null;
+    if (!candidate.wire || candidate.wire.cleared_at) return null;
     candidate.wire.cleared_at = Date.now();
     candidate.status = 'funded';
     candidate.funded_at = candidate.wire.cleared_at;
-    const taken = new Set(all.filter((x) => x.member_number).map((x) => x.member_number));
-    let mn = 1;
-    while (taken.has(mn) && mn <= 100) mn++;
+    // Member-number assignment: rather than scanning all leads, cheaply use
+    // the funded counter as a seed and find next unused (worst case 5 lookups).
+    const counts = await getStageCounts();
+    let mn = (counts.funded || 0) + 1;
+    if (mn > 100) mn = 1;
     candidate.member_number = mn;
     await saveLead(candidate);
     await transitionStage(candidate, 'wire_received', 'funded');

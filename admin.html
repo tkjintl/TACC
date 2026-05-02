@@ -2883,11 +2883,11 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
         '<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;margin-bottom:8px;">AUTO-RUN · SERVER WALKS LEADS THROUGH PIPELINE WHILE TAB OPEN</div>' +
         '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:8px;">' +
           '<button class="b b--sm" data-auto-mode="off">■ Stop</button>' +
-          '<button class="b b--sm b--green" data-auto-mode="slow">▶ Slow (5min)</button>' +
-          '<button class="b b--sm b--gold" data-auto-mode="medium">▶▶ Med (2min)</button>' +
-          '<button class="b b--sm b--red" data-auto-mode="fast">▶▶▶ Fast (30s)</button>' +
+          '<button class="b b--sm b--green" data-auto-mode="slow">▶ Slow (30min)</button>' +
+          '<button class="b b--sm b--gold" data-auto-mode="medium">▶▶ Med (10min)</button>' +
+          '<button class="b b--sm b--red" data-auto-mode="fast">▶▶▶ Fast (2min)</button>' +
         '</div>' +
-        '<div id="bot-auto-status" style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:18px;">Auto mode: OFF · Browser timer drives ticks. Daily 06:00 cron runs 25 ticks if mode is on.</div>' +
+        '<div id="bot-auto-status" style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:18px;">Auto mode: OFF · Stage-indexed cheap-tick (~7 cmds/tick). Daily 06:00 cron runs 25 ticks if mode is on.</div>' +
         '<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;margin-bottom:8px;">MANUAL CONTROLS</div>' +
         '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:18px;">' +
           '<button class="b b--sm" data-bot-act="resume">▶ Resume</button>' +
@@ -2897,13 +2897,21 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
         '</div>' +
         '<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;margin-bottom:8px;">SCENARIOS (one-shot batched)</div>' +
         '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:18px;" id="bot-scenarios">Loading…</div>' +
-        '<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;margin-bottom:8px;">RECENT BOT ACTIVITY (audit tracker)</div>' +
-        '<div id="bot-recent" style="background:var(--near);border:1px solid var(--border);padding:10px 14px;margin-bottom:18px;max-height:200px;overflow:auto;font-family:var(--font-mono);font-size:10.5px;line-height:1.65;">No events yet.</div>' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
+          '<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;">RECENT BOT ACTIVITY (audit tracker)</div>' +
+          '<button class="b b--sm" id="bot-recent-load" style="font-size:10px;padding:4px 10px;">Load (1 cmd)</button>' +
+        '</div>' +
+        '<div id="bot-recent" style="background:var(--near);border:1px solid var(--border);padding:10px 14px;margin-bottom:18px;max-height:200px;overflow:auto;font-family:var(--font-mono);font-size:10.5px;line-height:1.65;">Click "Load" to fetch recent events. (Saves Upstash usage when audit not needed.)</div>' +
         '<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;margin-bottom:8px;">UPSTASH BUDGET</div>' +
         '<div id="bot-audit" style="font-family:var(--font-mono);font-size:11px;line-height:1.6;color:var(--text);margin-bottom:14px;">Run an action to populate.</div>' +
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">' +
-          '<button class="b b--sm b--red" data-bot-act="reset">⟲ Reset Bot Counters</button>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">' +
+          '<button class="b b--sm b--red" data-bot-act="reset">⟲ Reset Counters</button>' +
           '<button class="b b--sm" id="bot-refresh">⟳ Refresh Status</button>' +
+          '<button class="b b--sm" id="bot-backfill" data-tip="One-time after deploy">⊕ Backfill Index</button>' +
+        '</div>' +
+        '<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:14px;line-height:1.5;">' +
+          'COST PER ACTION (Upstash cmds): status ~1 · auto-tick ~7 · scenario ~10–25 · reset ~200 · backfill ~N+10 (one-time).' +
+          '<br>Daily ceilings: slow ≈340/day · med ≈1,000/day · fast ≈5,000/day. Free tier: 10,000/day.' +
         '</div>' +
       '</div>';
       document.body.appendChild(botModal);
@@ -2915,6 +2923,14 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
       });
       botModal.querySelectorAll('[data-auto-mode]').forEach(function(b){
         b.addEventListener('click', function(){ setAutoMode(b.dataset.autoMode); });
+      });
+      botModal.querySelector('#bot-recent-load').addEventListener('click', loadBotRecent);
+      botModal.querySelector('#bot-backfill').addEventListener('click', function(){
+        if (!confirm('Walk every lead and add to stage indexes? Costs ~N commands once.')) return;
+        api('stage-index-backfill', { method: 'POST' })
+          .then(function(r){ return r.json(); })
+          .then(function(d){ toast(d.ok ? 'Backfilled ' + d.added : 'Failed', d.ok ? 'success' : 'error'); })
+          .catch(function(){ toast('Backfill failed', 'error'); });
       });
     }
     botModal.style.display = 'flex';
@@ -2956,22 +2972,6 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
       botModal.querySelectorAll('[data-bot-scenario]').forEach(function(b){
         b.addEventListener('click', function(){ runScenario(b.dataset.botScenario); });
       });
-      // Recent bot events
-      var recent = d.recent || [];
-      var recentEl = document.getElementById('bot-recent');
-      if (!recent.length) {
-        recentEl.innerHTML = 'No events yet. Start auto-mode or run a tick to populate.';
-      } else {
-        recentEl.innerHTML = recent.map(function(e){
-          var act = (typeof humanizeAction === 'function') ? humanizeAction(e.action) : (e.action || '');
-          var actor = (typeof humanizeActor === 'function') ? humanizeActor(e.actor, allLeads) : (e.actor || 'system');
-          var target = e.target_name || '';
-          return '<div style="display:flex;justify-content:space-between;gap:12px;padding:3px 0;border-bottom:1px solid var(--border);">' +
-            '<div><strong style="color:var(--goldA);">' + esc(actor) + '</strong> ' + esc(act) + (target ? ' <span style="color:var(--muted);">· ' + esc(target) + '</span>' : '') + '</div>' +
-            '<div style="color:var(--muted);white-space:nowrap;">' + relTime(e.at) + '</div>' +
-          '</div>';
-        }).join('');
-      }
       // Upstash budget
       var cmds = s.estimated_upstash_cmds || 0;
       var pct = Math.round((cmds / 10000) * 100);
@@ -2982,6 +2982,27 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
         '</div>' +
         '<div style="font-size:10px;color:var(--muted);margin-top:6px;">Slow ≈2.3k/day · Medium ≈5.8k/day · Fast ≈23k/day (over free tier — use sparingly)</div>';
     }).catch(function(){});
+  }
+
+  function loadBotRecent() {
+    var el = document.getElementById('bot-recent');
+    el.innerHTML = 'Loading…';
+    api('bot-recent').then(function(r){ return r.json(); }).then(function(d){
+      var recent = (d && d.recent) || [];
+      if (!recent.length) {
+        el.innerHTML = 'No bot events yet. Start auto-mode or run a tick.';
+        return;
+      }
+      el.innerHTML = recent.map(function(e){
+        var act = (typeof humanizeAction === 'function') ? humanizeAction(e.action) : (e.action || '');
+        var actor = (typeof humanizeActor === 'function') ? humanizeActor(e.actor, allLeads) : (e.actor || 'system');
+        var target = e.target_name || '';
+        return '<div style="display:flex;justify-content:space-between;gap:12px;padding:3px 0;border-bottom:1px solid var(--border);">' +
+          '<div><strong style="color:var(--goldA);">' + esc(actor) + '</strong> ' + esc(act) + (target ? ' <span style="color:var(--muted);">· ' + esc(target) + '</span>' : '') + '</div>' +
+          '<div style="color:var(--muted);white-space:nowrap;">' + relTime(e.at) + '</div>' +
+        '</div>';
+      }).join('');
+    }).catch(function(){ el.innerHTML = 'Load failed.'; });
   }
 
   function setAutoMode(mode) {
@@ -3009,13 +3030,10 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
         .then(function(r){ return r.json(); })
         .then(function(d){
           botTickInFlight = false;
-          // Quietly refresh affected views; don't toast on every tick.
-          if (botModal && botModal.style.display !== 'none') refreshBotStatus();
-          // Throttled refresh of pipeline/today (every 4th tick) to keep load low
-          window._botRefreshCounter = (window._botRefreshCounter || 0) + 1;
-          if (window._botRefreshCounter % 4 === 0) {
-            loadPipeline(); loadDecisionLanes(); loadActivityTimeline();
-          }
+          // No automatic status refresh — that adds 1 cmd per tick. Operator
+          // can hit "Refresh Status" or close+reopen modal to see updated counts.
+          // No automatic pipeline reload either — stale dashboard is fine
+          // since the test platform isn't user-facing right now.
         })
         .catch(function(){ botTickInFlight = false; });
     }, botCurrentInterval);
