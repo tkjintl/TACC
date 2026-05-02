@@ -8,6 +8,7 @@ import {
   transitionStage,
   pickOneByStage,
   getStageCounts,
+  stageIndexBackfill,
 } from './storage.js';
 
 const PROFILES = [
@@ -62,13 +63,19 @@ async function createSignup(now, log) {
 
 async function advanceOne(stage, kind, session, log) {
   let candidate = null;
-  for (let skip = 0; skip < 3 && !candidate; skip++) {
+  // Look up to 6 candidates; prefer demo/bot leads but accept any non-deleted
+  // lead so simulation works on existing seeded data too.
+  let firstAny = null;
+  for (let skip = 0; skip < 6 && !candidate; skip++) {
     const c = await pickOneByStage(stage, { skip });
-    if (!c) return false;
+    if (!c) break;
     if (c.deleted_at) continue;
-    if (!(c.demo || c.bot_generated)) continue;
-    candidate = c;
+    if (!firstAny) firstAny = c;
+    if (c.demo || c.bot_generated || (c.id || '').startsWith('demo_')) {
+      candidate = c;
+    }
   }
+  if (!candidate) candidate = firstAny;
   if (!candidate) return false;
 
   const actor = (session && session.email) || 'sim';
@@ -154,6 +161,14 @@ export async function runSimulation(session) {
   log.push(`AURUM TACC — SIMULATION RUN`);
   log.push(`Started: ${new Date(start).toISOString()}`);
   log.push(``);
+
+  // 0. Self-heal stage indexes — ensures pickOneByStage finds candidates
+  // from legacy seeded data that pre-dates the indexed transitionStage path.
+  try {
+    const r = await stageIndexBackfill();
+    log.push(`(index sync · ${r.added} leads · indexed)`);
+    log.push(``);
+  } catch {}
 
   // 1. Create 5 new signups
   log.push('STAGE 1 · NEW SIGNUPS');
