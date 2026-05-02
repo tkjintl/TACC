@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
 <meta name="theme-color" content="#070706">
-<title>Request an Introduction — The Aurum Century Club</title>
+<title>Inquire — The Aurum Century Club</title>
 <meta name="description" content="Submit an enquiry to join the Aurum Century Club founding round. By introduction only.">
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23070706'/><rect x='4' y='4' width='24' height='24' fill='none' stroke='%23C5A572' stroke-width='1'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='14' font-style='italic' fill='%23C5A572'>Au</text></svg>">
@@ -330,6 +330,16 @@
           </select>
         </div>
 
+        <div class="field-group" style="border-top:1px solid var(--border);padding-top:24px;margin-top:8px;">
+          <label style="display:flex;gap:12px;align-items:flex-start;cursor:pointer;font-family:var(--font-ui);font-size:13px;line-height:1.6;color:var(--text);">
+            <input type="checkbox" id="reverse-solicit" name="reverse_solicitation_ack" value="1" required style="margin-top:3px;flex-shrink:0;">
+            <span>
+              I confirm that I am submitting this enquiry on my own initiative. The Aurum Century Club has not solicited my interest, and no marketing material has been directed to me. I am requesting information of my own accord.
+            </span>
+          </label>
+          <div class="field-error" id="err-reverse-solicit" style="display:none;margin-top:8px;">Please confirm to continue.</div>
+        </div>
+
         <div class="form-submit-row">
           <button type="submit" class="btn-primary" id="submit-btn" style="align-self:flex-start;padding:15px 36px;">
             Submit Enquiry
@@ -452,6 +462,11 @@
     if (!assets) { showError('err-assets', true); valid = false; }
     else showError('err-assets', false);
 
+    const ackEl = document.getElementById('reverse-solicit');
+    const ackErr = document.getElementById('err-reverse-solicit');
+    if (!ackEl.checked) { ackErr.style.display = 'block'; valid = false; }
+    else ackErr.style.display = 'none';
+
     if (!valid) return;
 
     // Disable and show pending state
@@ -464,7 +479,8 @@
       country: country,
       investable_assets: assets,
       occupation: document.getElementById('occupation').value.trim(),
-      referral_source: document.getElementById('referral').value || ''
+      referral_source: document.getElementById('referral').value || '',
+      reverse_solicitation_ack: true
     };
 
     fetch('/api/submit', {

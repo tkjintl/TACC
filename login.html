@@ -256,30 +256,39 @@ body::before {
     submitBtn.setAttribute('aria-busy', 'true');
     submitBtn.textContent = '—';
 
-    fetch('/api/login?op=member-login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'same-origin',
-      body: JSON.stringify({ email: email, password: password })
-    })
-    .then(function (r) {
-      if (r.ok) {
+    function tryLogin(op, redirect) {
+      return fetch('/api/login?op=' + op, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ email: email, password: password })
+      }).then(function (r) {
+        if (!r.ok) return { ok: false };
         return r.json().then(function (data) {
-          veil.classList.add('covering');
-          setTimeout(function () {
-            window.location.href = data.redirect || '/portfolio';
-          }, 290);
+          return { ok: true, redirect: (data && data.redirect) || redirect };
         });
-      }
-      throw new Error('auth');
-    })
-    .catch(function () {
-      submitBtn.removeAttribute('aria-busy');
-      submitBtn.textContent = 'Sign In';
-      errorEl.classList.add('visible');
-      document.getElementById('password').value = '';
-      document.getElementById('password').focus();
-    });
+      });
+    }
+
+    tryLogin('member-login', '/portfolio')
+      .then(function (res) {
+        if (res.ok) return res;
+        return tryLogin('admin-login', '/admin');
+      })
+      .then(function (res) {
+        if (!res.ok) throw new Error('auth');
+        veil.classList.add('covering');
+        setTimeout(function () {
+          window.location.href = res.redirect;
+        }, 290);
+      })
+      .catch(function () {
+        submitBtn.removeAttribute('aria-busy');
+        submitBtn.textContent = 'Sign In';
+        errorEl.classList.add('visible');
+        document.getElementById('password').value = '';
+        document.getElementById('password').focus();
+      });
   });
 }());
 </script>
