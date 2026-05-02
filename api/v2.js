@@ -396,6 +396,7 @@ async function handleAdmin(req, res, op) {
     case 'bot-recent':              return (await import('./_lib/bot-handlers.js')).botRecent(req, res);
     case 'stage-index-backfill':    return adminStageIndexBackfill(req, res, session);
     case 'run-audit':               return adminRunAudit(req, res, session);
+    case 'flush-spot-cache':        return adminFlushSpotCache(req, res, session);
     // ── Phase 4 ─────────────────────────────────────────────────────────────
     case 'stats':                   return adminStats(req, res, session);
     case 'nda-queue':               return adminNdaQueue(req, res, session);
@@ -1149,6 +1150,24 @@ async function adminRecountStages(req, res, session) {
 // One-shot helper: walks every lead and adds it to leads:by-stage:{stage}
 // sorted set. Run after deploying the bot's cheap-tick path so it has
 // candidates to pick from. Costs ~N+7 commands (one ZADD per lead).
+async function adminFlushSpotCache(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  try {
+    const { Redis } = await import('@upstash/redis').catch(() => ({ Redis: null }));
+    // Use the same callExt path as storage.js by deleting via fetch.
+    const url = process.env.KV_REST_API_URL;
+    const tok = process.env.KV_REST_API_TOKEN;
+    if (!url || !tok) return ok(res, { ok: true, note: 'no Upstash configured (in-memory mode)' });
+    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` };
+    const body = JSON.stringify(['DEL', 'gold:spot', 'gold:spot:fallback', 'xau_usd_cache', 'xau_usd_cache:fallback']);
+    const r = await fetch(`${url}/`, { method: 'POST', headers, body });
+    const j = await r.json();
+    return ok(res, { ok: true, flushed: j });
+  } catch (e) {
+    return serverError(res, e);
+  }
+}
+
 async function adminRunAudit(req, res, session) {
   if (req.method !== 'POST' && req.method !== 'GET') return methodNotAllowed(res);
   try {
