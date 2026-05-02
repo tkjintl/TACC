@@ -324,7 +324,12 @@ export async function sendPasswordReset(lead, code) {
 // ── 5. Wire instructions ──────────────────────────────────────────────────────
 
 export async function sendWireInstructions(lead, wireDetails) {
-  const ref = `${process.env.WIRE_REFERENCE_PREFIX || 'TACC'}-${lead.member_number || lead.id}`;
+  // Prefer the wire reference already stored on the lead/wireDetails so it
+  // matches what the operator console + audit log shows. Fall back only if
+  // none exists (legacy path).
+  const ref = (wireDetails && wireDetails.reference)
+    || (lead.wire && lead.wire.reference)
+    || `${process.env.WIRE_REFERENCE_PREFIX || 'TACC'}-${lead.member_number || lead.id}`;
   const subject = 'Wire Instructions — The Aurum Century Club';
 
   const bank      = process.env.WIRE_BANK_NAME       || '[WIRE_BANK_NAME not set]';

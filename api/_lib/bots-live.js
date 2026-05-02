@@ -393,7 +393,8 @@ export async function tickBots(session) {
     }
     p.last_action_at = now;
     p.last_action_text = result.text || result.reason || '—';
-    advanced.push({ slot: p.slot, name: p.name, stage: p.current_stage, action: p.last_action_text });
+    // Carry email_check forward so the rollup loop can record pass/fail counts
+    advanced.push({ slot: p.slot, name: p.name, stage: p.current_stage, action: p.last_action_text, email_check: result.email_check || null });
   }
 
   // Occasionally spawn a new persona if all existing ones are funded

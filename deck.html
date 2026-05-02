@@ -177,6 +177,17 @@ em { font-style: italic; }
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+.slide-headline .hl-w,
+.slide-headline .hl-g {
+  display: block;
+}
+.slide-headline .hl-g {
+  font-style: italic;
+  background: linear-gradient(135deg, var(--goldA), var(--goldD));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
 .slide-text {
   font-family: var(--font-display);
@@ -786,22 +797,23 @@ em { font-style: italic; }
    ═══════════════════════════════════════════════════════════════════ */
 .stress-matrix {
   display: grid;
-  grid-template-columns: 38mm 1fr 1fr 1fr;
+  grid-template-columns: 36mm 1fr 1fr 1fr;
+  grid-auto-rows: minmax(0, auto);
   gap: 1px;
   background: var(--border);
   border: 1px solid var(--border);
-  margin-top: 6mm;
+  margin-top: 2mm;
 }
 .sm-cell {
   background: var(--near);
-  padding: 11px 14px;
+  padding: 8px 12px;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 .sm-h {
   font-family: var(--font-mono);
-  font-size: 8pt;
+  font-size: 7.5pt;
   letter-spacing: 0.22em;
   color: var(--muted);
   text-transform: uppercase;
@@ -809,31 +821,24 @@ em { font-style: italic; }
 .sm-h-scn {
   font-family: var(--font-display);
   font-style: italic;
-  font-size: 16pt;
+  font-size: 13pt;
   color: var(--goldC);
-  margin-bottom: 4px;
+  line-height: 1.1;
 }
 .sm-h-scn .delta {
   font-family: var(--font-mono);
   font-style: normal;
-  font-size: 11pt;
+  font-size: 9pt;
   color: var(--muted);
   display: block;
   letter-spacing: 0.06em;
-  margin-top: 2px;
-}
-.sm-row-h {
-  font-family: var(--font-display);
-  font-size: 12pt;
-  color: var(--text);
-  font-style: italic;
-  letter-spacing: 0.02em;
+  margin-top: 3px;
 }
 .sm-val {
   font-family: var(--font-mono);
-  font-size: 13pt;
+  font-size: 11pt;
   letter-spacing: 0.02em;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
   color: var(--goldB);
 }
 .sm-val.ok { color: var(--green); }
@@ -841,20 +846,20 @@ em { font-style: italic; }
 .sm-val.alert { color: var(--red); }
 .sm-note {
   font-family: var(--font-ui);
-  font-size: 8.5pt;
-  line-height: 1.5;
+  font-size: 7.5pt;
+  line-height: 1.4;
   color: var(--muted);
 }
 .stress-take {
   font-family: var(--font-display);
   font-style: italic;
-  font-size: 12pt;
+  font-size: 11pt;
   color: var(--goldB);
-  margin-top: 4mm;
-  padding-left: 14px;
+  margin-top: 3mm;
+  padding-left: 12px;
   border-left: 1px solid var(--goldBorderS);
-  max-width: 100ch;
-  line-height: 1.5;
+  max-width: 110ch;
+  line-height: 1.45;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -1207,7 +1212,10 @@ em { font-style: italic; }
     </div>
   </header>
   <div class="slide-body">
-    <h2 class="slide-headline">One hundred <em>principals</em>.<br>Not a market.</h2>
+    <h2 class="slide-headline">
+      <span class="hl-w">One hundred principals.</span>
+      <span class="hl-g">Not a market.</span>
+    </h2>
     <div class="cohort-row">
       <div>
         <div class="slide-text">
@@ -1255,7 +1263,10 @@ em { font-style: italic; }
     </div>
   </header>
   <div class="slide-body">
-    <h2 class="slide-headline">The rules of money are <em>being rewritten</em>.</h2>
+    <h2 class="slide-headline">
+      <span class="hl-w">The rules of money</span>
+      <span class="hl-g">are being rewritten.</span>
+    </h2>
     <div class="slide-text">
       <p>Sovereign debt is at unprecedented peacetime levels. Central banks are accumulating gold at the fastest pace in fifty years. Reserve currency assumptions, once unspoken, are now openly questioned in the institutions whose business it is to defend them.</p>
     </div>
@@ -1301,7 +1312,10 @@ em { font-style: italic; }
     </div>
   </header>
   <div class="slide-body">
-    <h2 class="slide-headline">Gold is the <em>baseline</em>.<br>Not the allocation.</h2>
+    <h2 class="slide-headline">
+      <span class="hl-w">Gold is the baseline.</span>
+      <span class="hl-g">Not the allocation.</span>
+    </h2>
     <div class="baseline-row">
       <div>
         <div class="slide-text" style="margin-bottom: 6mm;">
@@ -1372,7 +1386,10 @@ em { font-style: italic; }
     </div>
   </header>
   <div class="slide-body">
-    <h2 class="slide-headline">One kilogram. <em>LBMA Good Delivery</em>.</h2>
+    <h2 class="slide-headline">
+      <span class="hl-w">One kilogram.</span>
+      <span class="hl-g">LBMA Good Delivery.</span>
+    </h2>
     <div class="asset-row">
       <div>
         <div class="bar-stage">
@@ -1421,7 +1438,10 @@ em { font-style: italic; }
     </div>
   </header>
   <div class="slide-body">
-    <h2 class="slide-headline">A jurisdiction that <em>keeps its word</em>.</h2>
+    <h2 class="slide-headline">
+      <span class="hl-w">A jurisdiction</span>
+      <span class="hl-g">that keeps its word.</span>
+    </h2>
     <div class="slide-text">
       <p>The Variable Capital Company is Singapore's purpose-built private fund vehicle — regulated by the Monetary Authority of Singapore, ring-fenced by statute, recognised across the major treaty network. For Korean principals, Singapore is the shortest distance between Seoul and a rule that does not change.</p>
     </div>
@@ -1471,7 +1491,11 @@ em { font-style: italic; }
     </div>
   </header>
   <div class="slide-body">
-    <h2 class="slide-headline">Gold collateralises. <em>Credit deploys</em>. Discipline returns.</h2>
+    <h2 class="slide-headline">
+      <span class="hl-w">Gold collateralises.</span>
+      <span class="hl-g">Credit deploys.</span>
+      <span class="hl-w">Discipline returns.</span>
+    </h2>
     <div class="slide-text">
       <p>The kilogram is pledged to a senior credit facility at a maximum loan-to-value of seventy-five percent. Drawn capital is deployed by the investment committee into private credit and select pre-IPO positions. Yield, principal, and metal appreciation flow through the waterfall. The collateral does not move.</p>
     </div>
@@ -1529,7 +1553,10 @@ em { font-style: italic; }
     </div>
   </header>
   <div class="slide-body">
-    <h2 class="slide-headline">Three engines. <em>One waterfall</em>.</h2>
+    <h2 class="slide-headline">
+      <span class="hl-w">Three engines.</span>
+      <span class="hl-g">One waterfall.</span>
+    </h2>
     <div class="engines-hero">
       <div class="engines-hero-num">~15%</div>
       <div class="engines-hero-label">
@@ -1584,10 +1611,11 @@ em { font-style: italic; }
     </div>
   </header>
   <div class="slide-body">
-    <h2 class="slide-headline">What happens if <em>gold moves</em>?</h2>
-    <div class="slide-text">
-      <p>The covenants are designed to absorb meaningful moves in either direction without disturbing the member's underlying position. Figures below assume a one-kilogram subscription and a facility drawn at 67% LTV at inception.</p>
-    </div>
+    <h2 class="slide-headline" style="margin-bottom: 6mm;">
+      <span class="hl-w">What happens</span>
+      <span class="hl-g">if gold moves?</span>
+    </h2>
+    <p style="font-family: var(--font-ui); font-size: 9.5pt; color: var(--muted); letter-spacing: 0.04em; margin-bottom: 5mm; max-width: 110ch;">Reference: 1 kg subscription, facility drawn at 67% LTV at inception.</p>
     <div class="stress-matrix">
       <!-- Header row -->
       <div class="sm-cell"><span class="sm-h">Scenario</span></div>
@@ -1671,7 +1699,10 @@ em { font-style: italic; }
     </div>
   </header>
   <div class="slide-body">
-    <h2 class="slide-headline">The covenants are <em>the product</em>.</h2>
+    <h2 class="slide-headline">
+      <span class="hl-w">The covenants</span>
+      <span class="hl-g">are the product.</span>
+    </h2>
     <div class="ltv-wrap">
       <div class="ltv-track">
         <div class="ltv-fill"></div>
@@ -1713,7 +1744,10 @@ em { font-style: italic; }
     </div>
   </header>
   <div class="slide-body">
-    <h2 class="slide-headline">Principals you can <em>check on</em>.</h2>
+    <h2 class="slide-headline">
+      <span class="hl-w">Principals</span>
+      <span class="hl-g">you can check on.</span>
+    </h2>
     <div class="slide-text">
       <p>The fund is managed by principals with backgrounds in US private market deployment and Korean cross-border placement. Operations are independently administered and independently audited. Names and full track record are made available to admitted members under the Subscription Documents.</p>
     </div>
@@ -1761,7 +1795,10 @@ em { font-style: italic; }
     </div>
   </header>
   <div class="slide-body">
-    <h2 class="slide-headline" style="text-align: center; margin-left: auto; margin-right: auto;">Six stages. <em>One seat</em>.</h2>
+    <h2 class="slide-headline" style="text-align: center; margin-left: auto; margin-right: auto;">
+      <span class="hl-w">Six stages.</span>
+      <span class="hl-g">One seat.</span>
+    </h2>
     <div class="close-stages">
       <div class="close-stage"><div class="close-stage-num">01</div><div class="close-stage-name">Inquiry</div></div>
       <div class="close-stage"><div class="close-stage-num">02</div><div class="close-stage-name">Invited</div></div>
