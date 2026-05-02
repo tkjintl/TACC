@@ -137,10 +137,10 @@ async function call(cmd) {
 
 // ── Primitive helpers ─────────────────────────────────────────────────────────
 
-async function setJSON(key, obj) {
+export async function setJSON(key, obj) {
   return call(['SET', key, JSON.stringify(obj)]);
 }
-async function getJSON(key) {
+export async function getJSON(key) {
   const v = await call(['GET', key]);
   if (v == null) return null;
   if (typeof v === 'object') return v; // Upstash may auto-parse

@@ -384,6 +384,13 @@ async function handleAdmin(req, res, op) {
     case 'tax-statements':          return adminTaxStatements(req, res, session);
     case 'seed-demo':               return adminSeedDemo(req, res, session);
     case 'wipe-demo':               return adminWipeDemo(req, res, session);
+    case 'bot-status':              return (await import('./_lib/bot-handlers.js')).botStatus(req, res);
+    case 'bot-scenario':            return (await import('./_lib/bot-handlers.js')).botScenario(req, res, session);
+    case 'bot-tick':                return (await import('./_lib/bot-handlers.js')).botTick(req, res, session);
+    case 'bot-pause':               return (await import('./_lib/bot-handlers.js')).botPause(req, res);
+    case 'bot-resume':              return (await import('./_lib/bot-handlers.js')).botResume(req, res);
+    case 'bot-audit':               return (await import('./_lib/bot-handlers.js')).botAudit(req, res);
+    case 'bot-reset':               return (await import('./_lib/bot-handlers.js')).botReset(req, res, session);
     // ── Phase 4 ─────────────────────────────────────────────────────────────
     case 'stats':                   return adminStats(req, res, session);
     case 'nda-queue':               return adminNdaQueue(req, res, session);
@@ -2117,9 +2124,11 @@ async function adminIssueCapitalCall(req, res, session) {
   let body;
   try { body = await readBody(req); } catch { return bad(res, 'invalid body'); }
 
-  const { ref, amount_krw, due_date, wire_details, notes } = body;
+  const { ref, amount_usd, amount_krw, due_date, wire_details, notes } = body;
+  // Accept either amount_usd (preferred) or amount_krw (legacy). Store as USD.
+  const amountUsd = Number(amount_usd != null ? amount_usd : amount_krw);
   if (!ref)        return bad(res, 'ref is required');
-  if (!amount_krw) return bad(res, 'amount_krw is required');
+  if (!isFinite(amountUsd) || amountUsd <= 0) return bad(res, 'amount_usd is required');
   if (!due_date)   return bad(res, 'due_date is required');
 
   const actor    = session.id || session.email || 'admin';
@@ -2129,7 +2138,7 @@ async function adminIssueCapitalCall(req, res, session) {
   const capitalCall = {
     id:           callId,
     ref:          String(ref),
-    amount_krw:   Number(amount_krw),
+    amount_usd:   amountUsd,
     due_date:     String(due_date),
     wire_details: wire_details || null,
     notes:        notes       || null,
@@ -2153,7 +2162,7 @@ async function adminIssueCapitalCall(req, res, session) {
         id:      msgId,
         type:    'amber',
         subject: `Capital Call: ${ref}`,
-        body:    `A capital call has been issued.\n\nReference: ${ref}\nAmount: ₩${Number(amount_krw).toLocaleString()}\nDue: ${due_date}\n${notes ? '\nNotes: ' + notes : ''}`,
+        body:    `A capital call has been issued.\n\nReference: ${ref}\nAmount: $${amountUsd.toLocaleString()}\nDue: ${due_date}\n${notes ? '\nNotes: ' + notes : ''}`,
         sent_at: new Date(issuedAt).toISOString(),
         read_at: null,
         sender:  'admin',
