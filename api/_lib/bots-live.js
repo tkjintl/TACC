@@ -17,6 +17,58 @@ import {
   resolveLeadStage,
   getLead,
 } from './storage.js';
+import * as Email from './email.js';
+
+// ─── Email validation harness ────────────────────────────────────────────────
+// Renders an email template via preview mode + checks required tokens are
+// present in the body. Returns { ok, type, issues[] }.
+async function _validateEmail(type, lead, extra) {
+  Email._PREVIEW.enabled = true;
+  Email._PREVIEW.captured = null;
+  try {
+    if (type === 'invitation')               await Email.sendInvitation(lead, extra.code);
+    else if (type === 'inquiry_ack')         await Email.sendInquiryAck(lead);
+    else if (type === 'wire_instructions')   await Email.sendWireInstructions(lead, extra);
+    else if (type === 'funded_confirmation') await Email.sendFundedConfirmation(lead);
+    else if (type === 'quarterly_letter')    await Email.sendQuarterlyLetterNotification(lead, extra);
+    else if (type === 'vault_verification')  await Email.sendVaultVerificationNotification(lead, extra);
+    else return { ok: false, type, issues: [`unknown email type: ${type}`] };
+  } finally {
+    Email._PREVIEW.enabled = false;
+  }
+  const cap = Email._PREVIEW.captured;
+  if (!cap) return { ok: false, type, issues: ['email function did not call sendRaw'] };
+  const issues = [];
+  if (!cap.to || !String(cap.to).includes('@'))                 issues.push('to: missing or invalid');
+  if (!cap.subject || cap.subject.length < 8)                   issues.push('subject: empty or too short');
+  if (!cap.html || cap.html.length < 200)                       issues.push('html: empty or too short');
+  if (!cap.text || cap.text.length < 40)                        issues.push('text: empty or too short');
+  // Token-presence checks per type
+  const html = cap.html || '';
+  const text = cap.text || '';
+  if (type === 'invitation') {
+    if (extra.code && !html.includes(extra.code))               issues.push('html: access code missing');
+    if (extra.code && !text.includes(extra.code))               issues.push('text: access code missing');
+    if (lead.name && !html.includes(_escapeForCheck(lead.name)))issues.push('html: member name missing');
+  }
+  if (type === 'wire_instructions') {
+    if (extra && extra.reference && !html.includes(extra.reference)) issues.push('html: wire reference missing');
+    if (extra && extra.amount_usd != null) {
+      const amt = Number(extra.amount_usd);
+      if (amt > 0 && !html.includes(amt.toLocaleString())) issues.push('html: wire amount missing');
+    }
+  }
+  if (type === 'funded_confirmation') {
+    if (lead.member_number != null && !html.includes(String(lead.member_number))) issues.push('html: member number missing');
+  }
+  return { ok: issues.length === 0, type, issues, subject: cap.subject, html_len: html.length, text_len: text.length };
+}
+
+function _escapeForCheck(s) { return String(s); }
+function _emailCheckText(check) {
+  if (check.ok) return `✓ email[${check.type}] OK · "${check.subject}" · html=${check.html_len}b text=${check.text_len}b`;
+  return `✗ email[${check.type}] FAIL · ${check.issues.join('; ')}`;
+}
 
 const STATE_KEY = 'bots:live:state';
 
@@ -99,6 +151,11 @@ async function _createPersonaLead(template, now) {
   await saveLead(lead);
   await transitionStage(lead, null, 'inquiry');
   await appendAudit(lead, { actor: 'bot', action: 'inquiry_received', memo: `${template.name} submitted /interest form` });
+  // Validate inquiry-acknowledgement email
+  try {
+    const ec = await _validateEmail('inquiry_ack', lead, {});
+    lead._lastEmailCheck = ec;
+  } catch {}
   return lead;
 }
 
@@ -194,7 +251,8 @@ async function _advancePersona(persona, session) {
     await saveLead(lead);
     await transitionStage(lead, 'inquiry', 'invited');
     await appendAudit(lead, { actor: (session && session.email) || 'tkj', action: 'approve', memo: `${persona.name} approved by partner` });
-    return { advanced: true, from: 'inquiry', to: 'invited', text: 'partner approved · code issued' };
+    const ec = await _validateEmail('invitation', lead, { code: lead.code });
+    return { advanced: true, from: 'inquiry', to: 'invited', text: 'partner approved · code issued · ' + _emailCheckText(ec), email_check: ec };
   }
   if (stage === 'invited') {
     // Member uploads NDA
@@ -233,7 +291,8 @@ async function _advancePersona(persona, session) {
     await saveLead(lead);
     await transitionStage(lead, 'subscribed', 'wire_issued');
     await appendAudit(lead, { actor: (session && session.email) || 'tkj', action: 'wire_instructions_sent', memo: `${kg} kg · $${lead.wire.amount_usd.toLocaleString()}` });
-    return { advanced: true, from: 'subscribed', to: 'wire_issued', text: `subscription submitted · wire issued ($${lead.wire.amount_usd.toLocaleString()})` };
+    const ec = await _validateEmail('wire_instructions', lead, { reference: lead.wire.reference, amount_usd: lead.wire.amount_usd });
+    return { advanced: true, from: 'subscribed', to: 'wire_issued', text: `subscription submitted · wire issued ($${lead.wire.amount_usd.toLocaleString()}) · ${_emailCheckText(ec)}`, email_check: ec };
   }
   if (stage === 'wire_issued') {
     lead.wire.received_at = Date.now();
@@ -253,7 +312,8 @@ async function _advancePersona(persona, session) {
     await saveLead(lead);
     await transitionStage(lead, 'wire_received', 'funded');
     await appendAudit(lead, { actor: (session && session.email) || 'tkj', action: 'wire_cleared', memo: `member #${String(mn).padStart(3,'0')} admitted` });
-    return { advanced: true, from: 'wire_received', to: 'funded', text: `cleared & admitted · member #${String(mn).padStart(3,'0')}`, member_number: mn };
+    const ec = await _validateEmail('funded_confirmation', lead, {});
+    return { advanced: true, from: 'wire_received', to: 'funded', text: `cleared & admitted · member #${String(mn).padStart(3,'0')} · ${_emailCheckText(ec)}`, member_number: mn, email_check: ec };
   }
   // Funded — pick a post-fund action (member behaviour)
   if (stage === 'funded') {
@@ -358,8 +418,131 @@ export async function tickBots(session) {
     }
   }
 
+  // ─── Operator-bot broadcasts ─────────────────────────────────────────
+  // Periodically inject fresh content so funded personas have something to do
+  // (read messages, ack capital calls, mark letters). Drops one event per cadence.
+  if (state.tick_count % 6 === 0) {
+    // Drop a new in-portal message to one random funded persona
+    const fundedPs = state.personas.filter((p) => p.current_stage === 'funded');
+    if (fundedPs.length) {
+      const target = fundedPs[Math.floor(Math.random() * fundedPs.length)];
+      const lead = await getLead(target.leadId);
+      if (lead) {
+        const msgId = 'msg_' + Date.now().toString(36);
+        const subjects = [
+          'Q2 NAV update — preliminary',
+          'Bank confirmation: facility utilisation',
+          'Vault re-verification scheduled',
+          'New deal under review — TACC partner brief',
+          'Year-end statement availability',
+        ];
+        const subj = subjects[state.tick_count % subjects.length];
+        lead.messages = lead.messages || [];
+        lead.messages.unshift({
+          id: msgId, type: 'gold', subject: subj,
+          body: 'Synthetic operator broadcast for live test simulation.',
+          sent_at: new Date().toISOString(), read_at: null, sender: 'admin',
+        });
+        await saveLead(lead);
+        await appendAudit(lead, { actor: 'tkj@theaurumcc.com', action: 'message_sent', memo: subj });
+        advanced.push({ slot: target.slot, name: target.name, stage: 'funded', action: `partner sent message: "${subj}"` });
+      }
+    }
+  }
+  if (state.tick_count % 12 === 0) {
+    // Issue a capital call to one funded persona
+    const fundedPs = state.personas.filter((p) => p.current_stage === 'funded');
+    if (fundedPs.length) {
+      const target = fundedPs[Math.floor(Math.random() * fundedPs.length)];
+      const lead = await getLead(target.leadId);
+      if (lead) {
+        const ccId = 'cc_' + Date.now().toString(36);
+        const ref = `CC-${new Date().getFullYear()}-Q${Math.floor((new Date().getMonth())/3)+1}-${String(Math.floor(Math.random()*900)+100)}`;
+        lead.capital_calls = lead.capital_calls || [];
+        lead.capital_calls.push({
+          id: ccId, ref, amount_usd: 50000,
+          due_date: new Date(Date.now() + 14 * 86400000).toISOString().slice(0,10),
+          notes: 'Simulated capital call', status: 'pending',
+          issued_at: Date.now(), acknowledged_at: null,
+        });
+        await saveLead(lead);
+        await appendAudit(lead, { actor: 'tkj@theaurumcc.com', action: 'capital_call_issued', memo: ref });
+        advanced.push({ slot: target.slot, name: target.name, stage: 'funded', action: `partner issued capital call ${ref} ($50K)` });
+      }
+    }
+  }
+  if (state.tick_count % 24 === 0) {
+    // Publish a quarterly letter to all funded personas
+    const fundedPs = state.personas.filter((p) => p.current_stage === 'funded').slice(0, 3);
+    const q = Math.floor(new Date().getMonth() / 3) + 1;
+    const yr = new Date().getFullYear();
+    for (const p of fundedPs) {
+      const lead = await getLead(p.leadId);
+      if (!lead) continue;
+      const lid = 'letter_' + Date.now().toString(36) + '_' + p.slot;
+      lead.quarterly_letters = lead.quarterly_letters || [];
+      lead.quarterly_letters.push({
+        id: lid, quarter: q, year: yr,
+        subject: `Q${q} ${yr} — Partner Update`,
+        sent_at: new Date().toISOString(), read_at: null,
+      });
+      await saveLead(lead);
+    }
+    if (fundedPs.length) {
+      // Validate the quarterly-letter notification email format (using one persona)
+      const sample = await getLead(fundedPs[0].leadId);
+      let ecText = '';
+      if (sample) {
+        const ec = await _validateEmail('quarterly_letter', sample, { quarter: q, year: yr, subject: `Q${q} ${yr} — Partner Update` });
+        ecText = ' · ' + _emailCheckText(ec);
+      }
+      advanced.push({ slot: -1, name: 'TKJ', stage: 'funded', action: `partner published Q${q} ${yr} letter to ${fundedPs.length} members${ecText}` });
+    }
+  }
+
+  // ─── Aggressive new-persona spawn ────────────────────────────────────
+  // Every 4 ticks, spawn one fresh persona if we're under 10 total. Keeps the
+  // pre-fund pipeline visibly active even after early adopters get to funded.
+  if (state.tick_count % 4 === 0 && state.personas.length < 10) {
+    const used = new Set(state.personas.map((p) => p.name));
+    const tpl = PERSONA_TEMPLATES.find((t) => !used.has(t.name));
+    if (tpl) {
+      const lead = await _createPersonaLead(tpl, now);
+      state.personas.push({
+        slot: state.personas.length,
+        name: tpl.name, country: tpl.country, pace: tpl.pace,
+        leadId: lead.id,
+        current_stage: 'inquiry',
+        ticks_remaining_at_stage: _delay(tpl.pace),
+        last_action_at: now,
+        last_action_text: 'submitted /interest form',
+      });
+      advanced.push({ slot: state.personas.length - 1, name: tpl.name, stage: 'inquiry', action: 'new signup arrived' });
+    }
+  }
+
   state.actions_count = (state.actions_count || 0) + advanced.length;
   state.estimated_upstash_cmds = (state.estimated_upstash_cmds || 0) + advanced.length * 6 + 2;
+
+  // Roll email-check stats forward (pass / fail counts)
+  state.email_checks_total = (state.email_checks_total || 0);
+  state.email_checks_pass = (state.email_checks_pass || 0);
+  state.email_checks_fail = (state.email_checks_fail || 0);
+  state.last_email_failures = state.last_email_failures || [];
+  for (const a of advanced) {
+    if (a.email_check) {
+      state.email_checks_total++;
+      if (a.email_check.ok) state.email_checks_pass++;
+      else {
+        state.email_checks_fail++;
+        state.last_email_failures.unshift({
+          at: now, persona: a.name, type: a.email_check.type,
+          issues: a.email_check.issues,
+        });
+        if (state.last_email_failures.length > 10) state.last_email_failures = state.last_email_failures.slice(0, 10);
+      }
+    }
+  }
 
   await saveBotsState(state);
   return { ok: true, state, advanced };

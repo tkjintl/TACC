@@ -25,9 +25,19 @@ function notifyEmails() {
     .filter(Boolean);
 }
 
+// ── Preview mode (for bot email validation) ──────────────────────────────────
+// When enabled, sendRaw captures the rendered payload instead of actually
+// sending. Lets the live-bot harness verify email format/content without
+// burning Resend quota.
+export const _PREVIEW = { enabled: false, captured: null };
+
 // ── Core send ─────────────────────────────────────────────────────────────────
 
 export async function sendRaw({ to, subject, html, text, replyTo }) {
+  if (_PREVIEW.enabled) {
+    _PREVIEW.captured = { to, subject, html: html || '', text: text || '', replyTo: replyTo || null };
+    return { sent: false, reason: 'preview-mode', captured: true };
+  }
   const key = process.env.RESEND_API_KEY;
   if (!key) {
     console.log('[aurum/email] RESEND_API_KEY not set — would send:', { to, subject, text: text?.slice(0, 200) });

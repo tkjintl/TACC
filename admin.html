@@ -3092,12 +3092,19 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
     var personas = d.personas || [];
     var on = s.auto_mode === 'on';
     var sumEl = simModal.querySelector('#bots-summary');
+    var emailLine = '';
+    if (s.email_checks_total) {
+      var emailColor = s.email_checks_fail > 0 ? 'var(--red)' : 'var(--green)';
+      emailLine = ' · <span style="color:' + emailColor + ';">emails ' + s.email_checks_pass + '/' + s.email_checks_total + ' OK</span>';
+      if (s.email_checks_fail > 0) emailLine += ' · ' + s.email_checks_fail + ' fail';
+    }
     sumEl.innerHTML =
       '<span style="color:' + (on ? 'var(--green)' : 'var(--muted)') + ';font-weight:500;">' + (on ? 'RUNNING' : 'STOPPED') + '</span>' +
       ' · personas=' + personas.length +
       ' · ticks=' + (s.tick_count || 0) +
       ' · actions=' + (s.actions_count || 0) +
       ' · est cmds=' + (s.estimated_upstash_cmds || 0) +
+      emailLine +
       (s.last_tick_at ? ' · last tick ' + relTime(s.last_tick_at) : '');
     var pEl = simModal.querySelector('#bots-personas');
     if (!personas.length) {
