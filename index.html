@@ -458,7 +458,7 @@
   const gctx   = grain.getContext('2d', { alpha: true });
 
   const lowEnd = (navigator.hardwareConcurrency || 4) < 6 || window.innerWidth < 768;
-  const TARGET_COUNT = lowEnd ? 1400 : 2400;
+  const TARGET_COUNT = lowEnd ? 2400 : 4200;
 
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   let W = 0, H = 0;
@@ -498,12 +498,13 @@
 
     const data = o.getImageData(0, 0, W, H).data;
     const pts = [];
-    // Coarse scan
-    const step = Math.max(2, Math.floor(Math.sqrt((W * H) / (count * 2.2))));
+    // Tighter scan — step sized so the silhouette gets ~3-4× as many candidate
+    // pixels as we need particles, then we shuffle-trim. Yields denser glyph.
+    const step = Math.max(2, Math.floor(Math.sqrt((W * H) / (count * 4.5))));
     for (let y = 0; y < H; y += step) {
       for (let x = 0; x < W; x += step) {
         const a = data[(y * W + x) * 4 + 3];
-        if (a > 96) pts.push({ x: x + (Math.random() - 0.5) * step, y: y + (Math.random() - 0.5) * step });
+        if (a > 80) pts.push({ x: x + (Math.random() - 0.5) * step, y: y + (Math.random() - 0.5) * step });
       }
     }
     // If too few, jitter-fill
@@ -522,16 +523,16 @@
 
   // ── Shapes ────────────────────────────────────────────────
   const shapes = [
-    // Au monogram — upright serif. Stroke + fill fattens both letters so the
-    // particle sampler hits enough pixels on every stroke (the thin diagonal
-    // of the A and the curve of the u were under-sampled at fill-only).
+    // Au monogram — upright serif. Stroke + double-fill builds a dense,
+    // wide silhouette that reads unambiguously after particle sampling.
     // Centered at h*0.28 — upper third, with breathing room above the wordmark.
     (o, w, h) => {
       const fs = Math.min(w * 0.36, h * 0.62);
       o.fillStyle = '#fff';
       o.strokeStyle = '#fff';
-      o.lineWidth = fs * 0.045;
+      o.lineWidth = fs * 0.075;
       o.lineJoin = 'round';
+      o.lineCap = 'round';
       o.font = `400 ${fs}px "Cormorant Garamond", Georgia, serif`;
       o.textAlign = 'center';
       o.textBaseline = 'middle';
@@ -608,8 +609,8 @@
         y: H / 2 + (Math.random() - 0.5) * H * 1.2,
         vx: 0, vy: 0,
         tx: 0, ty: 0,
-        // visual jitter
-        size: 0.5 + Math.random() * 1.1,
+        // visual jitter — bigger dots for legibility (was 0.5–1.6)
+        size: 1.0 + Math.random() * 1.4,
         hue: Math.random(), // 0..1, mapped to gold gradient
         phase: Math.random() * Math.PI * 2,
         wob: 0.4 + Math.random() * 0.6
@@ -678,7 +679,8 @@
     }
 
     // Trail: faint clear keeps motion legible without being smeary.
-    ctx.fillStyle = 'rgba(7,7,6,0.32)';
+    // Lower alpha → particles persist longer per frame → denser silhouette read.
+    ctx.fillStyle = 'rgba(7,7,6,0.22)';
     ctx.fillRect(0, 0, W, H);
 
     const px = pointer.x, py = pointer.y;
