@@ -40,6 +40,10 @@ import {
   withIdempotency, softDeleteLead,
   addPosition, updatePosition, removePosition,
   setLastVaultVerification,
+  deleteLead, wipeGlobalAudit, wipeAllFlags,
+  saveDeal, getDeal, listDeals, dealsCount, deleteDeal, listDealIdsByDemoFlag,
+  saveLetterRecord, deleteLetterRecord, listLetterIds,
+  globalAuditAppend,
 } from './_lib/storage.js';
 import { scanForExceptions } from './_lib/exceptions.js';
 import { clientIp } from './_lib/http.js';
@@ -379,6 +383,7 @@ async function handleAdmin(req, res, op) {
     case 'letters':                 return adminLetters(req, res, session);
     case 'tax-statements':          return adminTaxStatements(req, res, session);
     case 'seed-demo':               return adminSeedDemo(req, res, session);
+    case 'wipe-demo':               return adminWipeDemo(req, res, session);
     // ── Phase 4 ─────────────────────────────────────────────────────────────
     case 'stats':                   return adminStats(req, res, session);
     case 'nda-queue':               return adminNdaQueue(req, res, session);
@@ -982,9 +987,62 @@ async function adminRecountStages(req, res, session) {
   }
 }
 
-// ── admin op=seed-demo (DEMO ONLY) ───────────────────────────────────────────
-// Populates fake leads spanning all 6 pipeline stages so the admin and
-// portfolio screens render with realistic content. No emails sent. No PDFs.
+// ── admin op=wipe-demo / op=seed-demo (DEMO ONLY) ────────────────────────────
+// Removes every artefact tagged demo:true (or whose id starts with demo_) and
+// clears the global audit / flag / deal indexes so the platform returns to a
+// clean state before re-seeding.
+
+async function adminWipeDemo(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  const result = await wipeAllDemo();
+  return ok(res, { ok: true, ...result });
+}
+
+async function wipeAllDemo() {
+  // 1. Leads
+  const all = await listLeads({ limit: 1000 });
+  let removedLeads = 0;
+  for (const l of all) {
+    if (l.demo === true || (l.id && l.id.startsWith('demo_'))) {
+      await deleteLead(l.id);
+      removedLeads++;
+    }
+  }
+
+  // 2. Audit:global
+  await wipeGlobalAudit();
+
+  // 3. Flags
+  const removedFlags = await wipeAllFlags();
+
+  // 4. Demo deals
+  const demoDealIds = await listDealIdsByDemoFlag();
+  for (const id of demoDealIds) await deleteDeal(id);
+
+  // 5. Demo letters
+  const letterIds = await listLetterIds();
+  let removedLetters = 0;
+  for (const id of letterIds) {
+    if (id && (id.startsWith('demo_') || id.startsWith('letter_demo_'))) {
+      await deleteLetterRecord(id);
+      removedLetters++;
+    }
+  }
+
+  // 6. Reset stage counters now that leads are gone
+  let counts;
+  try { counts = await recountStages(); } catch {}
+
+  return {
+    removed_leads: removedLeads,
+    removed_flags: removedFlags,
+    removed_deals: demoDealIds.length,
+    removed_letters: removedLetters,
+    counts,
+  };
+}
+
+// ── seed-demo: rich realistic dataset ────────────────────────────────────────
 
 async function adminSeedDemo(req, res, session) {
   if (req.method !== 'POST') return methodNotAllowed(res);
@@ -992,190 +1050,402 @@ async function adminSeedDemo(req, res, session) {
   const now = Date.now();
   const day = 24 * 60 * 60 * 1000;
 
+  // 0. Wipe any pre-existing demo state so re-runs stay clean.
+  let wipeStats = null;
+  try { wipeStats = await wipeAllDemo(); } catch (e) {
+    console.warn('[seed-demo] pre-wipe failed (continuing):', e && e.message);
+  }
+
+  // 1. Lead fixtures — 24 leads spanning the pipeline ────────────────────────
   const fixtures = [
-    // 1. Inquiry — just submitted
-    {
-      stage: 'inquiry',
-      name: '김민수',                                // Kim Min-su
-      email: 'demo.kim@example.com',
-      country: 'KR',
-      occupation: 'Family office principal',
-      assets: '5_10m',
-      created_at: now - 1 * day,
-    },
-    // 2. Invited — code issued, NDA awaiting
-    {
-      stage: 'invited',
-      name: '이지훈',                                // Lee Ji-hoon
-      email: 'demo.lee@example.com',
-      country: 'KR',
-      occupation: 'Tech founder',
-      assets: '10_25m',
-      created_at: now - 5 * day,
-    },
-    // 3. NDA pending review
-    {
-      stage: 'nda_pending',
-      name: '박서연',                                // Park Seo-yeon
-      email: 'demo.park@example.com',
-      country: 'KR',
-      occupation: 'Hedge fund partner',
-      assets: '25_50m',
-      created_at: now - 8 * day,
-    },
-    // 4. Subscribed — awaiting wire
-    {
-      stage: 'subscribed',
-      name: '최예진',                                // Choi Ye-jin
-      email: 'demo.choi@example.com',
-      country: 'KR',
-      occupation: 'Private investor',
-      assets: '10_25m',
-      kg_requested: 2,
-      created_at: now - 12 * day,
-    },
-    // 5. Wire issued — instructions sent
-    {
-      stage: 'wire_issued',
-      name: '정도현',                                // Jung Do-hyun
-      email: 'demo.jung@example.com',
-      country: 'KR',
-      occupation: 'Real estate principal',
-      assets: '25_50m',
-      kg_requested: 3,
-      created_at: now - 18 * day,
-    },
-    // 6. Wire received — pending clearance
-    {
-      stage: 'wire_received',
-      name: '한지영',                                // Han Ji-young
-      email: 'demo.han@example.com',
-      country: 'KR',
-      occupation: 'Bank executive',
-      assets: '5_10m',
-      kg_requested: 1,
-      created_at: now - 22 * day,
-    },
-    // 7. Funded — full member, member #001
-    {
-      stage: 'funded',
-      name: '윤상호',                                // Yoon Sang-ho
-      email: 'demo.yoon@example.com',
-      country: 'KR',
-      occupation: 'Founding partner',
-      assets: '50m_plus',
-      kg_requested: 5,
-      member_number: 1,
-      created_at: now - 35 * day,
-      with_capital_call: true,
-    },
-    // 8. Funded — member #002, with messages
-    {
-      stage: 'funded',
-      name: '강수민',                                // Kang Su-min
-      email: 'demo.kang@example.com',
-      country: 'KR',
-      occupation: 'Asset manager',
-      assets: '25_50m',
-      kg_requested: 2,
-      member_number: 2,
-      created_at: now - 30 * day,
-      with_messages: true,
-    },
-    // 9. Funded with LTV at 73% — triggers ltv-approaching
-    {
-      stage: 'funded',
-      name: '오현우',
-      email: 'demo.oh@example.com',
-      country: 'KR',
-      occupation: 'PE managing partner',
-      assets: '50m_plus',
-      kg_requested: 4,
-      member_number: 3,
-      created_at: now - 40 * day,
-      ltv_pct_target: 73,
-    },
-    // 10. Stale inquiry from 32d ago
-    {
-      stage: 'inquiry',
-      name: '서지원',
-      email: 'demo.seo@example.com',
-      country: 'KR',
-      occupation: 'Family office advisor',
-      assets: '5_10m',
-      created_at: now - 32 * day,
-    },
-    // 11. Wire issued 9d ago, not cleared — triggers wire-pending-stale
-    {
-      stage: 'wire_issued',
-      name: '권다은',
-      email: 'demo.kwon@example.com',
-      country: 'KR',
-      occupation: 'Tech executive',
-      assets: '10_25m',
-      kg_requested: 2,
-      created_at: now - 11 * day,
-      wire_age_days: 9,
-    },
-    // 12. Funded inactive 65d
-    {
-      stage: 'funded',
-      name: '문지호',
-      email: 'demo.moon@example.com',
-      country: 'KR',
-      occupation: 'Industrialist',
-      assets: '50m_plus',
-      kg_requested: 3,
-      member_number: 4,
-      created_at: now - 80 * day,
-      last_login_days_ago: 65,
-    },
-    // 13. Funded with overdue capital call
-    {
-      stage: 'funded',
-      name: '백서윤',
-      email: 'demo.baek@example.com',
-      country: 'KR',
-      occupation: 'Asset allocator',
-      assets: '25_50m',
-      kg_requested: 2,
-      member_number: 5,
-      created_at: now - 50 * day,
-      with_overdue_capital_call: true,
-    },
+    // ── 4 inquiries ─────────────────────────────────────────────────────────
+    { stage: 'inquiry', name: '김민수', email: 'demo.kim.minsu@example.com',  country: 'KR', occupation: 'Family office principal', assets: '5_10m',   created_days_ago: 1 },
+    { stage: 'inquiry', name: '서지원', email: 'demo.seo.jiwon@example.com',  country: 'KR', occupation: 'Family office advisor',  assets: '5_10m',   created_days_ago: 32 },
+    { stage: 'inquiry', name: 'Tan Wei Ming', email: 'demo.tan.weiming@example.com', country: 'SG', occupation: 'Hedge fund LP',     assets: '10_25m',  created_days_ago: 4 },
+    { stage: 'inquiry', name: 'Sato Hiroshi',  email: 'demo.sato.hiroshi@example.com', country: 'JP', occupation: 'Industrial heir', assets: '25_50m',  created_days_ago: 10 },
+
+    // ── 6 invited (codes issued, NDA awaiting) ──────────────────────────────
+    { stage: 'invited', name: '이지훈', email: 'demo.lee.jihoon@example.com', country: 'KR', occupation: 'Tech founder',           assets: '10_25m',  created_days_ago: 5 },
+    { stage: 'invited', name: '윤도경', email: 'demo.yoon.dokyung@example.com', country: 'KR', occupation: 'Real estate principal',  assets: '25_50m',  created_days_ago: 7 },
+    { stage: 'invited', name: '조현진', email: 'demo.cho.hyunjin@example.com', country: 'KR', occupation: 'Cosmetics founder',     assets: '10_25m',  created_days_ago: 9 },
+    { stage: 'invited', name: '신유빈', email: 'demo.shin.yubin@example.com', country: 'KR', occupation: 'PE associate',           assets: '5_10m',   created_days_ago: 12 },
+    { stage: 'invited', name: 'Lim Hwee Ling',  email: 'demo.lim.hweeling@example.com', country: 'SG', occupation: 'Family office CIO', assets: '50m_plus', created_days_ago: 14 },
+    { stage: 'invited', name: 'Nakamura Akira', email: 'demo.nakamura.akira@example.com', country: 'JP', occupation: 'Tech investor', assets: '25_50m', created_days_ago: 16 },
+
+    // ── 3 NDA-pending ───────────────────────────────────────────────────────
+    { stage: 'nda_pending', name: '박서연', email: 'demo.park.seoyeon@example.com', country: 'KR', occupation: 'Hedge fund partner', assets: '25_50m', created_days_ago: 18 },
+    { stage: 'nda_pending', name: '한지영', email: 'demo.han.jiyoung@example.com', country: 'KR', occupation: 'Bank executive',     assets: '5_10m',   created_days_ago: 20 },
+    { stage: 'nda_pending', name: '문지호', email: 'demo.moon.jiho@example.com',   country: 'KR', occupation: 'Industrialist',     assets: '50m_plus',created_days_ago: 22 },
+
+    // ── 2 subscribed (NDA approved, awaiting wire) ──────────────────────────
+    { stage: 'subscribed', name: '최예진', email: 'demo.choi.yejin@example.com', country: 'KR', occupation: 'Private investor',     assets: '10_25m',  kg_requested: 2, created_days_ago: 12 },
+    { stage: 'subscribed', name: '오현우', email: 'demo.oh.hyunwoo@example.com', country: 'KR', occupation: 'PE managing partner',  assets: '50m_plus',kg_requested: 4, created_days_ago: 16 },
+
+    // ── 2 wire_issued (1 stale ≥9d) ─────────────────────────────────────────
+    { stage: 'wire_issued', name: '정도현', email: 'demo.jung.dohyun@example.com', country: 'KR', occupation: 'Real estate principal', assets: '25_50m', kg_requested: 3, created_days_ago: 18, wire_age_days: 4 },
+    { stage: 'wire_issued', name: '권다은', email: 'demo.kwon.daeun@example.com', country: 'KR', occupation: 'Tech executive',     assets: '10_25m',  kg_requested: 2, created_days_ago: 26, wire_age_days: 9 },
+
+    // ── 1 wire_received ─────────────────────────────────────────────────────
+    { stage: 'wire_received', name: '배민영', email: 'demo.bae.minyoung@example.com', country: 'KR', occupation: 'Family office head', assets: '25_50m', kg_requested: 2, created_days_ago: 22 },
+
+    // ── 6 funded members (#1..#6) ───────────────────────────────────────────
+    { stage: 'funded', name: '윤상호', email: 'demo.yoon.sangho@example.com', country: 'KR', occupation: 'Founding partner',  assets: '50m_plus', kg_requested: 5, member_number: 1, created_days_ago: 110, ltv_pct_target: 55 },
+    { stage: 'funded', name: '강수민', email: 'demo.kang.sumin@example.com',  country: 'KR', occupation: 'Asset manager',     assets: '25_50m',  kg_requested: 2, member_number: 2, created_days_ago: 95,  ltv_pct_target: 60 },
+    { stage: 'funded', name: '최도윤', email: 'demo.choi.doyun@example.com',  country: 'KR', occupation: 'Hedge fund founder',assets: '50m_plus', kg_requested: 3, member_number: 3, created_days_ago: 88,  ltv_pct_target: 50 },
+    { stage: 'funded', name: '박지환', email: 'demo.park.jihwan@example.com', country: 'KR', occupation: 'PE managing partner',assets:'50m_plus', kg_requested: 4, member_number: 4, created_days_ago: 70, ltv_pct_target: 73 }, // ltv-approaching
+    { stage: 'funded', name: '김유진', email: 'demo.kim.yujin@example.com',   country: 'KR', occupation: 'Industrialist',     assets: '50m_plus', kg_requested: 3, member_number: 5, created_days_ago: 62,  ltv_pct_target: 65, last_login_days_ago: 65 }, // member-inactive
+    { stage: 'funded', name: '백서윤', email: 'demo.baek.seoyoon@example.com', country: 'KR', occupation: 'Asset allocator',   assets: '25_50m',  kg_requested: 2, member_number: 6, created_days_ago: 50,  ltv_pct_target: 58 },
   ];
 
   const seeded = [];
+  const fundedLeads = [];
   for (let i = 0; i < fixtures.length; i++) {
     const f = fixtures[i];
-    const id = `demo_${(now + i).toString(36)}`;
-    const lead = buildDemoLead(id, f, now);
-    try { await saveLead(lead); seeded.push({ id, name: f.name, stage: f.stage }); } catch (e) {
-      console.error('[seed-demo]', f.name, e);
+    const id = `demo_${(now + i).toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+    const created_at = now - (f.created_days_ago || 1) * day;
+    const lead = buildDemoLead(id, { ...f, created_at }, now);
+    try {
+      await saveLead(lead);
+      if (lead.code) { try { await bindCode(id, lead.code); } catch {} }
+      seeded.push({ id, name: f.name, stage: f.stage });
+      if (lead.status === 'funded') fundedLeads.push(lead);
+    } catch (e) {
+      console.error('[seed-demo] save lead failed', f.name, e);
     }
   }
+  // Sort funded by member_number ascending so positions index lines up.
+  fundedLeads.sort((a, b) => (a.member_number || 0) - (b.member_number || 0));
 
-  // Seed a global vault verification 95d ago to trigger vault-verification-overdue
+  // 2. Deal book ───────────────────────────────────────────────────────────────
+  const dealsSpec = [
+    { id: 'demo_deal_1', name: 'Hyundai Mezz 2026',           asset_class: 'mezz_debt',       advisor: 'Korea Capital Partners', stage: 'realized',     health: 'green', target_irr_pct: 14.2, term_months: 18, total_commitment_usd: 2_400_000, deployed_usd: 2_400_000, invested_usd: 2_400_000, marked_usd: 2_400_000, funding_source: 'reserve', member_visible: true,  created_days_ago: 240 },
+    { id: 'demo_deal_2', name: 'Samsung Pre-IPO Series F',    asset_class: 'pre_ipo_equity',  advisor: 'Seoul Growth Advisors',  stage: 'closing',      health: 'green', target_irr_pct: 22.0, term_months: 36, total_commitment_usd: 4_200_000, deployed_usd: 3_800_000, invested_usd: 3_800_000, marked_usd: 4_220_000, funding_source: 'mixed',   member_visible: true,  created_days_ago: 120 },
+    { id: 'demo_deal_3', name: 'Lotte Logistics Senior',      asset_class: 'private_credit',  advisor: 'Asian Bridge Credit',    stage: 'terms',        health: 'green', target_irr_pct:  9.8, term_months: 12, total_commitment_usd: 1_800_000, deployed_usd: 0,         invested_usd: 0,         marked_usd: 0,         funding_source: 'ltv',     member_visible: true,  created_days_ago: 30  },
+    { id: 'demo_deal_4', name: 'Coupang Bond Tranche B',      asset_class: 'mezz_debt',       advisor: 'TKJ Direct',             stage: 'due_diligence',health: 'green', target_irr_pct: 11.5, term_months: 24, total_commitment_usd: 2_000_000, deployed_usd: 0,         invested_usd: 0,         marked_usd: 0,         funding_source: 'mixed',   member_visible: false, created_days_ago: 21  },
+    { id: 'demo_deal_5', name: 'K-Beauty SPAC Bridge',        asset_class: 'private_credit',  advisor: 'Seoul Growth Advisors',  stage: 'ioi',          health: 'green', target_irr_pct: 13.0, term_months:  9, total_commitment_usd: 1_000_000, deployed_usd: 0,         invested_usd: 0,         marked_usd: 0,         funding_source: 'ltv',     member_visible: false, created_days_ago: 14  },
+    { id: 'demo_deal_6', name: 'Singapore Industrial REIT JV',asset_class: 'real_estate',     advisor: 'Asian Bridge Credit',    stage: 'live_ioi',     health: 'green', target_irr_pct: 10.2, term_months: 60, total_commitment_usd: 5_000_000, deployed_usd: 0,         invested_usd: 0,         marked_usd: 0,         funding_source: 'mixed',   member_visible: false, created_days_ago: 9   },
+    { id: 'demo_deal_7', name: 'Jeju Tourism Hotel Mezz',     asset_class: 'mezz_debt',       advisor: 'Korea Capital Partners', stage: 'review',       health: 'amber', target_irr_pct: 12.0, term_months: 36, total_commitment_usd: 3_000_000, deployed_usd: 0,         invested_usd: 0,         marked_usd: 0,         funding_source: 'reserve', member_visible: false, created_days_ago: 5   },
+    { id: 'demo_deal_8', name: 'DOA Crypto Lender Senior',    asset_class: 'private_credit',  advisor: 'TKJ Direct',             stage: 'killed',       health: 'red',   target_irr_pct: 0,    term_months:  0, total_commitment_usd: 0,         deployed_usd: 0,         invested_usd: 0,         marked_usd: 0,         funding_source: 'reserve', member_visible: false, created_days_ago: 60  },
+  ];
+  const dealsCreated = [];
+  for (const d of dealsSpec) {
+    const created_at = now - (d.created_days_ago || 30) * day;
+    const deal = {
+      id: d.id,
+      demo: true,
+      name: d.name,
+      asset_class: d.asset_class,
+      advisor: d.advisor,
+      stage: d.stage,
+      health: d.health,
+      target_irr_pct: d.target_irr_pct,
+      term_months: d.term_months,
+      total_commitment_usd: d.total_commitment_usd,
+      deployed_usd: d.deployed_usd,
+      invested_usd: d.invested_usd,
+      marked_usd: d.marked_usd,
+      funding_source: d.funding_source,
+      member_visible: !!d.member_visible,
+      created_at,
+      audit: [{ at: created_at, actor: 'system', action: 'deal_created' }],
+    };
+    try { await saveDeal(deal); dealsCreated.push(deal); }
+    catch (e) { console.error('[seed-demo] saveDeal failed', d.name, e); }
+  }
+
+  // 3. Position allocations on funded members ─────────────────────────────────
+  // Mapping by member_number → deal id + invested + marked (USD)
+  const positionPlan = {
+    1: [ { deal: 'demo_deal_1', invested: 50_000, marked: 58_000 }, { deal: 'demo_deal_2', invested: 80_000, marked: 92_000 }, { deal: 'demo_deal_3', invested: 30_000, marked: 30_000 } ],
+    2: [ { deal: 'demo_deal_1', invested: 25_000, marked: 29_000 }, { deal: 'demo_deal_2', invested: 40_000, marked: 46_000 } ],
+    3: [ { deal: 'demo_deal_1', invested: 40_000, marked: 46_000 } ],
+    4: [ { deal: 'demo_deal_1', invested: 30_000, marked: 34_500 }, { deal: 'demo_deal_2', invested: 50_000, marked: 57_500 }, { deal: 'demo_deal_3', invested: 20_000, marked: 20_000 }, { deal: 'demo_deal_5', invested: 15_000, marked: 15_000 } ],
+    5: [ { deal: 'demo_deal_1', invested: 20_000, marked: 23_000 }, { deal: 'demo_deal_2', invested: 35_000, marked: 40_250 } ],
+    6: [ { deal: 'demo_deal_2', invested: 30_000, marked: 34_500 }, { deal: 'demo_deal_3', invested: 25_000, marked: 25_000 } ],
+  };
+  const dealById = Object.fromEntries(dealsCreated.map((d) => [d.id, d]));
+  let positionsAdded = 0;
+  for (const lead of fundedLeads) {
+    const list = positionPlan[lead.member_number] || [];
+    lead.positions = lead.positions || [];
+    for (let pi = 0; pi < list.length; pi++) {
+      const p = list[pi];
+      const deal = dealById[p.deal];
+      if (!deal) continue;
+      const allocated_at = now - (60 + pi * 7) * day;
+      lead.positions.push({
+        id: `pos_${lead.id}_${pi}`,
+        deal_id: deal.id,
+        deal_name: deal.name,
+        asset_class: deal.asset_class,
+        status: deal.stage === 'realized' ? 'realized' : 'active',
+        invested_usd: p.invested,
+        marked_usd: p.marked,
+        target_irr_pct: deal.target_irr_pct,
+        term_months: deal.term_months,
+        allocated_at,
+        funding_source: deal.funding_source,
+      });
+      positionsAdded++;
+    }
+    try { await saveLead(lead); } catch {}
+  }
+
+  // 4. Capital call broadcast (members 1..6) ──────────────────────────────────
+  const ccDueOk      = now + 14 * day;          // standard due
+  const ccDueOverdue = now - 5 * day;           // member #6 overdue
+  let capitalCallsIssued = 0;
+  for (const lead of fundedLeads) {
+    const isOverdue = lead.member_number === 6;
+    const isAcked   = lead.member_number === 4;
+    const cc = {
+      id: `cc_q2_2026_${lead.id}`,
+      ref: `CC-2026-Q2-${String(lead.member_number).padStart(3, '0')}`,
+      issued_at: now - 6 * day,
+      due_date: isOverdue ? ccDueOverdue : ccDueOk,
+      amount_usd: 30_000,
+      reason: 'Q2 2026 deployment — Lotte Logistics Senior tranche participation',
+      status: isAcked ? 'acknowledged' : 'pending',
+      acknowledged_at: isAcked ? (now - 4 * day) : null,
+    };
+    lead.capital_calls = lead.capital_calls || [];
+    lead.capital_calls.push(cc);
+    try { await saveLead(lead); capitalCallsIssued++; } catch {}
+  }
+
+  // 5. Quarterly letters ──────────────────────────────────────────────────────
+  const lettersSpec = [
+    {
+      id: 'letter_demo_q4_2025',
+      quarter: 4, year: 2025,
+      subject: 'Q4 2025 — Founding Cohort Update',
+      sent_at: new Date(now - 90 * day).toISOString(),
+      sent_at_ms: now - 90 * day,
+      readByAll: true,
+    },
+    {
+      id: 'letter_demo_q1_2026',
+      quarter: 1, year: 2026,
+      subject: 'Q1 2026 — First Deployment Cycle',
+      sent_at: new Date(now - 30 * day).toISOString(),
+      sent_at_ms: now - 30 * day,
+      readByAll: false, // 4 of 6 read
+      readCount: 4,
+    },
+    {
+      id: 'letter_demo_q2_2026_draft',
+      quarter: 2, year: 2026,
+      subject: 'Q2 2026 — Mid-Cycle NAV Update',
+      sent_at: null,
+      sent_at_ms: now,
+      draft: true,
+    },
+  ];
+  let lettersAttached = 0;
+  for (const spec of lettersSpec) {
+    // Save the global letter index entry
+    const record = {
+      id: spec.id,
+      demo: true,
+      quarter: spec.quarter,
+      year: spec.year,
+      subject: spec.subject,
+      sent_at: spec.sent_at,
+      sent_at_ms: spec.sent_at_ms,
+      sender: 'tkj@theaurumcc.com',
+      draft: !!spec.draft,
+      recipient_count: spec.draft ? 0 : fundedLeads.length,
+    };
+    try { await saveLetterRecord(record); } catch (e) { console.warn('[seed-demo] saveLetterRecord', e && e.message); }
+
+    if (spec.draft) continue; // Drafts not attached to members
+
+    const targetReadCount = spec.readByAll ? fundedLeads.length : (spec.readCount || 0);
+    for (let i = 0; i < fundedLeads.length; i++) {
+      const lead = fundedLeads[i];
+      lead.quarterly_letters = lead.quarterly_letters || [];
+      lead.quarterly_letters.push({
+        id: spec.id,
+        quarter: spec.quarter,
+        year: spec.year,
+        subject: spec.subject,
+        html_body: `<p>Demo body for ${spec.subject}</p>`,
+        sent_at: spec.sent_at,
+        read_at: i < targetReadCount ? new Date(spec.sent_at_ms + 2 * day).toISOString() : null,
+        sender: 'tkj@theaurumcc.com',
+      });
+      lettersAttached++;
+    }
+    for (const lead of fundedLeads) { try { await saveLead(lead); } catch {} }
+  }
+
+  // 6. Vault verifications (2) ────────────────────────────────────────────────
+  const vvSpec = [
+    {
+      id: 'demo_vv_2026_q1',
+      title: 'Q1 2026 Independent Verification',
+      year: 2026,
+      summary: 'Malca-Amit Singapore FTZ — all 18 bars verified, sealed, weights confirmed',
+      blob_pathname: 'vault/vv-2026-q1.pdf',
+      published_at_ms: now - 30 * day,
+    },
+    {
+      id: 'demo_vv_2025_q4',
+      title: 'Q4 2025 Independent Verification',
+      year: 2025,
+      summary: 'Malca-Amit Singapore FTZ — initial 12 bars verified at allocation',
+      blob_pathname: 'vault/vv-2025-q4.pdf',
+      published_at_ms: now - 110 * day,
+    },
+  ];
+  for (const spec of vvSpec) {
+    const vv = {
+      id: spec.id,
+      title: spec.title,
+      year: spec.year,
+      summary: spec.summary,
+      blob_pathname: spec.blob_pathname,
+      published_at: new Date(spec.published_at_ms).toISOString(),
+    };
+    for (const lead of fundedLeads) {
+      lead.vault_verifications = lead.vault_verifications || [];
+      lead.vault_verifications.push({ ...vv });
+    }
+  }
+  for (const lead of fundedLeads) { try { await saveLead(lead); } catch {} }
+  // Mark the most recent vault verification as last (fresh, prevents flag)
   try {
     await setLastVaultVerification({
-      id: 'demo_vv_old',
-      title: 'Q3 2025 Vault Verification',
-      year: 2025,
-      published_at: new Date(now - 95 * day).toISOString(),
+      id: vvSpec[0].id,
+      title: vvSpec[0].title,
+      year: vvSpec[0].year,
+      published_at: new Date(vvSpec[0].published_at_ms).toISOString(),
     });
   } catch {}
 
-  // Recount counters from authoritative state
+  // 7. Tax statements (FY 2025) ───────────────────────────────────────────────
+  for (const lead of fundedLeads) {
+    lead.tax_statements = lead.tax_statements || {};
+    lead.tax_statements['2025'] = {
+      url: `https://example.com/tax/${lead.id}/2025.pdf`,
+      generated_at: new Date(now - 60 * day).toISOString(),
+      fiscal_year: 2025,
+    };
+    try { await saveLead(lead); } catch {}
+  }
+
+  // 8. Direct messages (5–8 per funded member) ───────────────────────────────
+  const messageTemplates = (lead) => [
+    { offset_days: -100, type: 'gold',  subject: 'Welcome to the Century Club',           body: `Your membership is confirmed. Allocation #${String(lead.member_number).padStart(3,'0')}. Onboarding documents attached separately.` },
+    { offset_days: -70,  type: 'gold',  subject: '30-day check-in',                       body: 'Quick check-in. NAV trending in line with mandate. Reach out anytime.' },
+    { offset_days: -30,  type: 'blue',  subject: 'Q1 2026 letter available',              body: 'Q1 letter is now in your portfolio. Headline: first deployment cycle complete.' },
+    { offset_days: -6,   type: 'amber', subject: 'Capital call issued',                   body: 'Q2 2026 capital call issued. Please acknowledge in /portfolio#cc.' },
+    { offset_days: -30,  type: 'blue',  subject: 'Vault verification VV-2026-Q1 published', body: 'Independent vault verification complete. All bars accounted for.' },
+    { offset_days: -14,  type: 'gold',  subject: 'Deal pipeline update',                  body: 'Lotte Logistics Senior moved to Terms. Coupang Bond Tranche B in DD.' },
+    { offset_days: -50,  type: 'gold',  subject: 'Reminder: KYC refresh window opens Q3', body: 'No action needed yet. We will send the refresh kit ~30 days before expiry.' },
+  ];
+  let messagesAdded = 0;
+  for (const lead of fundedLeads) {
+    const tmpl = messageTemplates(lead);
+    lead.messages = lead.messages || [];
+    for (let mi = 0; mi < tmpl.length; mi++) {
+      const t = tmpl[mi];
+      const sent = now + t.offset_days * day;
+      const isRead = Math.random() < 0.7;
+      lead.messages.push({
+        id: `msg_${lead.id}_${mi}`,
+        sent_at: sent,
+        type: t.type,
+        from: 'partner',
+        from_name: mi % 2 === 0 ? 'TKJ' : 'JWC',
+        subject: t.subject,
+        body: t.body,
+        read_at: isRead ? sent + 1 * day : null,
+      });
+      messagesAdded++;
+    }
+    try { await saveLead(lead); } catch {}
+  }
+
+  // 9. Backfill global audit stream ───────────────────────────────────────────
+  let auditAdded = 0;
+  // 9a. Per-lead audit replicated to global feed
+  const allSeeded = await listLeads({ limit: 1000 });
+  for (const lead of allSeeded) {
+    if (!(lead.demo === true || (lead.id || '').startsWith('demo_'))) continue;
+    const audits = lead.audit || [];
+    for (const e of audits) {
+      try {
+        await globalAuditAppend({
+          at: e.at || lead.created_at || now,
+          actor: e.actor || 'system',
+          action: e.action || 'unknown',
+          prev: e.prev,
+          next: e.next,
+          memo: e.memo,
+          leadId: lead.id,
+          target_type: 'lead',
+          target_id: lead.id,
+          target_name: lead.name || lead.email || lead.id,
+        });
+        auditAdded++;
+      } catch {}
+    }
+  }
+  // 9b. Operator-flavoured global events
+  const operatorEvents = [];
+  for (const lead of fundedLeads) {
+    operatorEvents.push({ at: lead.funded_at || (now - 30 * day), action: 'wire_cleared',     target_name: lead.name, leadId: lead.id, memo: `TKJ marked wire received for ${lead.name}` });
+    operatorEvents.push({ at: (lead.nda_approved_at || (now - 60 * day)),     action: 'nda_approved',     target_name: lead.name, leadId: lead.id, memo: `TKJ approved NDA for ${lead.name}` });
+  }
+  // Communications-level events
+  operatorEvents.push({ at: now - 90 * day, action: 'quarterly_letter_published', target_name: 'Q4 2025 letter', target_id: 'letter_demo_q4_2025', memo: 'TKJ published Q4 2025 quarterly letter' });
+  operatorEvents.push({ at: now - 30 * day, action: 'quarterly_letter_published', target_name: 'Q1 2026 letter', target_id: 'letter_demo_q1_2026', memo: 'TKJ published Q1 2026 quarterly letter' });
+  operatorEvents.push({ at: now - 30 * day, action: 'vault_verification_published', target_name: 'VV-2026-Q1', target_id: 'demo_vv_2026_q1', memo: 'TKJ published vault verification VV-2026-Q1' });
+  operatorEvents.push({ at: now - 110 * day, action: 'vault_verification_published', target_name: 'VV-2025-Q4', target_id: 'demo_vv_2025_q4', memo: 'TKJ published vault verification VV-2025-Q4' });
+  operatorEvents.push({ at: now - 6 * day,  action: 'capital_call_broadcast',   target_name: 'CC-2026-Q2', memo: 'TKJ issued Q2 2026 capital call to all funded members' });
+  for (const e of operatorEvents) {
+    try {
+      await globalAuditAppend({
+        at: e.at,
+        actor: 'tkj@theaurumcc.com',
+        action: e.action,
+        memo: e.memo,
+        leadId: e.leadId,
+        target_type: e.target_id ? 'comms' : (e.leadId ? 'lead' : 'system'),
+        target_id: e.target_id || e.leadId || null,
+        target_name: e.target_name,
+      });
+      auditAdded++;
+    } catch {}
+  }
+
+  // 10. Recount stages ────────────────────────────────────────────────────────
   let counts;
   try { counts = await recountStages(); } catch {}
 
-  // Run exception scan so flags are immediately available
-  let exceptions;
+  // 11. Run exception scan so flags update ────────────────────────────────────
+  let exceptions = null;
   try { exceptions = await scanForExceptions(); } catch (e) {
     console.warn('[seed-demo] scanForExceptions failed:', e && e.message);
   }
 
-  return ok(res, { ok: true, seeded: seeded.length, leads: seeded, counts, exceptions });
+  return ok(res, {
+    ok: true,
+    leads: seeded.length,
+    deals: dealsCreated.length,
+    letters: lettersSpec.length,
+    vault_verifications: vvSpec.length,
+    capital_calls: capitalCallsIssued,
+    positions: positionsAdded,
+    messages: messagesAdded,
+    letters_attached: lettersAttached,
+    member_count: fundedLeads.length,
+    audit_entries_added: auditAdded,
+    exceptions_added: exceptions ? exceptions.added : 0,
+    counts,
+    pre_wipe: wipeStats,
+  });
 }
 
 function buildDemoLead(id, f, now) {
@@ -1194,7 +1464,7 @@ function buildDemoLead(id, f, now) {
     referral_source: 'personal_intro',
     reverse_solicitation_ack: true,
     created_at: f.created_at,
-    audit: [{ at: f.created_at, actor: 'system', action: 'demo_seed' }],
+    audit: [{ at: f.created_at, actor: 'system', action: 'inquiry_received' }],
     status: 'inquiry',
     nda_state: 'awaiting',
   };
@@ -1205,20 +1475,23 @@ function buildDemoLead(id, f, now) {
   lead.status = 'invited';
   lead.code = code;
   lead.code_issued_at = f.created_at + 1 * day;
-  lead.audit.push({ at: lead.code_issued_at, actor: 'admin', action: 'invitation_sent' });
+  lead.code_expires_at = new Date(f.created_at + 30 * day).toISOString();
+  lead.audit.push({ at: lead.code_issued_at, actor: 'tkj@theaurumcc.com', action: 'invitation_sent', next: { code } });
 
   if (f.stage === 'invited') return lead;
 
   // NDA pending+
   lead.nda_state = 'uploaded';
   lead.nda_uploaded_at = f.created_at + 2 * day;
-  lead.nda_url = 'https://example.com/demo-nda.pdf';
+  lead.nda_url = `https://example.com/demo-nda-${id}.pdf`;
+  lead.audit.push({ at: lead.nda_uploaded_at, actor: id, action: 'nda_uploaded' });
 
   if (f.stage === 'nda_pending') return lead;
 
   // Subscribed+
   lead.nda_state = 'approved';
   lead.nda_approved_at = f.created_at + 3 * day;
+  lead.audit.push({ at: lead.nda_approved_at, actor: 'tkj@theaurumcc.com', action: 'nda_approved' });
   lead.status = 'subscribed';
   const kg = f.kg_requested || 1;
   const usdPerKg = 112000; // ~spot $3500/oz × 32.15 oz/kg
@@ -1229,7 +1502,7 @@ function buildDemoLead(id, f, now) {
     signature: f.name.toLowerCase(),
     ltv_acknowledged: true,
   };
-  lead.audit.push({ at: lead.subscription.submitted_at, actor: 'member', action: 'subscription_submitted' });
+  lead.audit.push({ at: lead.subscription.submitted_at, actor: id, action: 'subscription_submitted', next: { kg, usd: kg * usdPerKg } });
 
   if (f.stage === 'subscribed') return lead;
 
@@ -1242,13 +1515,13 @@ function buildDemoLead(id, f, now) {
     reference: wireRef,
     instructions_sent_at: wireSent,
   };
-  lead.audit.push({ at: lead.wire.instructions_sent_at, actor: 'admin', action: 'wire_instructions_sent' });
+  lead.audit.push({ at: lead.wire.instructions_sent_at, actor: 'tkj@theaurumcc.com', action: 'wire_instructions_sent', next: { reference: wireRef } });
 
   if (f.stage === 'wire_issued') return lead;
 
   // Wire received+
   lead.wire.received_at = f.created_at + 7 * day;
-  lead.audit.push({ at: lead.wire.received_at, actor: 'admin', action: 'wire_received' });
+  lead.audit.push({ at: lead.wire.received_at, actor: 'tkj@theaurumcc.com', action: 'wire_received' });
 
   if (f.stage === 'wire_received') return lead;
 
@@ -1257,15 +1530,19 @@ function buildDemoLead(id, f, now) {
   lead.status = 'funded';
   lead.member_number = f.member_number;
   lead.funded_at = lead.wire.cleared_at;
-  lead.audit.push({ at: lead.funded_at, actor: 'system', action: 'funded' });
+  lead.audit.push({ at: lead.funded_at, actor: 'system', action: 'member_funded', next: { member_number: f.member_number } });
 
-  // Bars (1kg each)
+  // KYC expiry — 18 months out (no flag)
+  lead.kyc_expires_at = new Date(lead.funded_at + 540 * day).toISOString();
+
+  // Bars (1kg each, varied refiners + serials)
   lead.bars = [];
+  const refiners = ['PAMP Suisse', 'Valcambi', 'Argor-Heraeus'];
   for (let i = 0; i < kg; i++) {
     lead.bars.push({
       id: `bar_${id}_${i}`,
-      serial: `LBMA-${(800000 + i * 17 + lead.member_number * 31).toString()}`,
-      refiner: ['PAMP Suisse', 'Valcambi', 'Argor-Heraeus'][i % 3],
+      serial: `LBMA-${(800000 + i * 17 + (lead.member_number || 0) * 31).toString()}`,
+      refiner: refiners[(i + (lead.member_number || 0)) % refiners.length],
       year: 2025,
       weight_kg: 1,
       assigned_at: lead.funded_at,
@@ -1273,71 +1550,29 @@ function buildDemoLead(id, f, now) {
     });
   }
 
+  // Documents — 3 per funded member (NDA + KYC + statement)
+  lead.documents = [
+    { id: `doc_${id}_nda`,    type: 'nda',           name: 'NDA — Executed.pdf',           url: `https://example.com/docs/${id}/nda.pdf`,    uploaded_at: lead.nda_approved_at },
+    { id: `doc_${id}_kyc`,    type: 'kyc',           name: 'KYC Bundle — Certified.pdf',   url: `https://example.com/docs/${id}/kyc.pdf`,    uploaded_at: lead.funded_at },
+    { id: `doc_${id}_stmt`,   type: 'statement',     name: 'Latest Statement — 2026-Q1.pdf', url: `https://example.com/docs/${id}/stmt-q1.pdf`, uploaded_at: now - 30 * day },
+  ];
+
   // LTV target — set credit lines to hit a target ratio
   if (f.ltv_pct_target) {
-    const usdPerKg = 112000;
     const goldValue = kg * usdPerKg;
-    const ceiling = Math.round(goldValue * 0.75);
+    const ltvApproved = 0.75; // approved 75% on physical bars
+    const ceiling = Math.round(goldValue * ltvApproved);
     const drawn   = Math.round(ceiling * (f.ltv_pct_target / 100));
-    lead.credit_ceiling_usd     = ceiling;
-    lead.credit_outstanding_usd = drawn;
+    lead.ltv_approved_pct        = ltvApproved * 100;
+    lead.credit_ceiling_usd      = ceiling;
+    lead.credit_outstanding_usd  = drawn;
   }
 
-  // Inactive member
+  // Inactive member (last_login_at)
   if (f.last_login_days_ago) {
     lead.last_login_at = new Date(now - f.last_login_days_ago * day).toISOString();
-  }
-
-  // Overdue capital call
-  if (f.with_overdue_capital_call) {
-    lead.capital_calls = lead.capital_calls || [];
-    lead.capital_calls.push({
-      id: `cc_${id}_overdue`,
-      ref: `CC-2026-Q1-${lead.member_number}`,
-      issued_at: now - 12 * day,
-      due_date: now - 2 * day,
-      amount_usd: 75000,
-      reason: 'Tier 1 facility deployment',
-      status: 'pending',
-      acknowledged_at: null,
-    });
-  }
-
-  // Capital call (member 1)
-  if (f.with_capital_call) {
-    lead.capital_calls = [{
-      id: `cc_${id}_1`,
-      issued_at: now - 5 * day,
-      due_date: now + 10 * day,
-      amount_usd: 50000,
-      reason: 'Q1 2026 private credit deployment — Tier 1 facility',
-      status: 'pending',
-      acknowledged_at: null,
-    }];
-  }
-
-  // Messages (member 2)
-  if (f.with_messages) {
-    lead.messages = [
-      {
-        id: `msg_${id}_1`,
-        sent_at: now - 14 * day,
-        from: 'partner',
-        from_name: 'TKJ',
-        subject: 'Welcome to the Century Club',
-        body: 'Your membership is confirmed. Allocation #002. Onboarding documents attached separately.',
-        read_at: now - 13 * day,
-      },
-      {
-        id: `msg_${id}_2`,
-        sent_at: now - 3 * day,
-        from: 'partner',
-        from_name: 'JWC',
-        subject: 'Q2 2026 Quarterly Update',
-        body: 'Letter is now available in Documents. NAV up 3.4% quarter-over-quarter.',
-        read_at: null,
-      },
-    ];
+  } else {
+    lead.last_login_at = new Date(now - Math.floor(Math.random() * 5 + 1) * day).toISOString();
   }
 
   return lead;

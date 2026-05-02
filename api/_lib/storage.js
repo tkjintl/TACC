@@ -581,6 +581,23 @@ function memCallExt(cmd) {
     }
     case 'ZRANGEBYSCORE_': // unreachable, here for future proofing
       return [];
+    case 'ZREMRANGEBYSCORE': {
+      const k = a[0];
+      const parseB = (v) => {
+        if (v === '-inf') return -Infinity;
+        if (v === '+inf') return Infinity;
+        return Number(v);
+      };
+      const lo = parseB(a[1]);
+      const hi = parseB(a[2]);
+      const z = s.zsets.get(k) || new Map();
+      let removed = 0;
+      for (const [m, sc] of [...z.entries()]) {
+        if (sc >= lo && sc <= hi) { z.delete(m); removed++; }
+      }
+      s.zsets.set(k, z);
+      return removed;
+    }
     default:
       return _origMemCall(cmd);
   }
@@ -922,4 +939,151 @@ export async function removePosition(leadId, positionId, actor) {
   await appendAudit(lead, { actor: actor || 'admin', action: 'position_removed', prev: removed });
   await saveLead(lead);
   return removed;
+}
+
+// ── Hard delete + bulk wipe helpers (for demo wipe) ───────────────────────────
+
+/**
+ * deleteLead(id)
+ * Hard-removes a lead and every secondary index/array tied to it.
+ * Use ONLY for demo data — production removals should call softDeleteLead().
+ */
+export async function deleteLead(id) {
+  if (!id) return { removed: false };
+  const lead = await getLead(id);
+  // Remove sorted-set membership
+  try { await callExt(['ZREM', LEADS_INDEX, id]); } catch {}
+  // Remove email + code secondary indexes
+  if (lead && lead.email) {
+    try { await callExt(['DEL', EMAIL_KEY(lead.email)]); } catch {}
+  }
+  if (lead && lead.code) {
+    try { await callExt(['DEL', CODE_KEY(lead.code)]); } catch {}
+  }
+  // Per-key arrays
+  try { await callExt(['DEL', MSG_HIST_KEY(id)]); } catch {}
+  // Remove any active flags scoped to this lead
+  try {
+    const keys = await _scan(`flag:${id}:*`, 100);
+    for (const k of keys) { try { await callExt(['DEL', k]); } catch {} }
+    const muted = await _scan(`flag:muted:${id}:*`, 100);
+    for (const k of muted) { try { await callExt(['DEL', k]); } catch {} }
+  } catch {}
+  // Finally the lead itself
+  try { await callExt(['DEL', LEAD_KEY(id)]); } catch {}
+  return { removed: true, hadLead: !!lead };
+}
+
+/**
+ * wipeGlobalAudit()
+ * Clears the entire `audit:global` sorted set.
+ */
+export async function wipeGlobalAudit() {
+  try { await callExt(['ZREMRANGEBYSCORE', AUDIT_GLOBAL_KEY, '-inf', '+inf']); return true; }
+  catch (e) {
+    // Fallback: re-create by deleting key
+    try { await callExt(['DEL', AUDIT_GLOBAL_KEY]); return true; } catch {}
+    return false;
+  }
+}
+
+/**
+ * wipeAllFlags()
+ * Scans flag:* keys and deletes them. Skips muted entries by default.
+ */
+export async function wipeAllFlags({ includeMuted = false } = {}) {
+  const keys = await _scan('flag:*', 200);
+  let removed = 0;
+  for (const k of keys) {
+    if (!includeMuted && k.startsWith('flag:muted:')) continue;
+    try { await callExt(['DEL', k]); removed++; } catch {}
+  }
+  return removed;
+}
+
+// ── Deal book ─────────────────────────────────────────────────────────────────
+// deal:{id}      → JSON deal record
+// deals:index    → ZADD score=created_at member=id
+
+const DEAL_KEY    = (id) => `deal:${id}`;
+const DEALS_INDEX = 'deals:index';
+
+export async function saveDeal(deal) {
+  if (!deal || !deal.id) throw new Error('saveDeal: deal.id required');
+  const score = deal.created_at || Date.now();
+  await setJSON(DEAL_KEY(deal.id), deal);
+  await callExt(['ZADD', DEALS_INDEX, String(score), deal.id]);
+  return deal;
+}
+
+export async function getDeal(id) {
+  if (!id) return null;
+  return getJSON(DEAL_KEY(id));
+}
+
+export async function listDeals({ status, stage, limit = 200, offset = 0 } = {}) {
+  const ids = await callExt(['ZREVRANGE', DEALS_INDEX, String(offset), String(offset + limit - 1)]);
+  if (!ids || !ids.length) return [];
+  const out = [];
+  for (const id of ids) {
+    const d = await getDeal(id);
+    if (!d) continue;
+    if (stage && d.stage !== stage) continue;
+    if (status && d.status !== status) continue;
+    out.push(d);
+  }
+  return out;
+}
+
+export async function dealsCount() {
+  const total = await callExt(['ZCARD', DEALS_INDEX]);
+  const all = await listDeals({ limit: 500 });
+  const by_stage = {};
+  for (const d of all) {
+    const s = d.stage || 'unknown';
+    by_stage[s] = (by_stage[s] || 0) + 1;
+  }
+  return { total: total || 0, by_stage };
+}
+
+export async function deleteDeal(id) {
+  if (!id) return;
+  try { await callExt(['ZREM', DEALS_INDEX, id]); } catch {}
+  try { await callExt(['DEL', DEAL_KEY(id)]); } catch {}
+}
+
+export async function listDealIdsByDemoFlag() {
+  const ids = await callExt(['ZRANGE', DEALS_INDEX, '0', '-1']);
+  const demoIds = [];
+  for (const id of (ids || [])) {
+    const d = await getDeal(id);
+    if (d && d.demo === true) demoIds.push(id);
+  }
+  return demoIds;
+}
+
+// ── Letters index (global) ────────────────────────────────────────────────────
+// letter:{id} → JSON letter record (broadcast metadata)
+// letters:index → ZADD score=sent_at_ms member=id
+
+const LETTER_KEY    = (id) => `letter:${id}`;
+const LETTERS_INDEX = 'letters:index';
+
+export async function saveLetterRecord(letter) {
+  if (!letter || !letter.id) throw new Error('saveLetterRecord: letter.id required');
+  const score = letter.sent_at_ms || (letter.sent_at ? new Date(letter.sent_at).getTime() : Date.now());
+  await setJSON(LETTER_KEY(letter.id), letter);
+  await callExt(['ZADD', LETTERS_INDEX, String(score), letter.id]);
+  return letter;
+}
+
+export async function deleteLetterRecord(id) {
+  if (!id) return;
+  try { await callExt(['ZREM', LETTERS_INDEX, id]); } catch {}
+  try { await callExt(['DEL', LETTER_KEY(id)]); } catch {}
+}
+
+export async function listLetterIds() {
+  const ids = await callExt(['ZRANGE', LETTERS_INDEX, '0', '-1']);
+  return ids || [];
 }

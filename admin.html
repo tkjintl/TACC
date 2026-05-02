@@ -798,6 +798,7 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
       <span class="ah-email" id="admin-email">—</span>
       <button class="ah-btn" id="cmdk-btn" data-tip="Cmd+K">Search</button>
       <button class="ah-btn" id="seed-btn">Seed Demo</button>
+      <button class="ah-btn ah-btn--danger" id="wipe-btn">Wipe Demo</button>
       <a href="/portfolio" class="ah-btn">Portal</a>
       <a href="/api/v2?resource=session&op=logout" class="ah-btn ah-btn--danger" data-no-transition>Sign Out</a>
     </div>
@@ -1516,6 +1517,26 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
       })
       .catch(function(){ toast('Seed failed', 'error'); })
       .finally(function(){ btn.disabled = false; btn.textContent = 'Seed Demo'; });
+  });
+
+  /* ═══════════════════════════════════════════════════════════════════
+     WIPE DEMO
+     ═══════════════════════════════════════════════════════════════════ */
+  document.getElementById('wipe-btn').addEventListener('click', function(){
+    if (!confirm('Wipe ALL demo data (leads, deals, letters, flags, audit)? This cannot be undone.')) return;
+    var btn = this; btn.disabled = true; btn.textContent = 'Wiping…';
+    api('wipe-demo', { method: 'POST' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d && d.error) {
+          toast('Error: ' + d.error, 'error');
+        } else {
+          toast('Demo data wiped: ' + (d.removed_leads || 0) + ' leads, ' + (d.removed_flags || 0) + ' flags, ' + (d.removed_deals || 0) + ' deals', 'success');
+          setTimeout(function(){ location.reload(); }, 800);
+        }
+      })
+      .catch(function(){ toast('Wipe failed', 'error'); })
+      .finally(function(){ btn.disabled = false; btn.textContent = 'Wipe Demo'; });
   });
 
   /* ═══════════════════════════════════════════════════════════════════
