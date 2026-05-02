@@ -46,6 +46,44 @@ body { font-family: var(--font-ui); font-size: 14px; line-height: 1.5; overflow-
 .ah-btn:hover { color: var(--goldA); border-color: var(--goldBorderS); }
 .ah-btn--danger:hover { color: var(--red); border-color: var(--redBd); }
 
+/* Bots popover — simple manual harness, low Upstash usage */
+.ah-bots-wrap { position: relative; }
+.ah-bots-pop {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  width: 280px;
+  background: rgba(7,7,6,0.98);
+  border: 1px solid var(--goldBorderS);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  display: none;
+  z-index: 220;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.6);
+  padding: 14px;
+}
+.ah-bots-pop.open { display: block; }
+.ah-bots-status {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em;
+  color: var(--muted); padding: 6px 8px; margin-bottom: 10px;
+  background: var(--near); border: 1px solid var(--border);
+  line-height: 1.5;
+}
+.ah-bots-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px;
+}
+.ah-bots-act {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em;
+  color: var(--text); background: transparent; border: 1px solid var(--border);
+  padding: 9px 10px; cursor: pointer; text-transform: uppercase; text-align: center;
+  transition: all 0.15s;
+}
+.ah-bots-act:hover { color: var(--goldA); border-color: var(--goldBorderS); background: rgba(197,165,114,0.06); }
+.ah-bots-act--gold:hover { color: var(--goldB); border-color: var(--goldA); }
+.ah-bots-act--red:hover { color: var(--red); border-color: var(--redBd); background: rgba(176,94,86,0.08); }
+.ah-bots-act:disabled { opacity: 0.5; cursor: not-allowed; }
+.ah-bots-help {
+  font-family: var(--font-ui); font-size: 10px; line-height: 1.55;
+  color: var(--dim); padding: 6px 2px 0; border-top: 1px solid var(--border);
+}
+
 /* Tools dropdown — folds Seed/Wipe/Sim/Audit so the header doesn't overflow */
 .ah-tools-wrap { position: relative; }
 .ah-tools-menu {
@@ -904,6 +942,19 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
       </div>
       <span class="ah-email" id="admin-email">—</span>
       <button class="ah-btn" id="cmdk-btn" data-tip="Cmd+K">Search</button>
+      <div class="ah-bots-wrap">
+        <button class="ah-btn" id="bots-btn" aria-haspopup="true" aria-expanded="false" data-tip="Bot harness">🤖 Bots</button>
+        <div class="ah-bots-pop" id="bots-pop" role="menu" aria-hidden="true">
+          <div class="ah-bots-status" id="bots-pop-status">Loading…</div>
+          <div class="ah-bots-grid">
+            <button class="ah-bots-act" data-bots-act="start">▶ Start</button>
+            <button class="ah-bots-act" data-bots-act="tick">⏭ Tick</button>
+            <button class="ah-bots-act ah-bots-act--gold" data-bots-act="stop">⏸ Stop</button>
+            <button class="ah-bots-act ah-bots-act--red" data-bots-act="reset">⟲ Reset</button>
+          </div>
+          <div class="ah-bots-help">Manual · ~7 Upstash cmds per tick · Start = 6 fresh bot personas (signups). Tick = advance 3 leads through NDA/wire/funded. Reset = wipe &amp; respawn. No background timers.</div>
+        </div>
+      </div>
       <div class="ah-tools-wrap">
         <button class="ah-btn" id="tools-btn" aria-haspopup="true" aria-expanded="false">Tools ▾</button>
         <div class="ah-tools-menu" id="tools-menu" role="menu" aria-hidden="true">
@@ -3557,6 +3608,92 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
     // Close after any tools item is activated
     menu.querySelectorAll('.ah-tools-item').forEach(function (item) {
       item.addEventListener('click', function () { setTimeout(close, 50); });
+    });
+  })();
+
+  /* ═══════════════════════════════════════════════════════════════════
+     BOTS POPOVER — simple manual harness, no auto-tick, low Upstash usage
+     Reuses existing backend ops: bots-start, bots-stop, bots-tick, bots-reset, bots-status
+     ═══════════════════════════════════════════════════════════════════ */
+  (function () {
+    var btn = document.getElementById('bots-btn');
+    var pop = document.getElementById('bots-pop');
+    var statusEl = document.getElementById('bots-pop-status');
+    if (!btn || !pop || !statusEl) return;
+
+    function close() {
+      pop.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+      pop.setAttribute('aria-hidden', 'true');
+    }
+    function toggle(e) {
+      if (e) e.stopPropagation();
+      var open = pop.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      pop.setAttribute('aria-hidden', open ? 'false' : 'true');
+      if (open) refreshStatus();
+    }
+    function refreshStatus() {
+      api('bots-status').then(function(r){ return r.json(); }).then(function(d){
+        if (!d || !d.ok) { statusEl.textContent = 'Status unavailable'; return; }
+        var s = d.state || {};
+        var personas = (d.personas || []).length;
+        var on = s.auto_mode === 'on';
+        var fundedCount = (d.personas || []).filter(function(p){ return p.stage === 'funded'; }).length;
+        statusEl.innerHTML =
+          '<span style="color:' + (on ? 'var(--green)' : 'var(--muted)') + ';font-weight:500;">' + (on ? 'RUNNING' : 'STOPPED') + '</span>' +
+          ' · ' + personas + ' bots · ' + fundedCount + ' funded' +
+          '<br>' + (s.actions_count || 0) + ' events · ~' + (s.estimated_upstash_cmds || 0) + ' Upstash cmds' +
+          (s.last_tick_at ? '<br>Last action: ' + relTime(s.last_tick_at) : '');
+      }).catch(function(){ statusEl.textContent = 'Status unavailable'; });
+    }
+    function runAction(action) {
+      var actBtn = pop.querySelector('[data-bots-act="' + action + '"]');
+      if (actBtn) { actBtn.disabled = true; actBtn.textContent = '…'; }
+      var op = ({
+        start: 'bots-start',
+        stop:  'bots-stop',
+        tick:  'bots-tick',
+        reset: 'bots-reset'
+      })[action];
+      var label = ({ start: '▶ Start', stop: '⏸ Stop', tick: '⏭ Tick', reset: '⟲ Reset' })[action];
+      var confirmed = action === 'reset' ? confirm('Reset wipes all 6 bot personas and respawns fresh. Continue?') : true;
+      if (!confirmed) {
+        if (actBtn) { actBtn.disabled = false; actBtn.textContent = label; }
+        return;
+      }
+      api(op, { method: 'POST' })
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          if (actBtn) { actBtn.disabled = false; actBtn.textContent = label; }
+          if (!d || d.ok === false) {
+            toast((d && d.error) || (action + ' failed'), 'error');
+            return;
+          }
+          var msg = action.toUpperCase() + ' OK';
+          if (d.advanced && d.advanced.length) msg += ' · ' + d.advanced.length + ' advanced';
+          if (d.removed != null && d.started != null) msg += ' · ' + d.removed + ' wiped, ' + d.started + ' fresh';
+          toast(msg, 'success');
+          refreshStatus();
+          // Refresh dashboard tabs that show bot activity
+          if (typeof loadPipeline === 'function') loadPipeline();
+          if (typeof loadActivityTimeline === 'function') loadActivityTimeline();
+          if (typeof loadDecisionLanes === 'function') loadDecisionLanes();
+        })
+        .catch(function(){
+          if (actBtn) { actBtn.disabled = false; actBtn.textContent = label; }
+          toast(action + ' failed', 'error');
+        });
+    }
+    btn.addEventListener('click', toggle);
+    document.addEventListener('click', function (e) {
+      if (!pop.contains(e.target) && e.target !== btn) close();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') close();
+    });
+    pop.querySelectorAll('[data-bots-act]').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); runAction(b.dataset.botsAct); });
     });
   })();
 
