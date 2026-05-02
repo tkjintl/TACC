@@ -799,7 +799,7 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
       <button class="ah-btn" id="cmdk-btn" data-tip="Cmd+K">Search</button>
       <button class="ah-btn" id="seed-btn">Seed Demo</button>
       <button class="ah-btn ah-btn--danger" id="wipe-btn">Wipe Demo</button>
-      <button class="ah-btn" id="sim-btn" data-tip="Run platform simulation">▶ Start Simulation</button>
+      <button class="ah-btn" id="sim-btn" data-tip="Live persona bots — start, watch, stop">▶ Start Simulation</button>
       <button class="ah-btn" id="audit-btn" data-tip="Audit log">Audit</button>
       <a href="/portfolio" class="ah-btn">Portal</a>
       <a href="/api/v2?resource=session&op=logout" class="ah-btn ah-btn--danger" data-no-transition>Sign Out</a>
@@ -2937,79 +2937,195 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
   document.getElementById('audit-btn').addEventListener('click', openAuditModal);
 
   /* ═══════════════════════════════════════════════════════════════════
-     START SIMULATION — single button, runs ~20 events server-side, log
+     LIVE BOTS — persistent personas advancing through pipeline on a timer
      ═══════════════════════════════════════════════════════════════════ */
   var simModal = null;
+  var liveTickTimer = null;
+  var liveTickInterval = 60000; // 60s default
+  var liveLog = [];               // local rolling log
+
+  var STAGE_PILL_MAP = {
+    inquiry:'muted', invited:'blue', nda_pending:'amber', subscribed:'gold',
+    wire_issued:'gold', wire_received:'amber', funded:'green'
+  };
+  var STAGE_LABEL_MAP = {
+    inquiry:'Inquiry', invited:'Invited', nda_pending:'NDA Pending',
+    subscribed:'Subscribed', wire_issued:'Wire Issued', wire_received:'Wire Received',
+    funded:'Funded'
+  };
+
   function openSimModal() {
     if (!simModal) {
       simModal = document.createElement('div');
       simModal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;padding:20px;';
-      simModal.innerHTML = '<div style="background:var(--surface);border:1px solid var(--border);max-width:780px;width:100%;max-height:92vh;overflow:auto;padding:28px;display:flex;flex-direction:column;">' +
+      simModal.innerHTML = '<div style="background:var(--surface);border:1px solid var(--border);max-width:880px;width:100%;max-height:92vh;overflow:auto;padding:28px;display:flex;flex-direction:column;">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">' +
-          '<div><div style="font-family:var(--font-display);font-size:24px;font-weight:300;">Start Simulation</div>' +
-          '<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;margin-top:4px;">ONE-SHOT · 20 EVENTS · ~150 UPSTASH CMDS · NO BACKGROUND TIMERS</div></div>' +
+          '<div><div style="font-family:var(--font-display);font-size:24px;font-weight:300;">Live Bots</div>' +
+          '<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;margin-top:4px;">PERSISTENT PERSONAS · 60s TICK · ~20 UPSTASH CMDS/TICK · ~1.2K/HR</div></div>' +
           '<button class="b b--sm" id="sim-close">✕ Close</button>' +
         '</div>' +
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">' +
-          '<button class="b b--gold" id="sim-run">▶ Run Simulation</button>' +
-          '<button class="b" id="sim-copy" disabled>📋 Copy Log</button>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">' +
+          '<button class="b b--gold" id="bots-start">▶ Start Live Bots</button>' +
+          '<button class="b b--red" id="bots-stop">■ Stop</button>' +
+          '<button class="b" id="bots-tick-now">⏭ Tick Now</button>' +
         '</div>' +
-        '<div id="sim-summary" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:10px;">Click "Run Simulation" — 5 new signups · 4 approvals · 3 NDA uploads · 3 NDA approvals · 2 wires issued · 1 received · 1 funded</div>' +
-        '<textarea id="sim-log" readonly style="flex:1;min-height:420px;background:var(--near);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:11px;padding:14px;line-height:1.5;resize:vertical;white-space:pre;overflow:auto;">No simulation yet. Click "Run Simulation".</textarea>' +
+        '<div id="bots-summary" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:14px;">Click "Start Live Bots" — spawns 6 personas. Each tick advances ~3 of them.</div>' +
+        '<div style="font-family:var(--font-mono);font-size:10px;color:var(--goldA);letter-spacing:0.18em;margin-bottom:8px;">▼ PERSONAS (live)</div>' +
+        '<div id="bots-personas" style="background:var(--near);border:1px solid var(--goldBorderS);padding:10px 14px;margin-bottom:14px;font-family:var(--font-mono);font-size:11px;line-height:1.7;">No bots running.</div>' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
+          '<div style="font-family:var(--font-mono);font-size:10px;color:var(--goldA);letter-spacing:0.18em;">▼ LIVE EVENT FEED</div>' +
+          '<button class="b b--sm" id="bots-copy">📋 Copy Log</button>' +
+        '</div>' +
+        '<textarea id="bots-log" readonly style="flex:1;min-height:240px;background:var(--near);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:11px;padding:14px;line-height:1.5;resize:vertical;white-space:pre;overflow:auto;">No events yet.</textarea>' +
       '</div>';
       document.body.appendChild(simModal);
-      simModal.addEventListener('click', function(e){ if (e.target === simModal) simModal.style.display = 'none'; });
-      simModal.querySelector('#sim-close').addEventListener('click', function(){ simModal.style.display = 'none'; });
-      simModal.querySelector('#sim-run').addEventListener('click', runSimulation);
-      simModal.querySelector('#sim-copy').addEventListener('click', copySimLog);
+      simModal.addEventListener('click', function(e){ if (e.target === simModal) closeSimModal(); });
+      simModal.querySelector('#sim-close').addEventListener('click', closeSimModal);
+      simModal.querySelector('#bots-start').addEventListener('click', startLiveBots);
+      simModal.querySelector('#bots-stop').addEventListener('click', stopLiveBots);
+      simModal.querySelector('#bots-tick-now').addEventListener('click', tickLiveBotsNow);
+      simModal.querySelector('#bots-copy').addEventListener('click', copyBotsLog);
     }
     simModal.style.display = 'flex';
+    refreshLiveBotsStatus();
   }
-  function runSimulation() {
-    var runBtn = simModal.querySelector('#sim-run');
-    var copyBtn = simModal.querySelector('#sim-copy');
-    var sumEl = simModal.querySelector('#sim-summary');
-    var logEl = simModal.querySelector('#sim-log');
-    runBtn.disabled = true; runBtn.textContent = 'Running…';
-    sumEl.textContent = 'Running ~20 events server-side (3-6 sec)…';
-    logEl.value = 'Running…';
-    api('run-simulation', { method: 'POST' })
+  function closeSimModal() {
+    if (simModal) simModal.style.display = 'none';
+    // Note: timer keeps running across close/reopen if bots are on
+  }
+
+  function refreshLiveBotsStatus() {
+    api('bots-status').then(function(r){ return r.json(); }).then(function(d){
+      if (!d || !d.ok) return;
+      renderLiveBots(d);
+      // Auto-resume browser timer if state says auto_mode is on
+      if (d.state && d.state.auto_mode === 'on' && !liveTickTimer) {
+        liveTickTimer = setInterval(tickLiveBotsNow, liveTickInterval);
+      }
+      if (d.state && d.state.auto_mode !== 'on' && liveTickTimer) {
+        clearInterval(liveTickTimer); liveTickTimer = null;
+      }
+    });
+  }
+
+  function renderLiveBots(d) {
+    var s = d.state || {};
+    var personas = d.personas || [];
+    var on = s.auto_mode === 'on';
+    var sumEl = simModal.querySelector('#bots-summary');
+    sumEl.innerHTML =
+      '<span style="color:' + (on ? 'var(--green)' : 'var(--muted)') + ';font-weight:500;">' + (on ? 'RUNNING' : 'STOPPED') + '</span>' +
+      ' · personas=' + personas.length +
+      ' · ticks=' + (s.tick_count || 0) +
+      ' · actions=' + (s.actions_count || 0) +
+      ' · est cmds=' + (s.estimated_upstash_cmds || 0) +
+      (s.last_tick_at ? ' · last tick ' + relTime(s.last_tick_at) : '');
+    var pEl = simModal.querySelector('#bots-personas');
+    if (!personas.length) {
+      pEl.innerHTML = 'No bots running. Click "Start Live Bots" to spawn 6 personas.';
+    } else {
+      pEl.innerHTML = personas.map(function(p){
+        var pill = STAGE_PILL_MAP[p.stage] || 'muted';
+        var lbl = STAGE_LABEL_MAP[p.stage] || p.stage;
+        return '<div style="display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-bottom:1px solid var(--border);">' +
+          '<div style="flex:1;min-width:0;"><strong>' + esc(p.name) + '</strong> <span style="color:var(--muted);">· ' + esc(p.country) + ' · ' + esc(p.pace) + '</span></div>' +
+          '<div><span class="pill pill--' + pill + '">' + esc(lbl) + '</span></div>' +
+          '<div style="color:var(--muted);min-width:80px;text-align:right;">' + relTime(p.last_action_at) + '</div>' +
+        '</div>' +
+        '<div style="color:var(--muted);font-size:10px;padding:2px 0 6px;">' + esc(p.last_action_text || '—') + '</div>';
+      }).join('');
+    }
+  }
+
+  function appendLiveLog(advanced, tickAt) {
+    if (!advanced || !advanced.length) return;
+    var header = '─── tick ' + new Date(tickAt).toLocaleTimeString() + ' ───';
+    liveLog.push(header);
+    for (var i = 0; i < advanced.length; i++) {
+      var a = advanced[i];
+      liveLog.push('  ' + a.name + ' · ' + (STAGE_LABEL_MAP[a.stage] || a.stage) + ' · ' + (a.action || ''));
+    }
+    if (liveLog.length > 200) liveLog = liveLog.slice(-200);
+    var logEl = simModal.querySelector('#bots-log');
+    if (logEl) {
+      logEl.value = liveLog.join('\n');
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+  }
+
+  function startLiveBots() {
+    var btn = simModal.querySelector('#bots-start');
+    btn.disabled = true; btn.textContent = 'Spawning…';
+    api('bots-start', { method: 'POST' })
       .then(function(r){ return r.json(); })
       .then(function(d){
-        runBtn.disabled = false; runBtn.textContent = '▶ Run Simulation';
-        if (!d || !d.ok) { sumEl.textContent = 'Failed: ' + (d && d.error || 'unknown'); return; }
-        sumEl.innerHTML = '<span style="color:var(--green);font-weight:500;">Done</span> · ' + (d.elapsed_ms || 0) + 'ms · funded=' + (d.counts && d.counts.funded) + ' total=' + (d.counts && d.counts.total);
-        logEl.value = d.log_text || JSON.stringify(d, null, 2);
-        copyBtn.disabled = false;
-        // Refresh dashboard views
+        btn.disabled = false; btn.textContent = '▶ Start Live Bots';
+        if (!d || !d.ok) { toast((d && d.error) || 'Failed', 'error'); return; }
+        toast('Live bots started · ' + (d.started || 0) + ' personas', 'success');
+        liveLog = ['LIVE BOTS STARTED at ' + new Date().toLocaleTimeString()];
+        refreshLiveBotsStatus();
+        if (liveTickTimer) clearInterval(liveTickTimer);
+        liveTickTimer = setInterval(tickLiveBotsNow, liveTickInterval);
         if (typeof loadPipeline === 'function') loadPipeline();
-        if (typeof loadDecisionLanes === 'function') loadDecisionLanes();
         if (typeof loadActivityTimeline === 'function') loadActivityTimeline();
-        if (typeof loadMembers === 'function') loadMembers();
       })
-      .catch(function(e){
-        runBtn.disabled = false; runBtn.textContent = '▶ Run Simulation';
-        sumEl.textContent = 'Failed: ' + (e && e.message || 'network');
+      .catch(function(){ btn.disabled = false; btn.textContent = '▶ Start Live Bots'; toast('Start failed', 'error'); });
+  }
+
+  function stopLiveBots() {
+    api('bots-stop', { method: 'POST' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (liveTickTimer) { clearInterval(liveTickTimer); liveTickTimer = null; }
+        toast('Bots stopped', 'success');
+        refreshLiveBotsStatus();
       });
   }
-  function copySimLog() {
-    var logEl = simModal.querySelector('#sim-log');
-    var copyBtn = simModal.querySelector('#sim-copy');
+
+  function tickLiveBotsNow() {
+    api('bots-tick', { method: 'POST' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (!d || !d.ok) {
+          if (d && d.error) console.warn('[bots-tick]', d.error);
+          return;
+        }
+        appendLiveLog(d.advanced || [], (d.state && d.state.last_tick_at) || Date.now());
+        renderLiveBots(d);
+        // Throttled view refresh — every 4th tick to keep load low
+        window._botsViewCounter = (window._botsViewCounter || 0) + 1;
+        if (window._botsViewCounter % 4 === 0) {
+          if (typeof loadPipeline === 'function') loadPipeline();
+          if (typeof loadDecisionLanes === 'function') loadDecisionLanes();
+          if (typeof loadActivityTimeline === 'function') loadActivityTimeline();
+        }
+      });
+  }
+
+  function copyBotsLog() {
+    var logEl = simModal.querySelector('#bots-log');
+    var btn = simModal.querySelector('#bots-copy');
     logEl.select();
     var done = false;
     try { done = document.execCommand('copy'); } catch (e) {}
     if (!done && navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(logEl.value).then(function(){
-        copyBtn.textContent = '✓ Copied'; setTimeout(function(){ copyBtn.textContent = '📋 Copy Log'; }, 1500);
-      }).catch(function(){ toast('Copy failed', 'error'); });
+        btn.textContent = '✓ Copied'; setTimeout(function(){ btn.textContent = '📋 Copy Log'; }, 1500);
+      });
     } else if (done) {
-      copyBtn.textContent = '✓ Copied';
-      setTimeout(function(){ copyBtn.textContent = '📋 Copy Log'; }, 1500);
-    } else {
-      toast('Copy failed', 'error');
+      btn.textContent = '✓ Copied'; setTimeout(function(){ btn.textContent = '📋 Copy Log'; }, 1500);
     }
   }
   document.getElementById('sim-btn').addEventListener('click', openSimModal);
+
+  // Auto-resume the browser timer on page load if bots are already running
+  setTimeout(function(){
+    api('bots-status').then(function(r){ return r.json(); }).then(function(d){
+      if (d && d.ok && d.state && d.state.auto_mode === 'on' && !liveTickTimer) {
+        liveTickTimer = setInterval(tickLiveBotsNow, liveTickInterval);
+      }
+    }).catch(function(){});
+  }, 1500);
 
 })();
 </script>

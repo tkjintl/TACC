@@ -387,6 +387,10 @@ async function handleAdmin(req, res, op) {
     case 'stage-index-backfill':    return adminStageIndexBackfill(req, res, session);
     case 'run-audit':               return adminRunAudit(req, res, session);
     case 'run-simulation':          return adminRunSimulation(req, res, session);
+    case 'bots-start':              return adminBotsStart(req, res, session);
+    case 'bots-stop':               return adminBotsStop(req, res, session);
+    case 'bots-tick':               return adminBotsTick(req, res, session);
+    case 'bots-status':             return adminBotsStatus(req, res, session);
     case 'flush-spot-cache':        return adminFlushSpotCache(req, res, session);
     case 'backfill-investor-profile': return adminBackfillInvestorProfile(req, res, session);
     // ── Phase 4 ─────────────────────────────────────────────────────────────
@@ -1209,6 +1213,39 @@ async function adminFlushSpotCache(req, res, session) {
   } catch (e) {
     return serverError(res, e);
   }
+}
+
+async function adminBotsStart(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  try {
+    const { startBots } = await import('./_lib/bots-live.js');
+    const r = await startBots();
+    return ok(res, r);
+  } catch (e) { return serverError(res, e); }
+}
+async function adminBotsStop(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  try {
+    const { stopBots } = await import('./_lib/bots-live.js');
+    const r = await stopBots();
+    return ok(res, r);
+  } catch (e) { return serverError(res, e); }
+}
+async function adminBotsTick(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  try {
+    const { tickBots } = await import('./_lib/bots-live.js');
+    const r = await tickBots(session);
+    return ok(res, r);
+  } catch (e) { return serverError(res, e); }
+}
+async function adminBotsStatus(req, res, session) {
+  if (req.method !== 'GET') return methodNotAllowed(res);
+  try {
+    const { getBotsState, summarizePersonas } = await import('./_lib/bots-live.js');
+    const state = await getBotsState();
+    return ok(res, { ok: true, state, personas: summarizePersonas(state) });
+  } catch (e) { return serverError(res, e); }
 }
 
 async function adminRunSimulation(req, res, session) {
