@@ -1,0 +1,765 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="robots" content="noindex,nofollow" />
+<title>The Aurum Century Club — By Invitation Only</title>
+<meta name="description" content="Singapore private fund. By invitation only. Founding cohort, Q3 2026." />
+
+<!--
+  ═══════════════════════════════════════════════════════════════════════
+  RATIONALE — what makes this feel like a sigil, not a stamp
+  ═══════════════════════════════════════════════════════════════════════
+  A brand stamp asserts; a sigil withholds. The difference is patience and
+  asymmetry. Choices made:
+
+  1. ARCHITECTURAL FRAME — A regular octagon, not a hexagon (too crypto)
+     and not a rectangle (too corporate). Octagons live in vault doors,
+     coin reverses, and the bagua of dynastic Korean architecture — they
+     read as "weight" without reading as "logo". Two concentric octagons
+     (outer + inner hairline) build the doubled bezel of a struck coin.
+
+  2. STROKE-DRAW, NOT FADE — On load the outer octagon traces itself
+     anticlockwise from 12 o'clock (1.4s), the inner hairline follows
+     (0.6s), then the "Au" italic mark draws stroke-by-stroke (0.9s). No
+     fades. The sigil is *built*, not revealed — like a seal pressed in
+     real time. Total intro: ~2.9s, reduced-motion kills it.
+
+  3. THE Au MARK — Not a font glyph. A custom path: capital A as an
+     italic stroke with a crossbar that lifts diagonally; lowercase u as
+     two parallel strokes joined by a base curl, set tightly under the
+     A's right leg. The chemistry-table reading is intentional but
+     suppressed (no "79", no atomic number). It's a private mark.
+
+  4. CURSOR RESPONSE (restraint) — Picked ONE effect: the inner
+     octagon's stroke brightens proportionally to cursor proximity (0–1
+     mapped to opacity .35–.95, gold A→C). No rays. No particles. The
+     monogram "wakes up" when looked at, the way Brioni glass cabinets
+     do under track lighting. The page-wide spotlight gradient is
+     separate, much subtler, and follows the cursor with eased lerp.
+
+  5. IDLE PULSE — A 6s sine on the inner stroke opacity (±0.08) — close
+     to the threshold of perception. You won't notice it; you'll notice
+     when it's gone.
+
+  6. WORDMARK FLOURISH — A single hairline tendril rises from the C of
+     "Century" and curls into the lower-left vertex of the inner
+     octagon. Drawn as a path, animated last. This is the bonus that
+     ties the type to the mark — a private, unrepeatable detail.
+
+  TRADEOFFS:
+  - No SVG filter blur halos on the monogram (they're expensive on
+    mobile and read as "Web 2.0 glow"). The sense of weight comes from
+    stroke-width hierarchy and the off-black backdrop, not effects.
+  - The "spotlight" radial is canvas-free — just a fixed div with a
+    radial-gradient and transform translate. ~60fps everywhere, zero JS
+    cost beyond a single rAF.
+  - No video, no WebGL, no Lottie. Total page weight under 18KB.
+  - The wordmark stagger is per-word, not per-letter. Per-letter at
+    78px reads as gimmick; per-word reads as breath.
+  ═══════════════════════════════════════════════════════════════════════
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="/_styles/tokens.css" />
+
+<style>
+  /* ─── Page shell ─────────────────────────────────────────────────── */
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    background: var(--black);
+    /* faint vignette and a single warm directional wash, top-right */
+    background-image:
+      radial-gradient(ellipse 80vw 60vh at 78% 8%, rgba(197,165,114,0.045), transparent 60%),
+      radial-gradient(ellipse 100vw 80vh at 50% 100%, rgba(0,0,0,0.6), transparent 70%);
+  }
+
+  /* film grain — pure CSS, no asset */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+    background-image:
+      repeating-radial-gradient(circle at 25% 35%, rgba(255,255,255,1) 0, rgba(255,255,255,1) 0.5px, transparent 0.5px, transparent 2px),
+      repeating-radial-gradient(circle at 75% 65%, rgba(255,255,255,1) 0, rgba(255,255,255,1) 0.5px, transparent 0.5px, transparent 3px);
+  }
+
+  /* cursor spotlight — single fixed element, JS lerps its position */
+  .spotlight {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: radial-gradient(
+      circle 360px at var(--mx, 50%) var(--my, 50%),
+      rgba(227, 193, 135, 0.06),
+      rgba(197, 165, 114, 0.02) 40%,
+      transparent 60%
+    );
+    transition: background 80ms linear;
+  }
+
+  /* ─── Top nav ────────────────────────────────────────────────────── */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px clamp(20px, 4vw, 56px);
+  }
+
+  .lockup {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-decoration: none;
+    color: var(--text);
+    opacity: 0;
+    animation: fadeIn 600ms var(--ease-entrance) 200ms forwards;
+  }
+
+  /* mini seal — same octagonal language as the hero, scaled tiny */
+  .seal-mini {
+    width: 36px; height: 36px;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .seal-mini svg { width: 100%; height: 100%; }
+
+  .lockup-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+    gap: 3px;
+  }
+  .lockup-title {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  .lockup-sub {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.28em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .nav-right {
+    display: flex; align-items: center; gap: 18px;
+    opacity: 0;
+    animation: fadeIn 600ms var(--ease-entrance) 300ms forwards;
+  }
+
+  .members-link {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 4px;
+    transition: color var(--dur-base) ease;
+    border-bottom: 1px solid transparent;
+  }
+  .members-link:hover,
+  .members-link:focus-visible {
+    color: var(--goldC);
+    border-bottom-color: var(--goldBorderS);
+    outline: none;
+  }
+
+  /* ─── Stage ──────────────────────────────────────────────────────── */
+  .stage {
+    position: relative;
+    z-index: 3;
+    height: 100vh;
+    height: 100dvh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(80px, 12vh, 120px) 24px clamp(80px, 10vh, 100px);
+    text-align: center;
+  }
+
+  /* ─── Monogram ───────────────────────────────────────────────────── */
+  .monogram {
+    width: clamp(140px, 16vw, 196px);
+    height: clamp(140px, 16vw, 196px);
+    margin-bottom: clamp(28px, 4vh, 44px);
+    position: relative;
+    --proximity: 0;
+    --pulse: 0;
+  }
+  .monogram svg {
+    width: 100%; height: 100%;
+    overflow: visible;
+  }
+
+  /* the outer octagon stroke */
+  .mono-outer {
+    fill: none;
+    stroke: var(--goldA);
+    stroke-width: 1.25;
+    stroke-linejoin: miter;
+    stroke-dasharray: 480;
+    stroke-dashoffset: 480;
+    animation: drawOctagon 1400ms var(--ease-entrance) 400ms forwards;
+  }
+
+  /* the inner hairline octagon — proximity-reactive */
+  .mono-inner {
+    fill: none;
+    stroke: var(--goldA);
+    stroke-width: 0.5;
+    stroke-dasharray: 380;
+    stroke-dashoffset: 380;
+    animation: drawOctagon 600ms var(--ease-entrance) 1700ms forwards;
+    opacity: calc(0.35 + var(--proximity, 0) * 0.6 + var(--pulse, 0) * 0.08);
+    transition: opacity 220ms var(--ease-standard);
+  }
+
+  /* corner ticks at each octagon vertex — a coin's milled edge */
+  .mono-tick {
+    stroke: var(--goldA);
+    stroke-width: 0.6;
+    opacity: 0;
+    animation: fadeIn 500ms var(--ease-entrance) 2000ms forwards;
+  }
+
+  /* the Au mark itself — handcrafted paths */
+  .mono-mark path {
+    fill: none;
+    stroke: var(--goldC);
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .mono-A {
+    stroke-dasharray: 220;
+    stroke-dashoffset: 220;
+    animation: drawMark 700ms var(--ease-entrance) 2300ms forwards;
+  }
+  .mono-Across {
+    stroke-dasharray: 60;
+    stroke-dashoffset: 60;
+    animation: drawMark 400ms var(--ease-entrance) 2700ms forwards;
+  }
+  .mono-u {
+    stroke-dasharray: 180;
+    stroke-dashoffset: 180;
+    animation: drawMark 600ms var(--ease-entrance) 2900ms forwards;
+  }
+
+  /* the tendril flourish — drawn last, ties wordmark to monogram */
+  .mono-tendril {
+    fill: none;
+    stroke: var(--goldA);
+    stroke-width: 0.65;
+    stroke-linecap: round;
+    stroke-dasharray: 90;
+    stroke-dashoffset: 90;
+    opacity: 0.55;
+    animation: drawMark 900ms var(--ease-entrance) 3500ms forwards;
+  }
+
+  @keyframes drawOctagon {
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes drawMark {
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+
+  /* idle pulse — runs forever, very subtle */
+  .monogram {
+    animation: monoPulse 6s ease-in-out 4s infinite;
+  }
+  @keyframes monoPulse {
+    0%, 100% { --pulse: 0; filter: drop-shadow(0 0 0 transparent); }
+    50%      { --pulse: 1; filter: drop-shadow(0 0 18px rgba(197,165,114,0.16)); }
+  }
+
+  /* ─── Wordmark ───────────────────────────────────────────────────── */
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(48px, 6.5vw, 78px);
+    line-height: 1.02;
+    letter-spacing: 0.015em;
+    color: var(--text);
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.22em;
+  }
+  .wordmark .w {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(14px);
+    animation: wordIn 800ms var(--ease-entrance) forwards;
+  }
+  .wordmark .w--the      { animation-delay: 800ms; }
+  .wordmark .w--aurum    { animation-delay: 1000ms; }
+  .wordmark .w--century  { animation-delay: 1200ms; font-style: italic; color: var(--goldD); font-weight: 300; }
+  .wordmark .w--club     { animation-delay: 1400ms; font-style: italic; color: var(--goldD); font-weight: 300; }
+
+  @keyframes wordIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── Rule with diamonds ─────────────────────────────────────────── */
+  .rule {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin: clamp(22px, 3.4vh, 36px) 0 clamp(18px, 2.6vh, 28px);
+    opacity: 0;
+    animation: fadeIn 700ms var(--ease-entrance) 1700ms forwards;
+  }
+  .rule-line {
+    width: clamp(56px, 8vw, 96px);
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--goldBorderS), transparent);
+  }
+  .rule-line--solid {
+    background: var(--goldBorderS);
+  }
+  .rule-diamond {
+    width: 5px; height: 5px;
+    background: var(--goldA);
+    transform: rotate(45deg);
+    flex-shrink: 0;
+  }
+
+  /* ─── Tagline ────────────────────────────────────────────────────── */
+  .tagline {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(15px, 1.6vw, 19px);
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    margin: 0;
+    opacity: 0;
+    animation: fadeIn 700ms var(--ease-entrance) 1900ms forwards;
+  }
+
+  /* ─── Status pill ────────────────────────────────────────────────── */
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: clamp(20px, 3vh, 30px);
+    padding: 7px 16px;
+    border: 1px solid var(--goldBorderS);
+    background: rgba(197,165,114,0.04);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--goldB);
+    opacity: 0;
+    animation: fadeIn 700ms var(--ease-entrance) 2100ms forwards;
+  }
+  .status::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--goldB);
+    box-shadow: 0 0 8px rgba(197,165,114,0.6);
+    animation: dotPulse 2.4s ease-in-out infinite;
+  }
+  @keyframes dotPulse {
+    0%, 100% { opacity: 0.5; }
+    50%      { opacity: 1; }
+  }
+
+  /* ─── CTA ────────────────────────────────────────────────────────── */
+  .cta-wrap {
+    margin-top: clamp(30px, 4.4vh, 48px);
+    opacity: 0;
+    animation: fadeIn 700ms var(--ease-entrance) 2300ms forwards;
+  }
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 34px;
+    background: transparent;
+    border: 1px solid var(--goldBorderM);
+    color: var(--goldC);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: color var(--dur-base) ease,
+                border-color var(--dur-base) ease,
+                box-shadow var(--dur-slow) ease,
+                transform var(--dur-fast) ease;
+  }
+  .cta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg,
+      transparent 0%,
+      rgba(227,193,135,0.10) 45%,
+      rgba(240,207,154,0.18) 50%,
+      rgba(227,193,135,0.10) 55%,
+      transparent 100%);
+    transform: translateX(-100%);
+    transition: transform 900ms var(--ease-standard);
+    pointer-events: none;
+  }
+  .cta:hover::before,
+  .cta:focus-visible::before {
+    transform: translateX(100%);
+  }
+  .cta:hover,
+  .cta:focus-visible {
+    color: var(--goldD);
+    border-color: var(--goldC);
+    box-shadow: 0 0 28px rgba(197,165,114,0.18),
+                inset 0 0 18px rgba(197,165,114,0.05);
+    outline: none;
+  }
+  .cta:active { transform: scale(0.99); }
+  .cta-arrow {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    transition: transform var(--dur-base) ease;
+  }
+  .cta:hover .cta-arrow { transform: translateX(4px); }
+
+  /* ─── Footer ─────────────────────────────────────────────────────── */
+  .footer {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 4;
+    padding: 18px clamp(20px, 4vw, 56px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    color: var(--dim);
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fadeIn 700ms var(--ease-entrance) 2700ms forwards;
+  }
+  .footer-line {
+    flex: 1;
+    line-height: 1.7;
+  }
+  .footer-vault {
+    flex-shrink: 0;
+    color: var(--muted);
+    letter-spacing: 0.28em;
+    border-left: 1px solid var(--border);
+    padding-left: 18px;
+    white-space: nowrap;
+  }
+  .footer-vault em {
+    font-style: normal;
+    color: var(--goldB);
+  }
+
+  /* ─── Responsive ─────────────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    .lockup-sub { font-size: 8px; letter-spacing: 0.24em; }
+    .lockup-title { font-size: 10px; letter-spacing: 0.28em; }
+    .members-link { font-size: 10px; }
+    .footer { font-size: 8px; flex-direction: column; gap: 8px; padding: 14px 20px 18px; align-items: center; text-align: center; }
+    .footer-line { line-height: 1.6; }
+    .footer-vault { border-left: none; border-top: 1px solid var(--border); padding: 6px 0 0; }
+  }
+
+  @media (max-width: 480px) {
+    .stage { padding: 96px 18px 130px; }
+    .wordmark { letter-spacing: 0.005em; }
+    .nav { padding: 18px 18px; }
+    .seal-mini { width: 32px; height: 32px; }
+    .lockup-title { font-size: 9.5px; }
+    .lockup-sub { font-size: 7.5px; }
+    .cta { padding: 14px 26px; font-size: 11px; letter-spacing: 0.22em; }
+    .tagline { font-size: 14px; }
+    .status { font-size: 9px; padding: 6px 12px; }
+  }
+
+  @media (max-width: 375px) {
+    .wordmark { font-size: 38px; gap: 0.18em; }
+    .monogram { width: 124px; height: 124px; margin-bottom: 22px; }
+    .footer { font-size: 7.5px; }
+  }
+
+  /* short viewport — keep no-scroll */
+  @media (max-height: 680px) {
+    .stage { padding-top: 80px; padding-bottom: 70px; }
+    .monogram { width: 130px; height: 130px; margin-bottom: 18px; }
+    .wordmark { font-size: clamp(36px, 5vw, 56px); }
+    .rule { margin: 14px 0 12px; }
+    .cta-wrap { margin-top: 22px; }
+  }
+
+  /* ─── Reduced motion — kill everything, render static ─────────── */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+    .lockup, .nav-right, .rule, .tagline, .status, .cta-wrap, .footer { opacity: 1; }
+    .wordmark .w { opacity: 1; transform: none; }
+    .mono-outer, .mono-inner, .mono-tick, .mono-tendril,
+    .mono-A, .mono-Across, .mono-u { stroke-dashoffset: 0 !important; opacity: 1; }
+    .mono-tendril { opacity: 0.55; }
+    .mono-tick { opacity: 1; }
+    .monogram { animation: none; }
+    .spotlight { display: none; }
+  }
+
+  /* keyboard focus — visible gold outline */
+  a:focus-visible, button:focus-visible {
+    outline: 1px solid var(--goldC);
+    outline-offset: 4px;
+  }
+</style>
+</head>
+<body>
+
+  <!-- cursor spotlight overlay -->
+  <div class="spotlight" aria-hidden="true"></div>
+
+  <!-- top nav -->
+  <nav class="nav" aria-label="Primary">
+    <a class="lockup" href="/" aria-label="The Aurum Century Club — home">
+      <span class="seal-mini" aria-hidden="true">
+        <!-- mini seal: single octagon with Au -->
+        <svg viewBox="0 0 36 36" role="presentation">
+          <polygon points="10.5,3 25.5,3 33,10.5 33,25.5 25.5,33 10.5,33 3,25.5 3,10.5"
+                   fill="none" stroke="#C5A572" stroke-width="0.9"/>
+          <text x="18" y="23" text-anchor="middle"
+                font-family="Cormorant Garamond, serif"
+                font-style="italic" font-size="14" fill="#E3C187"
+                letter-spacing="-0.5">Au</text>
+        </svg>
+      </span>
+      <span class="lockup-text">
+        <span class="lockup-title">Aurum</span>
+        <span class="lockup-sub">Century · Club</span>
+      </span>
+    </a>
+    <div class="nav-right">
+      <a class="members-link" href="/login">Members</a>
+    </div>
+  </nav>
+
+  <!-- main stage -->
+  <main class="stage" role="main">
+
+    <!-- the sigil -->
+    <div class="monogram" id="monogram" aria-label="Aurum Century Club monogram" role="img">
+      <svg viewBox="0 0 200 200" aria-hidden="true">
+        <defs>
+          <!-- subtle inner glow for the mark -->
+          <radialGradient id="markGlow" cx="50%" cy="55%" r="40%">
+            <stop offset="0%" stop-color="#F0CF9A" stop-opacity="0.10"/>
+            <stop offset="100%" stop-color="#F0CF9A" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <!-- glow disc behind mark -->
+        <circle cx="100" cy="105" r="58" fill="url(#markGlow)"/>
+
+        <!-- OUTER OCTAGON (drawn first, anticlockwise from top) -->
+        <!-- vertices: regular octagon inscribed roughly in 14..186 -->
+        <polygon class="mono-outer"
+          points="74,14 126,14 186,74 186,126 126,186 74,186 14,126 14,74"
+          pathLength="480"/>
+
+        <!-- INNER HAIRLINE OCTAGON — proximity-reactive -->
+        <polygon class="mono-inner"
+          points="80,26 120,26 174,80 174,120 120,174 80,174 26,120 26,80"
+          pathLength="380"/>
+
+        <!-- VERTEX TICKS — milled-coin edge cue, 8 small marks -->
+        <g class="mono-ticks">
+          <line class="mono-tick" x1="100" y1="6"   x2="100" y2="13"/>
+          <line class="mono-tick" x1="100" y1="187" x2="100" y2="194"/>
+          <line class="mono-tick" x1="6"   y1="100" x2="13"  y2="100"/>
+          <line class="mono-tick" x1="187" y1="100" x2="194" y2="100"/>
+          <line class="mono-tick" x1="40"  y1="40"  x2="46"  y2="46"/>
+          <line class="mono-tick" x1="160" y1="40"  x2="154" y2="46"/>
+          <line class="mono-tick" x1="40"  y1="160" x2="46"  y2="154"/>
+          <line class="mono-tick" x1="160" y1="160" x2="154" y2="154"/>
+        </g>
+
+        <!-- THE Au MARK — italic, hand-drawn paths -->
+        <g class="mono-mark">
+          <!-- 'A' italic: left leg from bottom-left rising to apex -->
+          <path class="mono-A"
+            d="M 70 138
+               L 96 64
+               L 122 138"
+            pathLength="220"/>
+          <!-- 'A' crossbar — slight italic lift -->
+          <path class="mono-Across"
+            d="M 81 110 L 113 105"
+            pathLength="60"/>
+          <!-- 'u' italic: two strokes joined by a base curl, tucked under A's right leg -->
+          <path class="mono-u"
+            d="M 116 116
+               C 114 132, 118 142, 128 142
+               C 134 142, 138 138, 140 130
+               L 144 116
+               M 144 116
+               L 140 142"
+            pathLength="180"/>
+        </g>
+
+        <!-- TENDRIL — flourish from below, anchoring the wordmark connection -->
+        <path class="mono-tendril"
+          d="M 100 186
+             C 96 192, 92 200, 88 208
+             C 84 216, 80 220, 72 222"
+          pathLength="90"/>
+      </svg>
+    </div>
+
+    <!-- wordmark -->
+    <h1 class="wordmark" aria-label="The Aurum Century Club">
+      <span class="w w--the">The</span>
+      <span class="w w--aurum">Aurum</span>
+      <span class="w w--century">Century</span>
+      <span class="w w--club">Club</span>
+    </h1>
+
+    <!-- rule with diamonds -->
+    <div class="rule" aria-hidden="true">
+      <span class="rule-line"></span>
+      <span class="rule-diamond"></span>
+      <span class="rule-line rule-line--solid"></span>
+      <span class="rule-diamond"></span>
+      <span class="rule-line"></span>
+    </div>
+
+    <!-- tagline -->
+    <p class="tagline">Singapore private fund. By invitation only.</p>
+
+    <!-- status pill -->
+    <div class="status" role="status" aria-live="polite">
+      Founding Cohort · Q3 2026
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-wrap">
+      <a class="cta" href="/interest" aria-label="Request invitation">
+        <span>Request Invitation</span>
+        <span class="cta-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+
+  </main>
+
+  <!-- footer -->
+  <footer class="footer" role="contentinfo">
+    <div class="footer-line">
+      TACC PTE LTD · MMXXVI · theaurumcc.com · Singapore · Confidential · Qualified Investors Only · Not An Offer Or Solicitation
+    </div>
+    <div class="footer-vault" aria-label="Vault number">№ <em>0042</em> / 0100</div>
+  </footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) return;
+
+  var spotlight = document.querySelector('.spotlight');
+  var monogram  = document.getElementById('monogram');
+  if (!monogram) return;
+
+  // target + current state for eased lerp
+  var tx = window.innerWidth / 2, ty = window.innerHeight / 2;
+  var cx = tx, cy = ty;
+  var lastMx = 50, lastMy = 50;
+
+  // monogram center, recomputed on resize
+  var mRect = monogram.getBoundingClientRect();
+  var mCx = mRect.left + mRect.width / 2;
+  var mCy = mRect.top  + mRect.height / 2;
+
+  function recomputeMono() {
+    mRect = monogram.getBoundingClientRect();
+    mCx = mRect.left + mRect.width / 2;
+    mCy = mRect.top  + mRect.height / 2;
+  }
+
+  window.addEventListener('resize', recomputeMono, { passive: true });
+  window.addEventListener('orientationchange', recomputeMono, { passive: true });
+
+  window.addEventListener('pointermove', function (e) {
+    tx = e.clientX;
+    ty = e.clientY;
+  }, { passive: true });
+
+  // proximity threshold — within ~480px the inner stroke wakes
+  var PROXIMITY_RADIUS = 480;
+
+  function tick() {
+    // ease cursor → spotlight
+    cx += (tx - cx) * 0.12;
+    cy += (ty - cy) * 0.12;
+
+    var mxPct = (cx / window.innerWidth)  * 100;
+    var myPct = (cy / window.innerHeight) * 100;
+
+    // only write when meaningfully changed (cuts style recalc)
+    if (Math.abs(mxPct - lastMx) > 0.2 || Math.abs(myPct - lastMy) > 0.2) {
+      spotlight.style.setProperty('--mx', mxPct.toFixed(2) + '%');
+      spotlight.style.setProperty('--my', myPct.toFixed(2) + '%');
+      lastMx = mxPct; lastMy = myPct;
+    }
+
+    // distance from cursor to monogram center → 0..1 proximity
+    var dx = tx - mCx, dy = ty - mCy;
+    var dist = Math.sqrt(dx * dx + dy * dy);
+    var prox = Math.max(0, 1 - dist / PROXIMITY_RADIUS);
+    // ease: prox^1.6 so far cursors stay subtle
+    prox = Math.pow(prox, 1.6);
+    monogram.style.setProperty('--proximity', prox.toFixed(3));
+
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

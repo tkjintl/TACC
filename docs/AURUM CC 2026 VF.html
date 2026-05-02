@@ -1,0 +1,1848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1200, initial-scale=1">
+<meta name="theme-color" content="#070706">
+<title>The Kilo — A Founding Cohort of One Hundred · The Aurum Century Club</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="The Kilo. A founding cohort of one hundred. Singapore VCC. First Close Q3 MMXXVI. By invitation.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23070706'/><rect x='4' y='4' width='24' height='24' fill='none' stroke='%23C5A572' stroke-width='1'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='14' font-style='italic' fill='%23C5A572'>Au</text></svg>">
+<style>
+/* ═══════════════════════════════════════════════════════════════════
+   THE KILO · INVESTOR DECK · A4 LANDSCAPE
+   12 fixed pages, PDF-first. Print: one slide per A4 page.
+   Screen: stacked pages with shadow, like a PDF reader.
+   ═══════════════════════════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400&family=DM+Sans:wght@400;500&family=Noto+Serif+KR:wght@400;700&display=swap');
+
+:root {
+  --black:        #070706;
+  --near:         #0d0d0b;
+  --surface:      #111110;
+  --border:       rgba(255,255,255,0.07);
+  --rule:         rgba(197,165,114,0.18);
+  --goldA:        #C5A572;
+  --goldB:        #D4AF7A;
+  --goldC:        #E3C187;
+  --goldD:        #F0CF9A;
+  --goldMuted:    rgba(197,165,114,0.10);
+  --goldBorderS:  rgba(197,165,114,0.30);
+  --goldBorderM:  rgba(197,165,114,0.55);
+  --text:         #EDE8DF;
+  --muted:        rgba(237,232,223,0.50);
+  --dim:          rgba(237,232,223,0.30);
+  --green:        #5a9e72;
+  --amber:        #b8833a;
+  --red:          #b05e56;
+  --font-display: 'Cormorant Garamond', 'Noto Serif KR', Georgia, serif;
+  --font-ui:      'DM Sans', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: #1a1a18;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100%;
+}
+
+em { font-style: italic; }
+
+.gold-grad {
+  background: linear-gradient(135deg, var(--goldA), var(--goldD));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ───────────────────────────────────────────────────────────────────
+   PAGE FRAMEWORK — A4 landscape, fixed dimensions
+   ─────────────────────────────────────────────────────────────────── */
+.deck {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 40px 20px 80px;
+  background: #1a1a18;
+}
+
+.slide {
+  width: 297mm;
+  height: 210mm;
+  flex-shrink: 0;
+  background: var(--black);
+  color: var(--text);
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 16mm 22mm 12mm;
+  box-shadow: 0 14px 50px rgba(0,0,0,0.55);
+  overflow: hidden;
+}
+
+/* Subtle page edge */
+.slide::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(197,165,114,0.05);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ─── Header zone ──────────────────────────────────────────────── */
+.slide-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 2;
+}
+
+.slide-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 9.5pt;
+  letter-spacing: 0.32em;
+  color: var(--muted);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.slide-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 1px;
+  background: var(--goldA);
+}
+
+.slide-mark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.slide-mark-seal {
+  width: 22px; height: 22px;
+  border: 1px solid var(--goldBorderS);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--goldA);
+  font-size: 12pt;
+  line-height: 1;
+}
+.slide-mark-text {
+  font-family: var(--font-mono);
+  font-size: 7.5pt;
+  letter-spacing: 0.28em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+/* ─── Body zone ────────────────────────────────────────────────── */
+.slide-body {
+  padding: 12mm 0 8mm;
+  position: relative;
+  z-index: 2;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.slide-headline {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 48pt;
+  line-height: 1.06;
+  letter-spacing: 0.018em;
+  margin-bottom: 10mm;
+  max-width: 22ch;
+}
+.slide-headline em {
+  font-style: italic;
+  background: linear-gradient(135deg, var(--goldA), var(--goldD));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.slide-headline .hl-w,
+.slide-headline .hl-g {
+  display: block;
+}
+.slide-headline .hl-g {
+  font-style: italic;
+  background: linear-gradient(135deg, var(--goldA), var(--goldD));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.slide-text {
+  font-family: var(--font-display);
+  font-size: 13pt;
+  line-height: 1.65;
+  color: rgba(237,232,223,0.82);
+  max-width: 78ch;
+}
+.slide-text p { margin-bottom: 4mm; }
+.slide-text p:last-child { margin-bottom: 0; }
+.slide-text strong { color: var(--text); font-weight: 400; }
+
+/* ─── Footer zone (caveat strip) ───────────────────────────────── */
+.slide-foot {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16mm;
+  align-items: end;
+  padding-top: 5mm;
+  border-top: 1px solid var(--rule);
+  position: relative;
+  z-index: 2;
+}
+
+.slide-caveat {
+  font-family: var(--font-mono);
+  font-size: 7pt;
+  letter-spacing: 0.04em;
+  color: var(--dim);
+  line-height: 1.55;
+  max-width: 110ch;
+}
+
+.slide-foot-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.slide-foot-pageno {
+  font-family: var(--font-mono);
+  font-size: 9pt;
+  letter-spacing: 0.22em;
+  color: var(--goldA);
+}
+.slide-foot-mark {
+  font-family: var(--font-mono);
+  font-size: 6.5pt;
+  letter-spacing: 0.22em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SLIDE 01 — TITLE
+   ═══════════════════════════════════════════════════════════════════ */
+.slide--title .slide-body {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-top: 0;
+}
+.title-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  margin-bottom: 14mm;
+}
+.title-seal {
+  width: 64px; height: 64px;
+  border: 1px solid var(--goldBorderS);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 30pt;
+  color: var(--goldA);
+  line-height: 1;
+}
+.title-rule { width: 1px; height: 32px; background: linear-gradient(to bottom, var(--goldBorderS), transparent); }
+.title-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 9pt;
+  letter-spacing: 0.36em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.title-headline {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 96pt;
+  line-height: 1;
+  letter-spacing: 0.012em;
+  margin-bottom: 14px;
+}
+.title-headline em {
+  font-style: italic;
+  background: linear-gradient(135deg, var(--goldA), var(--goldD));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.title-sub {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 18pt;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  margin-bottom: 14mm;
+}
+.title-meta { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+.title-meta-line {
+  font-family: var(--font-mono);
+  font-size: 10pt;
+  letter-spacing: 0.32em;
+  color: var(--goldA);
+  text-transform: uppercase;
+}
+.title-meta-sub {
+  font-family: var(--font-mono);
+  font-size: 8pt;
+  letter-spacing: 0.22em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SLIDE 02 — COHORT
+   ═══════════════════════════════════════════════════════════════════ */
+.cohort-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 24mm;
+  align-items: center;
+  margin-top: 4mm;
+}
+.cohort-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 3px;
+  width: 78mm;
+  height: 78mm;
+  margin-left: auto;
+}
+.cohort-cell {
+  aspect-ratio: 1;
+  border: 1px solid rgba(237,232,223,0.10);
+}
+.cohort-cell.lit {
+  background: rgba(197,165,114,0.45);
+  border-color: var(--goldBorderM);
+  box-shadow: 0 0 6px rgba(197,165,114,0.30);
+}
+.cohort-stats {
+  display: flex;
+  gap: 14mm;
+  margin-top: 8mm;
+}
+.cohort-stat-num {
+  font-family: var(--font-mono);
+  font-size: 22pt;
+  color: var(--goldA);
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  margin-bottom: 5px;
+}
+.cohort-stat-label {
+  font-family: var(--font-mono);
+  font-size: 7.5pt;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SLIDE 03 — THE FRAME
+   ═══════════════════════════════════════════════════════════════════ */
+.frame-stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12mm;
+  margin-top: 8mm;
+  padding: 6mm 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.frame-stat-num {
+  font-family: var(--font-mono);
+  font-size: 22pt;
+  color: var(--goldB);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.frame-stat-label {
+  font-family: var(--font-ui);
+  font-size: 11pt;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.frame-stat-sub {
+  font-family: var(--font-ui);
+  font-size: 9pt;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.frame-1997 {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 14pt;
+  color: var(--goldB);
+  border-left: 1px solid var(--goldBorderS);
+  padding-left: 14px;
+  margin-top: 6mm;
+  max-width: 70ch;
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SLIDE 04 — BASELINE
+   ═══════════════════════════════════════════════════════════════════ */
+.baseline-row {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 16mm;
+  align-items: start;
+}
+.baseline-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.baseline-tier {
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.baseline-tier-label {
+  font-family: var(--font-mono);
+  font-size: 8pt;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.baseline-tier-name {
+  font-family: var(--font-ui);
+  font-size: 10.5pt;
+  color: var(--text);
+}
+.baseline-tier.foundation {
+  border-color: var(--goldBorderM);
+  background: linear-gradient(135deg, rgba(197,165,114,0.08), rgba(197,165,114,0.02));
+}
+.baseline-tier.foundation .baseline-tier-name {
+  color: var(--goldC);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 14pt;
+  letter-spacing: 0.02em;
+}
+
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--border);
+}
+.compare-col { padding: 14px 16px; }
+.compare-col + .compare-col { border-left: 1px solid var(--border); }
+.compare-col.them { background: rgba(255,255,255,0.015); }
+.compare-col.us { background: rgba(197,165,114,0.04); }
+.compare-h {
+  font-family: var(--font-mono);
+  font-size: 7.5pt;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  color: var(--muted);
+}
+.compare-col.us .compare-h { color: var(--goldA); }
+.compare-list { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.compare-list li {
+  font-family: var(--font-display);
+  font-size: 11pt;
+  line-height: 1.45;
+  color: rgba(237,232,223,0.80);
+}
+.compare-col.them li::before { content: '○ '; color: var(--dim); }
+.compare-col.us li::before { content: '◆ '; color: var(--goldA); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   SLIDE 05 — ASSET
+   ═══════════════════════════════════════════════════════════════════ */
+.asset-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18mm;
+  align-items: center;
+}
+.bar-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 700px;
+  height: 72mm;
+}
+.gold-bar-3d {
+  width: 86mm;
+  height: 26mm;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateY(-8deg) rotateX(2deg);
+}
+.gold-bar-3d::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #D4A84B 0%, #C5A572 35%, #A8864A 70%, #8a6e3c 100%);
+  border: 1px solid rgba(255,220,150,0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255,235,180,0.35),
+    inset 0 -2px 6px rgba(0,0,0,0.4),
+    0 12px 30px rgba(0,0,0,0.5);
+}
+.gold-bar-3d::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, transparent 35%, rgba(255,235,180,0.25) 50%, transparent 65%, transparent 100%);
+  pointer-events: none;
+}
+.bar-stamp {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-mono);
+  font-size: 9pt;
+  letter-spacing: 0.16em;
+  color: rgba(70,52,28,0.85);
+  text-align: center;
+  z-index: 2;
+  text-shadow: 0 1px 0 rgba(255,235,180,0.4);
+  line-height: 1.3;
+}
+
+.registry {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 14px 18px;
+}
+.registry-h {
+  font-family: var(--font-mono);
+  font-size: 7.5pt;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.registry-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.registry-row:last-child { border-bottom: none; }
+.registry-key {
+  font-family: var(--font-ui);
+  color: var(--muted);
+  font-size: 9pt;
+}
+.registry-val {
+  font-family: var(--font-mono);
+  color: var(--goldB);
+  font-size: 9pt;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SLIDE 06 — SINGAPORE
+   ═══════════════════════════════════════════════════════════════════ */
+.sg-pillar-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  margin-top: 8mm;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+.sg-pillar {
+  background: var(--near);
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 42mm;
+}
+.sg-pillar-num {
+  font-family: var(--font-mono);
+  font-size: 8pt;
+  letter-spacing: 0.22em;
+  color: var(--goldA);
+}
+.sg-pillar-title {
+  font-family: var(--font-display);
+  font-size: 14pt;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  line-height: 1.15;
+}
+.sg-pillar-desc {
+  font-family: var(--font-ui);
+  font-size: 9.5pt;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SLIDE 07 — MECHANISM
+   ═══════════════════════════════════════════════════════════════════ */
+.mech-flow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  margin-top: 6mm;
+  background: var(--border);
+  border: 1px solid var(--border);
+  position: relative;
+}
+.mech-step {
+  background: var(--near);
+  padding: 14px 14px 14px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 56mm;
+}
+.mech-step-num {
+  font-family: var(--font-mono);
+  font-size: 7.5pt;
+  letter-spacing: 0.24em;
+  color: var(--goldA);
+}
+.mech-step-title {
+  font-family: var(--font-display);
+  font-size: 14pt;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  line-height: 1.15;
+}
+.mech-step-title em {
+  background: linear-gradient(135deg, var(--goldA), var(--goldD));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.mech-step-detail {
+  font-family: var(--font-ui);
+  font-size: 9pt;
+  color: var(--muted);
+  line-height: 1.55;
+  flex: 1;
+}
+.mech-step-figure {
+  font-family: var(--font-mono);
+  font-size: 8.5pt;
+  color: var(--goldB);
+  letter-spacing: 0.06em;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+.mech-arrow {
+  position: absolute;
+  right: -7px;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  background: var(--black);
+  border-right: 1px solid var(--goldA);
+  border-top: 1px solid var(--goldA);
+  transform: translateY(-50%) rotate(45deg);
+  z-index: 3;
+}
+.mech-step:last-child .mech-arrow { display: none; }
+.mech-return {
+  font-family: var(--font-mono);
+  font-size: 8pt;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  text-align: center;
+  text-transform: uppercase;
+  margin-top: 4mm;
+}
+.mech-return strong { color: var(--goldA); font-weight: 400; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   SLIDE 08 — ENGINES
+   ═══════════════════════════════════════════════════════════════════ */
+.engines-hero {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin: 4mm 0 6mm;
+  padding-bottom: 6mm;
+  border-bottom: 1px solid var(--goldBorderS);
+}
+.engines-hero-num {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 80pt;
+  line-height: 0.9;
+  background: linear-gradient(135deg, var(--goldA), var(--goldD));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.02em;
+}
+.engines-hero-label {
+  font-family: var(--font-ui);
+  font-size: 9pt;
+  letter-spacing: 0.28em;
+  color: var(--muted);
+  text-transform: uppercase;
+  line-height: 1.6;
+}
+.engines-hero-label strong {
+  display: block;
+  color: var(--goldB);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.engines-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin-bottom: 5mm;
+}
+.engine-card {
+  background: var(--near);
+  padding: 14px 14px;
+  min-height: 38mm;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.engine-card-num {
+  font-family: var(--font-mono);
+  font-size: 7.5pt;
+  letter-spacing: 0.24em;
+  color: var(--goldA);
+}
+.engine-card-title {
+  font-family: var(--font-display);
+  font-size: 14pt;
+  letter-spacing: 0.02em;
+  font-style: italic;
+  color: var(--goldC);
+}
+.engine-card-desc {
+  font-family: var(--font-ui);
+  font-size: 9.5pt;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.fee-mini {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border: 1px solid var(--border);
+}
+.fee-mini-cell {
+  padding: 10px 14px;
+  border-right: 1px solid var(--border);
+  text-align: center;
+}
+.fee-mini-cell:last-child { border-right: none; }
+.fee-mini-num {
+  font-family: var(--font-mono);
+  font-size: 14pt;
+  color: var(--goldB);
+  letter-spacing: 0.04em;
+  margin-bottom: 3px;
+}
+.fee-mini-label {
+  font-family: var(--font-ui);
+  font-size: 8pt;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SLIDE 09 — STRESS (3×3 matrix, all scenarios visible)
+   ═══════════════════════════════════════════════════════════════════ */
+.stress-matrix {
+  display: grid;
+  grid-template-columns: 36mm 1fr 1fr 1fr;
+  grid-auto-rows: minmax(0, auto);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin-top: 2mm;
+}
+.sm-cell {
+  background: var(--near);
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.sm-h {
+  font-family: var(--font-mono);
+  font-size: 7.5pt;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.sm-h-scn {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 13pt;
+  color: var(--goldC);
+  line-height: 1.1;
+}
+.sm-h-scn .delta {
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 9pt;
+  color: var(--muted);
+  display: block;
+  letter-spacing: 0.06em;
+  margin-top: 3px;
+}
+.sm-val {
+  font-family: var(--font-mono);
+  font-size: 11pt;
+  letter-spacing: 0.02em;
+  margin-bottom: 2px;
+  color: var(--goldB);
+}
+.sm-val.ok { color: var(--green); }
+.sm-val.warn { color: var(--amber); }
+.sm-val.alert { color: var(--red); }
+.sm-note {
+  font-family: var(--font-ui);
+  font-size: 7.5pt;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.stress-take {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 11pt;
+  color: var(--goldB);
+  margin-top: 3mm;
+  padding-left: 12px;
+  border-left: 1px solid var(--goldBorderS);
+  max-width: 110ch;
+  line-height: 1.45;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SLIDE 10 — RISK
+   ═══════════════════════════════════════════════════════════════════ */
+.ltv-wrap { margin: 6mm 0 12mm; padding: 8mm 6mm; }
+.ltv-track {
+  position: relative;
+  height: 40px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.ltv-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 67%;
+  background: linear-gradient(90deg, rgba(90,158,114,0.28) 0%, rgba(197,165,114,0.32) 60%, rgba(184,131,58,0.42) 88%, rgba(176,94,86,0.50) 100%);
+  border-right: 1px solid var(--goldBorderM);
+}
+.ltv-tick {
+  position: absolute;
+  top: -6px;
+  bottom: -6px;
+  width: 1px;
+}
+.ltv-tick-label {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 8pt;
+  letter-spacing: 0.10em;
+  white-space: nowrap;
+}
+.ltv-tick-sub {
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 7pt;
+  letter-spacing: 0.14em;
+  color: var(--dim);
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+.ltv-tick.t-50 { left: 50%; background: var(--green); }
+.ltv-tick.t-50 .ltv-tick-label { color: var(--green); }
+.ltv-tick.t-70 { left: 70%; background: var(--amber); }
+.ltv-tick.t-70 .ltv-tick-label { color: var(--amber); }
+.ltv-tick.t-75 { left: 75%; background: var(--goldB); }
+.ltv-tick.t-75 .ltv-tick-label { color: var(--goldB); }
+.ltv-tick.t-80 { left: 80%; background: var(--red); }
+.ltv-tick.t-80 .ltv-tick-label { color: var(--red); }
+.covenant-list {
+  margin-top: 8mm;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px 18mm;
+}
+.covenant {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.covenant-mark {
+  font-family: var(--font-mono);
+  color: var(--goldA);
+  font-size: 10pt;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+.covenant-text {
+  font-family: var(--font-display);
+  font-size: 11pt;
+  line-height: 1.45;
+  color: rgba(237,232,223,0.85);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SLIDE 11 — STEWARDSHIP
+   ═══════════════════════════════════════════════════════════════════ */
+.steward-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin-top: 6mm;
+}
+.steward-card {
+  background: var(--near);
+  padding: 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 60mm;
+}
+.steward-icon {
+  width: 32px; height: 32px;
+  border: 1px solid var(--goldBorderS);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--goldA);
+  font-size: 13pt;
+  margin-bottom: 4px;
+}
+.steward-h {
+  font-family: var(--font-mono);
+  font-size: 7.5pt;
+  letter-spacing: 0.24em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.steward-name {
+  font-family: var(--font-display);
+  font-size: 16pt;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  color: var(--goldC);
+  line-height: 1.2;
+}
+.steward-desc {
+  font-family: var(--font-ui);
+  font-size: 9.5pt;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SLIDE 12 — CLOSE
+   ═══════════════════════════════════════════════════════════════════ */
+.slide--close .slide-body {
+  align-items: center;
+  text-align: center;
+  padding-top: 4mm;
+}
+.close-stages {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin: 8mm 0;
+  width: 100%;
+  max-width: 200mm;
+  text-align: left;
+}
+.close-stage {
+  background: var(--near);
+  padding: 10px 12px;
+}
+.close-stage-num {
+  font-family: var(--font-mono);
+  font-size: 8pt;
+  letter-spacing: 0.18em;
+  color: var(--goldA);
+  margin-bottom: 4px;
+}
+.close-stage-name {
+  font-family: var(--font-display);
+  font-size: 12pt;
+  font-style: italic;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+.close-aphorism {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 28pt;
+  color: var(--goldB);
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+  max-width: 28ch;
+  margin: 4mm auto 8mm;
+  padding: 6mm 0;
+  border-top: 1px solid var(--goldBorderS);
+  border-bottom: 1px solid var(--goldBorderS);
+}
+.close-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 36px;
+  background: var(--goldMuted);
+  border: 1px solid var(--goldBorderM);
+  color: var(--goldC);
+  font-family: var(--font-ui);
+  font-size: 10pt;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  text-decoration: none;
+  margin-bottom: 6mm;
+}
+.close-meta {
+  font-family: var(--font-mono);
+  font-size: 8pt;
+  letter-spacing: 0.24em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SCREEN-ONLY CHROME (export bar)
+   ═══════════════════════════════════════════════════════════════════ */
+.export-bar {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(7,7,6,0.92);
+  border: 1px solid var(--goldBorderS);
+  backdrop-filter: blur(8px);
+}
+.export-bar-label {
+  font-family: var(--font-mono);
+  font-size: 9pt;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-right: 8px;
+}
+.export-bar button {
+  font-family: var(--font-ui);
+  font-size: 10pt;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  background: var(--goldMuted);
+  border: 1px solid var(--goldBorderS);
+  color: var(--goldB);
+  cursor: pointer;
+  transition: background 200ms, border-color 200ms;
+}
+.export-bar button:hover {
+  background: rgba(197,165,114,0.20);
+  border-color: var(--goldBorderM);
+  color: var(--goldD);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PRINT — A4 LANDSCAPE, ONE SLIDE PER PAGE, ZERO MARGINS
+   ═══════════════════════════════════════════════════════════════════ */
+@page {
+  size: A4 landscape;
+  margin: 0;
+}
+
+@media print {
+  html, body { background: var(--black) !important; }
+  body, .deck { padding: 0 !important; gap: 0 !important; background: var(--black) !important; }
+  .export-bar { display: none !important; }
+  .slide {
+    width: 297mm !important;
+    height: 210mm !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    page-break-after: always;
+    page-break-inside: avoid;
+    break-after: page;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  .slide:last-child { page-break-after: auto; break-after: auto; }
+  .slide-headline em,
+  .title-headline em,
+  .engines-hero-num,
+  .mech-step-title em,
+  .gold-grad {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* Small viewports — fit slide on screen via scrollable */
+@media (max-width: 1280px) {
+  .deck { padding: 24px 0 60px; align-items: flex-start; overflow-x: auto; }
+  .deck > * { margin: 0 24px; }
+}
+</style>
+</head>
+<body>
+
+<div class="export-bar" role="toolbar" aria-label="Deck actions">
+  <span class="export-bar-label">The Kilo · 12pp</span>
+  <button onclick="window.print()" type="button">Save / Print PDF</button>
+</div>
+
+<div class="deck">
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 01 — TITLE
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide slide--title">
+  <header class="slide-head">
+    <span class="slide-eyebrow">Singapore VCC · By Invitation</span>
+    <div class="slide-mark">
+      <span class="slide-mark-text">The Aurum Century Club</span>
+      <span class="slide-mark-seal"><em>Au</em></span>
+    </div>
+  </header>
+  <div class="slide-body">
+    <div class="title-stack">
+      <div class="title-seal"><em>Au</em></div>
+      <div class="title-rule"></div>
+      <span class="title-eyebrow">The Founding Round</span>
+    </div>
+    <h1 class="title-headline">The <em>Kilo</em>.</h1>
+    <p class="title-sub">A founding cohort of one hundred.</p>
+    <div class="title-meta">
+      <span class="title-meta-line">First Close · Q3 MMXXVI</span>
+      <span class="title-meta-sub">TACC Pte Ltd · Singapore</span>
+    </div>
+  </div>
+  <footer class="slide-foot">
+    <p class="slide-caveat">
+      Private placement. Accredited and institutional investors only. This document is preliminary and is not an offer to sell or a solicitation to buy any security. All terms are qualified in their entirety by the Private Placement Memorandum and the Subscription Agreement of the Fund.
+    </p>
+    <div class="slide-foot-meta">
+      <span class="slide-foot-pageno">01 / 12</span>
+      <span class="slide-foot-mark">The Kilo · MMXXVI</span>
+    </div>
+  </footer>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 02 — COHORT
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <header class="slide-head">
+    <span class="slide-eyebrow">The Cohort</span>
+    <div class="slide-mark">
+      <span class="slide-mark-text">The Kilo</span>
+      <span class="slide-mark-seal"><em>Au</em></span>
+    </div>
+  </header>
+  <div class="slide-body">
+    <h2 class="slide-headline">
+      <span class="hl-w">One hundred principals.</span>
+      <span class="hl-g">Not a market.</span>
+    </h2>
+    <div class="cohort-row">
+      <div>
+        <div class="slide-text">
+          <p>The Founding Round admits one hundred members. When the cohort is full, it is full. Each seat carries the same instrument, the same custody, the same waterfall. There is no preferred class. No side letter. No second tier.</p>
+          <p>Members are addressed by number. Discretion is structural, not promised.</p>
+        </div>
+        <div class="cohort-stats">
+          <div>
+            <div class="cohort-stat-num">100</div>
+            <div class="cohort-stat-label">Founding Seats</div>
+          </div>
+          <div>
+            <div class="cohort-stat-num">01</div>
+            <div class="cohort-stat-label">Tier</div>
+          </div>
+          <div>
+            <div class="cohort-stat-num">00</div>
+            <div class="cohort-stat-label">Side Letters</div>
+          </div>
+        </div>
+      </div>
+      <div class="cohort-grid" id="cohort-grid" aria-hidden="true"></div>
+    </div>
+  </div>
+  <footer class="slide-foot">
+    <p class="slide-caveat">
+      Cohort fill shown is illustrative of the Founding Round structure. Live admitted-member count is maintained in the member portal and updated as wires clear.
+    </p>
+    <div class="slide-foot-meta">
+      <span class="slide-foot-pageno">02 / 12</span>
+      <span class="slide-foot-mark">The Cohort</span>
+    </div>
+  </footer>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 03 — FRAME
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <header class="slide-head">
+    <span class="slide-eyebrow">The Premise</span>
+    <div class="slide-mark">
+      <span class="slide-mark-text">The Kilo</span>
+      <span class="slide-mark-seal"><em>Au</em></span>
+    </div>
+  </header>
+  <div class="slide-body">
+    <h2 class="slide-headline">
+      <span class="hl-w">The rules of money</span>
+      <span class="hl-g">are being rewritten.</span>
+    </h2>
+    <div class="slide-text">
+      <p>Sovereign debt is at unprecedented peacetime levels. Central banks are accumulating gold at the fastest pace in fifty years. Reserve currency assumptions, once unspoken, are now openly questioned in the institutions whose business it is to defend them.</p>
+    </div>
+    <div class="frame-stat-row">
+      <div>
+        <div class="frame-stat-num">~1,180 t</div>
+        <div class="frame-stat-label">Central bank gold purchases</div>
+        <div class="frame-stat-sub">Annual avg., recent cycle. Multi-decade high.</div>
+      </div>
+      <div>
+        <div class="frame-stat-num">&gt; 100%</div>
+        <div class="frame-stat-label">US debt-to-GDP</div>
+        <div class="frame-stat-sub">Sustained above the prior post-war peak.</div>
+      </div>
+      <div>
+        <div class="frame-stat-num">▲</div>
+        <div class="frame-stat-label">Real-asset allocation</div>
+        <div class="frame-stat-sub">Institutional consensus on rising portfolio share.</div>
+      </div>
+    </div>
+    <p class="frame-1997">Our parents learned this lesson in 1997. The world is being taught it again.</p>
+  </div>
+  <footer class="slide-foot">
+    <p class="slide-caveat">
+      Macro figures shown are illustrative aggregates drawn from public central bank and sovereign reporting and are subject to revision. They are presented as context, not investment recommendations.
+    </p>
+    <div class="slide-foot-meta">
+      <span class="slide-foot-pageno">03 / 12</span>
+      <span class="slide-foot-mark">The Premise</span>
+    </div>
+  </footer>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 04 — BASELINE
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <header class="slide-head">
+    <span class="slide-eyebrow">First Principle</span>
+    <div class="slide-mark">
+      <span class="slide-mark-text">The Kilo</span>
+      <span class="slide-mark-seal"><em>Au</em></span>
+    </div>
+  </header>
+  <div class="slide-body">
+    <h2 class="slide-headline">
+      <span class="hl-w">Gold is the baseline.</span>
+      <span class="hl-g">Not the allocation.</span>
+    </h2>
+    <div class="baseline-row">
+      <div>
+        <div class="slide-text" style="margin-bottom: 6mm;">
+          <p>In conventional portfolios, gold is a five-percent hedge against the other ninety-five. Here the relationship inverts. The kilogram is the monetary floor — every position is constructed above it, financed against it, underwritten by it.</p>
+          <p><strong>The hedge is the foundation. Everything else is the building.</strong></p>
+        </div>
+        <div class="baseline-stack">
+          <div class="baseline-tier">
+            <span class="baseline-tier-label">04 · Yield</span>
+            <span class="baseline-tier-name">Private Credit Deployment</span>
+          </div>
+          <div class="baseline-tier">
+            <span class="baseline-tier-label">03 · Spread</span>
+            <span class="baseline-tier-name">LTV Arbitrage</span>
+          </div>
+          <div class="baseline-tier">
+            <span class="baseline-tier-label">02 · Facility</span>
+            <span class="baseline-tier-name">75% LTV Credit Line</span>
+          </div>
+          <div class="baseline-tier foundation">
+            <span class="baseline-tier-label">01 · Foundation</span>
+            <span class="baseline-tier-name">1 kg LBMA Gold · Allocated</span>
+          </div>
+        </div>
+      </div>
+      <div class="compare">
+        <div class="compare-col them">
+          <div class="compare-h">A Domestic Gold Account</div>
+          <ul class="compare-list">
+            <li>Unallocated paper claim</li>
+            <li>Bank balance-sheet exposure</li>
+            <li>KRW-denominated counterparty</li>
+            <li>Static. No yield.</li>
+          </ul>
+        </div>
+        <div class="compare-col us">
+          <div class="compare-h">The Kilo</div>
+          <ul class="compare-list">
+            <li>Serial-numbered allocated bar</li>
+            <li>Held outside any bank balance sheet</li>
+            <li>Singapore VCC · LBMA · FTZ</li>
+            <li>Productive collateral. Three engines.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="slide-foot">
+    <p class="slide-caveat">
+      Comparison shown is structural. Specific products, providers, and account terms vary. Members are responsible for evaluating their own existing arrangements with independent advice.
+    </p>
+    <div class="slide-foot-meta">
+      <span class="slide-foot-pageno">04 / 12</span>
+      <span class="slide-foot-mark">First Principle</span>
+    </div>
+  </footer>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 05 — ASSET
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <header class="slide-head">
+    <span class="slide-eyebrow">The Asset</span>
+    <div class="slide-mark">
+      <span class="slide-mark-text">The Kilo</span>
+      <span class="slide-mark-seal"><em>Au</em></span>
+    </div>
+  </header>
+  <div class="slide-body">
+    <h2 class="slide-headline">
+      <span class="hl-w">One kilogram.</span>
+      <span class="hl-g">LBMA Good Delivery.</span>
+    </h2>
+    <div class="asset-row">
+      <div>
+        <div class="bar-stage">
+          <div class="gold-bar-3d">
+            <div class="bar-stamp">1 KG · 999.9<br>LBMA</div>
+          </div>
+        </div>
+        <div class="slide-text" style="margin-top: 6mm;">
+          <p>Each member's bullion is held in allocated, segregated custody at Malca-Amit Singapore Free Trade Zone. Bars are serial-numbered, refiner-certified, and audited.</p>
+          <p><strong>No rehypothecation. No pooled account. No paper claim standing in for the bar.</strong></p>
+        </div>
+      </div>
+      <div class="registry">
+        <div class="registry-h">Specimen Bar Registry</div>
+        <div class="registry-row"><span class="registry-key">Format</span><span class="registry-val">1 kg cast bar</span></div>
+        <div class="registry-row"><span class="registry-key">Fineness</span><span class="registry-val">999.9</span></div>
+        <div class="registry-row"><span class="registry-key">Standard</span><span class="registry-val">LBMA Good Delivery</span></div>
+        <div class="registry-row"><span class="registry-key">Custodian</span><span class="registry-val">Malca-Amit SG</span></div>
+        <div class="registry-row"><span class="registry-key">Location</span><span class="registry-val">Singapore FTZ</span></div>
+        <div class="registry-row"><span class="registry-key">Allocation</span><span class="registry-val">Segregated · Member</span></div>
+        <div class="registry-row"><span class="registry-key">Audit</span><span class="registry-val">Annual · Independent</span></div>
+        <div class="registry-row"><span class="registry-key">Insurance</span><span class="registry-val">Full replacement</span></div>
+      </div>
+    </div>
+  </div>
+  <footer class="slide-foot">
+    <p class="slide-caveat">
+      Bar registry shown is a specimen format. The Fund maintains a live registry; full bar-list disclosure to admitted members on funding. Custody terms governed by the Custody Agreement with Malca-Amit Singapore.
+    </p>
+    <div class="slide-foot-meta">
+      <span class="slide-foot-pageno">05 / 12</span>
+      <span class="slide-foot-mark">The Asset</span>
+    </div>
+  </footer>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 06 — SINGAPORE
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <header class="slide-head">
+    <span class="slide-eyebrow">Jurisdiction</span>
+    <div class="slide-mark">
+      <span class="slide-mark-text">The Kilo</span>
+      <span class="slide-mark-seal"><em>Au</em></span>
+    </div>
+  </header>
+  <div class="slide-body">
+    <h2 class="slide-headline">
+      <span class="hl-w">A jurisdiction</span>
+      <span class="hl-g">that keeps its word.</span>
+    </h2>
+    <div class="slide-text">
+      <p>The Variable Capital Company is Singapore's purpose-built private fund vehicle — regulated by the Monetary Authority of Singapore, ring-fenced by statute, recognised across the major treaty network. For Korean principals, Singapore is the shortest distance between Seoul and a rule that does not change.</p>
+    </div>
+    <div class="sg-pillar-row">
+      <div class="sg-pillar">
+        <div class="sg-pillar-num">01</div>
+        <div class="sg-pillar-title">VCC Statute</div>
+        <div class="sg-pillar-desc">Purpose-built fund vehicle. Ring-fenced sub-funds. Managed by a Singapore-licensed fund manager.</div>
+      </div>
+      <div class="sg-pillar">
+        <div class="sg-pillar-num">02</div>
+        <div class="sg-pillar-title">MAS Oversight</div>
+        <div class="sg-pillar-desc">Regulated by the Monetary Authority of Singapore. AML/CFT regime aligned with FATF standards.</div>
+      </div>
+      <div class="sg-pillar">
+        <div class="sg-pillar-num">03</div>
+        <div class="sg-pillar-title">No GST on Bullion</div>
+        <div class="sg-pillar-desc">Investment-grade gold is exempt from GST. FTZ custody held outside the customs boundary.</div>
+      </div>
+      <div class="sg-pillar">
+        <div class="sg-pillar-num">04</div>
+        <div class="sg-pillar-title">Treaty Network</div>
+        <div class="sg-pillar-desc">Comprehensive double-taxation agreements across Korea, Japan, Hong Kong, and the major jurisdictions.</div>
+      </div>
+    </div>
+  </div>
+  <footer class="slide-foot">
+    <p class="slide-caveat">
+      Tax and regulatory treatment depend on the personal circumstances of each member and the jurisdictions in which they are resident. No tax advice is given. Members are required to obtain independent professional advice.
+    </p>
+    <div class="slide-foot-meta">
+      <span class="slide-foot-pageno">06 / 12</span>
+      <span class="slide-foot-mark">Jurisdiction</span>
+    </div>
+  </footer>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 07 — MECHANISM
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <header class="slide-head">
+    <span class="slide-eyebrow">Structure</span>
+    <div class="slide-mark">
+      <span class="slide-mark-text">The Kilo</span>
+      <span class="slide-mark-seal"><em>Au</em></span>
+    </div>
+  </header>
+  <div class="slide-body">
+    <h2 class="slide-headline">
+      <span class="hl-w">Gold collateralises.</span>
+      <span class="hl-g">Credit deploys.</span>
+      <span class="hl-w">Discipline returns.</span>
+    </h2>
+    <div class="slide-text">
+      <p>The kilogram is pledged to a senior credit facility at a maximum loan-to-value of seventy-five percent. Drawn capital is deployed by the investment committee into private credit and select pre-IPO positions. Yield, principal, and metal appreciation flow through the waterfall. The collateral does not move.</p>
+    </div>
+    <div class="mech-flow">
+      <div class="mech-step">
+        <span class="mech-step-num">01 · Collateral</span>
+        <span class="mech-step-title">Allocated <em>Gold</em></span>
+        <span class="mech-step-detail">1 kg LBMA bars per member. Malca-Amit Singapore FTZ. Segregated, serial-numbered.</span>
+        <span class="mech-step-figure">100% Custody</span>
+        <span class="mech-arrow"></span>
+      </div>
+      <div class="mech-step">
+        <span class="mech-step-num">02 · Facility</span>
+        <span class="mech-step-title">Senior <em>LTV Line</em></span>
+        <span class="mech-step-detail">Pledged against the gold pool. Drawn against the LBMA reference price. Floating-rate institutional terms.</span>
+        <span class="mech-step-figure">≤ 75% LTV</span>
+        <span class="mech-arrow"></span>
+      </div>
+      <div class="mech-step">
+        <span class="mech-step-num">03 · Deployment</span>
+        <span class="mech-step-title">Private <em>Credit + Equity</em></span>
+        <span class="mech-step-detail">Investment committee selects sleeve-by-sleeve. Diversified across private credit and pre-IPO positions.</span>
+        <span class="mech-step-figure">15–25% Gross Tgt</span>
+        <span class="mech-arrow"></span>
+      </div>
+      <div class="mech-step">
+        <span class="mech-step-num">04 · Waterfall</span>
+        <span class="mech-step-title">Returns <em>Distributed</em></span>
+        <span class="mech-step-detail">Capital first. Hurdle next. Catch-up. Carry above. European-style waterfall.</span>
+        <span class="mech-step-figure">8% Hurdle · 20% Carry</span>
+      </div>
+    </div>
+    <p class="mech-return">Collateral remains in custody throughout · <strong>The bar does not move</strong></p>
+  </div>
+  <footer class="slide-foot">
+    <p class="slide-caveat">
+      Target deployment ranges shown are illustrative, gross of timing, and dependent on facility cost, deployment performance, and gold-price path. They are not a forecast or guarantee. Past performance, where cited, does not indicate future results.
+    </p>
+    <div class="slide-foot-meta">
+      <span class="slide-foot-pageno">07 / 12</span>
+      <span class="slide-foot-mark">Structure</span>
+    </div>
+  </footer>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 08 — ENGINES
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <header class="slide-head">
+    <span class="slide-eyebrow">Return Architecture</span>
+    <div class="slide-mark">
+      <span class="slide-mark-text">The Kilo</span>
+      <span class="slide-mark-seal"><em>Au</em></span>
+    </div>
+  </header>
+  <div class="slide-body">
+    <h2 class="slide-headline">
+      <span class="hl-w">Three engines.</span>
+      <span class="hl-g">One waterfall.</span>
+    </h2>
+    <div class="engines-hero">
+      <div class="engines-hero-num">~15%</div>
+      <div class="engines-hero-label">
+        <strong>Target net IRR</strong>
+        Illustrative · Not a guarantee
+      </div>
+    </div>
+    <div class="engines-grid">
+      <div class="engine-card">
+        <div class="engine-card-num">01</div>
+        <div class="engine-card-title">Gold Appreciation</div>
+        <div class="engine-card-desc">Real-asset value on the unencumbered base. Independent of currency revision and counterparty risk.</div>
+      </div>
+      <div class="engine-card">
+        <div class="engine-card-num">02</div>
+        <div class="engine-card-title">Private Credit Yield</div>
+        <div class="engine-card-desc">Contractual yield on deployed capital. Targeted gross 15–25% across the deployment book, sleeve-selected.</div>
+      </div>
+      <div class="engine-card">
+        <div class="engine-card-num">03</div>
+        <div class="engine-card-title">LTV Arbitrage</div>
+        <div class="engine-card-desc">Spread between the cost of the senior facility and the yield of deployment. Engineered, not market-timed.</div>
+      </div>
+    </div>
+    <div class="fee-mini">
+      <div class="fee-mini-cell"><div class="fee-mini-num">2.0%</div><div class="fee-mini-label">Mgmt p.a.</div></div>
+      <div class="fee-mini-cell"><div class="fee-mini-num">8.0%</div><div class="fee-mini-label">Hurdle</div></div>
+      <div class="fee-mini-cell"><div class="fee-mini-num">100%</div><div class="fee-mini-label">Catch-up</div></div>
+      <div class="fee-mini-cell"><div class="fee-mini-num">20%</div><div class="fee-mini-label">Carry</div></div>
+    </div>
+  </div>
+  <footer class="slide-foot">
+    <p class="slide-caveat">
+      Target IRR is gross of timing assumptions and dependent on facility cost, deployment outcomes, and gold path; provided for illustrative purposes only. European waterfall: management fee on committed capital, preferred return paid in full before manager catch-up, carry above the hurdle. Full mechanics in the PPM, Section 9.
+    </p>
+    <div class="slide-foot-meta">
+      <span class="slide-foot-pageno">08 / 12</span>
+      <span class="slide-foot-mark">Return Architecture</span>
+    </div>
+  </footer>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 09 — STRESS MATRIX
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <header class="slide-head">
+    <span class="slide-eyebrow">Scenario</span>
+    <div class="slide-mark">
+      <span class="slide-mark-text">The Kilo</span>
+      <span class="slide-mark-seal"><em>Au</em></span>
+    </div>
+  </header>
+  <div class="slide-body">
+    <h2 class="slide-headline" style="margin-bottom: 6mm;">
+      <span class="hl-w">What happens</span>
+      <span class="hl-g">if gold moves?</span>
+    </h2>
+    <p style="font-family: var(--font-ui); font-size: 9.5pt; color: var(--muted); letter-spacing: 0.04em; margin-bottom: 5mm; max-width: 110ch;">Reference: 1 kg subscription, facility drawn at 67% LTV at inception.</p>
+    <div class="stress-matrix">
+      <!-- Header row -->
+      <div class="sm-cell"><span class="sm-h">Scenario</span></div>
+      <div class="sm-cell"><span class="sm-h">LTV Position</span></div>
+      <div class="sm-cell"><span class="sm-h">Margin Posture</span></div>
+      <div class="sm-cell"><span class="sm-h">Member Capital</span></div>
+
+      <!-- Down row -->
+      <div class="sm-cell">
+        <div class="sm-h-scn">Drawdown<span class="delta">Gold −20%</span></div>
+      </div>
+      <div class="sm-cell">
+        <div class="sm-val alert">~84%</div>
+        <div class="sm-note">Through the 80% bank threshold; cash reserve deployed to bring facility back to band.</div>
+      </div>
+      <div class="sm-cell">
+        <div class="sm-val alert">Margin Call</div>
+        <div class="sm-note">Bank action triggered. Manager deploys 20% reserve before any member capital call.</div>
+      </div>
+      <div class="sm-cell">
+        <div class="sm-val warn">Buffered</div>
+        <div class="sm-note">Member capital protected by reserve. Calls capped at 100% of original commitment.</div>
+      </div>
+
+      <!-- Flat row -->
+      <div class="sm-cell">
+        <div class="sm-h-scn">Reference<span class="delta">Gold flat</span></div>
+      </div>
+      <div class="sm-cell">
+        <div class="sm-val">67%</div>
+        <div class="sm-note">Within target band. No alert. Drawdown reserve unused.</div>
+      </div>
+      <div class="sm-cell">
+        <div class="sm-val">Stable</div>
+        <div class="sm-note">No bank action. No member alert. Standard quarterly reporting.</div>
+      </div>
+      <div class="sm-cell">
+        <div class="sm-val">Unaffected</div>
+        <div class="sm-note">Position remains held. Distributions continue per waterfall.</div>
+      </div>
+
+      <!-- Up row -->
+      <div class="sm-cell">
+        <div class="sm-h-scn">Appreciation<span class="delta">Gold +20%</span></div>
+      </div>
+      <div class="sm-cell">
+        <div class="sm-val ok">~56%</div>
+        <div class="sm-note">Comfortably below ceiling. Additional headroom available for selective deployment.</div>
+      </div>
+      <div class="sm-cell">
+        <div class="sm-val ok">Headroom</div>
+        <div class="sm-note">Facility under-utilised relative to collateral value.</div>
+      </div>
+      <div class="sm-cell">
+        <div class="sm-val ok">Compounding</div>
+        <div class="sm-note">Gold appreciation flows to NAV. Engines 1 + 3 amplified. Engine 2 unchanged.</div>
+      </div>
+    </div>
+    <p class="stress-take">A −20% gold move is absorbed first by the cash reserve. The covenant is not "no margin event ever" — it is "the manager handles it before you do".</p>
+  </div>
+  <footer class="slide-foot">
+    <p class="slide-caveat">
+      Scenarios are simplified arithmetic illustrations using the indicated covenant bands and are not predictions or projections. Actual outcomes depend on facility cost, the prevailing LBMA reference price, the deployment book, and timing. Capital calls under the Subscription Agreement are capped at 100% of original commitment.
+    </p>
+    <div class="slide-foot-meta">
+      <span class="slide-foot-pageno">09 / 12</span>
+      <span class="slide-foot-mark">Scenario</span>
+    </div>
+  </footer>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 10 — RISK
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <header class="slide-head">
+    <span class="slide-eyebrow">Covenants</span>
+    <div class="slide-mark">
+      <span class="slide-mark-text">The Kilo</span>
+      <span class="slide-mark-seal"><em>Au</em></span>
+    </div>
+  </header>
+  <div class="slide-body">
+    <h2 class="slide-headline">
+      <span class="hl-w">The covenants</span>
+      <span class="hl-g">are the product.</span>
+    </h2>
+    <div class="ltv-wrap">
+      <div class="ltv-track">
+        <div class="ltv-fill"></div>
+        <div class="ltv-tick t-50"><span class="ltv-tick-label">50%</span><span class="ltv-tick-sub">Min LTV · Fund Rule</span></div>
+        <div class="ltv-tick t-70"><span class="ltv-tick-label">70%</span><span class="ltv-tick-sub">Member Alert</span></div>
+        <div class="ltv-tick t-75"><span class="ltv-tick-label">75%</span><span class="ltv-tick-sub">Target Ceiling</span></div>
+        <div class="ltv-tick t-80"><span class="ltv-tick-label">80%</span><span class="ltv-tick-sub">Bank Margin</span></div>
+      </div>
+    </div>
+    <div class="covenant-list">
+      <div class="covenant"><span class="covenant-mark">◆</span><span class="covenant-text">Loan-to-value capped at <strong>75%</strong> under normal market conditions.</span></div>
+      <div class="covenant"><span class="covenant-mark">◆</span><span class="covenant-text">Member alert at <strong>70%</strong>; bank margin at <strong>80%</strong>.</span></div>
+      <div class="covenant"><span class="covenant-mark">◆</span><span class="covenant-text"><strong>20%</strong> fund-level cash reserve as a drawdown buffer.</span></div>
+      <div class="covenant"><span class="covenant-mark">◆</span><span class="covenant-text">Capital calls capped at <strong>100%</strong> of original commitment.</span></div>
+      <div class="covenant"><span class="covenant-mark">◆</span><span class="covenant-text">Independent custody. No rehypothecation. No related-party deployment.</span></div>
+      <div class="covenant"><span class="covenant-mark">◆</span><span class="covenant-text">Quarterly audited bar inventory. Annual independent verification.</span></div>
+    </div>
+  </div>
+  <footer class="slide-foot">
+    <p class="slide-caveat">
+      Covenants are described in the Constitution of the VCC and the Subscription Agreement. Loss of capital is possible. The full risk framework is set out in the PPM, Section 11.
+    </p>
+    <div class="slide-foot-meta">
+      <span class="slide-foot-pageno">10 / 12</span>
+      <span class="slide-foot-mark">Covenants</span>
+    </div>
+  </footer>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 11 — STEWARDSHIP
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <header class="slide-head">
+    <span class="slide-eyebrow">Stewardship</span>
+    <div class="slide-mark">
+      <span class="slide-mark-text">The Kilo</span>
+      <span class="slide-mark-seal"><em>Au</em></span>
+    </div>
+  </header>
+  <div class="slide-body">
+    <h2 class="slide-headline">
+      <span class="hl-w">Principals</span>
+      <span class="hl-g">you can check on.</span>
+    </h2>
+    <div class="slide-text">
+      <p>The fund is managed by principals with backgrounds in US private market deployment and Korean cross-border placement. Operations are independently administered and independently audited. Names and full track record are made available to admitted members under the Subscription Documents.</p>
+    </div>
+    <div class="steward-grid">
+      <div class="steward-card">
+        <div class="steward-icon"><em>P</em></div>
+        <div class="steward-h">The Principals</div>
+        <div class="steward-name">Investment Committee</div>
+        <div class="steward-desc">US private market deployment. Korean cross-border capital placement. Custody and structuring across LBMA jurisdictions. Full bios disclosed under the Subscription Documents.</div>
+      </div>
+      <div class="steward-card">
+        <div class="steward-icon"><em>A</em></div>
+        <div class="steward-h">Administration</div>
+        <div class="steward-name">Independent Administrator</div>
+        <div class="steward-desc">Singapore-licensed fund administrator. NAV struck independently. Member registry, capital accounts, and subscription documentation maintained outside the manager.</div>
+      </div>
+      <div class="steward-card">
+        <div class="steward-icon"><em>V</em></div>
+        <div class="steward-h">Verification</div>
+        <div class="steward-name">Audit · Annual</div>
+        <div class="steward-desc">Annual fund audit by an internationally recognised firm. Independent vault verification of physical bar inventory. Reports filed in the member document archive.</div>
+      </div>
+    </div>
+  </div>
+  <footer class="slide-foot">
+    <p class="slide-caveat">
+      Service-provider appointments are confirmed in the Subscription Documents. The names of the appointed administrator and auditor will be set out in the PPM and on the member portal at admission.
+    </p>
+    <div class="slide-foot-meta">
+      <span class="slide-foot-pageno">11 / 12</span>
+      <span class="slide-foot-mark">Stewardship</span>
+    </div>
+  </footer>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 12 — CLOSE
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide slide--close">
+  <header class="slide-head">
+    <span class="slide-eyebrow">Admission</span>
+    <div class="slide-mark">
+      <span class="slide-mark-text">The Kilo</span>
+      <span class="slide-mark-seal"><em>Au</em></span>
+    </div>
+  </header>
+  <div class="slide-body">
+    <h2 class="slide-headline" style="text-align: center; margin-left: auto; margin-right: auto;">
+      <span class="hl-w">Six stages.</span>
+      <span class="hl-g">One seat.</span>
+    </h2>
+    <div class="close-stages">
+      <div class="close-stage"><div class="close-stage-num">01</div><div class="close-stage-name">Inquiry</div></div>
+      <div class="close-stage"><div class="close-stage-num">02</div><div class="close-stage-name">Invited</div></div>
+      <div class="close-stage"><div class="close-stage-num">03</div><div class="close-stage-name">Accessed</div></div>
+      <div class="close-stage"><div class="close-stage-num">04</div><div class="close-stage-name">NDA Signed</div></div>
+      <div class="close-stage"><div class="close-stage-num">05</div><div class="close-stage-name">Subscribed</div></div>
+      <div class="close-stage"><div class="close-stage-num">06</div><div class="close-stage-name">Funded</div></div>
+    </div>
+    <p class="close-aphorism">What is held in gold<br>is held in full.</p>
+    <a href="https://theaurumcc.com/interest" class="close-cta">Request an Introduction</a>
+    <div class="close-meta">The Founding Round closes Q3 MMXXVI &nbsp;·&nbsp; theaurumcc.com</div>
+  </div>
+  <footer class="slide-foot">
+    <p class="slide-caveat">
+      This deck is provided for discussion with prospective accredited and institutional investors and does not constitute an offer to sell or a solicitation to buy any security. All terms are qualified in their entirety by the Private Placement Memorandum and Subscription Agreement of the Fund. Singapore Variable Capital Company. Issued by TACC Pte Ltd.
+    </p>
+    <div class="slide-foot-meta">
+      <span class="slide-foot-pageno">12 / 12</span>
+      <span class="slide-foot-mark">TACC Pte Ltd</span>
+    </div>
+  </footer>
+</section>
+
+</div>
+
+<script>
+(function(){
+  // Cohort grid — fill ~41 cells in pseudo-random order on slide 02
+  var grid = document.getElementById('cohort-grid');
+  if (!grid) return;
+  var cells = [];
+  for (var i = 0; i < 100; i++) {
+    var c = document.createElement('div');
+    c.className = 'cohort-cell';
+    grid.appendChild(c);
+    cells.push(c);
+  }
+  // Static fill — visible immediately so it prints correctly
+  var seed = [3,7,11,14,18,21,24,27,30,33,36,39,42,45,48,52,55,58,61,64,68,72,75,78,82,85,88,91,4,9,17,25,31,40,53,67,79,93,98,12,46];
+  seed.forEach(function(idx){
+    if (cells[idx]) cells[idx].classList.add('lit');
+  });
+})();
+</script>
+
+</body>
+</html>

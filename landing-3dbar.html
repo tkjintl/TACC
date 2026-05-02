@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!--
+  ─────────────────────────────────────────────────────────────────────────
+  RATIONALE — Why a real 3D bar.
+
+  The fund holds physical 1kg LBMA gold. Particles, lottie loops, and SVG
+  silhouettes signal "design system" — they read as decoration. A real,
+  rotating, properly-proportioned bar reads as the actual product, on the
+  desk, in the room. Korean family offices have seen every fintech glow.
+  They have not, on a public landing, seen the asset itself.
+
+  What makes it cinematic vs gimmicky:
+    1. Restraint. One mesh, one key light, brushed roughness 0.28 — not
+       mirror-shiny. Gold reads physical, not glassy.
+    2. Slow time. ~18s/rev rotation, 6s vertical bob. The eye should not
+       feel a loop; it should feel weight.
+    3. Emergence. The bar fades up from black over 4s before the CTA
+       appears. The first impression is silence, then the object arrives.
+    4. Real proportions. 13:5:1 — the bar has the squat, dense look of a
+       kilo bar, not a candy bar.
+    5. Edge engraving — "TACC · 1000g · 999.9 · 0042" — sells provenance.
+    6. The cursor barely matters. Proximity gives a small RPM nudge and a
+       half-degree of camera parallax. No swirly mouse trail. The visitor
+       is not playing with a toy.
+
+  Performance: single Mesh, one DirectionalLight + AmbientLight, no
+  shadows (a faint floor reflection is faked with a second flipped mesh
+  and an alpha gradient overlay — cheap, convincing). Mobile drops to
+  0.7x DPR and a smaller bar. Reduced-motion renders one still frame.
+
+  Fallback: if WebGL is unavailable, an SVG silhouette of the bar takes
+  the canvas slot — same composition, no animation.
+  ─────────────────────────────────────────────────────────────────────────
+-->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<meta name="theme-color" content="#070706">
+<title>The Aurum Century Club</title>
+<meta name="description" content="Singapore private fund. By invitation only.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23070706'/><rect x='4' y='4' width='24' height='24' fill='none' stroke='%23C5A572' stroke-width='1'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='14' font-style='italic' fill='%23C5A572'>Au</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/_styles/tokens.css">
+
+<style>
+  :root {
+    --near: #070706;
+    --text: #ece6da;
+    --muted: #a89f94;
+    --foot: #6b655e;
+    --goldA: #C5A572;
+    --goldB: #DEB97A;
+    --goldC: #F0CF9A;
+    --goldD: #8a7d6b;
+    --goldBorderS: rgba(197,165,114,0.50);
+    --goldWash: rgba(197,165,114,0.06);
+    --font-display: 'Cormorant Garamond', Georgia, serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    --font-ui: 'DM Sans', system-ui, sans-serif;
+  }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    background: var(--near);
+    color: var(--text);
+    font-family: var(--font-ui);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  /* Stage */
+  .stage {
+    position: fixed; inset: 0;
+    z-index: 1;
+  }
+  #bar-canvas {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    display: block;
+  }
+  /* SVG fallback */
+  .stage-fallback {
+    position: absolute; inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .stage.no-webgl #bar-canvas { display: none; }
+  .stage.no-webgl .stage-fallback { display: flex; }
+
+  /* Patina overlay (canvas2d, very subtle) */
+  #patina {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    opacity: 0.45;
+    mix-blend-mode: screen;
+  }
+
+  /* Vignette to anchor the bar against type */
+  .vignette {
+    position: fixed; inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 38%, transparent 0%, rgba(7,7,6,0.55) 75%, rgba(7,7,6,0.95) 100%),
+      linear-gradient(180deg, rgba(7,7,6,0.55) 0%, transparent 18%, transparent 60%, rgba(7,7,6,0.85) 100%);
+  }
+
+  /* Nav */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 50;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 24px 32px;
+    background: linear-gradient(180deg, rgba(7,7,6,0.85), rgba(7,7,6,0));
+  }
+  .nav-lockup { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
+  .nav-seal {
+    width: 30px; height: 30px;
+    border: 1px solid var(--goldA);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--font-display); font-style: italic;
+    color: var(--goldA); font-size: 14px; letter-spacing: -0.04em;
+  }
+  .nav-text { display: flex; flex-direction: column; line-height: 1; gap: 4px; }
+  .nav-text .word {
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.30em; color: var(--text); text-transform: uppercase;
+  }
+  .nav-text .program {
+    font-family: var(--font-mono); font-size: 8px;
+    letter-spacing: 0.32em; color: var(--goldD); text-transform: uppercase;
+  }
+  .nav-members {
+    display: inline-flex; align-items: center; gap: 8px;
+    text-decoration: none; color: var(--text);
+    font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    padding: 8px 14px; border: 1px solid var(--goldBorderS);
+    transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
+  }
+  .nav-members:hover { background: var(--goldWash); border-color: var(--goldA); color: var(--goldA); }
+  .nav-members .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--goldA); }
+
+  /* Composition: type sits below the bar */
+  .composition {
+    position: fixed;
+    z-index: 10;
+    left: 0; right: 0;
+    bottom: 0;
+    height: 100vh;
+    display: grid;
+    grid-template-rows: 1fr auto auto auto 1fr;
+    align-items: center;
+    justify-items: center;
+    padding: 80px 24px 96px;
+    pointer-events: none;
+  }
+  .composition > * { pointer-events: auto; }
+
+  /* Wordmark — sits in row 2 (below bar which lives in row 1's visual top) */
+  .wordmark {
+    grid-row: 3;
+    text-align: center;
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(34px, 5.6vw, 52px);
+    letter-spacing: 0.02em;
+    line-height: 1.05;
+    color: var(--text);
+    margin: 0;
+    opacity: 0;
+    animation: typeIn 1400ms cubic-bezier(0.22,1,0.36,1) 200ms forwards;
+  }
+  .wordmark em { font-style: italic; color: var(--goldC); }
+
+  .meta {
+    grid-row: 4;
+    text-align: center;
+    margin-top: 22px;
+    opacity: 0;
+    animation: typeIn 1400ms cubic-bezier(0.22,1,0.36,1) 600ms forwards;
+  }
+  .tag {
+    font-family: var(--font-display);
+    font-size: 16px; font-weight: 300;
+    color: var(--muted);
+    margin: 0 0 18px;
+    line-height: 1.6;
+  }
+  .tag em { font-style: italic; color: var(--goldC); }
+  .rule { width: 32px; height: 1px; background: var(--goldBorderS); margin: 0 auto 18px; }
+  .status {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--font-mono); font-size: 9.5px;
+    letter-spacing: 0.32em; color: var(--goldD); text-transform: uppercase;
+  }
+  .status .dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--goldA);
+    animation: statusPulse 2.4s ease-in-out infinite;
+  }
+  @keyframes statusPulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(197,165,114,0.5); }
+    70%     { box-shadow: 0 0 0 8px rgba(197,165,114,0); }
+  }
+
+  /* CTA — anchored bottom of viewport */
+  .cta-row {
+    grid-row: 5;
+    align-self: end;
+    display: flex; justify-content: center;
+    width: 100%;
+    opacity: 0;
+    animation: typeIn 1400ms cubic-bezier(0.22,1,0.36,1) 4200ms forwards;
+  }
+  .cta {
+    display: inline-flex; align-items: center; gap: 12px;
+    text-decoration: none;
+    padding: 16px 32px;
+    background: var(--goldA); color: var(--near);
+    font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.30em; text-transform: uppercase;
+    border: 1px solid var(--goldA);
+    transition: background 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+  }
+  .cta:hover, .cta:focus-visible {
+    background: var(--goldB);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(197,165,114,0.32);
+    outline: none;
+  }
+  .cta:focus-visible { box-shadow: 0 0 0 2px var(--near), 0 0 0 3px var(--goldC); }
+  .cta .arrow { font-family: var(--font-display); font-style: italic; font-size: 18px; letter-spacing: 0; }
+
+  @keyframes typeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Footer */
+  .foot {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 20;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 24px;
+    padding: 18px 32px;
+    font-family: var(--font-mono); font-size: 9px;
+    letter-spacing: 0.24em; color: var(--foot);
+    text-transform: uppercase;
+    background: linear-gradient(0deg, rgba(7,7,6,0.9), rgba(7,7,6,0));
+  }
+  .foot a { color: inherit; text-decoration: none; }
+  .foot .sep { margin: 0 8px; opacity: 0.5; }
+  .foot-r { text-align: right; }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    .composition { padding: 72px 20px 110px; }
+  }
+  @media (max-width: 640px) {
+    .nav { padding: 16px 20px; }
+    .nav-text .word { font-size: 9px; }
+    .nav-text .program { font-size: 7px; }
+    .nav-members { padding: 6px 10px; font-size: 9px; letter-spacing: 0.18em; }
+    .wordmark { font-size: clamp(28px, 8vw, 38px); }
+    .tag { font-size: 14px; }
+    .cta { padding: 14px 24px; font-size: 10px; letter-spacing: 0.24em; }
+    .foot {
+      flex-direction: column; gap: 6px; padding: 14px 16px;
+      font-size: 8px; letter-spacing: 0.18em;
+    }
+    .foot-r { text-align: center; }
+    .composition { grid-template-rows: 1fr auto auto auto auto; padding-bottom: 130px; }
+  }
+  @media (max-width: 380px) {
+    .wordmark { font-size: 26px; }
+    .tag { font-size: 13px; }
+  }
+
+  /* Reduced motion: kill all anim, show static composition */
+  @media (prefers-reduced-motion: reduce) {
+    .wordmark, .meta, .cta-row, .status .dot { animation: none; opacity: 1; transform: none; }
+    #patina { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage" aria-hidden="true">
+  <canvas id="bar-canvas" role="img" aria-label="A rotating 1 kilogram LBMA gold bar, the asset held by the fund."></canvas>
+  <canvas id="patina"></canvas>
+  <div class="stage-fallback" aria-hidden="true">
+    <svg width="60%" viewBox="0 0 520 200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="gbar" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#F0CF9A"/>
+          <stop offset="50%" stop-color="#C5A572"/>
+          <stop offset="100%" stop-color="#7a6647"/>
+        </linearGradient>
+      </defs>
+      <polygon points="40,80 480,80 500,100 460,140 60,140 20,100" fill="url(#gbar)" stroke="#8a7d6b" stroke-width="0.5"/>
+      <text x="260" y="118" text-anchor="middle" font-family="Cormorant Garamond, serif" font-style="italic" font-size="38" fill="#5a4830">Au</text>
+    </svg>
+  </div>
+</div>
+
+<div class="vignette"></div>
+
+<nav class="nav">
+  <a href="/" class="nav-lockup" aria-label="Aurum Century Club">
+    <span class="nav-seal"><em>Au</em></span>
+    <span class="nav-text">
+      <span class="word">Aurum</span>
+      <span class="program">Century · Club</span>
+    </span>
+  </a>
+  <a href="/login" class="nav-members" aria-label="Member sign-in">
+    <span class="dot"></span>
+    <span>Members</span>
+  </a>
+</nav>
+
+<main class="composition" role="main">
+  <h1 class="wordmark">The Aurum<br><em>Century Club</em></h1>
+  <div class="meta">
+    <p class="tag">Singapore private fund. <em>By invitation only.</em></p>
+    <div class="rule"></div>
+    <div class="status">
+      <span class="dot"></span>
+      <span>Founding Cohort · Q3 2026</span>
+    </div>
+  </div>
+  <div class="cta-row">
+    <a href="/interest" class="cta">
+      <span>Request Invitation</span>
+      <span class="arrow">→</span>
+    </a>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="foot-l">TACC PTE LTD · MMXXVI</div>
+  <div class="foot-c">
+    <a href="https://www.theaurumcc.com">theaurumcc.com</a>
+    <span class="sep">·</span>
+    <span>Singapore</span>
+  </div>
+  <div class="foot-r">CONFIDENTIAL · QUALIFIED INVESTORS ONLY · NOT AN OFFER OR SOLICITATION</div>
+</footer>
+
+<script type="module">
+  // ── WebGL probe ──────────────────────────────────────────────────────
+  const stageEl = document.getElementById('stage');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isMobile = window.matchMedia('(max-width: 768px)').matches;
+
+  function hasWebGL() {
+    try {
+      const c = document.createElement('canvas');
+      return !!(c.getContext('webgl2') || c.getContext('webgl') || c.getContext('experimental-webgl'));
+    } catch (e) { return false; }
+  }
+
+  if (!hasWebGL()) {
+    stageEl.classList.add('no-webgl');
+  } else {
+    bootThree().catch(err => {
+      console.warn('Three.js failed, falling back to SVG.', err);
+      stageEl.classList.add('no-webgl');
+    });
+  }
+
+  async function bootThree() {
+    const THREE = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+
+    const canvas = document.getElementById('bar-canvas');
+    const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.4 : 2) * (isMobile ? 0.7 : 1);
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas, antialias: true, alpha: true, powerPreference: 'high-performance'
+    });
+    renderer.setPixelRatio(dpr);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
+
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
+    camera.position.set(0, 0.6, 9);
+    camera.lookAt(0, 0, 0);
+
+    // ── Bar geometry: aspect 13:5:1 (1kg LBMA ~116×51×9 mm) ──────────
+    const W = 5.2, H = 0.4, D = 2.0;
+    // Slight taper top: a kilo bar is trapezoidal in cross-section. Build via custom box-with-bevel.
+    const barGeo = makeBarGeometry(W, H, D, 0.06);
+
+    // Procedural brushed-gold normal/roughness via canvas textures
+    const brushed = makeBrushedTexture(THREE, 1024, 256);
+    const faceLabel = makeFaceLabelTexture(THREE, 1024, 400);
+    const edgeLabel = makeEdgeLabelTexture(THREE, 1024, 200);
+
+    // Multi-material for box faces:
+    // BoxGeometry order: +X, -X, +Y (top), -Y (bot), +Z (front), -Z (back)
+    const baseProps = {
+      color: 0xC9A35A,
+      metalness: 1.0,
+      roughness: 0.28,
+      envMapIntensity: 1.0
+    };
+    const matSide  = new THREE.MeshStandardMaterial({ ...baseProps, roughnessMap: brushed.rough, normalMap: brushed.normal, normalScale: new THREE.Vector2(0.35, 0.35) });
+    const matEdge  = new THREE.MeshStandardMaterial({ ...baseProps, map: edgeLabel, roughnessMap: brushed.rough, normalMap: brushed.normal, normalScale: new THREE.Vector2(0.4, 0.4) });
+    const matTop   = new THREE.MeshStandardMaterial({ ...baseProps, map: faceLabel, roughnessMap: brushed.rough, normalMap: brushed.normal, normalScale: new THREE.Vector2(0.5, 0.5) });
+    const matBot   = new THREE.MeshStandardMaterial({ ...baseProps, roughness: 0.45 });
+
+    const bar = new THREE.Mesh(barGeo, [matSide, matSide, matTop, matBot, matEdge, matEdge]);
+    bar.rotation.x = 0.18;
+    bar.rotation.z = -0.05;
+    bar.position.y = 1.05;
+    scene.add(bar);
+
+    // Reflection (faux floor mirror — flipped clone with alpha gradient overlay)
+    const reflGeo = barGeo.clone();
+    const reflMat = matSide.clone();
+    reflMat.transparent = true;
+    reflMat.opacity = 0.18;
+    reflMat.depthWrite = false;
+    const refl = new THREE.Mesh(reflGeo, [reflMat, reflMat, reflMat, reflMat, reflMat, reflMat]);
+    refl.scale.y = -1;
+    scene.add(refl);
+
+    // Faint fog plane fade on reflection
+    const fadeGeo = new THREE.PlaneGeometry(20, 6);
+    const fadeMat = new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false,
+      uniforms: { uColor: { value: new THREE.Color(0x070706) } },
+      vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);} `,
+      fragmentShader: `varying vec2 vUv; uniform vec3 uColor; void main(){ float a = smoothstep(0.0, 1.0, 1.0 - vUv.y); gl_FragColor = vec4(uColor, a); }`
+    });
+    const fade = new THREE.Mesh(fadeGeo, fadeMat);
+    fade.position.y = -0.6;
+    fade.position.z = 0.5;
+    fade.rotation.x = -Math.PI / 2.2;
+    scene.add(fade);
+
+    // ── Lighting ─────────────────────────────────────────────────────
+    const amb = new THREE.AmbientLight(0xffe6b8, 0.35);
+    scene.add(amb);
+
+    const key = new THREE.DirectionalLight(0xfff1d0, 2.6);
+    key.position.set(3.2, 4.5, 4.0);
+    scene.add(key);
+
+    const rim = new THREE.DirectionalLight(0xC5A572, 0.9);
+    rim.position.set(-4, 1.2, -3);
+    scene.add(rim);
+
+    const fill = new THREE.PointLight(0xDEB97A, 0.6, 30);
+    fill.position.set(-2, -2, 4);
+    scene.add(fill);
+
+    // Tiny IBL stand-in: a gradient cube env using a generated equirect
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    const envTex = pmrem.fromScene(makeEnvScene(THREE)).texture;
+    scene.environment = envTex;
+
+    // ── Resize ───────────────────────────────────────────────────────
+    function resize() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      // Bar size adapts: smaller on narrow screens
+      const scale = Math.min(1, Math.max(0.55, w / 1400));
+      bar.scale.setScalar(scale);
+      refl.scale.set(scale, -scale, scale);
+      // Lift bar with viewport so it sits above midline
+      const yOffset = h < 700 ? 0.7 : 1.05;
+      bar.position.y = yOffset;
+      refl.position.y = -yOffset - 0.2;
+      camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // ── Interaction: cursor proximity → rotation speed nudge + parallax ─
+    let baseRPS = (Math.PI * 2) / 18; // ~18s per revolution
+    let speed = baseRPS;
+    let targetSpeedBoost = 0;
+    let mouseNX = 0, mouseNY = 0; // -1..1
+    let targetParX = 0, targetParY = 0;
+
+    window.addEventListener('mousemove', (e) => {
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight * 0.42; // bar is above mid
+      const dx = e.clientX - cx;
+      const dy = e.clientY - cy;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      const proximity = Math.max(0, 1 - dist / 360); // 1 near, 0 far
+      targetSpeedBoost = proximity * baseRPS * 1.5;
+      mouseNX = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseNY = (e.clientY / window.innerHeight) * 2 - 1;
+      targetParX = mouseNX * 0.0087; // ~0.5deg
+      targetParY = -mouseNY * 0.0087;
+    }, { passive: true });
+    window.addEventListener('mouseleave', () => { targetSpeedBoost = 0; });
+
+    // ── Emergence + animate ──────────────────────────────────────────
+    const startT = performance.now();
+    const fadeDur = 4000; // 4s fade-up
+
+    // Force initial dim so reduced-motion users still see a polished frame
+    function setBarOpacity(t01) {
+      [matSide, matEdge, matTop, matBot].forEach(m => {
+        m.transparent = t01 < 1;
+        m.opacity = t01;
+      });
+      reflMat.opacity = 0.18 * t01;
+    }
+
+    if (reducedMotion) {
+      setBarOpacity(1);
+      bar.rotation.y = -0.45;
+      renderer.render(scene, camera);
+      // No RAF loop in reduced-motion mode.
+      return;
+    }
+
+    setBarOpacity(0);
+    let last = performance.now();
+
+    function loop(now) {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      const elapsed = now - startT;
+
+      // emergence
+      const t01 = Math.min(1, elapsed / fadeDur);
+      const eased = 1 - Math.pow(1 - t01, 3);
+      setBarOpacity(eased);
+
+      // rotation
+      speed += (baseRPS + targetSpeedBoost - speed) * 0.05;
+      bar.rotation.y += speed * dt;
+      refl.rotation.y = bar.rotation.y;
+
+      // bob
+      const bob = Math.sin(elapsed / 1000 * (Math.PI * 2 / 6)) * 0.06; // 6s period
+      const baseY = window.innerHeight < 700 ? 0.7 : 1.05;
+      bar.position.y = baseY + bob;
+      refl.position.y = -(baseY + bob) - 0.2;
+
+      // parallax
+      camera.rotation.x += (targetParY - camera.rotation.x) * 0.04;
+      camera.rotation.y += (targetParX - camera.rotation.y) * 0.04;
+
+      // damp boost when not refreshed
+      targetSpeedBoost *= 0.985;
+
+      renderer.render(scene, camera);
+      raf = requestAnimationFrame(loop);
+    }
+    let raf = requestAnimationFrame(loop);
+
+    // ── Patina overlay (canvas2d, very subtle drifting motes) ────────
+    if (!reducedMotion) startPatina();
+
+    // ─────────────────────────────────────────────────────────────────
+    // Helpers
+    // ─────────────────────────────────────────────────────────────────
+
+    function makeBarGeometry(w, h, d, bevel) {
+      // Trapezoidal cross-section: top slightly smaller than bottom.
+      // Use BufferGeometry with explicit groups so we can apply 6-material array.
+      const g = new THREE.BoxGeometry(w, h, d, 1, 1, 1);
+      // Inset top vertices on X/Z to make trapezoid
+      const pos = g.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        const y = pos.getY(i);
+        if (y > 0) {
+          pos.setX(i, pos.getX(i) * (1 - bevel * 0.7));
+          pos.setZ(i, pos.getZ(i) * (1 - bevel * 0.9));
+        }
+      }
+      pos.needsUpdate = true;
+      g.computeVertexNormals();
+      return g;
+    }
+
+    function makeBrushedTexture(THREE, w, h) {
+      const cnv = document.createElement('canvas');
+      cnv.width = w; cnv.height = h;
+      const ctx = cnv.getContext('2d');
+      ctx.fillStyle = '#888'; ctx.fillRect(0, 0, w, h);
+      // horizontal brushed streaks
+      for (let i = 0; i < 4500; i++) {
+        const y = Math.random() * h;
+        const x = Math.random() * w;
+        const len = 30 + Math.random() * 180;
+        const a = 0.04 + Math.random() * 0.10;
+        ctx.strokeStyle = `rgba(${Math.random() < 0.5 ? '40' : '200'},${Math.random() < 0.5 ? '40' : '200'},${Math.random() < 0.5 ? '40' : '200'},${a})`;
+        ctx.lineWidth = 0.5 + Math.random() * 0.8;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + len, y + (Math.random() - 0.5) * 0.6);
+        ctx.stroke();
+      }
+      const rough = new THREE.CanvasTexture(cnv);
+      rough.wrapS = rough.wrapT = THREE.RepeatWrapping;
+      rough.repeat.set(2, 1);
+
+      // Approximate normal from brushed streaks
+      const ncnv = document.createElement('canvas');
+      ncnv.width = w; ncnv.height = h;
+      const nctx = ncnv.getContext('2d');
+      nctx.fillStyle = '#8080ff'; nctx.fillRect(0, 0, w, h);
+      for (let i = 0; i < 3000; i++) {
+        const y = Math.random() * h;
+        const x = Math.random() * w;
+        const len = 40 + Math.random() * 220;
+        nctx.strokeStyle = `rgba(${120 + (Math.random()*40|0)},${120 + (Math.random()*40|0)},255,0.5)`;
+        nctx.lineWidth = 0.6;
+        nctx.beginPath(); nctx.moveTo(x, y); nctx.lineTo(x + len, y); nctx.stroke();
+      }
+      const normal = new THREE.CanvasTexture(ncnv);
+      normal.wrapS = normal.wrapT = THREE.RepeatWrapping;
+      normal.repeat.set(2, 1);
+
+      return { rough, normal };
+    }
+
+    function makeFaceLabelTexture(THREE, w, h) {
+      const cnv = document.createElement('canvas');
+      cnv.width = w; cnv.height = h;
+      const ctx = cnv.getContext('2d');
+      // Gold base — lighter than material so it reads on top
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, '#d8b87f');
+      grad.addColorStop(0.5, '#b89358');
+      grad.addColorStop(1, '#9a7a47');
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+
+      // brushed streaks on top
+      for (let i = 0; i < 1800; i++) {
+        const y = Math.random() * h;
+        const x = Math.random() * w;
+        const len = 40 + Math.random() * 200;
+        ctx.strokeStyle = `rgba(${Math.random() < 0.5 ? '60' : '230'},${Math.random() < 0.5 ? '50' : '200'},${Math.random() < 0.5 ? '40' : '160'},${0.04 + Math.random()*0.06})`;
+        ctx.lineWidth = 0.6;
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + len, y); ctx.stroke();
+      }
+
+      // engraved Aurum / Au mark — darker fill with inset glow
+      ctx.save();
+      ctx.translate(w/2, h/2);
+      ctx.fillStyle = 'rgba(50,35,18,0.55)';
+      ctx.font = 'italic 220px "Cormorant Garamond", Georgia, serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('Au', 0, -10);
+
+      // Rule + sub
+      ctx.fillStyle = 'rgba(50,35,18,0.55)';
+      ctx.fillRect(-90, 90, 180, 2);
+      ctx.font = '500 22px "JetBrains Mono", monospace';
+      ctx.fillStyle = 'rgba(40,28,14,0.65)';
+      ctx.fillText('THE AURUM CENTURY CLUB', 0, 130);
+      ctx.font = '500 18px "JetBrains Mono", monospace';
+      ctx.fillText('1000 g · FINE GOLD · 999.9', 0, 162);
+
+      // Tiny highlight to fake engraving depth
+      ctx.font = 'italic 220px "Cormorant Garamond", Georgia, serif';
+      ctx.fillStyle = 'rgba(255,230,180,0.18)';
+      ctx.fillText('Au', 1, -12);
+      ctx.restore();
+
+      const tex = new THREE.CanvasTexture(cnv);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = 8;
+      return tex;
+    }
+
+    function makeEdgeLabelTexture(THREE, w, h) {
+      const cnv = document.createElement('canvas');
+      cnv.width = w; cnv.height = h;
+      const ctx = cnv.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, '#c8a571');
+      grad.addColorStop(1, '#8e6f3e');
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+
+      // streaks
+      for (let i = 0; i < 800; i++) {
+        const y = Math.random() * h;
+        const x = Math.random() * w;
+        ctx.strokeStyle = `rgba(${Math.random() < 0.5 ? '60' : '230'},${Math.random() < 0.5 ? '50' : '200'},${Math.random() < 0.5 ? '40' : '160'},${0.04 + Math.random()*0.05})`;
+        ctx.lineWidth = 0.5;
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 60 + Math.random()*120, y); ctx.stroke();
+      }
+
+      ctx.fillStyle = 'rgba(40,28,14,0.6)';
+      ctx.font = '500 38px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('TACC · 1000 g · 999.9 · 0042', w/2, h/2);
+      const tex = new THREE.CanvasTexture(cnv);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = 8;
+      return tex;
+    }
+
+    function makeEnvScene(THREE) {
+      const s = new THREE.Scene();
+      const geo = new THREE.SphereGeometry(50, 16, 12);
+      const mat = new THREE.ShaderMaterial({
+        side: THREE.BackSide,
+        uniforms: {},
+        vertexShader: `varying vec3 vN; void main(){ vN = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);} `,
+        fragmentShader: `
+          varying vec3 vN;
+          void main(){
+            float t = vN.y * 0.5 + 0.5;
+            vec3 lo = vec3(0.04, 0.035, 0.03);
+            vec3 mid = vec3(0.35, 0.27, 0.16);
+            vec3 hi = vec3(0.85, 0.70, 0.45);
+            vec3 c = mix(lo, mid, smoothstep(0.0, 0.55, t));
+            c = mix(c, hi, smoothstep(0.65, 1.0, t));
+            // a soft warm "window" highlight
+            float h = smoothstep(0.85, 1.0, vN.x*0.7 + vN.y*0.7);
+            c += vec3(0.3, 0.22, 0.12) * h;
+            gl_FragColor = vec4(c, 1.0);
+          }
+        `
+      });
+      s.add(new THREE.Mesh(geo, mat));
+      return s;
+    }
+
+    function startPatina() {
+      const cnv = document.getElementById('patina');
+      const ctx = cnv.getContext('2d');
+      let pw, ph, motes;
+      function resizeP() {
+        pw = cnv.width = window.innerWidth;
+        ph = cnv.height = window.innerHeight;
+        const count = isMobile ? 18 : 36;
+        motes = Array.from({length: count}, () => ({
+          x: Math.random() * pw,
+          y: Math.random() * ph,
+          r: 0.4 + Math.random() * 1.2,
+          vx: (Math.random() - 0.5) * 0.12,
+          vy: -0.05 - Math.random() * 0.10,
+          a: 0.04 + Math.random() * 0.10,
+          phase: Math.random() * Math.PI * 2
+        }));
+      }
+      resizeP();
+      window.addEventListener('resize', resizeP);
+
+      function tickP(t) {
+        ctx.clearRect(0, 0, pw, ph);
+        for (const m of motes) {
+          m.x += m.vx; m.y += m.vy;
+          if (m.y < -10) { m.y = ph + 10; m.x = Math.random() * pw; }
+          if (m.x < -10) m.x = pw + 10; else if (m.x > pw + 10) m.x = -10;
+          const flick = 0.6 + 0.4 * Math.sin(t/900 + m.phase);
+          ctx.fillStyle = `rgba(240,207,154,${m.a * flick})`;
+          ctx.beginPath();
+          ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        requestAnimationFrame(tickP);
+      }
+      requestAnimationFrame(tickP);
+    }
+  }
+</script>
+
+</body>
+</html>

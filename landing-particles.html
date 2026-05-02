@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!--
+  TACC — Public Gate · Particle Physics Variant
+  ─────────────────────────────────────────────
+  WHAT IT DOES
+  A canvas of ~2,400 gold motes suspended in a near-black field. On load,
+  each particle is assigned a target sampled from the offscreen-rendered
+  "Au" monogram (or, on a slow 22s cycle, from the wordmark "AURUM" and a
+  kilo-bar silhouette). Particles ease toward their targets with a critically
+  damped spring, then breathe — a low-amplitude noise drift keeps the form
+  alive without ever feeling animated. The pointer applies a soft inverse-
+  square repulsion (radius ~140px), as if the form had a magnetic field.
+  A vignette and a faint film-grain canvas overlay finish the surface.
+
+  WHAT MAKES IT INSTITUTIONAL (NOT CUTE)
+  - No bouncing, no rainbow, no parallax tricks. One palette: gold on near-black.
+  - Particles are 0.6–1.6px. They are dust, not confetti. Density does the work.
+  - Motion is sub-perceptual (≤ 0.4px/frame at rest). The form looks still until
+    you watch it for ten seconds.
+  - The shape IS the typography. The "Au" is rendered from Cormorant italic —
+    same serif as the wordmark — so the visual is the wordmark made physical.
+  - Cycle interval is slow (22s). This is a vault, not a screensaver.
+  - Below the canvas: one CTA, one tagline, one status line. Nothing else.
+
+  TRADEOFFS
+  - Particles are sampled from rasterized text, so on retina the sample density
+    is doubled to keep the silhouette crisp. ~2.4k particles renders at 60fps
+    on a 2020 MBP integrated GPU. We cap at 2,400 and dial down to 1,400 on
+    devices with hardwareConcurrency < 6 or width < 768.
+  - Reduced-motion: physics loop is skipped entirely. We stamp the static
+    monogram once and never repaint. No grain animation either.
+  - No external libs. Hand-rolled. ~7KB JS.
+-->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#070706" />
+<meta name="robots" content="noindex, nofollow" />
+<title>The Aurum Century Club</title>
+<link rel="stylesheet" href="_styles/tokens.css" />
+<style>
+  html, body { height: 100%; }
+  body {
+    overflow: hidden;
+    background: var(--black);
+  }
+
+  /* ─── Stage ─── */
+  .stage {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    overflow: hidden;
+  }
+
+  /* Layered background washes */
+  .stage::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 45%,
+        rgba(197,165,114,0.06) 0%,
+        rgba(197,165,114,0.02) 35%,
+        transparent 70%),
+      radial-gradient(ellipse 100% 100% at 50% 100%,
+        rgba(0,0,0,0.55) 0%,
+        transparent 50%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Vignette on top of canvas */
+  .stage::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 110% 110% at 50% 50%,
+      transparent 55%,
+      rgba(7,7,6,0.55) 85%,
+      rgba(7,7,6,0.95) 100%);
+    pointer-events: none;
+    z-index: 4;
+  }
+
+  /* ─── Nav ─── */
+  .nav {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px var(--pad-x);
+  }
+
+  .nav-lockup {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .nav-marks {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    line-height: 1;
+  }
+
+  .nav-marks .a {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    color: var(--text);
+    text-transform: uppercase;
+  }
+
+  .nav-marks .b {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.28em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+  }
+
+  .nav-link {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.26em;
+    color: var(--muted);
+    text-transform: uppercase;
+    transition: color var(--dur-base) ease;
+  }
+  .nav-link:hover, .nav-link:focus-visible {
+    color: var(--goldA);
+    outline: none;
+  }
+
+  .nav-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.24em;
+    color: var(--dim);
+    text-transform: uppercase;
+  }
+  .nav-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--goldA);
+    box-shadow: 0 0 8px rgba(197,165,114,0.55);
+  }
+
+  /* ─── Center stage ─── */
+  .center {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 var(--pad-x);
+    pointer-events: none;
+  }
+
+  #field {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    display: block;
+  }
+
+  #grain {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    opacity: 0.05;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+  }
+
+  .center-inner {
+    position: relative;
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 36px;
+    pointer-events: auto;
+  }
+
+  /* The wordmark — sits beneath the particle field */
+  .wordmark {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: clamp(180px, 32vh, 280px);
+    opacity: 0;
+    transform: translateY(8px);
+    animation: rise 1400ms 1200ms var(--ease-entrance) forwards;
+  }
+
+  .wordmark .article {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 300;
+    color: var(--goldA);
+    font-size: clamp(13px, 1.6vw, 17px);
+    letter-spacing: 0.08em;
+    opacity: 0.78;
+  }
+
+  .wordmark .title {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(34px, 5.4vw, 64px);
+    letter-spacing: 0.02em;
+    line-height: 1.05;
+    color: var(--text);
+  }
+
+  .wordmark .title em {
+    font-style: italic;
+    font-weight: 300;
+    background: linear-gradient(180deg, var(--goldD) 0%, var(--goldA) 60%, var(--goldD) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .rule {
+    width: 64px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--goldBorderM), transparent);
+    margin-top: 6px;
+  }
+
+  .tagline {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(14px, 1.5vw, 18px);
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    opacity: 0;
+    animation: rise 1400ms 1500ms var(--ease-entrance) forwards;
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 30px;
+    background: rgba(197,165,114,0.04);
+    border: 1px solid var(--goldBorderS);
+    color: var(--goldB);
+    font-family: var(--font-ui);
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    transition: background var(--dur-base) ease,
+                border-color var(--dur-base) ease,
+                color var(--dur-base) ease,
+                box-shadow var(--dur-base) ease,
+                transform var(--dur-fast) ease;
+    opacity: 0;
+    animation: rise 1400ms 1700ms var(--ease-entrance) forwards;
+    cursor: pointer;
+  }
+  .cta:hover, .cta:focus-visible {
+    background: rgba(197,165,114,0.10);
+    border-color: var(--goldBorderM);
+    color: var(--goldD);
+    box-shadow: 0 0 32px rgba(197,165,114,0.16),
+                inset 0 0 24px rgba(197,165,114,0.05);
+    outline: none;
+  }
+  .cta:active { transform: scale(0.99); }
+  .cta .arrow {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    transition: transform var(--dur-base) ease;
+  }
+  .cta:hover .arrow { transform: translateX(4px); }
+
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.32em;
+    color: var(--dim);
+    text-transform: uppercase;
+    opacity: 0;
+    animation: rise 1400ms 1900ms var(--ease-entrance) forwards;
+  }
+  .status::before, .status::after {
+    content: '';
+    display: inline-block;
+    width: 18px; height: 1px;
+    background: var(--goldBorderS);
+    opacity: 0.5;
+  }
+
+  /* ─── Footer ─── */
+  .foot {
+    position: relative;
+    z-index: 10;
+    padding: 18px var(--pad-x) max(18px, env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: center;
+    background: linear-gradient(180deg, transparent, rgba(7,7,6,0.85));
+  }
+  .foot-line {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    color: var(--dim);
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.7;
+    max-width: 100%;
+  }
+  .foot-line .sep {
+    color: rgba(197,165,114,0.30);
+    margin: 0 8px;
+  }
+
+  @keyframes rise {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 768px) {
+    .nav-meta { display: none; }
+    .nav { padding: 16px var(--pad-x); }
+    .wordmark { margin-top: clamp(140px, 26vh, 200px); }
+    .center-inner { gap: 28px; }
+    .cta { padding: 14px 24px; font-size: 11px; letter-spacing: 0.26em; }
+    .foot-line { font-size: 8.5px; letter-spacing: 0.18em; }
+    .foot-line .br-mobile { display: block; height: 4px; }
+  }
+
+  @media (max-width: 480px) {
+    .nav-marks .a { font-size: 10px; letter-spacing: 0.26em; }
+    .nav-marks .b { font-size: 8px; }
+    .wordmark .article { font-size: 12px; }
+    .wordmark .title { font-size: clamp(30px, 9vw, 38px); }
+    .tagline { font-size: 13px; }
+    .status { font-size: 9px; letter-spacing: 0.24em; }
+    .status::before, .status::after { width: 12px; }
+    .foot-line { font-size: 8px; letter-spacing: 0.14em; }
+    .foot-line .sep { margin: 0 5px; }
+  }
+
+  @media (max-width: 375px) {
+    .wordmark { margin-top: 130px; }
+    .wordmark .title { font-size: 28px; }
+    .center-inner { gap: 22px; }
+  }
+
+  /* ─── Reduced motion ─── */
+  @media (prefers-reduced-motion: reduce) {
+    .wordmark, .tagline, .cta, .status {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+    #grain { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage" role="presentation">
+
+  <!-- Particle field -->
+  <canvas id="field" aria-label="The Aurum Century Club monogram, rendered as a field of suspended gold particles"></canvas>
+  <canvas id="grain" aria-hidden="true"></canvas>
+
+  <!-- Top nav -->
+  <nav class="nav" aria-label="Primary">
+    <a class="nav-lockup" href="/" aria-label="The Aurum Century Club, home">
+      <span class="seal" aria-hidden="true"><em>Au</em></span>
+      <span class="nav-marks">
+        <span class="a">Aurum</span>
+        <span class="b">Century · Club</span>
+      </span>
+    </a>
+    <div class="nav-right">
+      <span class="nav-meta" aria-hidden="true">
+        <span class="nav-dot"></span>
+        <span>SGP · MMXXVI</span>
+      </span>
+      <a class="nav-link" href="/login.html">Members →</a>
+    </div>
+  </nav>
+
+  <!-- Center -->
+  <main class="center">
+    <div class="center-inner">
+      <div class="wordmark">
+        <span class="article">The</span>
+        <h1 class="title"><em>Aurum</em> Century Club</h1>
+        <span class="rule" aria-hidden="true"></span>
+      </div>
+
+      <p class="tagline">Singapore private fund. By invitation only.</p>
+
+      <a class="cta" href="/interest.html" aria-label="Request an invitation">
+        <span>Request Invitation</span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+
+      <p class="status" aria-label="Founding cohort, third quarter twenty twenty-six">
+        <span>Founding Cohort &nbsp;·&nbsp; Q3 2026</span>
+      </p>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="foot">
+    <p class="foot-line">
+      TACC PTE LTD<span class="sep">·</span>MMXXVI<span class="sep">·</span>theaurumcc.com<span class="sep">·</span>Singapore<span class="br-mobile"></span>
+      <span class="sep">·</span>Confidential<span class="sep">·</span>Qualified Investors Only<span class="sep">·</span>Not an Offer or Solicitation
+    </p>
+  </footer>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const field  = document.getElementById('field');
+  const grain  = document.getElementById('grain');
+  const ctx    = field.getContext('2d', { alpha: true });
+  const gctx   = grain.getContext('2d', { alpha: true });
+
+  const lowEnd = (navigator.hardwareConcurrency || 4) < 6 || window.innerWidth < 768;
+  const TARGET_COUNT = lowEnd ? 1400 : 2400;
+
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let W = 0, H = 0;
+  let particles = [];
+  let pointer = { x: -9999, y: -9999, active: false };
+  let cycleIndex = 0;
+  const CYCLE_MS = 22000;
+  let lastCycle = 0;
+  let raf = null;
+
+  // ── Resize ────────────────────────────────────────────────
+  function resize() {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    field.width = W * dpr;
+    field.height = H * dpr;
+    field.style.width = W + 'px';
+    field.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    grain.width = W;
+    grain.height = H;
+    paintGrain();
+
+    rebuildTargets();
+  }
+
+  // ── Sample shape from offscreen canvas ────────────────────
+  // Renders text/shape to a hidden canvas, reads alpha pixels,
+  // returns array of {x,y} coordinates inside the silhouette.
+  function sampleShape(drawFn, count) {
+    const off = document.createElement('canvas');
+    off.width = W;
+    off.height = H;
+    const o = off.getContext('2d');
+    drawFn(o, W, H);
+
+    const data = o.getImageData(0, 0, W, H).data;
+    const pts = [];
+    // Coarse scan
+    const step = Math.max(2, Math.floor(Math.sqrt((W * H) / (count * 2.2))));
+    for (let y = 0; y < H; y += step) {
+      for (let x = 0; x < W; x += step) {
+        const a = data[(y * W + x) * 4 + 3];
+        if (a > 96) pts.push({ x: x + (Math.random() - 0.5) * step, y: y + (Math.random() - 0.5) * step });
+      }
+    }
+    // If too few, jitter-fill
+    while (pts.length < count && pts.length > 0) {
+      const p = pts[(Math.random() * pts.length) | 0];
+      pts.push({ x: p.x + (Math.random() - 0.5) * step * 1.5, y: p.y + (Math.random() - 0.5) * step * 1.5 });
+    }
+    // Trim and shuffle
+    if (pts.length > count) pts.length = count;
+    for (let i = pts.length - 1; i > 0; i--) {
+      const j = (Math.random() * (i + 1)) | 0;
+      [pts[i], pts[j]] = [pts[j], pts[i]];
+    }
+    return pts;
+  }
+
+  // ── Shapes ────────────────────────────────────────────────
+  const shapes = [
+    // Au monogram — italic serif
+    (o, w, h) => {
+      const fs = Math.min(w * 0.36, h * 0.62);
+      o.fillStyle = '#fff';
+      o.font = `300 italic ${fs}px "Cormorant Garamond", Georgia, serif`;
+      o.textAlign = 'center';
+      o.textBaseline = 'middle';
+      o.fillText('Au', w / 2, h * 0.42);
+    },
+    // Wordmark — AURUM
+    (o, w, h) => {
+      const fs = Math.min(w * 0.14, h * 0.22);
+      o.fillStyle = '#fff';
+      o.font = `300 ${fs}px "Cormorant Garamond", Georgia, serif`;
+      o.textAlign = 'center';
+      o.textBaseline = 'middle';
+      o.letterSpacing = '0.18em';
+      o.fillText('AURUM', w / 2, h * 0.40);
+      // hairline
+      o.fillRect(w / 2 - fs * 1.4, h * 0.40 + fs * 0.65, fs * 2.8, 1.5);
+      o.font = `300 italic ${fs * 0.32}px "Cormorant Garamond", Georgia, serif`;
+      o.fillText('1 kg · LBMA · Singapore', w / 2, h * 0.40 + fs * 0.95);
+    },
+    // Kilo bar silhouette — trapezoid with chamfered corners
+    (o, w, h) => {
+      const cx = w / 2, cy = h * 0.42;
+      const bw = Math.min(w * 0.34, h * 0.46);
+      const bh = bw * 0.55;
+      const ch = bh * 0.18; // chamfer
+      o.fillStyle = '#fff';
+      o.beginPath();
+      // top is slightly narrower (perspective)
+      const inset = bw * 0.06;
+      o.moveTo(cx - bw / 2 + ch + inset, cy - bh / 2);
+      o.lineTo(cx + bw / 2 - ch - inset, cy - bh / 2);
+      o.lineTo(cx + bw / 2 + inset, cy - bh / 2 + ch);
+      o.lineTo(cx + bw / 2,        cy + bh / 2 - ch);
+      o.lineTo(cx + bw / 2 - ch,   cy + bh / 2);
+      o.lineTo(cx - bw / 2 + ch,   cy + bh / 2);
+      o.lineTo(cx - bw / 2,        cy + bh / 2 - ch);
+      o.lineTo(cx - bw / 2 - inset, cy - bh / 2 + ch);
+      o.closePath();
+      o.fill();
+      // engraved hairlines (gaps)
+      o.globalCompositeOperation = 'destination-out';
+      o.font = `300 ${bh * 0.12}px "JetBrains Mono", monospace`;
+      o.textAlign = 'center';
+      o.textBaseline = 'middle';
+      o.fillText('1000 g · 999.9 Au', cx, cy - bh * 0.1);
+      o.fillText('TACC · No. 001', cx, cy + bh * 0.12);
+      o.globalCompositeOperation = 'source-over';
+    },
+    // Seal frame — circle with Au
+    (o, w, h) => {
+      const cx = w / 2, cy = h * 0.42;
+      const r = Math.min(w, h) * 0.20;
+      o.fillStyle = '#fff';
+      // ring
+      o.lineWidth = Math.max(2, r * 0.025);
+      o.strokeStyle = '#fff';
+      o.beginPath(); o.arc(cx, cy, r, 0, Math.PI * 2); o.stroke();
+      o.beginPath(); o.arc(cx, cy, r * 0.92, 0, Math.PI * 2); o.stroke();
+      // Au inside
+      o.font = `300 italic ${r * 1.0}px "Cormorant Garamond", Georgia, serif`;
+      o.textAlign = 'center';
+      o.textBaseline = 'middle';
+      o.fillText('Au', cx, cy);
+    }
+  ];
+
+  // ── Particle init ─────────────────────────────────────────
+  function initParticles() {
+    particles = new Array(TARGET_COUNT);
+    for (let i = 0; i < TARGET_COUNT; i++) {
+      particles[i] = {
+        x: W / 2 + (Math.random() - 0.5) * W * 1.2,
+        y: H / 2 + (Math.random() - 0.5) * H * 1.2,
+        vx: 0, vy: 0,
+        tx: 0, ty: 0,
+        // visual jitter
+        size: 0.5 + Math.random() * 1.1,
+        hue: Math.random(), // 0..1, mapped to gold gradient
+        phase: Math.random() * Math.PI * 2,
+        wob: 0.4 + Math.random() * 0.6
+      };
+    }
+  }
+
+  function rebuildTargets() {
+    if (!particles.length) initParticles();
+    const pts = sampleShape(shapes[cycleIndex % shapes.length], TARGET_COUNT);
+    const n = Math.min(particles.length, pts.length);
+    for (let i = 0; i < n; i++) {
+      particles[i].tx = pts[i].x;
+      particles[i].ty = pts[i].y;
+    }
+    // any extras: scatter to edges
+    for (let i = n; i < particles.length; i++) {
+      particles[i].tx = Math.random() * W;
+      particles[i].ty = Math.random() * H;
+    }
+  }
+
+  // ── Grain texture (static, painted once per resize) ───────
+  function paintGrain() {
+    if (reduce) return;
+    const img = gctx.createImageData(W, H);
+    const d = img.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const v = (Math.random() * 255) | 0;
+      d[i] = v; d[i+1] = v; d[i+2] = v;
+      d[i+3] = 22 + ((Math.random() * 36) | 0);
+    }
+    gctx.putImageData(img, 0, 0);
+  }
+
+  // ── Static fallback render ────────────────────────────────
+  function renderStatic() {
+    ctx.clearRect(0, 0, W, H);
+    rebuildTargets();
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      drawDot(p.tx, p.ty, p.size, p.hue, 1);
+    }
+  }
+
+  // ── Drawing ───────────────────────────────────────────────
+  // Three gold tones to add depth without breaking the palette.
+  const GOLD = [
+    [0xC5, 0xA5, 0x72], // goldA
+    [0xDE, 0xB9, 0x7A], // goldB-ish
+    [0xF0, 0xCF, 0x9A]  // goldD
+  ];
+  function drawDot(x, y, s, h, a) {
+    const g = GOLD[(h * GOLD.length) | 0] || GOLD[0];
+    ctx.fillStyle = `rgba(${g[0]},${g[1]},${g[2]},${a.toFixed(3)})`;
+    ctx.fillRect(x - s / 2, y - s / 2, s, s);
+  }
+
+  // ── Loop ──────────────────────────────────────────────────
+  function tick(ts) {
+    if (!lastCycle) lastCycle = ts;
+    if (ts - lastCycle > CYCLE_MS) {
+      cycleIndex++;
+      rebuildTargets();
+      lastCycle = ts;
+    }
+
+    // Trail: faint clear keeps motion legible without being smeary.
+    ctx.fillStyle = 'rgba(7,7,6,0.32)';
+    ctx.fillRect(0, 0, W, H);
+
+    const px = pointer.x, py = pointer.y;
+    const pActive = pointer.active;
+    const t = ts * 0.0007;
+
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+
+      // Spring toward target — critically damped feel.
+      const dx = p.tx - p.x;
+      const dy = p.ty - p.y;
+      p.vx = p.vx * 0.86 + dx * 0.012;
+      p.vy = p.vy * 0.86 + dy * 0.012;
+
+      // Breathing drift — sine + per-particle phase.
+      p.vx += Math.cos(t + p.phase) * 0.04 * p.wob;
+      p.vy += Math.sin(t * 1.1 + p.phase) * 0.04 * p.wob;
+
+      // Pointer repulsion — inverse square within 140px.
+      if (pActive) {
+        const ddx = p.x - px;
+        const ddy = p.y - py;
+        const d2 = ddx * ddx + ddy * ddy;
+        if (d2 < 19600 && d2 > 1) {
+          const f = 240 / d2;
+          p.vx += ddx * f;
+          p.vy += ddy * f;
+        }
+      }
+
+      p.x += p.vx;
+      p.y += p.vy;
+
+      // Render — slightly brighter when close to target (settled).
+      const dist2 = dx * dx + dy * dy;
+      const settle = dist2 < 4 ? 1 : (dist2 < 100 ? 0.85 : 0.55);
+      drawDot(p.x, p.y, p.size, p.hue, settle);
+    }
+
+    raf = requestAnimationFrame(tick);
+  }
+
+  // ── Pointer ───────────────────────────────────────────────
+  function onMove(e) {
+    const t = e.touches ? e.touches[0] : e;
+    pointer.x = t.clientX;
+    pointer.y = t.clientY;
+    pointer.active = true;
+  }
+  function onLeave() {
+    pointer.active = false;
+    pointer.x = -9999;
+    pointer.y = -9999;
+  }
+
+  // ── Boot ──────────────────────────────────────────────────
+  function boot() {
+    resize();
+    if (reduce) {
+      renderStatic();
+      return;
+    }
+    // Wait one frame so fonts have a chance to load before sampling.
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        rebuildTargets();
+        raf = requestAnimationFrame(tick);
+      });
+    } else {
+      raf = requestAnimationFrame(tick);
+    }
+  }
+
+  window.addEventListener('resize', () => {
+    cancelAnimationFrame(raf);
+    resize();
+    if (reduce) renderStatic();
+    else raf = requestAnimationFrame(tick);
+  });
+  window.addEventListener('mousemove', onMove, { passive: true });
+  window.addEventListener('touchmove', onMove, { passive: true });
+  window.addEventListener('mouseleave', onLeave);
+  window.addEventListener('touchend', onLeave);
+  window.addEventListener('blur', onLeave);
+
+  // Pause when tab hidden — preserve battery / fps budget.
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      if (raf) cancelAnimationFrame(raf);
+      raf = null;
+    } else if (!reduce && !raf) {
+      lastCycle = 0;
+      raf = requestAnimationFrame(tick);
+    }
+  });
+
+  boot();
+})();
+</script>
+</body>
+</html>
