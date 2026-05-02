@@ -1352,9 +1352,21 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
 <!-- ─── TAB 7: COMPLIANCE ──────────────────────────────────────────── -->
 <section class="ap" id="ap-compliance" data-tab="compliance">
   <h1 class="sh">Compliance &amp; Audit</h1>
-  <p class="sh-sub">Exceptions queue · global audit log</p>
+  <p class="sh-sub">Pull issue report · exceptions queue · global audit log</p>
 
-  <h2 class="h2">Exceptions Queue</h2>
+  <h2 class="h2">Issue Report</h2>
+  <div class="cd" style="margin-bottom:24px;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+      <button class="b b--gold" id="ir-run">▶ Pull Issue Report</button>
+      <button class="b" id="ir-copy" disabled>📋 Copy Report</button>
+      <button class="b b--sm" id="ir-jump-exc">↓ Jump to Exceptions</button>
+      <button class="b b--sm" id="ir-jump-audit">↓ Jump to Audit Log</button>
+    </div>
+    <div id="ir-summary" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:10px;">Click "Pull Issue Report" — runs 18 platform self-checks (~30 Upstash cmds, ~300 ms). Surfaces every gap, mismatch, and stale data point.</div>
+    <textarea id="ir-log" readonly style="width:100%;min-height:280px;background:var(--near);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:11px;padding:14px;line-height:1.5;resize:vertical;white-space:pre;overflow:auto;">No report yet. Click "Pull Issue Report" to generate one.</textarea>
+  </div>
+
+  <h2 class="h2" id="exc-anchor">Exceptions Queue</h2>
   <div class="dt-wrap">
     <table class="dt" id="exc-table">
       <thead><tr><th>Severity</th><th>Age</th><th>Lead/Member</th><th>Reason</th><th></th></tr></thead>
@@ -1364,7 +1376,7 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
     </table>
   </div>
 
-  <h2 class="h2">Global Audit Log</h2>
+  <h2 class="h2" id="audit-anchor">Global Audit Log</h2>
   <div class="flt-row">
     <input class="search-input" id="audit-search" placeholder="Search actions…">
     <select id="audit-actor"><option value="">All actors</option></select>
@@ -2851,7 +2863,63 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
     else if (tab === 'fund') { /* fund hydrated by stats poll */ }
     else if (tab === 'vault') { if (!loaded.members) loadMembers(); loadVault(); }
     else if (tab === 'comms') { if (!loaded.members) loadMembers(); loadSent(); }
-    else if (tab === 'compliance') { loadCompliance(); }
+    else if (tab === 'compliance') { loadCompliance(); wireIssueReport(); }
+  }
+
+  // ─── Issue Report (Compliance tab) ──────────────────────────────────
+  var issueReportWired = false;
+  function wireIssueReport() {
+    if (issueReportWired) return;
+    var runBtn = document.getElementById('ir-run');
+    var copyBtn = document.getElementById('ir-copy');
+    if (!runBtn || !copyBtn) return; // not in DOM yet
+    issueReportWired = true;
+    runBtn.addEventListener('click', function() {
+      runBtn.disabled = true; runBtn.textContent = 'Running…';
+      var sumEl = document.getElementById('ir-summary');
+      var logEl = document.getElementById('ir-log');
+      sumEl.textContent = 'Pulling issue report (~30 Upstash cmds, ~300ms)…';
+      logEl.value = 'Running checks…';
+      api('run-audit', { method: 'POST' })
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          runBtn.disabled = false; runBtn.textContent = '▶ Pull Issue Report';
+          if (!d || !d.ok) { sumEl.textContent = 'Failed: ' + (d && d.error || 'unknown'); return; }
+          var s = d.summary || {};
+          var color = s.fail > 0 ? 'var(--red)' : s.warn > 0 ? 'var(--amber)' : 'var(--green)';
+          sumEl.innerHTML = '<span style="color:' + color + ';font-weight:500;">Health ' + (s.health_pct || 0) + '%</span> · ' +
+            s.pass + ' pass · ' + s.warn + ' warn · ' + s.fail + ' fail · ' + s.total + ' total · ' + (d.elapsed_ms || 0) + 'ms · run at ' + new Date(d.ts).toLocaleString();
+          logEl.value = d.log_text || JSON.stringify(d, null, 2);
+          copyBtn.disabled = false;
+        })
+        .catch(function(e){
+          runBtn.disabled = false; runBtn.textContent = '▶ Pull Issue Report';
+          document.getElementById('ir-summary').textContent = 'Failed: ' + (e && e.message || 'network');
+        });
+    });
+    copyBtn.addEventListener('click', function() {
+      var logEl = document.getElementById('ir-log');
+      logEl.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      if (!ok && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(logEl.value).then(function(){
+          copyBtn.textContent = '✓ Copied'; setTimeout(function(){ copyBtn.textContent = '📋 Copy Report'; }, 1500);
+        }).catch(function(){ toast('Copy failed', 'error'); });
+      } else if (ok) {
+        copyBtn.textContent = '✓ Copied'; setTimeout(function(){ copyBtn.textContent = '📋 Copy Report'; }, 1500);
+      }
+    });
+    var jumpExc = document.getElementById('ir-jump-exc');
+    var jumpAudit = document.getElementById('ir-jump-audit');
+    if (jumpExc) jumpExc.addEventListener('click', function(){
+      var el = document.getElementById('exc-anchor');
+      if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    if (jumpAudit) jumpAudit.addEventListener('click', function(){
+      var el = document.getElementById('audit-anchor');
+      if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   }
 
   /* ═══════════════════════════════════════════════════════════════════
@@ -2934,7 +3002,16 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
       toast('Copy failed', 'error');
     }
   }
-  document.getElementById('audit-btn').addEventListener('click', openAuditModal);
+  document.getElementById('audit-btn').addEventListener('click', function(){
+    goTab('compliance');
+    setTimeout(function(){
+      var el = document.getElementById('ir-run');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        el.focus();
+      }
+    }, 250);
+  });
 
   /* ═══════════════════════════════════════════════════════════════════
      LIVE BOTS — persistent personas advancing through pipeline on a timer
