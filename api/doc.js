@@ -42,7 +42,19 @@ async function getSession(req) {
   return lead;
 }
 
-function authFail(res) {
+function authFail(res, req) {
+  // For HTML page requests (browser navigation), 302 to /login so the visitor
+  // lands on the login page instead of seeing JSON. For API/fetch callers
+  // that explicitly request JSON, keep the legacy 401 + JSON shape.
+  const accept = (req && req.headers && req.headers.accept) || '';
+  const wantsJson = accept.includes('application/json') && !accept.includes('text/html');
+  if (!wantsJson) {
+    res.statusCode = 302;
+    res.setHeader('Location', '/login');
+    res.setHeader('Cache-Control', 'no-store');
+    res.end();
+    return;
+  }
   res.statusCode = 401;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
@@ -146,10 +158,10 @@ export default async function handler(req, res) {
   }
 
   const { id } = q;
-  if (!id) return authFail(res);
+  if (!id) return authFail(res, req);
 
   const lead = await getSession(req);
-  if (!lead) return authFail(res);
+  if (!lead) return authFail(res, req);
 
   // Check page gates first
   if (PAGE_GATES[id]) {
@@ -180,7 +192,7 @@ async function handlePage(req, res, id, lead) {
   const gate = PAGE_GATES[id];
 
   if (!gate.gate(lead)) {
-    return authFail(res);
+    return authFail(res, req);
   }
 
   const filePath = join(__dirname, '..', '_pages', gate.file);
@@ -206,7 +218,7 @@ async function handleDocument(req, res, id, lead) {
   const gate = DOC_GATES[id];
 
   if (!gate.gate(lead)) {
-    return authFail(res);
+    return authFail(res, req);
   }
 
   let pdfBuffer;
@@ -251,7 +263,7 @@ async function handleDocument(req, res, id, lead) {
 
 async function handleQuarterlyLetter(req, res, id, lead) {
   // Only funded members can read letters
-  if (lead.status !== 'funded') return authFail(res);
+  if (lead.status !== 'funded') return authFail(res, req);
 
   const letterId = id.replace(/^quarterly-letter-/, '');
   const letters  = lead.quarterly_letters || [];
@@ -311,7 +323,7 @@ async function handleQuarterlyLetter(req, res, id, lead) {
 
 async function handleVaultVerification(req, res, id, lead) {
   // Only funded members can access vault verifications
-  if (lead.status !== 'funded') return authFail(res);
+  if (lead.status !== 'funded') return authFail(res, req);
 
   const vvId = id.replace(/^vault-verification-/, '');
   const vvs  = lead.vault_verifications || [];
