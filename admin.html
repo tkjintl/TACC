@@ -1638,17 +1638,34 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
   }
 
   function loadDecisionLanes() {
-    api('exceptions')
-      .then(function(r){ return r.json(); })
-      .then(function(d){
-        var items = (d && d.exceptions) || [];
-        var actionList = items.filter(function(x){ return x.severity === 'red' || x.severity === 'critical'; });
-        var soonList = items.filter(function(x){ return x.severity === 'amber'; });
-        var clearedList = items.filter(function(x){ return x.severity === 'green' || x.cleared; });
+    Promise.all([
+      api('exceptions').then(function(r){ return r.json(); }).catch(function(){ return null; }),
+      api('activity-feed&limit=50').then(function(r){ return r.json(); }).catch(function(){ return null; })
+    ]).then(function(results){
+        var d = results[0] || {};
+        var feed = (results[1] && results[1].entries) || [];
+        // Backend returns d.flags with severity ∈ {critical, warning, info}
+        var items = (d && (d.flags || d.exceptions)) || [];
+        var actionList = items.filter(function(x){ return x.severity === 'critical' || x.severity === 'red'; });
+        var soonList = items.filter(function(x){ return x.severity === 'warning' || x.severity === 'amber'; });
+        // Recently cleared = recent confirmation events (wire cleared, member funded, NDA approved)
+        var clearedActions = ['wire_cleared','member_funded','funded','nda_approved'];
+        var clearedList = feed.filter(function(e){
+          return clearedActions.indexOf(e.action) >= 0;
+        }).slice(0, 10).map(function(e){
+          return {
+            leadId: e.leadId || e.target_id,
+            leadName: e.target_name || 'Member',
+            type: 'cleared',
+            severity: 'info',
+            reason: humanizeAction(e.action),
+            created_at: e.at
+          };
+        });
 
         renderLane('lane-action', actionList, 'No items requiring action');
         renderLane('lane-soon', soonList, 'Nothing pending soon');
-        renderLane('lane-cleared', clearedList.slice(0, 10), 'No recent confirmations');
+        renderLane('lane-cleared', clearedList, 'No recent confirmations');
 
         document.getElementById('lane-action-count').textContent = actionList.length;
         document.getElementById('lane-soon-count').textContent = soonList.length;
@@ -1662,16 +1679,35 @@ textarea.input-field { min-height: 100px; line-height: 1.5; }
         });
       });
   }
+  // Map flag types to human-readable + suggested action label
+  var FLAG_LABELS = {
+    'kyc-expiring':              { title: 'KYC expiring',           action: 'Review KYC' },
+    'nda-missing':                { title: 'NDA missing',             action: 'Review NDA' },
+    'code-expiring':              { title: 'Access code expiring',    action: 'Resend invite' },
+    'ltv-approaching':            { title: 'LTV approaching 70%',     action: 'Review LTV' },
+    'ltv-near-ceiling':           { title: 'LTV near 75% ceiling',    action: 'Margin check' },
+    'capital-call-overdue':       { title: 'Capital call overdue',    action: 'Send reminder' },
+    'member-inactive':            { title: 'Member inactive >60d',    action: 'Reach out' },
+    'wire-pending-stale':         { title: 'Wire pending >7d',        action: 'Send reminder' },
+    'vault-verification-overdue': { title: 'Vault verification due',  action: 'Publish report' }
+  };
+  function flagTitle(t){ return (FLAG_LABELS[t] && FLAG_LABELS[t].title) || (t || '').replace(/-/g,' '); }
+  function flagAction(t){ return (FLAG_LABELS[t] && FLAG_LABELS[t].action) || ''; }
   function renderLane(id, items, emptyMsg) {
     var el = document.getElementById(id);
     if (!items.length) { el.innerHTML = '<div class="lane-empty">' + emptyMsg + '</div>'; return; }
     el.innerHTML = items.map(function(x){
-      return '<div class="lane-row" data-lead-id="' + esc(x.lead_id || '') + '">' +
+      var leadId = x.leadId || x.lead_id || '';
+      var leadName = x.leadName || x.name || x.title || 'Item';
+      var title = x.type ? flagTitle(x.type) : (x.title || '');
+      var subtitle = x.reason || x.subtitle || '';
+      var actionLabel = x.action_label || (x.type ? flagAction(x.type) : '');
+      return '<div class="lane-row" data-lead-id="' + esc(leadId) + '">' +
         '<div class="lane-row-main">' +
-          '<div class="lane-row-name">' + esc(x.name || x.title || 'Item') + '</div>' +
-          '<div class="lane-row-meta">' + esc(x.reason || x.subtitle || '') + ' · ' + relTime(x.created_at || x.at) + '</div>' +
+          '<div class="lane-row-name">' + esc(leadName) + (title ? ' <span style="color:var(--muted);font-weight:400;">· ' + esc(title) + '</span>' : '') + '</div>' +
+          '<div class="lane-row-meta">' + esc(subtitle) + ' · ' + relTime(x.created_at || x.at) + '</div>' +
         '</div>' +
-        (x.action_label ? '<button class="b b--sm" data-act="' + esc(x.action || '') + '" data-lead="' + esc(x.lead_id || '') + '">' + esc(x.action_label) + '</button>' : '') +
+        (actionLabel ? '<button class="b b--sm" data-act="' + esc(x.type || '') + '" data-lead="' + esc(leadId) + '">' + esc(actionLabel) + '</button>' : '') +
       '</div>';
     }).join('');
     el.querySelectorAll('.lane-row').forEach(function(row){
