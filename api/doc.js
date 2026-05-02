@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import {
   unauthorized, notFound, serverError, methodNotAllowed, getCookie, getQuery,
 } from './_lib/http.js';
-import { verifyToken, COOKIE_MEMBER } from './_lib/auth.js';
+import { verifyToken, COOKIE_MEMBER, COOKIE_ADMIN } from './_lib/auth.js';
 import { getLead } from './_lib/storage.js';
 import { getBlob } from './_lib/blob.js';
 import { watermarkPdf } from './_lib/watermark.js';
@@ -39,6 +39,23 @@ async function getSession(req) {
   if (!session || !session.leadId) return null;
   const lead = await getLead(session.leadId);
   if (!lead) return null;
+  return lead;
+}
+
+// Admin preview: if the request has an aurum_admin cookie AND a ?preview_lead=ID
+// query param, load that lead and bypass per-stage gates. Lets the operator
+// click "View as Member" on any lead and see exactly what that member sees.
+async function getAdminPreview(req) {
+  const token = getCookie(req, COOKIE_ADMIN);
+  if (!token) return null;
+  const session = await verifyToken(token);
+  if (!session || session.sub !== 'admin') return null;
+  const previewId = String(getQuery(req).preview_lead || '').trim();
+  if (!previewId) return null;
+  const lead = await getLead(previewId);
+  if (!lead) return null;
+  // Mark as preview so handlers can render a "PARTNER PREVIEW" banner.
+  lead._adminPreview = { actor: session.email || 'admin' };
   return lead;
 }
 
@@ -120,6 +137,7 @@ function buildAurumContext(lead) {
       status:        lead.status        || 'inquiry',
     },
     nda_state: lead.nda_state || 'awaiting',
+    preview: lead._adminPreview ? { actor: lead._adminPreview.actor || 'admin' } : null,
     meta: {
       served_at: Date.now(),
     },
@@ -160,7 +178,9 @@ export default async function handler(req, res) {
   const { id } = q;
   if (!id) return authFail(res, req);
 
-  const lead = await getSession(req);
+  // Try admin preview first (admin cookie + ?preview_lead=ID), then member session.
+  let lead = await getAdminPreview(req);
+  if (!lead) lead = await getSession(req);
   if (!lead) return authFail(res, req);
 
   // Check page gates first
@@ -191,7 +211,8 @@ export default async function handler(req, res) {
 async function handlePage(req, res, id, lead) {
   const gate = PAGE_GATES[id];
 
-  if (!gate.gate(lead)) {
+  // Admin preview bypasses per-stage gates — operator can preview any page.
+  if (!lead._adminPreview && !gate.gate(lead)) {
     return authFail(res, req);
   }
 
