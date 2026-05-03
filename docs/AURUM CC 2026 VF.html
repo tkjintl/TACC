@@ -183,10 +183,7 @@ em { font-style: italic; }
 }
 .slide-headline .hl-g {
   font-style: italic;
-  background: linear-gradient(135deg, var(--goldA), var(--goldD));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--goldC);
 }
 
 .slide-text {
@@ -1123,7 +1120,13 @@ em { font-style: italic; }
 }
 
 @media print {
-  html, body { background: var(--black) !important; }
+  html, body {
+    background: var(--black) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+  }
   body, .deck { padding: 0 !important; gap: 0 !important; background: var(--black) !important; }
   .export-bar { display: none !important; }
   .slide {
@@ -1131,14 +1134,12 @@ em { font-style: italic; }
     height: 210mm !important;
     margin: 0 !important;
     box-shadow: none !important;
-    page-break-after: always;
     page-break-inside: avoid;
-    break-after: page;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     color-adjust: exact;
   }
-  .slide:last-child { page-break-after: auto; break-after: auto; }
+  .slide { break-after: auto; page-break-after: auto; }
   .slide-headline em,
   .title-headline em,
   .engines-hero-num,
