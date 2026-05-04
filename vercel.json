@@ -28,6 +28,7 @@
     { "source": "/documents",         "destination": "/api/doc?id=documents-page" },
     { "source": "/messages",          "destination": "/api/doc?id=messages-page" },
     { "source": "/deals",             "destination": "/api/doc?id=deals-page" },
+    { "source": "/ioi",               "destination": "/api/doc?id=ioi-page" },
     { "source": "/admin",             "destination": "/admin.html" },
     { "source": "/preview-particles", "destination": "/landing-particles.html" },
     { "source": "/preview-monogram",  "destination": "/landing-monogram.html" },
@@ -89,6 +90,7 @@
     { "source": "/api/member/member-certificate-url",     "destination": "/api/v2?resource=member&op=member-certificate-url" },
     { "source": "/api/member/ack-message",                "destination": "/api/v2?resource=member&op=ack-message" },
     { "source": "/api/bridge",                            "destination": "/api/bridge" },
+    { "source": "/api/ioi",                               "destination": "/api/ioi" },
     { "source": "/api/member/deals",                      "destination": "/api/v2?resource=member&op=deals" },
     { "source": "/fund-positions",                        "destination": "/api/doc?id=deals-page" },
     { "source": "/gold",                                  "destination": "/api/doc?id=portfolio-page" },
@@ -126,6 +128,13 @@
     },
     {
       "source": "/main",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "X-Robots-Tag",  "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/ioi",
       "headers": [
         { "key": "Cache-Control", "value": "no-store" },
         { "key": "X-Robots-Tag",  "value": "noindex, nofollow" }

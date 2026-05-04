@@ -101,6 +101,7 @@ const PAGE_GATES = {
   'documents-page':    { file: 'documents.html',     gate: (l) => rank(l.status) >= rank('subscribed') },
   'messages-page':     { file: 'messages.html',      gate: (l) => rank(l.status) >= rank('accessed') },
   'deals-page':        { file: 'deals.html',         gate: (l) => l.status === 'funded' },
+  'ioi-page':          { file: 'ioi.html',           gate: (l) => l.nda_state === 'approved' },
 };
 
 // ── Document gate table ───────────────────────────────────────────────────────

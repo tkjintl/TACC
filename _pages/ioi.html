@@ -1,0 +1,975 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>Indicate Commitment · 의향 표명 · Aurum Century Club</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230a0a0a'/><rect x='4' y='4' width='24' height='24' fill='none' stroke='%23C5A572' stroke-width='1.2'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='15' font-style='italic' fill='%23C5A572'>Au</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Noto+Serif+KR:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg:#0a0a0a; --card:#0f0d0a; --card-2:#131210;
+      --text:#e8e3d8; --sub:#aaa39a; --muted:#6b655e;
+      --gold:#C5A572; --goldB:#E3C187; --goldD:#8a7d6b; --goldDeep:#6a5a3a;
+      --goldBorder:rgba(197,165,114,0.22); --goldBorderS:rgba(197,165,114,0.50);
+      --goldWash:rgba(197,165,114,0.04); --goldWashS:rgba(197,165,114,0.10);
+      --goldGlow:rgba(197,165,114,0.20); --border:rgba(255,255,255,0.08); --rule:rgba(255,255,255,0.06);
+      --green:#7aa885; --red:#c77061;
+      --serif:'Cormorant Garamond','Noto Serif KR',Georgia,serif;
+      --serifKr:'Noto Serif KR','Cormorant Garamond',Georgia,serif;
+      --sans:'Outfit',system-ui,sans-serif;
+      --mono:'JetBrains Mono',ui-monospace,monospace;
+      --pad-x:clamp(20px,5.5vw,64px);
+    }
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text)}
+    body{font-family:var(--serifKr);font-weight:300;-webkit-font-smoothing:antialiased;min-height:100vh;min-width:320px;overflow-x:hidden}
+    a{color:inherit;text-decoration:none}
+    em{font-style:italic}
+    ::selection{background:rgba(197,165,114,0.30)}
+
+    .lang-en [data-lang="ko"]{display:none}
+    .lang-ko [data-lang="en"]{display:none}
+
+    .amb{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 1100px 700px at 50% 0%,rgba(197,165,114,0.07),transparent 65%)}
+
+    .nav{position:fixed;top:0;left:0;right:0;z-index:50;padding:16px var(--pad-x);background:linear-gradient(180deg,rgba(10,10,10,0.85),rgba(10,10,10,0));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .lockup{display:flex;align-items:center;gap:14px}
+    .seal{width:34px;height:34px;border:1px solid var(--gold);display:inline-flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;color:var(--gold);font-size:16px;letter-spacing:-0.04em;flex-shrink:0;transition:box-shadow .3s,border-color .3s}
+    .lockup:hover .seal{box-shadow:0 0 18px var(--goldGlow);border-color:var(--goldB)}
+    .lockup-text{display:flex;flex-direction:column;line-height:1;min-width:0}
+    .lockup-text .word{font-family:var(--sans);font-weight:600;font-size:14px;letter-spacing:0.34em;color:var(--text);white-space:nowrap}
+    .lockup-text .program{font-family:var(--mono);font-weight:400;font-size:8.5px;letter-spacing:0.36em;color:var(--goldD);margin-top:5px;white-space:nowrap}
+    .lang-toggle{display:inline-flex;align-items:center;gap:0;padding:6px 10px;border:1px solid var(--border)}
+    .lang-toggle button{background:transparent;border:0;color:var(--muted);font-family:var(--mono);font-size:10.5px;letter-spacing:0.20em;padding:3px 7px;cursor:pointer;transition:color .2s}
+    .lang-toggle button.active{color:var(--gold)}
+    .lang-toggle .sep{color:var(--muted);font-size:10.5px;padding:0 2px}
+    @media (max-width:640px){.nav{padding:13px var(--pad-x)}.lockup-text .word{font-size:12px}.lockup-text .program{font-size:7.5px}}
+
+    .page{position:relative;z-index:2;min-height:100vh;padding:16vh var(--pad-x) 80px;max-width:880px;margin:0 auto}
+    @media (max-width:720px){.page{padding:14vh 20px 64px;max-width:100%}}
+
+    .eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:0.34em;color:var(--gold);margin-bottom:18px}
+    h1.title{font-family:var(--serifKr);font-weight:500;font-size:clamp(36px,5.4vw,56px);line-height:1.1;letter-spacing:-0.015em;color:var(--text);margin:0 0 18px}
+    h1.title em{font-family:var(--serif);font-style:italic;color:var(--gold)}
+    .lede{font-family:var(--serifKr);font-weight:300;font-size:16px;line-height:1.78;color:var(--sub);margin:0 0 56px;max-width:620px}
+    .lede em{font-family:var(--serif);font-style:italic;color:var(--goldB)}
+
+    /* Form-tuned cards (airy) */
+    .form-card{padding:36px 32px;margin:0 0 32px;border:1px solid var(--border);background:var(--card)}
+    @media (max-width:720px){.form-card{padding:26px 20px;margin:0 0 24px}}
+    .form-card-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin:0 0 28px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+    .form-card-head .lhs{display:flex;align-items:baseline;gap:16px}
+    .form-card-head .roman{font-family:var(--serif);font-style:italic;font-weight:500;font-size:26px;color:var(--gold);flex-shrink:0;line-height:1}
+    .form-card-head .label{font-family:var(--mono);font-size:10.5px;letter-spacing:0.32em;color:var(--goldD);text-transform:uppercase}
+    .form-card-head .h{font-family:var(--serifKr);font-weight:500;font-size:22px;line-height:1.25;color:var(--text);margin:0}
+    .form-card-head .h em{font-family:var(--serif);font-style:italic;color:var(--gold)}
+    .form-card-text{font-family:var(--serifKr);font-weight:300;font-size:14.5px;line-height:1.75;color:var(--sub);margin:0 0 24px}
+
+    /* Field rows */
+    label.field{display:block;margin:0 0 22px}
+    label.field .lbl{display:block;margin-bottom:8px;font-family:var(--mono);font-size:9.5px;letter-spacing:0.28em;color:var(--goldD);text-transform:uppercase}
+    label.field .lbl .req{color:var(--gold);margin-left:4px}
+
+    input[type="text"],input[type="number"],input[type="email"],input[type="tel"],select,textarea{
+      width:100%;
+      background:rgba(255,255,255,0.02);
+      color:var(--text);
+      font-family:var(--serifKr);font-size:16px;font-weight:300;
+      border:1px solid var(--rule);
+      border-bottom:1px solid var(--goldBorder);
+      padding:13px 14px;
+      transition:border-color .2s,background .2s;
+      -webkit-appearance:none;appearance:none;
+      border-radius:0;
+    }
+    input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);background:rgba(197,165,114,0.04)}
+    input.commit{font-family:var(--mono);font-weight:500;font-size:26px;letter-spacing:0.05em;color:var(--goldB);padding:18px 14px}
+
+    /* Dark dropdown — fix for white-bg <select> on iOS / Chrome */
+    select{
+      background-color:var(--card);
+      background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3 5l5 5 5-5' stroke='%23C5A572' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+      background-repeat:no-repeat;
+      background-position:right 16px center;
+      background-size:12px;
+      padding-right:40px;
+      cursor:pointer;
+      color:var(--text);
+    }
+    select option{background-color:var(--card);color:var(--text);font-family:var(--serifKr)}
+    select:invalid{color:var(--muted)}
+    select::-ms-expand{display:none}
+
+    .hint{font-family:var(--mono);font-size:9.5px;letter-spacing:0.20em;color:var(--goldD);margin-top:6px;text-transform:uppercase}
+    .hint.bare{text-transform:none;letter-spacing:0.04em;font-size:12.5px;font-family:var(--serifKr);font-style:italic;color:var(--muted)}
+    .err{font-family:var(--mono);font-size:9.5px;letter-spacing:0.20em;color:#d97a7a;margin-top:6px;text-transform:uppercase;display:none}
+    .err.shown{display:block}
+
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+    @media (max-width:600px){.grid-2{grid-template-columns:1fr;gap:0}}
+
+    /* LTV slider */
+    .slider-row{display:flex;align-items:center;gap:18px;margin-bottom:8px}
+    .slider-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:2px;background:var(--goldBorder);outline:none;padding:0;border:0}
+    .slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:var(--gold);cursor:pointer;border:2px solid var(--bg);box-shadow:0 0 0 1px var(--gold),0 0 12px var(--goldGlow)}
+    .slider-row input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--gold);cursor:pointer;border:2px solid var(--bg);box-shadow:0 0 0 1px var(--gold),0 0 12px var(--goldGlow)}
+    .slider-val{font-family:var(--mono);font-weight:600;font-size:20px;color:var(--goldB);min-width:60px;text-align:right}
+
+    /* Live calculator (form-tuned) */
+    .calc{background:var(--goldWash);border:1px solid var(--goldBorder);padding:24px 26px;margin:0}
+    @media (max-width:720px){.calc{padding:20px 18px}}
+    .calc-row{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;border-bottom:1px dashed var(--rule);font-family:var(--serif);font-size:16px;gap:16px}
+    .calc-row:last-child{border-bottom:0}
+    .calc-row .lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:0.26em;color:var(--goldD);text-transform:uppercase;flex-shrink:0}
+    .calc-row .val{font-family:var(--mono);font-weight:500;font-size:16px;color:var(--text);text-align:right}
+    .calc-row.primary .val{color:var(--goldB);font-size:20px;font-weight:600}
+    .calc-row.sub{padding:6px 0;border-bottom:0;font-size:13px}
+    .calc-row.sub .lbl{font-size:8.5px;color:var(--muted);letter-spacing:0.24em;padding-left:14px}
+    .calc-row.sub .val{font-size:13px;color:var(--sub);font-weight:400}
+    .calc-row.final{border-top:1px solid var(--goldBorder);padding-top:18px;margin-top:6px}
+    .calc-row.final .val{color:var(--gold);font-size:22px;font-weight:600}
+    .calc-divider{height:1px;background:var(--rule);margin:8px 0}
+    @media (max-width:480px){
+      .calc-row{flex-direction:column;align-items:flex-start;gap:4px;padding:10px 0}
+      .calc-row .val{font-size:18px}
+      .calc-row.primary .val{font-size:22px}
+      .calc-row.final .val{font-size:24px}
+      .calc-row.sub{padding:4px 0 4px 14px}
+    }
+
+    /* KG stepper */
+    .kg-stepper{display:flex;align-items:center;gap:0;border:1px solid var(--goldBorder);background:rgba(255,255,255,0.02);width:fit-content;margin-top:6px}
+    .kg-btn{width:48px;height:54px;background:transparent;border:0;border-right:1px solid var(--goldBorder);color:var(--gold);font-size:24px;line-height:1;cursor:pointer;font-family:var(--serif);transition:background .2s}
+    .kg-btn:hover:not(:disabled){background:var(--goldWashS);color:var(--goldB)}
+    .kg-btn:disabled{opacity:.35;cursor:not-allowed}
+    .kg-stepper .kg-btn:last-of-type{border-right:0;border-left:1px solid var(--goldBorder)}
+    .kg-num{width:80px;height:54px;background:transparent;border:0;color:var(--text);font-family:var(--mono);font-weight:500;font-size:24px;text-align:center;-moz-appearance:textfield;padding:0}
+    .kg-num::-webkit-outer-spin-button,
+    .kg-num::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+    .kg-num:focus{outline:none;background:rgba(197,165,114,0.04)}
+    .kg-unit{font-family:var(--mono);font-size:12px;letter-spacing:0.20em;color:var(--goldD);padding:0 14px 0 4px;text-transform:uppercase}
+
+    .caveat{font-family:var(--serifKr);font-style:italic;font-weight:300;font-size:13.5px;line-height:1.7;color:var(--goldD);border-left:1px solid var(--gold);padding:8px 14px;margin:22px 0 0}
+
+    /* Prior-IOI revision banner — shown when member returns to revise */
+    .prior-banner{margin:0 0 28px;padding:18px 22px;border:1px solid var(--goldBorder);background:linear-gradient(180deg,rgba(197,165,114,0.06),transparent);border-left:3px solid var(--gold)}
+    .prior-banner-eyebrow{font-family:var(--mono);font-size:9.5px;letter-spacing:0.30em;color:var(--gold);margin-bottom:8px;text-transform:uppercase}
+    .prior-banner-text{font-family:var(--serifKr);font-size:14px;line-height:1.6;color:var(--sub)}
+
+    /* Dashboard-style summary card (signature/review section) */
+    .dash-card{padding:28px;margin:0 0 32px;border:1px solid var(--goldBorderS);background:linear-gradient(180deg,var(--goldWash),transparent)}
+    @media (max-width:720px){.dash-card{padding:22px 18px}}
+    .dash-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:0.34em;color:var(--gold);margin:0 0 12px}
+    .dash-h{font-family:var(--serifKr);font-weight:500;font-size:22px;line-height:1.2;color:var(--text);margin:0 0 22px}
+    .dash-h em{font-family:var(--serif);font-style:italic;color:var(--gold)}
+
+    .ioi-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:18px;margin:0 0 22px;padding:18px;background:rgba(0,0,0,0.30);border:1px solid var(--goldBorder)}
+    .ioi-fact{display:flex;flex-direction:column;gap:5px}
+    .ioi-fact .lbl{font-family:var(--mono);font-size:9px;letter-spacing:0.28em;color:var(--goldD);text-transform:uppercase}
+    .ioi-fact .val{font-family:var(--mono);font-weight:500;font-size:16px;color:var(--text)}
+    .ioi-fact .val.gold{color:var(--goldB);font-weight:600;font-size:18px}
+    .ioi-fact .sub{font-family:var(--mono);font-size:9.5px;letter-spacing:0.10em;color:var(--muted)}
+
+    .sigblock{margin-top:18px;padding:16px 18px;background:rgba(255,255,255,0.02);border-left:2px solid var(--goldDeep)}
+    .sigblock-lbl{font-family:var(--mono);font-size:9px;letter-spacing:0.28em;color:var(--goldD);margin-bottom:8px;text-transform:uppercase}
+    .sigblock input[type="text"]{font-family:var(--serif);font-style:italic;font-size:22px;color:var(--goldB);background:transparent;border:0;border-bottom:1px solid var(--goldBorder);padding:6px 0;letter-spacing:0.01em}
+    .sigblock input[type="text"]:focus{border-color:var(--gold);background:transparent}
+    .sigblock .sig-meta{margin-top:8px;font-family:var(--mono);font-size:9px;letter-spacing:0.20em;color:var(--muted)}
+
+    /* Acknowledgement list */
+    .ack-list{margin:0 0 22px;padding:0;list-style:none}
+    .ack-list li{display:flex;align-items:flex-start;gap:14px;padding:14px 0;border-bottom:1px dashed var(--rule);font-family:var(--serifKr);font-weight:300;font-size:14.5px;line-height:1.6;color:var(--sub);cursor:pointer}
+    .ack-list li:last-child{border-bottom:0}
+    .ack-list li input{margin:4px 0 0;flex-shrink:0;accent-color:var(--gold);width:16px;height:16px}
+    .ack-list li em{color:var(--goldB);font-style:italic;font-family:var(--serif)}
+
+    /* Buttons */
+    .btn{display:inline-flex;align-items:center;gap:12px;padding:14px 26px;background:var(--gold);color:var(--bg);border:0;cursor:pointer;font-family:var(--mono);font-weight:600;font-size:11px;letter-spacing:0.24em;white-space:nowrap;text-decoration:none;transition:background .2s,box-shadow .2s,transform .15s}
+    .btn:hover:not([disabled]){background:var(--goldB);box-shadow:0 6px 22px rgba(227,193,135,0.28);transform:translateY(-1px)}
+    .btn[disabled]{opacity:0.4;cursor:not-allowed}
+    .btn .arrow{font-family:var(--mono);font-size:14px;letter-spacing:0}
+
+    /* Status banner */
+    .status-banner{padding:14px 20px;margin:0 0 32px;border-left:2px solid var(--green);background:rgba(122,168,133,0.05);font-family:var(--serifKr);font-size:14.5px;color:var(--text);display:flex;align-items:baseline;flex-wrap:wrap;gap:12px}
+    .status-banner .pill{font-family:var(--mono);font-size:9px;letter-spacing:0.30em;color:var(--green);text-transform:uppercase}
+
+    .submit-row{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin:28px 0 0}
+    .submit-row .help{font-family:var(--serifKr);font-style:italic;font-size:13px;color:var(--goldD)}
+
+    .loading{display:inline-block;width:12px;height:12px;border:2px solid var(--rule);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:8px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Done card */
+    .done-card{padding:56px 48px;border:1px solid var(--goldBorderS);background:linear-gradient(180deg,var(--goldWash),transparent);text-align:left}
+    @media (max-width:720px){.done-card{padding:40px 24px}}
+    .done-check{width:48px;height:48px;border-radius:50%;border:1px solid var(--gold);color:var(--gold);display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:22px;margin-bottom:26px}
+
+    .codegate{max-width:460px}
+    .codegate input{font-family:var(--mono);font-size:18px;letter-spacing:0.10em;padding:16px;text-transform:uppercase}
+
+    footer.foot{margin-top:80px;padding-top:32px;border-top:1px solid var(--border);font-family:var(--mono);font-size:9.5px;letter-spacing:0.30em;color:var(--muted);line-height:1.8}
+    footer.foot .gold{color:var(--goldD)}
+
+    .hidden{display:none !important}
+  </style>
+</head>
+<body class="lang-ko">
+
+<div class="amb"></div>
+
+<nav class="nav">
+  <a href="/" class="lockup" aria-label="Home">
+    <span class="seal">Au</span>
+    <span class="lockup-text">
+      <span class="word">AURUM</span>
+      <span class="program">CENTURY · CLUB</span>
+    </span>
+  </a>
+  <div class="lang-toggle" role="group" aria-label="Language">
+    <button type="button" id="btnKo" class="active">한</button>
+    <span class="sep">/</span>
+    <button type="button" id="btnEn">EN</button>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- ─── STATE: codegate ─── -->
+  <section id="s-codegate" class="codegate">
+    <div class="eyebrow">COMMITMENT  ·  의향 표명</div>
+    <h1 class="title" data-lang="en">Indicate <em>commitment.</em></h1>
+    <h1 class="title" data-lang="ko"><em>의향</em>을 표명하십시오.</h1>
+    <p class="lede" data-lang="en">Enter the code to begin.</p>
+    <p class="lede" data-lang="ko">진행을 위해 코드를 입력하십시오.</p>
+
+    <label class="field">
+      <span class="lbl"><span data-lang="en">CODE</span><span data-lang="ko">코드</span><span class="req">·</span></span>
+      <input type="text" id="code-input" autocomplete="off" placeholder="AURUM-IOI-XX-XXXX-XXXX" autocapitalize="characters" spellcheck="false" maxlength="22">
+      <div class="err" id="code-err"></div>
+    </label>
+
+    <button class="btn" id="code-submit" type="button">
+      <span data-lang="en">CONTINUE</span>
+      <span data-lang="ko">계속</span>
+      <span class="arrow">→</span>
+    </button>
+  </section>
+
+  <!-- ─── STATE: KYC gate ─── -->
+  <section id="s-kyc" class="hidden">
+    <div class="eyebrow">COMMITMENT  ·  의향 표명</div>
+    <h1 class="title" data-lang="en">Verify identity to <em>continue.</em></h1>
+    <h1 class="title" data-lang="ko">신원 확인 후 <em>계속하십시오.</em></h1>
+    <p class="lede" data-lang="en">A brief mobile identity check, about 90 seconds. The same flow used by Toss and major Korean securities accounts.</p>
+    <p class="lede" data-lang="ko">간단한 모바일 신원 확인 절차입니다. 약 90초 소요됩니다. Toss 및 주요 증권 계좌에서 사용되는 것과 동일한 방식입니다.</p>
+
+    <div class="form-card">
+      <div class="form-card-head">
+        <div class="lhs">
+          <span class="roman">I.</span>
+          <h2 class="h"><span data-lang="en">Identity verification</span><span data-lang="ko">신원 확인</span></h2>
+        </div>
+        <span class="label">KYC</span>
+      </div>
+      <p class="form-card-text" data-lang="en">You'll be redirected to our verification partner. Once complete, you return here to the commitment form.</p>
+      <p class="form-card-text" data-lang="ko">신원 확인 파트너로 이동되며, 완료 후 의향서 양식 페이지로 자동 복귀합니다.</p>
+      <button class="btn" id="kyc-start" type="button">
+        <span data-lang="en">VERIFY IDENTITY</span>
+        <span data-lang="ko">신원 확인</span>
+        <span class="arrow">→</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ─── STATE: form ─── -->
+  <section id="s-form" class="hidden">
+    <div class="eyebrow">COMMITMENT  ·  의향 표명</div>
+    <h1 class="title" data-lang="en">Indicate <em>commitment.</em></h1>
+    <h1 class="title" data-lang="ko"><em>의향</em>을 표명하십시오.</h1>
+
+    <div class="status-banner">
+      <span class="pill" data-lang="en">VERIFIED</span><span class="pill" data-lang="ko">확인됨</span>
+      <span data-lang="en">Identity confirmed. Complete the form below.</span>
+      <span data-lang="ko">신원이 확인되었습니다. 아래 양식을 완료해 주십시오.</span>
+    </div>
+
+    <form id="ioi-form" novalidate>
+
+      <!-- II. Profile -->
+      <div class="form-card">
+        <div class="form-card-head">
+          <div class="lhs">
+            <span class="roman">II.</span>
+            <h2 class="h"><span data-lang="en">Investor <em>profile</em></span><span data-lang="ko">투자자 <em>프로필</em></span></h2>
+          </div>
+          <span class="label">PROFILE</span>
+        </div>
+
+        <label class="field">
+          <span class="lbl"><span data-lang="en">ANNUAL INCOME (KRW)</span><span data-lang="ko">연 소득 (KRW)</span><span class="req">·</span></span>
+          <select name="income_range" required>
+            <option value="" disabled selected data-lang-en="— Select —" data-lang-ko="— 선택 —">— 선택 —</option>
+            <option value="<2억"   data-lang-en="Under 2억"      data-lang-ko="2억 미만">2억 미만</option>
+            <option value="2-5억"  data-lang-en="2억 – 5억"      data-lang-ko="2억 – 5억">2억 – 5억</option>
+            <option value="5-10억" data-lang-en="5억 – 10억"     data-lang-ko="5억 – 10억">5억 – 10억</option>
+            <option value="10-30억" data-lang-en="10억 – 30억"   data-lang-ko="10억 – 30억">10억 – 30억</option>
+            <option value=">30억"  data-lang-en="Over 30억"      data-lang-ko="30억 초과">30억 초과</option>
+          </select>
+        </label>
+
+        <div class="grid-2">
+          <label class="field">
+            <span class="lbl"><span data-lang="en">NET WORTH (KRW)</span><span data-lang="ko">순자산 (KRW)</span><span class="req">·</span></span>
+            <select name="net_worth" required>
+              <option value="" disabled selected data-lang-en="— Select —" data-lang-ko="— 선택 —">— 선택 —</option>
+              <option value="<10억"     data-lang-en="Under 10억"   data-lang-ko="10억 미만">10억 미만</option>
+              <option value="10-50억"   data-lang-en="10억 – 50억"  data-lang-ko="10억 – 50억">10억 – 50억</option>
+              <option value="50-100억"  data-lang-en="50억 – 100억" data-lang-ko="50억 – 100억">50억 – 100억</option>
+              <option value="100-500억" data-lang-en="100억 – 500억" data-lang-ko="100억 – 500억">100억 – 500억</option>
+              <option value=">500억"    data-lang-en="Over 500억"   data-lang-ko="500억 초과">500억 초과</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="lbl"><span data-lang="en">LIQUID NET WORTH (KRW)</span><span data-lang="ko">유동 순자산 (KRW)</span><span class="req">·</span></span>
+            <select name="liquid_net_worth" required>
+              <option value="" disabled selected data-lang-en="— Select —" data-lang-ko="— 선택 —">— 선택 —</option>
+              <option value="<5억"     data-lang-en="Under 5억"     data-lang-ko="5억 미만">5억 미만</option>
+              <option value="5-20억"   data-lang-en="5억 – 20억"    data-lang-ko="5억 – 20억">5억 – 20억</option>
+              <option value="20-50억"  data-lang-en="20억 – 50억"   data-lang-ko="20억 – 50억">20억 – 50억</option>
+              <option value="50-100억" data-lang-en="50억 – 100억"  data-lang-ko="50억 – 100억">50억 – 100억</option>
+              <option value=">100억"   data-lang-en="Over 100억"    data-lang-ko="100억 초과">100억 초과</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="grid-2">
+          <label class="field">
+            <span class="lbl"><span data-lang="en">PRIVATE-MARKET EXPERIENCE</span><span data-lang="ko">사모 시장 경험</span><span class="req">·</span></span>
+            <select name="investment_experience_yrs" required>
+              <option value="" disabled selected data-lang-en="— Select —" data-lang-ko="— 선택 —">— 선택 —</option>
+              <option value="0"    data-lang-en="None"          data-lang-ko="없음">없음</option>
+              <option value="1-3"  data-lang-en="1 – 3 years"   data-lang-ko="1 – 3년">1 – 3년</option>
+              <option value="3-10" data-lang-en="3 – 10 years"  data-lang-ko="3 – 10년">3 – 10년</option>
+              <option value=">10"  data-lang-en="Over 10 years" data-lang-ko="10년 이상">10년 이상</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="lbl"><span data-lang="en">TAX RESIDENCY</span><span data-lang="ko">세무상 거주지</span><span class="req">·</span></span>
+            <select name="tax_residency" required>
+              <option value="" disabled selected data-lang-en="— Select —" data-lang-ko="— 선택 —">— 선택 —</option>
+              <option value="KR"    data-lang-en="South Korea (only)"  data-lang-ko="대한민국 (단독)">대한민국 (단독)</option>
+              <option value="KR+"   data-lang-en="South Korea + other" data-lang-ko="대한민국 + 기타">대한민국 + 기타</option>
+              <option value="other" data-lang-en="Other only"          data-lang-ko="기타 단독">기타 단독</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="field">
+          <span class="lbl"><span data-lang="en">EXISTING OFFSHORE EXPOSURE</span><span data-lang="ko">기존 해외 투자 보유 현황</span></span>
+          <textarea name="offshore_exposure_text" rows="2" maxlength="1000" placeholder="간단히 — 자산군, 대략적 규모, 채널" data-ph-en="Briefly — asset class, rough size, channel" data-ph-ko="간단히 — 자산군, 대략적 규모, 채널"></textarea>
+          <div class="hint bare" data-lang="en">Optional. Helps partners contextualize your commitment.</div>
+          <div class="hint bare" data-lang="ko">선택. 약정 평가 시 참고용입니다.</div>
+        </label>
+
+        <label class="field">
+          <span class="lbl"><span data-lang="en">SOURCE OF FUNDS — THIS COMMITMENT</span><span data-lang="ko">자금 출처 — 본 약정</span><span class="req">·</span></span>
+          <select name="source_of_funds_commit" required>
+            <option value="" disabled selected data-lang-en="— Select —" data-lang-ko="— 선택 —">— 선택 —</option>
+            <option value="business"     data-lang-en="Business income"                                 data-lang-ko="사업 소득">사업 소득</option>
+            <option value="investment"   data-lang-en="Investment proceeds"                             data-lang-ko="투자 수익">투자 수익</option>
+            <option value="inheritance"  data-lang-en="Inheritance"                                     data-lang-ko="상속">상속</option>
+            <option value="liquidity"    data-lang-en="Liquidity event (sale of asset / business)"      data-lang-ko="유동화 (자산 / 사업 매각)">유동화 (자산 / 사업 매각)</option>
+            <option value="other"        data-lang-en="Other"                                           data-lang-ko="기타">기타</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="lbl"><span data-lang="en">DESIGNATED KOREAN FX BANK</span><span data-lang="ko">지정 외국환 은행</span><span class="req">·</span></span>
+          <input type="text" name="korean_fx_bank" required maxlength="200" placeholder="예: KEB 하나은행 강남지점" data-ph-en="e.g. KEB Hana Bank, Gangnam branch" data-ph-ko="예: KEB 하나은행 강남지점">
+          <div class="hint bare" data-lang="en">The Korean bank that will process the FETA filing on your wire. May be set later if undecided.</div>
+          <div class="hint bare" data-lang="ko">송금 시 FETA 신고를 처리할 외국환 은행. 미결정 시 추후 설정 가능.</div>
+        </label>
+
+        <label class="field">
+          <span class="lbl"><span data-lang="en">PEP DECLARATION</span><span data-lang="ko">PEP 신고</span><span class="req">·</span></span>
+          <select name="pep" required id="pep-select">
+            <option value="" disabled selected data-lang-en="— Select —" data-lang-ko="— 선택 —">— 선택 —</option>
+            <option value="no"  data-lang-en="I am not a PEP and have no PEP relations" data-lang-ko="본인은 PEP가 아니며, 관련자도 없습니다">본인은 PEP가 아니며, 관련자도 없습니다</option>
+            <option value="yes" data-lang-en="I am a PEP, or have PEP relations"        data-lang-ko="본인이 PEP이거나 관련자가 있습니다">본인이 PEP이거나 관련자가 있습니다</option>
+          </select>
+          <div class="hint bare" data-lang="en">PEP = Politically Exposed Person. Standard AML disclosure.</div>
+          <div class="hint bare" data-lang="ko">PEP = 정치적 주요 인물. 표준 AML 공시 사항입니다.</div>
+        </label>
+        <label class="field hidden" id="pep-relation-field">
+          <span class="lbl"><span data-lang="en">PEP RELATIONSHIP — DESCRIBE</span><span data-lang="ko">PEP 관계 — 설명</span></span>
+          <textarea name="pep_relation" rows="2" maxlength="500"></textarea>
+        </label>
+      </div>
+
+      <!-- III. Commitment input + calculator -->
+      <div class="form-card">
+        <div class="form-card-head">
+          <div class="lhs">
+            <span class="roman">III.</span>
+            <h2 class="h"><span data-lang="en">The <em>commitment</em></span><span data-lang="ko">약정 <em>금액</em></span></h2>
+          </div>
+          <span class="label">COMMITMENT</span>
+        </div>
+
+        <!-- KG stepper — primary input.  Whole kg only, minimum 1. -->
+        <label class="field">
+          <span class="lbl"><span data-lang="en">COMMITMENT (kg of physical gold)</span><span data-lang="ko">약정 (실물 금 kg)</span><span class="req">·</span></span>
+          <div class="kg-stepper">
+            <button type="button" class="kg-btn" id="kg-minus" aria-label="Decrease">−</button>
+            <input type="number" id="kg-input" class="kg-num" inputmode="numeric" min="1" max="500" step="1" value="1">
+            <span class="kg-unit">kg</span>
+            <button type="button" class="kg-btn" id="kg-plus" aria-label="Increase">+</button>
+          </div>
+          <div class="hint" id="kg-hint"><span data-lang="en">Minimum 1 kg.  Whole kilograms only.</span><span data-lang="ko">최소 1 kg. 정수 kg 단위만 가능.</span></div>
+          <div class="err" id="krw-err"></div>
+        </label>
+
+        <label class="field" style="margin-bottom:28px">
+          <span class="lbl"><span data-lang="en">LTV REQUEST (DRAW AT FIRST CLOSE)</span><span data-lang="ko">LTV 요청 (1차 마감 인출)</span><span class="req">·</span></span>
+          <div class="slider-row">
+            <input type="range" id="ltv-slider" min="50" max="75" step="1" value="50">
+            <span class="slider-val" id="ltv-val">50%</span>
+          </div>
+          <div class="hint bare" data-lang="en">50% minimum, 75% maximum.  Aurum sizes the facility based on commitment level.</div>
+          <div class="hint bare" data-lang="ko">최저 50%, 최고 75%. Aurum이 약정 수준에 따라 산정합니다.</div>
+        </label>
+
+        <!-- Live calculator — Wire breakdown / LTV / Investable Capital / Total Holdings -->
+        <div class="calc">
+
+          <!-- Wire total (primary, large) -->
+          <div class="calc-row primary">
+            <span class="lbl"><span data-lang="en">YOUR WIRE</span><span data-lang="ko">송금 총액</span></span>
+            <span class="val" id="calc-wire">—</span>
+          </div>
+
+          <!-- Wire breakdown — gold + fund cash position -->
+          <div class="calc-row sub">
+            <span class="lbl"><span data-lang="en">GOLD ACQUISITION (80%)</span><span data-lang="ko">금 매입 (80%)</span></span>
+            <span class="val" id="calc-gold-acq">—</span>
+          </div>
+          <div class="calc-row sub">
+            <span class="lbl"><span data-lang="en">FUND CASH POSITION (20%)</span><span data-lang="ko">펀드 현금 포지션 (20%)</span></span>
+            <span class="val" id="calc-fund-cash">—</span>
+          </div>
+
+          <!-- Divider -->
+          <div class="calc-divider"></div>
+
+          <!-- LTV Cash Available — deployable capital from LTV facility only.
+               The 20% Fund Cash Position is the defensive reserve and is NOT
+               deployable; it sits idle to protect against gold drawdowns
+               (see FAQ Q.V & Q.VI). -->
+          <div class="calc-row primary">
+            <span class="lbl"><span data-lang="en">LTV CASH AVAILABLE</span><span data-lang="ko">LTV 투자 가능 현금</span></span>
+            <span class="val" id="calc-deployed">—</span>
+          </div>
+          <div class="calc-row sub">
+            <span class="lbl"><span data-lang="en">LTV DRAW ON GOLD</span><span data-lang="ko">금 담보 인출</span></span>
+            <span class="val" id="calc-ltv-draw">—</span>
+          </div>
+
+          <!-- Divider -->
+          <div class="calc-divider"></div>
+
+          <!-- Position at first close: gold in custody + idle reserve -->
+          <div class="calc-row">
+            <span class="lbl"><span data-lang="en">GOLD HELD IN CUSTODY</span><span data-lang="ko">보관 중 실물 금</span></span>
+            <span class="val" id="calc-gold-held">—</span>
+          </div>
+          <div class="calc-row">
+            <span class="lbl"><span data-lang="en">FUND CASH POSITION (DEFENSIVE)</span><span data-lang="ko">펀드 현금 포지션 (방어적 유보)</span></span>
+            <span class="val" id="calc-fund-cash-2">—</span>
+          </div>
+
+          <!-- Total holdings -->
+          <div class="calc-row primary final">
+            <span class="lbl"><span data-lang="en">TOTAL HOLDINGS</span><span data-lang="ko">총 보유 자산</span></span>
+            <span class="val" id="calc-total">—</span>
+          </div>
+        </div>
+
+        <p class="caveat" data-lang="en">Allocated kilogram amount is determined at trade execution price, not at IOI submission. Aurum targets execution promptly following wire clearance, subject to market conditions and dealer availability. Spot movement between submission and execution is borne by the member, with corresponding effect on allocated kg amount. LP interest is established upon vault confirmation. After vault confirmation, the KRW value of your gold — and therefore your LTV ceiling and LTV cash available — moves with daily LBMA spot. The 20% Fund Cash Position is a defensive reserve and is not deployable. See FAQ Q.IX and Structural Memo §4.3 for the full procurement buffer and pricing clause.</p>
+        <p class="caveat" data-lang="ko">할당 kg은 IOI 제출 시점이 아닌 거래 체결 시점의 가격으로 결정됩니다. Aurum은 송금 정산 후 신속한 체결을 목표로 하나, 시장 상황 및 딜러 가용성에 따릅니다. 제출과 체결 사이의 시세 변동은 회원이 부담하며, 할당 kg에 그대로 반영됩니다. LP 지분은 보관소 확인 시점에 성립됩니다. 보관소 확인 후에는, 보유 금의 KRW 가치 — 그리고 LTV 한도 및 LTV 투자 가능 현금 — 이 일일 LBMA 시세에 따라 변동합니다. 20% 펀드 현금 포지션은 방어적 유보 자금이며 투자 배치 대상이 아닙니다. 자세한 조달 버퍼 및 가격 조항은 FAQ Q.IX 및 Structural Memo §4.3을 참조하십시오.</p>
+      </div>
+
+      <!-- IV. Acknowledge & sign — DASHBOARD CHROME -->
+      <div class="dash-card">
+        <div class="dash-eyebrow">IV  ·  ACKNOWLEDGE & SIGN  ·  확인 및 서명</div>
+        <h2 class="dash-h" data-lang="en">Review and <em>sign</em>.</h2>
+        <h2 class="dash-h" data-lang="ko">검토 후 <em>서명</em>하십시오.</h2>
+
+        <div class="ioi-facts">
+          <div class="ioi-fact">
+            <div class="lbl"><span data-lang="en">COMMITMENT</span><span data-lang="ko">약정</span></div>
+            <div class="val gold" id="review-kg">— kg</div>
+            <div class="sub" data-lang="en">primary, signed</div>
+            <div class="sub" data-lang="ko">서명 기준</div>
+          </div>
+          <div class="ioi-fact">
+            <div class="lbl"><span data-lang="en">GOLD VALUE</span><span data-lang="ko">금 가치</span></div>
+            <div class="val" id="review-gold-value">—</div>
+          </div>
+          <div class="ioi-fact">
+            <div class="lbl"><span data-lang="en">LTV REQUESTED</span><span data-lang="ko">LTV 요청</span></div>
+            <div class="val" id="review-ltv">50%</div>
+          </div>
+          <div class="ioi-fact">
+            <div class="lbl"><span data-lang="en">LTV CASH AVAILABLE</span><span data-lang="ko">LTV 투자 가능 현금</span></div>
+            <div class="val" id="review-cash">—</div>
+          </div>
+          <div class="ioi-fact">
+            <div class="lbl"><span data-lang="en">TOTAL HOLDINGS</span><span data-lang="ko">총 보유 자산</span></div>
+            <div class="val" id="review-total">—</div>
+          </div>
+        </div>
+
+        <ul class="ack-list">
+          <li>
+            <input type="checkbox" name="cb_indicative" required>
+            <div>
+              <span data-lang="en">I understand this is a <em>non-binding indication</em> of interest, not a subscription.</span>
+              <span data-lang="ko">본 의향서는 <em>비구속적 의향 표명</em>이며, 가입 약정이 아님을 확인합니다.</span>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" name="cb_materials" required>
+            <div>
+              <span data-lang="en">I have read the <em>Century Club Package</em>, <em>Member FAQ</em>, and the <em>Structural Memo</em> (or have shared the Structural Memo with my counsel).</span>
+              <span data-lang="ko"><em>The Aurum Century Club Package</em>, <em>Member FAQ</em>, <em>Structural Memo</em>를 검토했거나, Structural Memo를 자문 변호사에게 공유했음을 확인합니다.</span>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" name="cb_seven_day" required>
+            <div>
+              <span data-lang="en">I commit to completing wire arrangements within seven (7) business days of receiving instructions.</span>
+              <span data-lang="ko">송금 안내 수령 후 7 영업일 이내에 송금을 완료할 것에 동의합니다.</span>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" name="cb_spot_caveat" required>
+            <div>
+              <span data-lang="en">I understand the KRW figure shown is <em>indicative</em>. Final settlement is at gold spot at the time the fund executes the bar purchase, promptly following wire clearance.</span>
+              <span data-lang="ko">표시된 KRW 금액은 <em>참고용</em>이며, 최종 정산은 펀드의 금괴 매입 체결 시점의 금 시세에 따라 계산됨을 이해합니다.</span>
+            </div>
+          </li>
+        </ul>
+
+        <div class="sigblock">
+          <div class="sigblock-lbl">SIGNATURE  ·  서명</div>
+          <input type="text" name="signature" id="sig-input" required maxlength="200" autocomplete="name" placeholder="법적 성명 입력" data-ph-en="Type your legal name" data-ph-ko="법적 성명 입력">
+          <div class="sig-meta">
+            <span data-lang="en">Typed name = electronic signature for this non-binding indication</span>
+            <span data-lang="ko">입력 성명 = 본 비구속적 의향 표명의 전자 서명</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="submit-row">
+        <button class="btn" id="ioi-submit" type="submit">
+          <span data-lang="en">SUBMIT IOI</span>
+          <span data-lang="ko">의향 제출</span>
+          <span class="arrow">→</span>
+        </button>
+        <span class="help" data-lang="en">Wire instructions follow once a partner verifies.</span>
+        <span class="help" data-lang="ko">파트너 확인 후 송금 안내가 발송됩니다.</span>
+      </div>
+
+      <div class="err" id="form-err" style="margin-top:16px"></div>
+    </form>
+  </section>
+
+  <!-- ─── STATE: done ─── -->
+  <section id="s-done" class="hidden">
+    <div class="eyebrow">SUBMITTED  ·  제출 완료</div>
+    <h1 class="title" data-lang="en"><em>Submitted.</em></h1>
+    <h1 class="title" data-lang="ko"><em>제출 완료.</em></h1>
+
+    <div class="done-card">
+      <div class="done-check">✓</div>
+      <p class="form-card-text" data-lang="en">Your IOI has been received. A partner will be in touch shortly. Wire instructions follow once verified.</p>
+      <p class="form-card-text" data-lang="ko">의향서가 접수되었습니다. 파트너가 곧 연락드릴 예정입니다. 확인 후 송금 안내가 발송됩니다.</p>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div data-lang="en"><span class="gold">CONFIDENTIAL</span>  ·  QUALIFIED INVESTORS ONLY</div>
+    <div data-lang="ko"><span class="gold">기밀</span>  ·  적격 투자자 전용</div>
+    <div style="margin-top:6px">AURUM  ·  TACC PTE LTD  ·  SINGAPORE</div>
+  </footer>
+</div>
+
+<script>
+// ── Lang toggle ─────────────────────────────────────────────
+(function() {
+  var html = document.documentElement;
+  var body = document.body;
+  var btnEn = document.getElementById('btnEn');
+  var btnKo = document.getElementById('btnKo');
+  function setLang(l) {
+    body.classList.remove('lang-en', 'lang-ko');
+    body.classList.add('lang-' + l);
+    html.lang = l;
+    btnEn.classList.toggle('active', l === 'en');
+    btnKo.classList.toggle('active', l === 'ko');
+    document.querySelectorAll('[data-ph-en]').forEach(function(el) {
+      el.placeholder = (l === 'en') ? (el.dataset.phEn || '') : (el.dataset.phKo || '');
+    });
+    document.querySelectorAll('option[data-lang-en]').forEach(function(opt) {
+      opt.textContent = (l === 'en') ? opt.dataset.langEn : opt.dataset.langKo;
+    });
+    try { localStorage.setItem('aurum_lang', l); } catch (e) {}
+  }
+  var saved = 'ko';
+  try { saved = localStorage.getItem('aurum_lang') || 'ko'; } catch (e) {}
+  setLang(saved);
+  btnEn.addEventListener('click', function() { setLang('en'); });
+  btnKo.addEventListener('click', function() { setLang('ko'); });
+})();
+
+// ── KRW format / parse — always 억/만 ───────────────────────
+function formatKRW(amount) {
+  if (amount == null || isNaN(amount)) return '0';
+  var a = Math.round(amount);
+  if (a === 0) return '0';
+  var EOK = 100000000, MAN = 10000;
+  if (a < MAN) return a.toLocaleString('en-US') + '원';
+  var rounded = Math.round(a / MAN) * MAN;
+  var eok = Math.floor(rounded / EOK);
+  var rem = rounded % EOK;
+  var man = Math.floor(rem / MAN);
+  var parts = [];
+  if (eok) parts.push(eok.toLocaleString('en-US') + '억');
+  if (man) parts.push(man.toLocaleString('en-US') + '만');
+  return parts.join(' ') || '0';
+}
+function parseKRW(s) {
+  if (!s) return 0;
+  s = String(s).trim().replace(/[₩,\s원]/g, '');
+  if (!s) return 0;
+  var w = /^(\d+(?:\.\d+)?)\s*([kmbt])$/i.exec(s);
+  if (w) {
+    var n = parseFloat(w[1]);
+    var m = { k: 1e3, m: 1e6, b: 1e9, t: 1e12 }[w[2].toLowerCase()];
+    return Math.round(n * m);
+  }
+  var total = 0, used = false;
+  var eokM = /(\d+(?:\.\d+)?)억/.exec(s);
+  if (eokM) { total += parseFloat(eokM[1]) * 1e8; s = s.replace(eokM[0], ''); used = true; }
+  var manM = /(\d+(?:\.\d+)?)만/.exec(s);
+  if (manM) { total += parseFloat(manM[1]) * 1e4; s = s.replace(manM[0], ''); used = true; }
+  if (used) {
+    var rest = s.replace(/[^\d.]/g, '');
+    if (rest) total += parseFloat(rest);
+    return Math.round(total);
+  }
+  var n2 = Number(s);
+  return isNaN(n2) ? NaN : Math.round(n2);
+}
+
+// ── State ─────────────────────────────────────────────────
+var state = { code: null, lead: null, kyc_status: 'pending', spot: null };
+
+function show(stateName) {
+  ['s-codegate', 's-kyc', 's-form', 's-done'].forEach(function(id) {
+    document.getElementById(id).classList.toggle('hidden', id !== stateName);
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Init ──────────────────────────────────────────────────
+(function() {
+  var url = new URL(window.location.href);
+  var code = (url.searchParams.get('c') || url.searchParams.get('code') || '').trim().toUpperCase();
+  if (code) tryCode(code);
+  else show('s-codegate');
+  fetchSpot();
+})();
+
+function fetchSpot() {
+  fetch('/api/ioi?op=spot').then(function(r) {
+    if (!r.ok) throw new Error('no spot');
+    return r.json();
+  }).then(function(j) { state.spot = j; updateCalc(); })
+  .catch(function() {
+    // Hard fallback: $4,700/oz × 32.1507 oz/kg × ~1,440 USD/KRW × 1.03 procurement buffer ≈ ₩2.24億/kg
+    state.spot = { krw_per_kg: 225000000, source: 'fallback' }; updateCalc();
+  });
+}
+
+function tryCode(code) {
+  state.code = code;
+  fetch('/api/ioi?op=status&c=' + encodeURIComponent(code)).then(function(r) {
+    if (!r.ok) return r.json().then(function(j) { showCodeErr(j.error || 'invalid code'); show('s-codegate'); });
+    return r.json().then(function(j) {
+      state.lead = j.lead; state.kyc_status = j.kyc_status;
+      state.prior_ioi = j.prior_ioi || null;
+      state.prior_profile = j.prior_profile || null;
+      // Always route to the form (pre-filled if previously submitted) when KYC is verified.
+      // IOIs are non-binding indications — members may revise. Submit overwrites.
+      if (j.kyc_status === 'verified') {
+        if (state.prior_ioi) prefillForm();
+        show('s-form');
+      } else {
+        show('s-kyc');
+      }
+    });
+  }).catch(function() { showCodeErr('network error'); show('s-codegate'); });
+}
+
+// Pre-fill the form with previously-submitted values so members can revise.
+function prefillForm() {
+  var p = state.prior_ioi;
+  var prof = state.prior_profile || {};
+  if (!p) return;
+  // Profile fields
+  Object.keys(prof).forEach(function(k) {
+    var el = document.querySelector('[name="' + k + '"]');
+    if (el && el.tagName === 'INPUT' && el.type === 'checkbox') el.checked = !!prof[k];
+    else if (el) el.value = prof[k] == null ? '' : String(prof[k]);
+  });
+  // PEP toggle visibility
+  var pepEl = document.querySelector('[name="pep"]');
+  if (pepEl && pepEl.value === 'yes') {
+    var pepRel = document.getElementById('pep-relation-field');
+    if (pepRel) pepRel.classList.remove('hidden');
+  }
+  // KG stepper
+  if (p.kg) {
+    var kgInput = document.getElementById('kg-input');
+    if (kgInput) kgInput.value = Math.round(p.kg) || 1;
+  }
+  // LTV slider
+  if (p.ltv_pct != null) {
+    var ltvSlider = document.getElementById('ltv-slider');
+    var ltvVal = document.getElementById('ltv-val');
+    if (ltvSlider) ltvSlider.value = p.ltv_pct;
+    if (ltvVal) ltvVal.textContent = p.ltv_pct + '%';
+  }
+  // Signature
+  if (p.signature) {
+    var sigEl = document.querySelector('[name="signature"]');
+    if (sigEl) sigEl.value = p.signature;
+  }
+  // Recompute calc with pre-filled values
+  if (typeof updateCalc === 'function') updateCalc();
+
+  // Show "revising prior submission" banner above the form
+  var bannerHtml = '<div class="prior-banner">' +
+    '<div class="prior-banner-eyebrow"><span data-lang="en">REVISING PRIOR INDICATION</span><span data-lang="ko">기존 의향 수정</span></div>' +
+    '<div class="prior-banner-text">' +
+    '<span data-lang="en">You submitted an IOI on ' + new Date(p.submitted_at).toLocaleDateString() + '. ' +
+    'IOIs are non-binding — adjust kg or LTV and re-submit. Your most recent submission is what your partner reviews.</span>' +
+    '<span data-lang="ko">' + new Date(p.submitted_at).toLocaleDateString('ko-KR') + '에 의향서를 제출하셨습니다. ' +
+    '의향서는 비구속 표명이므로, kg 또는 LTV를 조정하여 재제출하실 수 있습니다. 가장 최근 제출본이 검토 대상입니다.</span>' +
+    '</div></div>';
+  var formSection = document.getElementById('s-form');
+  if (formSection && !formSection.querySelector('.prior-banner')) {
+    formSection.insertAdjacentHTML('afterbegin', bannerHtml);
+  }
+}
+
+function showCodeErr(msg) {
+  var el = document.getElementById('code-err');
+  el.textContent = msg; el.classList.add('shown');
+}
+
+document.getElementById('code-submit').addEventListener('click', function() {
+  var code = (document.getElementById('code-input').value || '').trim().toUpperCase();
+  if (!code) { showCodeErr('Required'); return; }
+  if (code.indexOf('AURUM-IOI-') !== 0) { showCodeErr('Not an IOI code'); return; }
+  document.getElementById('code-err').classList.remove('shown');
+  tryCode(code);
+});
+
+document.getElementById('kyc-start').addEventListener('click', function() {
+  var btn = document.getElementById('kyc-start');
+  btn.innerHTML = '<span class="loading"></span><span>Verifying…</span>';
+  btn.disabled = true;
+  fetch('/api/ioi?op=start-kyc', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code: state.code }),
+  }).then(function(r) {
+    if (!r.ok) throw new Error('kyc failed');
+    return r.json();
+  }).then(function(j) {
+    if (j.mode === 'stub') setTimeout(function() { tryCode(state.code); }, 600);
+    else if (j.redirect) window.location.href = j.redirect;
+  }).catch(function() {
+    btn.innerHTML = 'Try again'; btn.disabled = false;
+  });
+});
+
+document.getElementById('pep-select').addEventListener('change', function(e) {
+  document.getElementById('pep-relation-field').classList.toggle('hidden', e.target.value !== 'yes');
+});
+
+// ── Live calc + dashboard mirror ───────────────────────────
+function updateCalc() {
+  if (!state.spot) return;
+  var kgInput = document.getElementById('kg-input');
+  if (!kgInput) return;
+  var kg = parseInt(kgInput.value, 10);
+  if (!Number.isFinite(kg) || kg < 1) kg = 1;
+  if (kg > 500) kg = 500;
+  // Update stepper button states
+  document.getElementById('kg-minus').disabled = kg <= 1;
+  document.getElementById('kg-plus').disabled = kg >= 500;
+
+  var ltv = Number(document.getElementById('ltv-slider').value);
+  var krw_per_kg = state.spot.krw_per_kg;     // post procurement-buffer price
+
+  // Member-facing math (clean 80/20 per handoff §3.3):
+  //   goldAcq   = kg * spot                       — gold acquisition (silently includes the
+  //                                                 ≤3% procurement buffer per Memo §4.3;
+  //                                                 buffer is reconciled into the member's
+  //                                                 pro-rata reserve at audit, never shown)
+  //   wireTotal = goldAcq / 0.80                  — gross-up so gold = 80% of wire
+  //   fundCash  = wireTotal * 0.20                — defensive reserve, 20% of wire
+  //                                                 (NOT deployable; sits idle to protect LTV)
+  //   ltvCash   = goldAcq * (ltv/100)             — LTV draw on gold = the deployable capital
+  //   total     = goldAcq + fundCash              — first-close NAV (= wire)
+  // The displayed "LTV Cash Available" excludes the 20% reserve because the reserve is
+  // not deployable. It is the defensive buffer described in FAQ Q.V/Q.VI.
+  var goldAcq   = Math.round(kg * krw_per_kg);
+  var wireTotal = Math.round(goldAcq / 0.80);
+  var fundCash  = wireTotal - goldAcq;
+  var goldHeld  = goldAcq;
+  var ltvDraw   = Math.round(goldHeld * (ltv / 100));
+  var ltvCash   = ltvDraw;                     // deployable cash from LTV facility only
+  var total     = goldHeld + fundCash;
+
+  // Calculator panel
+  document.getElementById('calc-wire').textContent       = formatKRW(wireTotal);
+  document.getElementById('calc-gold-acq').textContent   = formatKRW(goldAcq) + '  ·  ' + kg + ' kg';
+  document.getElementById('calc-fund-cash').textContent  = formatKRW(fundCash);
+  document.getElementById('calc-deployed').textContent   = formatKRW(ltvCash);
+  document.getElementById('calc-ltv-draw').textContent   = formatKRW(ltvDraw) + '  ·  ' + ltv + '% × gold';
+  document.getElementById('calc-fund-cash-2').textContent = formatKRW(fundCash);
+  document.getElementById('calc-gold-held').textContent  = formatKRW(goldHeld) + '  ·  ' + kg + ' kg';
+  document.getElementById('calc-total').textContent      = formatKRW(total);
+
+  // Dashboard mirror
+  document.getElementById('review-kg').textContent          = kg + ' kg';
+  document.getElementById('review-gold-value').textContent  = formatKRW(goldHeld);
+  document.getElementById('review-ltv').textContent         = ltv + '%';
+  document.getElementById('review-cash').textContent        = formatKRW(ltvCash);
+  document.getElementById('review-total').textContent       = formatKRW(total);
+
+  // Stash kg for submit
+  state.commitKg = kg;
+}
+
+// KG stepper bindings
+document.getElementById('kg-minus').addEventListener('click', function() {
+  var el = document.getElementById('kg-input');
+  var v = parseInt(el.value, 10) || 1;
+  if (v > 1) { el.value = v - 1; updateCalc(); }
+});
+document.getElementById('kg-plus').addEventListener('click', function() {
+  var el = document.getElementById('kg-input');
+  var v = parseInt(el.value, 10) || 1;
+  if (v < 500) { el.value = v + 1; updateCalc(); }
+});
+document.getElementById('kg-input').addEventListener('input', function() {
+  // sanitize: only digits
+  var raw = this.value.replace(/[^\d]/g, '');
+  if (raw === '') { /* allow empty during typing */ }
+  else {
+    var n = parseInt(raw, 10);
+    if (n < 1) n = 1;
+    if (n > 500) n = 500;
+    this.value = n;
+  }
+  updateCalc();
+});
+document.getElementById('kg-input').addEventListener('blur', function() {
+  var v = parseInt(this.value, 10);
+  if (!v || v < 1) this.value = 1;
+  if (v > 500) this.value = 500;
+  updateCalc();
+});
+
+document.getElementById('ltv-slider').addEventListener('input', function() {
+  document.getElementById('ltv-val').textContent = this.value + '%';
+  updateCalc();
+});
+
+// ── Submit ─────────────────────────────────────────────────
+document.getElementById('ioi-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var errEl = document.getElementById('form-err');
+  errEl.classList.remove('shown');
+
+  var fd = new FormData(e.target);
+  var profile = {};
+  fd.forEach(function(v, k) { profile[k] = v; });
+  profile.pep = profile.pep === 'yes';
+
+  var kg = state.commitKg || parseInt(document.getElementById('kg-input').value, 10);
+  if (!kg || kg < 1) { errEl.textContent = 'Commitment of at least 1 kg required'; errEl.classList.add('shown'); return; }
+  var ltv = Number(document.getElementById('ltv-slider').value);
+
+  // Convert kg to KRW for backend (still expects KRW)
+  var krw_per_kg = state.spot && state.spot.krw_per_kg;
+  var krw = kg * krw_per_kg;
+
+  var cb_indicative = !!fd.get('cb_indicative');
+  var cb_materials = !!fd.get('cb_materials');
+  var cb_seven_day = !!fd.get('cb_seven_day');
+  var cb_spot_caveat = !!fd.get('cb_spot_caveat');
+  if (!cb_indicative || !cb_materials || !cb_seven_day || !cb_spot_caveat) {
+    errEl.textContent = 'All acknowledgements required'; errEl.classList.add('shown'); return;
+  }
+  var signature = String(fd.get('signature') || '').trim();
+  if (!signature) { errEl.textContent = 'Signature required'; errEl.classList.add('shown'); return; }
+
+  var btn = document.getElementById('ioi-submit');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span><span>Submitting…</span>';
+
+  fetch('/api/ioi?op=submit-ioi', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      code: state.code,
+      profile: profile,
+      ioi: {
+        krw: krw, kg: kg, ltv_pct: ltv, signature: signature,
+        checkbox_indicative: cb_indicative,
+        checkbox_materials: cb_materials,
+        checkbox_seven_day: cb_seven_day,
+        checkbox_spot_caveat: cb_spot_caveat,
+      },
+    }),
+  }).then(function(r) {
+    return r.json().then(function(j) {
+      if (!r.ok) {
+        errEl.textContent = j.error || 'Submission failed';
+        errEl.classList.add('shown');
+        btn.disabled = false;
+        btn.innerHTML = '<span data-lang="en">SUBMIT IOI</span><span data-lang="ko">의향 제출</span><span class="arrow">→</span>';
+        return;
+      }
+      show('s-done');
+    });
+  }).catch(function() {
+    errEl.textContent = 'Network error — try again'; errEl.classList.add('shown');
+    btn.disabled = false;
+    btn.innerHTML = '<span data-lang="en">SUBMIT IOI</span><span data-lang="ko">의향 제출</span><span class="arrow">→</span>';
+  });
+});
+</script>
+
+</body>
+</html>
