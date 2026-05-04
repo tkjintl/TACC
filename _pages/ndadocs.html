@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<meta name="theme-color" content="#070706">
+<title>Fund Documents — The Aurum Century Club</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23070706'/><rect x='4' y='4' width='24' height='24' fill='none' stroke='%23C5A572' stroke-width='1'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='14' font-style='italic' fill='%23C5A572'>Au</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400&family=DM+Sans:wght@400;500&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/_styles/tokens.css">
+<style>
+.page-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  background: rgba(7,7,6,0.92);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.page-content {
+  max-width: calc(var(--content-max) + var(--pad-x) * 2);
+  margin: 0 auto;
+  padding: 120px var(--pad-x) 100px;
+}
+@media (max-width: 768px) {
+  .page-content { padding: 100px 20px 80px; }
+  .page-nav { padding: 16px 20px; }
+}
+.page-header { margin-bottom: 56px; }
+.page-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.page-title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(32px, 5vw, 52px);
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+}
+.doc-section-title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.26em;
+  color: var(--muted);
+  text-transform: uppercase;
+  padding: 20px 0 12px;
+  border-bottom: 1px solid var(--border);
+}
+.doc-group { margin-bottom: 48px; }
+.doc-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.doc-entry-left { flex: 1; }
+.doc-entry-date {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.doc-entry-name {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--text);
+}
+.doc-entry-type {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+.doc-entry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease;
+  flex-shrink: 0;
+}
+.doc-entry-btn:hover { border-color: var(--goldBorderS); color: var(--goldA); }
+.doc-entry-btn.loading { cursor: wait; pointer-events: none; }
+.doc-entry-btn.done { color: var(--green); border-color: var(--greenBd); pointer-events: none; }
+.doc-entry-btn-spinner { display: inline-block; animation: spin 0.8s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.nda-cta {
+  margin-top: 56px;
+  padding-top: 40px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.btn-proceed {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border: 1px solid var(--goldBorderS);
+  color: var(--goldA);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background var(--dur-fast) ease;
+}
+.btn-proceed:hover { background: var(--goldMuted); }
+[data-lang]{display:none}
+.lang-en [data-lang="en"],.lang-en [data-lang="en"].block{display:inline}
+.lang-ko [data-lang="ko"],.lang-ko [data-lang="ko"].block{display:inline}
+@media (max-width: 430px) {
+  .page-nav { padding: 14px 16px; }
+  .page-content { padding: 90px 16px 80px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="page-nav" role="navigation">
+  <a href="/main" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+    <div class="seal"><em>Au</em></div>
+    <span style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.22em;color:var(--muted);text-transform:uppercase;"><span data-lang="en">Documents</span><span data-lang="ko">문서</span></span>
+  </a>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button class="lang-btn" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" onclick="setLang('ko')">한국어</button>
+  </div>
+</nav>
+
+<main class="page-content">
+
+  <header class="page-header" data-reveal>
+    <p class="page-eyebrow"><span data-lang="en">Fund Documents</span><span data-lang="ko">펀드 문서</span></p>
+    <h1 class="page-title"><span data-lang="en">Review before <em class="gold-gradient">signing.</em></span><span data-lang="ko">서명 전 <em class="gold-gradient">검토하십시오.</em></span></h1>
+  </header>
+
+  <div class="doc-group" data-reveal>
+    <div class="doc-section-title"><span data-lang="en">Fund Documents</span><span data-lang="ko">펀드 문서</span></div>
+
+    <div class="doc-entry">
+      <div class="doc-entry-left">
+        <div class="doc-entry-date">2026</div>
+        <div class="doc-entry-name"><span data-lang="en">Onboarding Package</span><span data-lang="ko">온보딩 패키지</span></div>
+        <div class="doc-entry-type"><span data-lang="en">PDF · Information Memorandum</span><span data-lang="ko">PDF · 투자설명서</span></div>
+      </div>
+      <button class="doc-entry-btn" data-doc-id="package">
+        <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+      </button>
+    </div>
+
+    <div class="doc-entry">
+      <div class="doc-entry-left">
+        <div class="doc-entry-date">2026</div>
+        <div class="doc-entry-name"><span data-lang="en">Structural Memo</span><span data-lang="ko">구조 메모</span></div>
+        <div class="doc-entry-type"><span data-lang="en">PDF · Legal · VCC Structure</span><span data-lang="ko">PDF · 법률 · VCC 구조</span></div>
+      </div>
+      <button class="doc-entry-btn" data-doc-id="structural">
+        <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+      </button>
+    </div>
+
+    <div class="doc-entry">
+      <div class="doc-entry-left">
+        <div class="doc-entry-date">2026</div>
+        <div class="doc-entry-name"><span data-lang="en">Member FAQ</span><span data-lang="ko">회원 FAQ</span></div>
+        <div class="doc-entry-type"><span data-lang="en">PDF · Frequently Asked Questions</span><span data-lang="ko">PDF · 자주 묻는 질문</span></div>
+      </div>
+      <button class="doc-entry-btn" data-doc-id="faq">
+        <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="nda-cta" data-reveal>
+    <a href="/nda" class="btn-proceed"><span data-lang="en">Proceed to NDA →</span><span data-lang="ko">NDA로 진행 →</span></a>
+  </div>
+
+</main>
+
+<script src="/_scripts/shared.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var isIOS = TACC.isIOS;
+
+  if (isIOS) {
+    document.querySelectorAll('.doc-btn-label').forEach(function (el) {
+      el.innerHTML = '<span data-lang="en">View</span><span data-lang="ko">보기</span>';
+    });
+  }
+
+  document.querySelectorAll('.doc-entry-btn[data-doc-id]').forEach(function (btn) {
+    var labelEl = btn.querySelector('.doc-btn-label');
+    var origHtml = labelEl ? labelEl.innerHTML : '';
+
+    btn.addEventListener('click', function () {
+      if (btn.classList.contains('loading') || btn.classList.contains('done')) return;
+      btn.classList.add('loading');
+      if (labelEl) labelEl.innerHTML = '<span class="doc-entry-btn-spinner">&#x27F3;</span>';
+
+      var docId = btn.getAttribute('data-doc-id');
+      fetch('/api/doc?id=' + encodeURIComponent(docId), { credentials: 'same-origin' })
+        .then(function (r) {
+          if (!r.ok) throw new Error('http ' + r.status);
+          return r.blob();
+        })
+        .then(function (blob) {
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = docId + '.pdf';
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 1000);
+          btn.classList.remove('loading');
+          btn.classList.add('done');
+          if (labelEl) labelEl.innerHTML = '<span data-lang="en">✓ Downloaded</span><span data-lang="ko">✓ 다운로드됨</span>';
+        })
+        .catch(function () {
+          btn.classList.remove('loading');
+          if (labelEl) labelEl.innerHTML = origHtml;
+        });
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -95,10 +95,11 @@ function authFail(res, req) {
 const PAGE_GATES = {
   'program-page':      { file: 'main.html',         gate: (l) => rank(l.status) >= rank('accessed') },
   'nda-page':          { file: 'nda.html',           gate: (l) => rank(l.status) >= rank('accessed') },
+  'ndadocs-page':      { file: 'ndadocs.html',       gate: (l) => rank(l.status) >= rank('accessed') },
   'memo-page':         { file: 'memo.html',          gate: (l) => l.nda_state === 'approved' },
   'subscription-page': { file: 'subscription.html',  gate: (l) => l.nda_state === 'approved' },
   'portfolio-page':    { file: 'portfolio.html',     gate: (l) => l.status === 'funded' },
-  'documents-page':    { file: 'documents.html',     gate: (l) => l.nda_state === 'approved' || l.status === 'funded' },
+  'documents-page':    { file: 'documents.html',     gate: (l) => l.status === 'funded' },
   'messages-page':     { file: 'messages.html',      gate: (l) => rank(l.status) >= rank('accessed') },
   'deals-page':        { file: 'deals.html',         gate: (l) => l.status === 'funded' },
   'ioi-page':          { file: 'ioi.html',           gate: (l) => l.nda_state === 'approved' },
@@ -109,13 +110,13 @@ const PAGE_GATES = {
 const DOC_GATES = {
   'package': {
     file:      '_docs/TACC_Onboarding_May_2026.pdf',
-    gate:      (l) => l.nda_state === 'approved',
+    gate:      (l) => rank(l.status) >= rank('accessed'),
     watermark: true,
     name:      'TACC_Onboarding_Package.pdf',
   },
   'structural': {
     file:      '_docs/TACC_Structural_Memo.pdf',
-    gate:      (l) => l.nda_state === 'approved',
+    gate:      (l) => rank(l.status) >= rank('accessed'),
     watermark: true,
     name:      'TACC_Structural_Memo.pdf',
   },
