@@ -30,7 +30,7 @@ for (const filename of FILES) {
   try {
     const buf = await readFile(filePath);
     const result = await put(filename, buf, {
-      access: 'public',
+      access: 'private',
       contentType: 'application/pdf',
       token,
     });

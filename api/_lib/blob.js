@@ -75,7 +75,9 @@ export async function getBlob(pathname) {
   const results = await list({ prefix: pathname, token: process.env.BLOB_READ_WRITE_TOKEN });
   const blob = results.blobs.find((b) => b.pathname === pathname || b.url.endsWith(pathname));
   if (!blob) throw new Error(`Blob not found: ${pathname}`);
-  const r = await fetch(blob.url);
+  const headers = {};
+  if (process.env.BLOB_READ_WRITE_TOKEN) headers['Authorization'] = `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`;
+  const r = await fetch(blob.url, { headers });
   if (!r.ok) throw new Error(`Blob fetch failed: ${r.status}`);
   return Buffer.from(await r.arrayBuffer());
 }
