@@ -2702,23 +2702,7 @@ function updateCounter(admitted) {
 
 // Initial build with fallback, then fetch live count
 buildGrid(3);
-
-(async function loadLiveCount() {
-  try {
-    const r = await fetch('/api/public', { cache: 'no-store' });
-    if (!r.ok) return;
-    const j = await r.json();
-    if (!j || !j.ok) return;
-    const admitted = j.admitted || 0;
-    updateCounter(admitted);
-    buildGrid(admitted);
-    const now = new Date();
-    const dateStr = now.toLocaleString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
-    document.querySelectorAll('.date [data-lang="en"]').forEach(el => {
-      el.textContent = 'AS OF ' + dateStr;
-    });
-  } catch {}
-})();
+updateCounter(3);
 
 
 // ═══ 2. SCROLL REVEAL ═══
