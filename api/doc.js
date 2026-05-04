@@ -266,12 +266,17 @@ async function handleDocument(req, res, id, lead) {
       return notFound(res);
     }
   } else {
-    // Served from _docs/ filesystem
-    const filePath = join(__dirname, '..', gate.file);
+    // Try Blob first (pathname = bare filename), fall back to _docs/ filesystem
+    const blobName = gate.file.split('/').pop();
     try {
-      pdfBuffer = await readFile(filePath);
+      pdfBuffer = await getBlob(blobName);
     } catch {
-      return notFound(res);
+      const filePath = join(__dirname, '..', gate.file);
+      try {
+        pdfBuffer = await readFile(filePath);
+      } catch {
+        return notFound(res);
+      }
     }
   }
 
