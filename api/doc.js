@@ -98,7 +98,7 @@ const PAGE_GATES = {
   'memo-page':         { file: 'memo.html',          gate: (l) => l.nda_state === 'approved' },
   'subscription-page': { file: 'subscription.html',  gate: (l) => l.nda_state === 'approved' },
   'portfolio-page':    { file: 'portfolio.html',     gate: (l) => l.status === 'funded' },
-  'documents-page':    { file: 'documents.html',     gate: (l) => rank(l.status) >= rank('subscribed') },
+  'documents-page':    { file: 'documents.html',     gate: (l) => l.nda_state === 'approved' || l.status === 'funded' },
   'messages-page':     { file: 'messages.html',      gate: (l) => rank(l.status) >= rank('accessed') },
   'deals-page':        { file: 'deals.html',         gate: (l) => l.status === 'funded' },
   'ioi-page':          { file: 'ioi.html',           gate: (l) => l.nda_state === 'approved' },

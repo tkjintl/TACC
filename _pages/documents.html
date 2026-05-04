@@ -343,127 +343,159 @@
     <h1 class="page-title">Member <em class="gold-gradient">Documents</em></h1>
   </header>
 
-  <!-- Membership -->
-  <div class="doc-group" data-reveal>
-    <div class="doc-section-title">Membership</div>
-    <div class="doc-entry">
-      <div class="doc-entry-left">
-        <div class="doc-entry-date">Q2 2026</div>
-        <div class="doc-entry-name">Member Agreement</div>
-        <div class="doc-entry-type">PDF · Membership</div>
+  <!-- Pre-funding: 3 static docs (NDA approved, not yet funded) -->
+  <div id="prefunding-docs">
+    <div class="doc-group" data-reveal>
+      <div class="doc-section-title">Fund Documents</div>
+      <div class="doc-entry">
+        <div class="doc-entry-left">
+          <div class="doc-entry-date">2026</div>
+          <div class="doc-entry-name">Onboarding Package</div>
+          <div class="doc-entry-type">PDF · Information Memorandum</div>
+        </div>
+        <button class="doc-entry-btn" data-doc-id="package">
+          <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+        </button>
       </div>
-      <button class="doc-entry-btn" data-doc-id="membership-agreement">
-        <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
-      </button>
-    </div>
-    <div class="doc-entry">
-      <div class="doc-entry-left">
-        <div class="doc-entry-date">Q2 2026</div>
-        <div class="doc-entry-name">Executed NDA</div>
-        <div class="doc-entry-type">PDF · Confidentiality</div>
+      <div class="doc-entry">
+        <div class="doc-entry-left">
+          <div class="doc-entry-date">2026</div>
+          <div class="doc-entry-name">Structural Memo</div>
+          <div class="doc-entry-type">PDF · Legal · VCC Structure</div>
+        </div>
+        <button class="doc-entry-btn" data-doc-id="structural">
+          <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+        </button>
       </div>
-      <button class="doc-entry-btn" data-doc-id="nda-executed">
-        <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
-      </button>
-    </div>
-    <div class="doc-entry">
-      <div class="doc-entry-left">
-        <div class="doc-entry-date">Q2 2026</div>
-        <div class="doc-entry-name">KYC Record</div>
-        <div class="doc-entry-type">PDF · Compliance</div>
+      <div class="doc-entry">
+        <div class="doc-entry-left">
+          <div class="doc-entry-date">2026</div>
+          <div class="doc-entry-name">Member FAQ</div>
+          <div class="doc-entry-type">PDF · Frequently Asked Questions</div>
+        </div>
+        <button class="doc-entry-btn" data-doc-id="faq">
+          <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+        </button>
       </div>
-      <button class="doc-entry-btn" data-doc-id="kyc-record">
-        <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
-      </button>
     </div>
   </div>
 
-  <!-- Fund -->
-  <div class="doc-group" data-reveal data-delay="100">
-    <div class="doc-section-title">Fund</div>
-    <div class="doc-entry">
-      <div class="doc-entry-left">
-        <div class="doc-entry-date">Q2 2026</div>
-        <div class="doc-entry-name">Information Memorandum</div>
-        <div class="doc-entry-type">PDF · Information Memorandum</div>
-      </div>
-      <button class="doc-entry-btn" data-doc-id="package">
-        <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
-      </button>
-    </div>
-    <div class="doc-entry">
-      <div class="doc-entry-left">
-        <div class="doc-entry-date">Q2 2026</div>
-        <div class="doc-entry-name">VCC Constitution</div>
-        <div class="doc-entry-type">PDF · Legal</div>
-      </div>
-      <button class="doc-entry-btn" data-doc-id="structural">
-        <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
-      </button>
-    </div>
-    <div class="doc-entry">
-      <div class="doc-entry-left">
-        <div class="doc-entry-date">Q2 2026</div>
-        <div class="doc-entry-name">Subscription Agreement</div>
-        <div class="doc-entry-type">PDF · Subscription</div>
-      </div>
-      <button class="doc-entry-btn" data-doc-id="subscription-template">
-        <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
-      </button>
-    </div>
-    <div class="doc-entry">
-      <div class="doc-entry-left">
-        <div class="doc-entry-date">Q2 2026</div>
-        <div class="doc-entry-name">KYC Requirements</div>
-        <div class="doc-entry-type">PDF · Compliance</div>
-      </div>
-      <button class="doc-entry-btn" data-doc-id="kyc-requirements">
-        <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
-      </button>
-    </div>
-  </div>
+  <!-- Funded member docs (hidden until status=funded confirmed) -->
+  <div id="funded-docs" style="display:none;">
 
-  <!-- Statements: signed-URL ops -->
-  <div class="doc-group" data-reveal data-delay="150">
-    <div class="doc-section-title">Statements</div>
-    <div class="doc-entry">
-      <div class="doc-entry-left">
-        <div class="doc-entry-date">FY 2025</div>
-        <div class="doc-entry-name">Annual Tax Statement</div>
-        <div class="doc-entry-type">Signed URL · expires in 24h</div>
+    <!-- Membership -->
+    <div class="doc-group" data-reveal>
+      <div class="doc-section-title">Membership</div>
+      <div class="doc-entry">
+        <div class="doc-entry-left">
+          <div class="doc-entry-date">Q2 2026</div>
+          <div class="doc-entry-name">Member Agreement</div>
+          <div class="doc-entry-type">PDF · Membership</div>
+        </div>
+        <button class="doc-entry-btn" data-doc-id="membership-agreement">
+          <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+        </button>
       </div>
-      <button class="doc-entry-btn" data-signed-doc="tax-statement" data-fiscal-year="2025">
-        <span class="doc-btn-label"><span data-lang="en">Open</span><span data-lang="ko">열기</span></span>
-      </button>
-    </div>
-    <div class="doc-entry">
-      <div class="doc-entry-left">
-        <div class="doc-entry-date">Membership</div>
-        <div class="doc-entry-name">Member Certificate</div>
-        <div class="doc-entry-type">Signed URL · expires in 24h</div>
+      <div class="doc-entry">
+        <div class="doc-entry-left">
+          <div class="doc-entry-date">Q2 2026</div>
+          <div class="doc-entry-name">Executed NDA</div>
+          <div class="doc-entry-type">PDF · Confidentiality</div>
+        </div>
+        <button class="doc-entry-btn" data-doc-id="nda-executed">
+          <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+        </button>
       </div>
-      <button class="doc-entry-btn" data-signed-doc="member-certificate">
-        <span class="doc-btn-label"><span data-lang="en">Open</span><span data-lang="ko">열기</span></span>
-      </button>
+      <div class="doc-entry">
+        <div class="doc-entry-left">
+          <div class="doc-entry-date">Q2 2026</div>
+          <div class="doc-entry-name">KYC Record</div>
+          <div class="doc-entry-type">PDF · Compliance</div>
+        </div>
+        <button class="doc-entry-btn" data-doc-id="kyc-record">
+          <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+        </button>
+      </div>
     </div>
-  </div>
 
-  <!-- Reporting: quarterly letters -->
-  <div class="doc-group" data-reveal data-delay="200">
-    <div class="doc-section-title">Reporting</div>
-    <div id="letters-container">
-      <div class="doc-skel"></div>
-      <div class="doc-skel"></div>
+    <!-- Fund -->
+    <div class="doc-group" data-reveal data-delay="100">
+      <div class="doc-section-title">Fund</div>
+      <div class="doc-entry">
+        <div class="doc-entry-left">
+          <div class="doc-entry-date">Q2 2026</div>
+          <div class="doc-entry-name">Onboarding Package</div>
+          <div class="doc-entry-type">PDF · Information Memorandum</div>
+        </div>
+        <button class="doc-entry-btn" data-doc-id="package">
+          <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+        </button>
+      </div>
+      <div class="doc-entry">
+        <div class="doc-entry-left">
+          <div class="doc-entry-date">Q2 2026</div>
+          <div class="doc-entry-name">Structural Memo</div>
+          <div class="doc-entry-type">PDF · Legal · VCC Structure</div>
+        </div>
+        <button class="doc-entry-btn" data-doc-id="structural">
+          <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+        </button>
+      </div>
+      <div class="doc-entry">
+        <div class="doc-entry-left">
+          <div class="doc-entry-date">Q2 2026</div>
+          <div class="doc-entry-name">Member FAQ</div>
+          <div class="doc-entry-type">PDF · Frequently Asked Questions</div>
+        </div>
+        <button class="doc-entry-btn" data-doc-id="faq">
+          <span class="doc-btn-label"><span data-lang="en">Download PDF</span><span data-lang="ko">PDF 다운로드</span></span>
+        </button>
+      </div>
     </div>
-  </div>
 
-  <!-- Vault verifications -->
-  <div class="doc-group" data-reveal data-delay="300">
-    <div class="doc-section-title">Vault Verification</div>
-    <div id="vault-container">
-      <div class="doc-skel"></div>
+    <!-- Statements -->
+    <div class="doc-group" data-reveal data-delay="150">
+      <div class="doc-section-title">Statements</div>
+      <div class="doc-entry">
+        <div class="doc-entry-left">
+          <div class="doc-entry-date">FY 2025</div>
+          <div class="doc-entry-name">Annual Tax Statement</div>
+          <div class="doc-entry-type">Signed URL · expires in 24h</div>
+        </div>
+        <button class="doc-entry-btn" data-signed-doc="tax-statement" data-fiscal-year="2025">
+          <span class="doc-btn-label"><span data-lang="en">Open</span><span data-lang="ko">열기</span></span>
+        </button>
+      </div>
+      <div class="doc-entry">
+        <div class="doc-entry-left">
+          <div class="doc-entry-date">Membership</div>
+          <div class="doc-entry-name">Member Certificate</div>
+          <div class="doc-entry-type">Signed URL · expires in 24h</div>
+        </div>
+        <button class="doc-entry-btn" data-signed-doc="member-certificate">
+          <span class="doc-btn-label"><span data-lang="en">Open</span><span data-lang="ko">열기</span></span>
+        </button>
+      </div>
     </div>
-  </div>
+
+    <!-- Reporting: quarterly letters -->
+    <div class="doc-group" data-reveal data-delay="200">
+      <div class="doc-section-title">Reporting</div>
+      <div id="letters-container">
+        <div class="doc-skel"></div>
+        <div class="doc-skel"></div>
+      </div>
+    </div>
+
+    <!-- Vault verifications -->
+    <div class="doc-group" data-reveal data-delay="300">
+      <div class="doc-section-title">Vault Verification</div>
+      <div id="vault-container">
+        <div class="doc-skel"></div>
+      </div>
+    </div>
+
+  </div><!-- /funded-docs -->
 
 </main>
 
@@ -502,6 +534,14 @@
   }
 
   /* ─── Member badge + vault mode ───────────────────────────────── */
+  // Show funded vs pre-funding docs based on injected context
+  (function () {
+    var ctx = (window.__AURUM__ && window.__AURUM__.member) || {};
+    var isFunded = ctx.status === 'funded';
+    document.getElementById('prefunding-docs').style.display = isFunded ? 'none' : '';
+    document.getElementById('funded-docs').style.display = isFunded ? '' : 'none';
+  })();
+
   fetch('/api/v2?resource=member&op=me', { credentials: 'same-origin' })
     .then(function (r) { return r.json(); })
     .then(function (d) {
