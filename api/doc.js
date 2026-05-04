@@ -42,21 +42,33 @@ async function getSession(req) {
   return lead;
 }
 
-// Admin preview: if the request has an aurum_admin cookie AND a ?preview_lead=ID
-// query param, load that lead and bypass per-stage gates. Lets the operator
-// click "View as Member" on any lead and see exactly what that member sees.
+// Admin preview: if the request has an aurum_admin cookie, allow access.
+// With ?preview_lead=ID it loads that specific lead (so "View as Member" works).
+// Without preview_lead, returns a synthetic full-access lead so admin can browse
+// any portal page without being caught in the member-auth redirect loop.
 async function getAdminPreview(req) {
   const token = getCookie(req, COOKIE_ADMIN);
   if (!token) return null;
   const session = await verifyToken(token);
   if (!session || session.sub !== 'admin') return null;
   const previewId = String(getQuery(req).preview_lead || '').trim();
-  if (!previewId) return null;
-  const lead = await getLead(previewId);
-  if (!lead) return null;
-  // Mark as preview so handlers can render a "PARTNER PREVIEW" banner.
-  lead._adminPreview = { actor: session.email || 'admin' };
-  return lead;
+  if (previewId) {
+    const lead = await getLead(previewId);
+    if (!lead) return null;
+    lead._adminPreview = { actor: session.email || 'admin' };
+    return lead;
+  }
+  // No preview_lead — return a synthetic funded lead so admin can navigate
+  // all portal pages without hitting the member-auth redirect loop.
+  return {
+    id:            '_admin_browse',
+    name:          session.email || 'Admin',
+    email:         session.email || 'admin',
+    member_number: null,
+    status:        'funded',
+    nda_state:     'approved',
+    _adminPreview: { actor: session.email || 'admin' },
+  };
 }
 
 function authFail(res, req) {
