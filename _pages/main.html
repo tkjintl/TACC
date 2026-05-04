@@ -2172,7 +2172,7 @@ body.gate-active > *:not(.access-gate) { visibility: hidden; }
     </div>
   </a>
   <div style="display:flex;align-items:center;gap:12px;">
-    <span id="member-badge" style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:var(--gold);border:1px solid var(--goldBorder);padding:4px 10px;"></span>
+    <span id="member-badge" style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:var(--gold);border:1px solid var(--goldBorder);padding:4px 10px;display:none;"></span>
     <a href="/portfolio" class="nav-cta">MEMBER PORTAL <span class="arrow">→</span></a>
   </div>
 </nav>
@@ -2923,7 +2923,7 @@ buildGrid(3);
     const r = await fetch('/api/v2?resource=member&op=me', { credentials: 'same-origin' });
     const d = await r.json();
     const el = document.getElementById('member-badge');
-    if (el && d && d.member_number) el.textContent = '#' + d.member_number;
+    if (el && d && d.member_number) { el.textContent = '#' + d.member_number; el.style.display = ''; }
   } catch {}
 })();
 
