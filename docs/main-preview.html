@@ -2171,10 +2171,7 @@ body.gate-active > *:not(.access-gate) { visibility: hidden; }
       <span class="program">CENTURY CLUB</span>
     </div>
   </a>
-  <div style="display:flex;align-items:center;gap:12px;">
-    <span id="member-badge" style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:var(--gold);border:1px solid var(--goldBorder);padding:4px 10px;"></span>
-    <a href="/portfolio" class="nav-cta">MEMBER PORTAL <span class="arrow">→</span></a>
-  </div>
+  <a href="/portfolio" class="nav-cta">MEMBER PORTAL <span class="arrow">→</span></a>
 </nav>
 
 <!-- SIDE RAIL — 6 sections: I=ASSET, II=STRUCTURE, III=RETURNS, IV=CUSTODY, V=COHORT, VI=ADMISSION -->
@@ -2680,7 +2677,6 @@ body.gate-active > *:not(.access-gate) { visibility: hidden; }
   <div class="foot-r">CONFIDENTIAL  ·  QUALIFIED INVESTORS ONLY</div>
 </footer>
 
-<script src="/_scripts/shared.js"></script>
 <script>
 // ═══ 1. FOUNDING 100 LIVE GRID ═══
 const CAPACITY = 100;
@@ -2928,13 +2924,17 @@ buildGrid(3);
 })();
 
 
-// ═══ MEMBER BADGE ═══
-(async function memberBadge() {
+// ═══ MEMBER SESSION CHECK ═══
+(async function checkMemberSession() {
+  const link = document.getElementById('member-login-cta');
+  if (!link) return;
   try {
-    const r = await fetch('/api/v2?resource=member&op=me', { credentials: 'same-origin' });
-    const d = await r.json();
-    const el = document.getElementById('member-badge');
-    if (el && d && d.member_number) el.textContent = '#' + d.member_number;
+    const r = await fetch('/api/member/me', { credentials: 'same-origin', cache: 'no-store' });
+    if (r.ok) {
+      link.href = '/portfolio';
+      const span = link.querySelector('.text');
+      if (span) span.textContent = 'My Portfolio';
+    }
   } catch {}
 })();
 
