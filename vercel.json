@@ -91,6 +91,8 @@
     { "source": "/api/bridge",                            "destination": "/api/bridge" },
     { "source": "/api/member/deals",                      "destination": "/api/v2?resource=member&op=deals" },
     { "source": "/fund-positions",                        "destination": "/api/doc?id=deals-page" },
+    { "source": "/gold",                                  "destination": "/api/doc?id=portfolio-page" },
+    { "source": "/letters",                               "destination": "/api/doc?id=documents-page" },
     { "source": "/_lib/(.*)",         "destination": "/404" },
     { "source": "/api/_lib/(.*)",     "destination": "/404" }
   ],
