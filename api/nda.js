@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import {
   ok, bad, unauthorized, notFound, serverError, methodNotAllowed, getCookie, getQuery,
 } from './_lib/http.js';
-import { verifyToken, COOKIE_MEMBER } from './_lib/auth.js';
+import { verifyToken, COOKIE_MEMBER, COOKIE_ADMIN } from './_lib/auth.js';
 import { getLead, saveLead } from './_lib/storage.js';
 import { putBlob, getBlob } from './_lib/blob.js';
 import { watermarkPdf } from './_lib/watermark.js';
@@ -20,6 +20,14 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // ── Auth helper ───────────────────────────────────────────────────────────────
 
 async function requireMember(req) {
+  // Admin bypass — aurum_admin cookie grants full access for testing
+  const adminToken = getCookie(req, COOKIE_ADMIN);
+  if (adminToken) {
+    const adminSession = await verifyToken(adminToken);
+    if (adminSession && adminSession.sub === 'admin') {
+      return { id: '_admin_browse', name: 'Admin', email: adminSession.email || 'admin', status: 'funded', nda_state: 'approved' };
+    }
+  }
   const token = getCookie(req, COOKIE_MEMBER);
   const session = await verifyToken(token);
   if (!session || !session.leadId) return null;
