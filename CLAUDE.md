@@ -372,6 +372,10 @@ Before committing any change that touches the nav or any fixed-position header:
 - [ ] Any `white-space: nowrap` element either has a hide rule at small breakpoints or fits within its width budget
 - [ ] All existing breakpoint rules (640px, 480px, 460px) reviewed against the new content — not just the content they were originally written for
 
+## data-lang attribute collision — NEVER put data-lang on toggle buttons
+
+The CSS rule `[data-lang="ko"] { display: none; }` is a global attribute selector — it matches EVERY element with that attribute, including the toggle buttons themselves. Toggle buttons must use `data-lang-btn` (not `data-lang`) so they are never caught by the content visibility rules. The JS reads `dataset.langBtn`. This is not optional.
+
 ## Fix pattern for future nav additions
 
 1. Add the element to HTML
