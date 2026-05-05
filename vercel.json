@@ -31,6 +31,7 @@
     { "source": "/deals",             "destination": "/api/doc?id=deals-page" },
     { "source": "/ioi",               "destination": "/api/doc?id=ioi-page" },
     { "source": "/admin",             "destination": "/admin.html" },
+    { "source": "/admin-new",         "destination": "/admin-new.html" },
     { "source": "/preview-particles", "destination": "/landing-particles.html" },
     { "source": "/preview-monogram",  "destination": "/landing-monogram.html" },
     { "source": "/preview-3dbar",     "destination": "/landing-3dbar.html" },
