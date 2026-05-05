@@ -2171,9 +2171,9 @@ body.gate-active > *:not(.access-gate) { visibility: hidden; }
   <div style="display:flex;align-items:center;gap:12px;min-width:0;overflow:hidden;">
     <span id="member-badge" style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:var(--gold);border:1px solid var(--goldBorder);padding:4px 10px;display:none;"></span>
     <div class="lang-toggle">
-      <button type="button" class="active" data-lang="en">EN</button>
+      <button type="button" class="active" data-lang-btn="en">EN</button>
       <span class="sep">|</span>
-      <button type="button" data-lang="ko">KR</button>
+      <button type="button" data-lang-btn="ko">KR</button>
     </div>
     <a href="/portfolio" class="nav-cta">MEMBER PORTAL <span class="arrow">→</span></a>
   </div>
@@ -2937,9 +2937,9 @@ updateCounter(3);
   var saved = localStorage.getItem('aurum-lang') || 'en';
   if (saved === 'ko') document.documentElement.classList.add('lang-ko');
   document.querySelectorAll('.lang-toggle button').forEach(function(btn) {
-    btn.classList.toggle('active', btn.dataset.lang === saved);
+    btn.classList.toggle('active', btn.dataset.langBtn === saved);
     btn.addEventListener('click', function() {
-      var lang = btn.dataset.lang;
+      var lang = btn.dataset.langBtn;
       document.documentElement.classList.toggle('lang-ko', lang === 'ko');
       document.querySelectorAll('.lang-toggle button').forEach(function(b) {
         b.classList.toggle('active', b === btn);
