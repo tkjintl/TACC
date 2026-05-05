@@ -1,11 +1,11 @@
-﻿<!doctype html>
-<html lang="en">
+<!doctype html>
+<html lang="ko">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
 <meta name="theme-color" content="#0a0a0a">
-<title>The Kilo — The Aurum Century Club (Preview)</title>
-<meta name="description" content="The Aurum Century Club. A Singapore private fund vehicle for qualified investors. By introduction.">
+<title>킬로 — 오럼 센추리 클럽 (미리보기)</title>
+<meta name="description" content="오럼 센추리 클럽. 적격 투자자를 위한 싱가포르 사모펀드 운용체. 소개를 통해서만 입회 가능합니다.">
 <meta name="robots" content="noindex, nofollow">
 
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230a0a0a'/><rect x='4' y='4' width='24' height='24' fill='none' stroke='%23C5A572' stroke-width='1.2'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='15' font-style='italic' fill='%23C5A572'>Au</text></svg>">
@@ -1443,10 +1443,10 @@ hr.rule { border: 0; height: 1px; background: var(--goldBorder); margin: 0 var(-
 }
 
 /* ═══ I18N · BILINGUAL TOGGLE ═══ */
-/* Default: English visible, Korean hidden */
-[data-lang="ko"] { display: none; }
-html.lang-ko [data-lang="ko"] { display: revert; }
-html.lang-ko [data-lang="en"] { display: none; }
+/* Default: Korean visible, English hidden */
+[data-lang="en"] { display: none; }
+html.lang-en [data-lang="en"] { display: revert; }
+html.lang-en [data-lang="ko"] { display: none; }
 
 .lang-toggle {
   display: inline-flex; align-items: center;
@@ -2174,17 +2174,12 @@ body.gate-active > *:not(.access-gate) { visibility: hidden; }
   </a>
   <div style="display:flex;align-items:center;gap:12px;">
     <span id="member-badge" style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:var(--gold);border:1px solid var(--goldBorder);padding:4px 10px;display:none;"></span>
-    <div class="lang-toggle">
-      <button type="button" class="active" data-lang="en">EN</button>
-      <span class="sep">|</span>
-      <button type="button" data-lang="ko">KR</button>
-    </div>
     <a href="/portfolio" class="nav-cta">MEMBER PORTAL <span class="arrow">→</span></a>
   </div>
 </nav>
 
 <!-- SIDE RAIL — 6 sections: I=ASSET, II=STRUCTURE, III=RETURNS, IV=CUSTODY, V=COHORT, VI=ADMISSION -->
-<nav class="rail" id="rail" aria-label="Section navigation">
+<nav class="rail" id="rail" aria-label="섹션 내비게이션">
   <a href="#top"        class="rail-item" data-section="top"        data-label="THE KILO">○</a>
   <a href="#founding-100" class="rail-item" data-section="founding-100" data-label="THE 100">100</a>
   <a href="#asset"      class="rail-item" data-section="asset"      data-label="ASSET">I</a>
@@ -2203,35 +2198,34 @@ body.gate-active > *:not(.access-gate) { visibility: hidden; }
   </div>
   <h1 class="hero-h reveal delay-1">The <em>Kilo.</em></h1>
   <p class="hero-lede reveal delay-2">
-    <span data-lang="en">Physical gold as the foundation. Structured capital as the return.
-    A Singapore fund for a founding cohort of one hundred.</span><span data-lang="ko">실물 금을 토대로 삼고, 구조화된 자본을 수익의 원천으로 삼습니다.
-    창설 코호트 일백 인을 위한 싱가포르 사모펀드입니다.</span>
+    실물 금을 토대로 삼고, 구조화된 자본을 수익의 원천으로 삼습니다.
+    창설 코호트 일백 인을 위한 싱가포르 사모펀드입니다.
   </p>
   <div class="hero-meta reveal delay-3">
     <span>SINGAPORE</span>
     <span class="dot">·</span>
-    <span><span data-lang="en">QUALIFIED INVESTORS ONLY</span><span data-lang="ko">적격 투자자 전용</span></span>
+    <span>적격 투자자 전용</span>
   </div>
-  <div class="hero-cue"><span data-lang="en">SCROLL</span><span data-lang="ko">스크롤</span></div>
+  <div class="hero-cue">스크롤</div>
 </section>
 
 
 <!-- FOUNDING 100 · cohort scoreboard -->
 <section class="f100" id="founding-100">
-  <div class="f100-eyebrow reveal"><span data-lang="en">THE FOUNDING 100</span><span data-lang="ko">창설 100인</span></div>
+  <div class="f100-eyebrow reveal">창설 100인</div>
   <div class="f100-hero reveal delay-1">
     <span class="live" id="live-count">3</span><span class="slash">/</span><span class="cap">100</span>
   </div>
   <div class="f100-meta reveal delay-2">
     <span class="ko">백 · one hundred</span>
     <span class="dot">·</span>
-    <span class="label"><span data-lang="en">SUBSCRIBED</span><span data-lang="ko">청약 완료</span></span>
+    <span class="label">청약 완료</span>
     <span class="dot">·</span>
-    <span class="date"><span data-lang="en">AS OF MAY 2026</span><span data-lang="ko">2026년 5월 기준</span></span>
+    <span class="date">2026년 5월 기준</span>
   </div>
   <div class="f100-grid reveal delay-3" id="grid"></div>
-  <div class="f100-closer reveal"><span data-lang="en">Once full, <em>the book closes.</em></span><span data-lang="ko">정원이 차면, <em>모집이 마감됩니다.</em></span></div>
-  <div class="f100-cap-mark reveal delay-1"><span data-lang="en">·&nbsp;&nbsp;AT 100&nbsp;&nbsp;·&nbsp;&nbsp;CLOSED&nbsp;&nbsp;·</span><span data-lang="ko">·&nbsp;&nbsp;100인 달성 시&nbsp;&nbsp;·&nbsp;&nbsp;마감&nbsp;&nbsp;·</span></div>
+  <div class="f100-closer reveal">정원이 차면, <em>모집이 마감됩니다.</em></div>
+  <div class="f100-cap-mark reveal delay-1">·&nbsp;&nbsp;100인 달성 시&nbsp;&nbsp;·&nbsp;&nbsp;마감&nbsp;&nbsp;·</div>
 </section>
 
 
@@ -2244,16 +2238,16 @@ body.gate-active > *:not(.access-gate) { visibility: hidden; }
     </div>
   </div>
   <h2 class="sec-h reveal delay-1">
-    <span data-lang="en">Physical gold. <em>Nothing else.</em></span><span data-lang="ko">실물 금. <em>그 이상도 이하도 없습니다.</em></span>
+    실물 금. <em>그 이상도 이하도 없습니다.</em>
   </h2>
   <p class="sec-lede reveal delay-2">
-    <span data-lang="en">The Fund holds LBMA Good Delivery kilogram bars. That specification matters. LBMA Good Delivery is the global standard for institutional gold — 999.9 fineness, serial-numbered, assayed and certified by an approved refiner. The one-kilogram bar is the preferred format of Singapore's institutional vault infrastructure. It is large enough to be meaningful, small enough to be precisely allocated.</span><span data-lang="ko">본 펀드는 LBMA Good Delivery 기준의 킬로그램 바를 보유합니다. 이 규격은 단순한 관례가 아닙니다. LBMA Good Delivery는 기관 금 거래의 국제 표준으로서, 순도 999.9, 일련번호 부여, 공인 정련소의 감정 및 인증을 요건으로 합니다. 1킬로그램 바는 싱가포르 기관 금고 인프라가 선호하는 규격입니다. 유의미한 규모를 확보하면서도 정밀한 할당이 가능한 형태입니다.</span>
+    본 펀드는 LBMA Good Delivery 기준의 킬로그램 바를 보유합니다. 이 규격은 단순한 관례가 아닙니다. LBMA Good Delivery는 기관 금 거래의 국제 표준으로서, 순도 999.9, 일련번호 부여, 공인 정련소의 감정 및 인증을 요건으로 합니다. 1킬로그램 바는 싱가포르 기관 금고 인프라가 선호하는 규격입니다. 유의미한 규모를 확보하면서도 정밀한 할당이 가능한 형태입니다.
   </p>
   <p class="sec-lede reveal" style="margin-top: 24px;">
-    <span data-lang="en">The precedent is 1997. During the Asian Financial Crisis, investors who held physical gold — not gold funds, not futures, not ETFs — held their value while regional currencies collapsed. The lesson was not that gold goes up in crises. The lesson was that gold is not denominated in anything you can devalue. You cannot print gold. You cannot rehypothecate a serial-numbered bar sitting in a vault under your name in Singapore's Free Trade Zone.</span><span data-lang="ko">1997년은 중요한 선례입니다. 아시아 외환위기 당시, 금 펀드나 선물, ETF가 아닌 실물 금을 보유한 투자자들은 역내 통화가 붕괴되는 와중에도 자산 가치를 지켜냈습니다. 그 교훈은 위기 상황에서 금값이 오른다는 것이 아닙니다. 금은 가치 절하가 가능한 어떠한 통화 단위로도 표시되지 않는다는 것입니다. 금은 인쇄할 수 없습니다. 싱가포르 자유무역지대(FTZ) 금고에 투자자 명의로 보관된 일련번호가 새겨진 바를 재담보(rehypothecate)할 수는 없습니다.</span>
+    1997년은 중요한 선례입니다. 아시아 외환위기 당시, 금 펀드나 선물, ETF가 아닌 실물 금을 보유한 투자자들은 역내 통화가 붕괴되는 와중에도 자산 가치를 지켜냈습니다. 그 교훈은 위기 상황에서 금값이 오른다는 것이 아닙니다. 금은 가치 절하가 가능한 어떠한 통화 단위로도 표시되지 않는다는 것입니다. 금은 인쇄할 수 없습니다. 싱가포르 자유무역지대(FTZ) 금고에 투자자 명의로 보관된 일련번호가 새겨진 바를 재담보(rehypothecate)할 수는 없습니다.
   </p>
   <p class="sec-lede reveal" style="margin-top: 24px;">
-    <span data-lang="en">Gold is not a portfolio allocation. It is the baseline. Everything built on top of it — the credit facility, the deployment yield, the waterfall — is a structure. The gold is the foundation. Members of the Aurum Century Club are not speculating on gold. They are using it as the most credible monetary asset available to a private investor, and financing around it systematically.</span><span data-lang="ko">금은 포트폴리오 배분 항목이 아닙니다. 금은 기준선입니다. 그 위에 구축되는 모든 것—신용한도(credit facility), 운용수익(deployment yield), 분배 구조(waterfall)—은 구조물입니다. 금은 토대입니다. Aurum Century Club의 회원은 금에 투기하는 것이 아닙니다. 개인 투자자가 활용할 수 있는 가장 신뢰할 수 있는 화폐성 자산을 토대로 삼아, 그 위에 체계적으로 금융 구조를 구축하는 것입니다.</span>
+    금은 포트폴리오 배분 항목이 아닙니다. 금은 기준선입니다. 그 위에 구축되는 모든 것—신용한도(credit facility), 운용수익(deployment yield), 분배 구조(waterfall)—은 구조물입니다. 금은 토대입니다. Aurum Century Club의 회원은 금에 투기하는 것이 아닙니다. 개인 투자자가 활용할 수 있는 가장 신뢰할 수 있는 화폐성 자산을 토대로 삼아, 그 위에 체계적으로 금융 구조를 구축하는 것입니다.
   </p>
 </section>
 
@@ -2267,22 +2261,22 @@ body.gate-active > *:not(.access-gate) { visibility: hidden; }
     </div>
   </div>
   <h2 class="sec-h reveal delay-1">
-    <span data-lang="en">Singapore VCC. <em>Engineered mechanics.</em></span><span data-lang="ko">Singapore VCC. <em>설계된 운용 구조.</em></span>
+    Singapore VCC. <em>설계된 운용 구조.</em>
   </h2>
 
   <div class="qual-tele reveal" style="margin-top: clamp(40px, 5vh, 64px);">
-    <div class="tele-pills" role="tablist" aria-label="Structure components">
+    <div class="tele-pills" role="tablist" aria-label="구조 구성 요소">
       <button type="button" class="tele-pill active" data-pillar="1" role="tab" aria-selected="true">
         <span class="pill-num">I.</span>
         <span class="pill-lbl">VCC</span>
       </button>
       <button type="button" class="tele-pill" data-pillar="2" role="tab" aria-selected="false">
         <span class="pill-num">II.</span>
-        <span class="pill-lbl"><span data-lang="en">CREDIT FACILITY</span><span data-lang="ko">신용한도 (CREDIT FACILITY)</span></span>
+        <span class="pill-lbl">신용한도 (CREDIT FACILITY)</span>
       </button>
       <button type="button" class="tele-pill" data-pillar="3" role="tab" aria-selected="false">
         <span class="pill-num">III.</span>
-        <span class="pill-lbl"><span data-lang="en">DEPLOYMENT</span><span data-lang="ko">자본 운용 (DEPLOYMENT)</span></span>
+        <span class="pill-lbl">자본 운용 (DEPLOYMENT)</span>
       </button>
     </div>
 
@@ -2290,25 +2284,25 @@ body.gate-active > *:not(.access-gate) { visibility: hidden; }
       <div class="tele-pane active" data-pillar="1" role="tabpanel">
         <div class="qual-pane-body">
           <div class="h">I. VCC</div>
-          <h3><span data-lang="en">The <em>vehicle.</em></span><span data-lang="ko">운용 <em>비히클.</em></span></h3>
-          <p><span data-lang="en">The Club is structured as a Singapore Variable Capital Company, managed by TACC Pte Ltd as the appointed investment manager. The VCC is the appropriate vehicle for this purpose: it permits capital to flow in and out efficiently, it is recognised by institutional custodians, and it sits under Singapore's regulatory framework — which provides genuine legal certainty without the costs and restrictions of more heavily regulated jurisdictions.</span><span data-lang="ko">본 클럽은 싱가포르 변동자본회사(Variable Capital Company) 형태로 구성되며, TACC Pte Ltd가 선임 투자운용사로서 운용합니다. VCC는 본 목적에 적합한 비히클입니다. 자본의 효율적인 유입·유출이 가능하고, 기관 수탁자들이 공인하며, 과도한 규제 부담이나 제약 없이 실질적인 법적 확실성을 제공하는 싱가포르 규제 체계 하에 운영됩니다.</span></p>
+          <h3>운용 <em>비히클.</em></h3>
+          <p>본 클럽은 싱가포르 변동자본회사(Variable Capital Company) 형태로 구성되며, TACC Pte Ltd가 선임 투자운용사로서 운용합니다. VCC는 본 목적에 적합한 비히클입니다. 자본의 효율적인 유입·유출이 가능하고, 기관 수탁자들이 공인하며, 과도한 규제 부담이나 제약 없이 실질적인 법적 확실성을 제공하는 싱가포르 규제 체계 하에 운영됩니다.</p>
         </div>
       </div>
 
       <div class="tele-pane" data-pillar="2" role="tabpanel">
         <div class="qual-pane-body">
-          <div class="h"><span data-lang="en">II. CREDIT FACILITY</span><span data-lang="ko">II. 신용한도 (CREDIT FACILITY)</span></div>
-          <h3><span data-lang="en">The <em>mechanics.</em></span><span data-lang="ko">운용 <em>메커니즘.</em></span></h3>
-          <p><span data-lang="en">The Fund draws a credit facility of up to 75% of the prevailing LBMA value of the gold collateral pool. This is a structural feature of the vehicle, not an election — every member participates. The manager monitors the facility continuously. The 80% LTV level triggers a bank margin call. The 70% LTV level triggers a member alert. The manager's standing mandate is to maintain the facility below 75% under normal market conditions, with a 20% cash reserve held at fund level as a drawdown buffer against facility calls. Capital calls against members are capped at 100% of original commitment.</span><span data-lang="ko">본 펀드는 담보 금 풀의 당시 LBMA 평가가치 대비 최대 75%의 신용한도를 설정합니다. 이는 비히클의 구조적 특성으로서 선택 사항이 아니며, 전 회원이 동일하게 적용받습니다. 운용사는 신용한도를 상시 모니터링합니다. LTV 80% 수준은 은행 마진콜을 발동하는 기준이며, LTV 70% 수준은 회원 알림을 발송하는 기준입니다. 운용사의 상시 운용 지침은 정상 시장 상황에서 신용한도를 75% 미만으로 유지하는 것이며, 신용한도 콜에 대비하여 펀드 수준에서 현금 20%를 인출 버퍼로 보유합니다. 회원에 대한 추가납입(capital call) 한도는 최초 약정액의 100%입니다.</span></p>
+          <div class="h">II. 신용한도 (CREDIT FACILITY)</div>
+          <h3>운용 <em>메커니즘.</em></h3>
+          <p>본 펀드는 담보 금 풀의 당시 LBMA 평가가치 대비 최대 75%의 신용한도를 설정합니다. 이는 비히클의 구조적 특성으로서 선택 사항이 아니며, 전 회원이 동일하게 적용받습니다. 운용사는 신용한도를 상시 모니터링합니다. LTV 80% 수준은 은행 마진콜을 발동하는 기준이며, LTV 70% 수준은 회원 알림을 발송하는 기준입니다. 운용사의 상시 운용 지침은 정상 시장 상황에서 신용한도를 75% 미만으로 유지하는 것이며, 신용한도 콜에 대비하여 펀드 수준에서 현금 20%를 인출 버퍼로 보유합니다. 회원에 대한 추가납입(capital call) 한도는 최초 약정액의 100%입니다.</p>
         </div>
       </div>
 
       <div class="tele-pane" data-pillar="3" role="tabpanel">
         <div class="qual-pane-body">
-          <div class="h"><span data-lang="en">III. DEPLOYMENT</span><span data-lang="ko">III. 자본 운용 (DEPLOYMENT)</span></div>
-          <h3><span data-lang="en">The <em>capital at work.</em></span><span data-lang="ko">자본을 <em>운용합니다.</em></span></h3>
-          <p><span data-lang="en">Capital deployed through the facility targets gross yields of 15–25% across growth equity, private credit, real estate, and infrastructure. Deployments are selected by the investment committee and are not available to members individually. The economics flow to the fund as a whole and are distributed to members. Members are not required to select, manage, or monitor individual deployments. That is the manager's mandate.</span><span data-lang="ko">신용한도를 통해 운용되는 자본은 성장주식, 사모신용, 부동산, 인프라 전반에 걸쳐 총수익률 15–25% 달성을 목표로 합니다. 투자 건은 투자위원회가 선정하며, 회원이 개별적으로 선택할 수 없습니다. 운용 수익은 펀드 전체에 귀속되어 회원에게 배분됩니다. 회원은 개별 투자 건을 선택, 관리, 모니터링할 의무가 없습니다. 이는 운용사의 위임 권한입니다.</span></p>
-          <p><span data-lang="en">The term is five years base, with a maximum extension to seven years at the manager's discretion subject to member consultation. The vehicle is closed-end. Capital is not available for redemption before maturity except in extraordinary circumstances at the manager's discretion.</span><span data-lang="ko">만기는 기본 5년이며, 운용사의 재량으로 회원 협의를 거쳐 최대 7년까지 연장 가능합니다. 본 비히클은 폐쇄형입니다. 운용사의 재량에 따른 특별한 사정이 없는 한, 만기 전 자본 환매는 허용되지 않습니다.</span></p>
+          <div class="h">III. 자본 운용 (DEPLOYMENT)</div>
+          <h3>자본을 <em>운용합니다.</em></h3>
+          <p>신용한도를 통해 운용되는 자본은 성장주식, 사모신용, 부동산, 인프라 전반에 걸쳐 총수익률 15–25% 달성을 목표로 합니다. 투자 건은 투자위원회가 선정하며, 회원이 개별적으로 선택할 수 없습니다. 운용 수익은 펀드 전체에 귀속되어 회원에게 배분됩니다. 회원은 개별 투자 건을 선택, 관리, 모니터링할 의무가 없습니다. 이는 운용사의 위임 권한입니다.</p>
+          <p>만기는 기본 5년이며, 운용사의 재량으로 회원 협의를 거쳐 최대 7년까지 연장 가능합니다. 본 비히클은 폐쇄형입니다. 운용사의 재량에 따른 특별한 사정이 없는 한, 만기 전 자본 환매는 허용되지 않습니다.</p>
         </div>
       </div>
     </div>
@@ -2325,50 +2319,50 @@ body.gate-active > *:not(.access-gate) { visibility: hidden; }
     </div>
   </div>
   <h2 class="sec-h reveal delay-1">
-    <span data-lang="en">Three sources. <em>One position.</em></span><span data-lang="ko">세 가지 수익원. <em>하나의 포지션.</em></span>
+    세 가지 수익원. <em>하나의 포지션.</em>
   </h2>
 
   <div class="pull-box reveal delay-2">
-    <div class="pull-num"><span data-lang="en">~15% target net IRR.</span><span data-lang="ko">목표 순 IRR ~15%.</span></div>
-    <div class="pull-sub"><span data-lang="en">TARGET ONLY · ILLUSTRATIVE · NOT A GUARANTEE OR PROJECTION</span><span data-lang="ko">목표치 전용 · 예시적 수치 · 보장 또는 예측이 아닙니다</span></div>
+    <div class="pull-num">목표 순 IRR ~15%.</div>
+    <div class="pull-sub">목표치 전용 · 예시적 수치 · 보장 또는 예측이 아닙니다</div>
   </div>
 
   <p class="sec-lede reveal">
-    <span data-lang="en">The return architecture has three distinct sources. The first is gold appreciation: the base asset is expected to hold or appreciate in real terms over the investment horizon. The second is yield from deployed capital — growth equity, private credit, real estate, and infrastructure — targeting 15–25% gross. The third is the structural spread between the cost of the credit facility and the yield achieved on deployed capital, which accrues to the fund net of costs.</span><span data-lang="ko">수익 구조는 세 가지 독립된 원천으로 이루어져 있습니다. 첫째는 금 가치 상승입니다. 기초 자산은 투자 기간에 걸쳐 실질 가치를 유지하거나 상승할 것으로 예상됩니다. 둘째는 운용 자본에서 발생하는 수익으로, 성장주식, 사모신용, 부동산, 인프라 전반에 걸쳐 총수익률 15–25%를 목표로 합니다. 셋째는 신용한도 조달 비용과 운용 자본의 달성 수익률 사이의 구조적 스프레드로, 비용 차감 후 펀드에 귀속됩니다.</span>
+    수익 구조는 세 가지 독립된 원천으로 이루어져 있습니다. 첫째는 금 가치 상승입니다. 기초 자산은 투자 기간에 걸쳐 실질 가치를 유지하거나 상승할 것으로 예상됩니다. 둘째는 운용 자본에서 발생하는 수익으로, 성장주식, 사모신용, 부동산, 인프라 전반에 걸쳐 총수익률 15–25%를 목표로 합니다. 셋째는 신용한도 조달 비용과 운용 자본의 달성 수익률 사이의 구조적 스프레드로, 비용 차감 후 펀드에 귀속됩니다.
   </p>
 
   <ul class="returns-list reveal">
     <li>
-      <span data-lang="en"><strong>Gold Appreciation</strong>&nbsp;— Physical LBMA bar value appreciation over the fund term.</span><span data-lang="ko"><strong>금 가치 상승</strong>&nbsp;— 펀드 존속 기간 동안 LBMA 실물 바의 가치 상승분.</span>
+      <strong>금 가치 상승</strong>&nbsp;— 펀드 존속 기간 동안 LBMA 실물 바의 가치 상승분.
     </li>
     <li>
-      <span data-lang="en"><strong>Deployment Yield</strong>&nbsp;— 15–25% gross target across growth equity, private credit, real estate, and infrastructure.</span><span data-lang="ko"><strong>운용수익 (Deployment Yield)</strong>&nbsp;— 성장주식, 사모신용, 부동산, 인프라 전반에 걸쳐 총수익률 15–25% 목표.</span>
+      <strong>운용수익 (Deployment Yield)</strong>&nbsp;— 성장주식, 사모신용, 부동산, 인프라 전반에 걸쳐 총수익률 15–25% 목표.
     </li>
     <li>
-      <span data-lang="en"><strong>Structural Spread</strong>&nbsp;— Net benefit of institutional credit pricing against deployed yield.</span><span data-lang="ko"><strong>구조적 스프레드 (Structural Spread)</strong>&nbsp;— 기관 수준의 신용 조달 비용 대비 운용 수익의 순 이익.</span>
+      <strong>구조적 스프레드 (Structural Spread)</strong>&nbsp;— 기관 수준의 신용 조달 비용 대비 운용 수익의 순 이익.
     </li>
   </ul>
 
   <table class="fee-tbl reveal">
     <tr>
-      <td><span data-lang="en">Gold Standard</span><span data-lang="ko">금 규격</span></td>
-      <td><span data-lang="en">LBMA Good Delivery · 999.9 fineness</span><span data-lang="ko">LBMA Good Delivery · 순도 999.9</span></td>
+      <td>금 규격</td>
+      <td>LBMA Good Delivery · 순도 999.9</td>
     </tr>
     <tr>
-      <td><span data-lang="en">Custody</span><span data-lang="ko">수탁 방식</span></td>
-      <td><span data-lang="en">Allocated &amp; segregated · Malca-Amit Singapore FTZ</span><span data-lang="ko">할당 및 분리 보관 · Malca-Amit Singapore FTZ</span></td>
+      <td>수탁 방식</td>
+      <td>할당 및 분리 보관 · Malca-Amit Singapore FTZ</td>
     </tr>
     <tr>
-      <td><span data-lang="en">LTV Ceiling</span><span data-lang="ko">LTV 상한</span></td>
-      <td><span data-lang="en">75% of gold position value</span><span data-lang="ko">금 포지션 가치의 75%</span></td>
+      <td>LTV 상한</td>
+      <td>금 포지션 가치의 75%</td>
     </tr>
     <tr>
-      <td><span data-lang="en">Capital Reserve</span><span data-lang="ko">자본 준비금</span></td>
-      <td><span data-lang="en">20% fund-level cash buffer against LTV stress</span><span data-lang="ko">LTV 스트레스 대비 펀드 수준 현금 버퍼 20%</span></td>
+      <td>자본 준비금</td>
+      <td>LTV 스트레스 대비 펀드 수준 현금 버퍼 20%</td>
     </tr>
     <tr>
-      <td><span data-lang="en">Fund Term</span><span data-lang="ko">펀드 만기</span></td>
-      <td><span data-lang="en">5 years base · max 7 years</span><span data-lang="ko">기본 5년 · 최대 7년</span></td>
+      <td>펀드 만기</td>
+      <td>기본 5년 · 최대 7년</td>
     </tr>
   </table>
 </section>
@@ -2383,89 +2377,69 @@ body.gate-active > *:not(.access-gate) { visibility: hidden; }
     <span class="divider-num">IV.</span>
     <div class="divider-eyebrow"><span class="en">THE CUSTODY</span></div>
   </div>
-  <h2 class="sec-h reveal delay-1">Malca-Amit Singapore. <span data-lang="en"><em>Your bars.</em></span><span data-lang="ko"><em>귀하의 바.</em></span></h2>
+  <h2 class="sec-h reveal delay-1">Malca-Amit Singapore. <em>귀하의 바.</em></h2>
   <p class="sec-lede reveal delay-2">
-    <span data-lang="en">Physical custody is provided by Malca-Amit in Singapore's Free Trade Zone.
-    Malca-Amit is among the world's leading providers of high-value asset logistics
-    and storage, with vault operations across the major financial centres. The Singapore
-    FTZ location provides a further structural advantage: assets held there are outside
-    Singapore's customs boundary, providing additional protections and efficiency for
-    internationally mobile investors.</span><span data-lang="ko">실물 수탁은 싱가포르 자유무역지대(FTZ)의 Malca-Amit이 제공합니다.
+    실물 수탁은 싱가포르 자유무역지대(FTZ)의 Malca-Amit이 제공합니다.
     Malca-Amit은 주요 금융 센터에 금고 운영 시설을 보유한, 세계 최고 수준의
     고가 자산 물류 및 보관 서비스 제공사 중 하나입니다. 싱가포르 FTZ 입지는
     추가적인 구조적 이점을 제공합니다. 해당 구역에 보관된 자산은 싱가포르의
     세관 경계 밖에 위치하므로, 국제적으로 이동성이 높은 투자자에게 추가적인
-    보호와 효율성을 제공합니다.</span>
+    보호와 효율성을 제공합니다.
   </p>
   <p class="sec-lede reveal delay-2">
-    <span data-lang="en">Every bar held by the Fund is allocated and segregated. Allocated means the bars are
-    identified as property of the Fund, not of the custodian. Segregated means your bars
-    are not pooled with bars held for other clients. Each bar carries its LBMA serial
-    number, assayer identity, and weight certification. The Fund maintains a live bar
-    registry. Independent verification is conducted annually by an appointed auditor.
-    Members have the right to request a vault visit, subject to coordination with
-    Malca-Amit.</span><span data-lang="ko">펀드가 보유한 모든 바는 할당(allocated) 및 분리(segregated) 보관됩니다.
+    펀드가 보유한 모든 바는 할당(allocated) 및 분리(segregated) 보관됩니다.
     할당이란 해당 바가 수탁자의 자산이 아닌 펀드의 자산으로 특정되어 있음을
     의미합니다. 분리란 귀하의 바가 다른 고객의 바와 풀링되지 않음을 의미합니다.
     각 바에는 LBMA 일련번호, 감정자 신원, 중량 인증 정보가 부여되어 있습니다.
     펀드는 실시간 바 등록부를 유지합니다. 선임 감사인에 의한 독립 검증이 매년
     실시됩니다. 회원은 Malca-Amit과의 사전 조율을 통해 금고 방문을 요청할
-    권리가 있습니다.</span>
+    권리가 있습니다.
   </p>
   <p class="sec-lede reveal delay-2">
-    <span data-lang="en">Your bars are not in a pool. They are not lent. They are not collateral for anything
-    other than the credit facility described in this document, which you have explicitly
-    acknowledged. They are yours — serial-numbered, sitting in a Free Trade Zone vault in
-    Singapore, fully insured, independently verified every year.</span><span data-lang="ko">귀하의 바는 풀에 포함되어 있지 않습니다. 대여되지 않습니다. 본 문서에서
+    귀하의 바는 풀에 포함되어 있지 않습니다. 대여되지 않습니다. 본 문서에서
     명시적으로 인지하신 신용한도를 제외한 다른 어떠한 목적의 담보로도
     제공되지 않습니다. 귀하의 바입니다—일련번호가 새겨진 채로, 싱가포르
     자유무역지대 금고에 보관되어 있으며, 전액 보험에 가입되어 있고, 매년
-    독립적으로 검증됩니다.</span>
+    독립적으로 검증됩니다.
   </p>
 </section>
 
 <!-- TWO ENGINES (still under §IV — no new section-divider) -->
 <section class="sec">
-  <div class="sec-eyebrow reveal"><span data-lang="en">COMPOUNDING</span><span data-lang="ko">복리 구조</span></div>
-  <h2 class="sec-h reveal delay-1"><span data-lang="en">Two engines. <em>One NAV.</em></span><span data-lang="ko">두 개의 엔진. <em>하나의 NAV.</em></span></h2>
+  <div class="sec-eyebrow reveal">복리 구조</div>
+  <h2 class="sec-h reveal delay-1">두 개의 엔진. <em>하나의 NAV.</em></h2>
   <p class="sec-lede reveal delay-2">
-    <span data-lang="en">The kilogram becomes <em>two compounding instruments at once.</em> The metal
-    appreciates on its own arc. The credit it generates compounds on the
-    pipeline's. The member's NAV is the sum.</span><span data-lang="ko">킬로그램은 <em>동시에 두 개의 복리 수단이 됩니다.</em> 금속은
+    킬로그램은 <em>동시에 두 개의 복리 수단이 됩니다.</em> 금속은
     그 자체의 궤적으로 가치가 상승합니다. 금이 창출하는 신용은 파이프라인
-    위에서 복리로 증식합니다. 회원의 NAV는 그 합산입니다.</span>
+    위에서 복리로 증식합니다. 회원의 NAV는 그 합산입니다.
   </p>
 
   <div class="engines-pair">
     <div class="engine-card reveal">
-      <div class="h"><span data-lang="en">ENGINE I  ·  GOLD FLOOR</span><span data-lang="ko">엔진 I  ·  금 바닥선</span></div>
-      <h3><span data-lang="en">Compounds at the rate of <em>money supply.</em></span><span data-lang="ko"><em>통화 공급</em>의 속도로 복리 증식합니다.</span></h3>
+      <div class="h">엔진 I  ·  금 바닥선</div>
+      <h3><em>통화 공급</em>의 속도로 복리 증식합니다.</h3>
       <p>
-        <span data-lang="en">The kilogram appreciates passively. In every decade since Bretton Woods,
-        gold has held or appreciated in real terms against G10 currencies.
-        Aurum doesn't accelerate it. It simply <em>stops the metal from sitting idle.</em></span><span data-lang="ko">킬로그램은 수동적으로 가치가 상승합니다. 브레턴우즈 체제 이후 매 10년간
+        킬로그램은 수동적으로 가치가 상승합니다. 브레턴우즈 체제 이후 매 10년간
         금은 G10 통화 대비 실질 가치를 유지하거나 상승했습니다.
         Aurum은 그 속도를 가속하지 않습니다. 다만 <em>금속이 유휴 상태로
-        방치되는 것을 막을 뿐입니다.</em></span>
+        방치되는 것을 막을 뿐입니다.</em>
       </p>
     </div>
     <div class="engine-card reveal delay-1">
-      <div class="h"><span data-lang="en">ENGINE II  ·  THE PIPELINE</span><span data-lang="ko">엔진 II  ·  파이프라인</span></div>
-      <h3><span data-lang="en">Compounds at the rate of <em>the deal book.</em></span><span data-lang="ko"><em>딜 북</em>의 속도로 복리 증식합니다.</span></h3>
+      <div class="h">엔진 II  ·  파이프라인</div>
+      <h3><em>딜 북</em>의 속도로 복리 증식합니다.</h3>
       <p>
-        <span data-lang="en">Capital deployed through the facility targets gross yields of 15–25%
-        across growth equity, private credit, real estate, and infrastructure.
-        <em>The bar grows the floor; the deals grow the ceiling.</em></span><span data-lang="ko">신용한도를 통해 운용되는 자본은 성장주식, 사모신용, 부동산, 인프라
+        신용한도를 통해 운용되는 자본은 성장주식, 사모신용, 부동산, 인프라
         전반에 걸쳐 총수익률 15–25%를 목표로 합니다.
-        <em>바는 바닥선을 키우고, 딜은 상단을 키웁니다.</em></span>
+        <em>바는 바닥선을 키우고, 딜은 상단을 키웁니다.</em>
       </p>
     </div>
   </div>
 
   <div class="engines-chart reveal">
     <div class="engines-chart-h">
-      <span><span data-lang="en">FIVE-YEAR PATH  ·  ENGINE II  ·  RETURN BANDS</span><span data-lang="ko">5년 경로  ·  엔진 II  ·  수익 구간</span></span>
-      <span class="meta"><span data-lang="en">gross IRR ranges · by deal type · illustrative</span><span data-lang="ko">딜 유형별 총 IRR 범위 · 예시적 수치</span></span>
+      <span>5년 경로  ·  엔진 II  ·  수익 구간</span>
+      <span class="meta">딜 유형별 총 IRR 범위 · 예시적 수치</span>
     </div>
     <svg viewBox="0 0 900 340" preserveAspectRatio="xMidYMid meet">
       <!-- Plot grid -->
@@ -2497,23 +2471,23 @@ body.gate-active > *:not(.access-gate) { visibility: hidden; }
       <!-- LEGEND PANEL — right side, well-spaced -->
       <line x1="685" y1="36" x2="700" y2="36" stroke="#c77061" stroke-width="2"/>
       <text x="710" y="40" font-family="JetBrains Mono,monospace" font-size="11" fill="#c77061" letter-spacing="1.5">PRE-IPO SECONDARY</text>
-      <text x="710" y="56" font-family="Cormorant Garamond,serif" font-size="12" font-style="italic" fill="#c77061"><tspan data-lang="en">18–30% gross</tspan><tspan data-lang="ko">18–30% 총수익</tspan></text>
+      <text x="710" y="56" font-family="Cormorant Garamond,serif" font-size="12" font-style="italic" fill="#c77061">18–30% 총수익</text>
       <line x1="685" y1="92" x2="700" y2="92" stroke="#C5A572" stroke-width="2"/>
       <text x="710" y="96" font-family="JetBrains Mono,monospace" font-size="11" fill="#C5A572" letter-spacing="1.5">GROWTH EQUITY</text>
-      <text x="710" y="112" font-family="Cormorant Garamond,serif" font-size="12" font-style="italic" fill="#C5A572"><tspan data-lang="en">15–25% gross</tspan><tspan data-lang="ko">15–25% 총수익</tspan></text>
+      <text x="710" y="112" font-family="Cormorant Garamond,serif" font-size="12" font-style="italic" fill="#C5A572">15–25% 총수익</text>
       <line x1="685" y1="148" x2="700" y2="148" stroke="#E3C187" stroke-width="2.5" stroke-dasharray="3,3"/>
       <text x="710" y="152" font-family="JetBrains Mono,monospace" font-size="11" fill="#E3C187" letter-spacing="1.5">BLENDED NAV</text>
-      <text x="710" y="168" font-family="Cormorant Garamond,serif" font-size="12" font-style="italic" fill="#E3C187"><tspan data-lang="en">~15% net IRR · base</tspan><tspan data-lang="ko">~15% 순 IRR · 기준</tspan></text>
+      <text x="710" y="168" font-family="Cormorant Garamond,serif" font-size="12" font-style="italic" fill="#E3C187">~15% 순 IRR · 기준</text>
       <line x1="685" y1="204" x2="700" y2="204" stroke="#8a7d6b" stroke-width="1.8" stroke-dasharray="4,4"/>
       <text x="710" y="208" font-family="JetBrains Mono,monospace" font-size="11" fill="#8a7d6b" letter-spacing="1.5">PRIVATE CREDIT</text>
-      <text x="710" y="224" font-family="Cormorant Garamond,serif" font-size="12" font-style="italic" fill="#8a7d6b"><tspan data-lang="en">10–14% gross</tspan><tspan data-lang="ko">10–14% 총수익</tspan></text>
+      <text x="710" y="224" font-family="Cormorant Garamond,serif" font-size="12" font-style="italic" fill="#8a7d6b">10–14% 총수익</text>
       <!-- Footnote -->
-      <text x="660" y="325" font-family="Cormorant Garamond,serif" font-size="10.5" font-style="italic" fill="#6b655e" text-anchor="end"><tspan data-lang="en">Stylized illustration. Not a forecast.</tspan><tspan data-lang="ko">양식화된 예시입니다. 예측이 아닙니다.</tspan></text>
+      <text x="660" y="325" font-family="Cormorant Garamond,serif" font-size="10.5" font-style="italic" fill="#6b655e" text-anchor="end">양식화된 예시입니다. 예측이 아닙니다.</text>
     </svg>
   </div>
 
   <div class="engines-sum reveal">
-    <span data-lang="en">The metal sits still. The capital works. <em class="bright">The NAV is the sum.</em></span><span data-lang="ko">금속은 정지해 있습니다. 자본이 일합니다. <em class="bright">NAV는 그 합산입니다.</em></span>
+    금속은 정지해 있습니다. 자본이 일합니다. <em class="bright">NAV는 그 합산입니다.</em>
   </div>
 </section>
 
@@ -2523,44 +2497,29 @@ body.gate-active > *:not(.access-gate) { visibility: hidden; }
     <span class="divider-num">V.</span>
     <div class="divider-eyebrow"><span class="en">THE COHORT</span></div>
   </div>
-  <h2 class="sec-h reveal delay-1"><span data-lang="en">One hundred seats. <em>Invitation only.</em></span><span data-lang="ko">일백 개의 좌석. <em>초청에 의해서만.</em></span></h2>
+  <h2 class="sec-h reveal delay-1">일백 개의 좌석. <em>초청에 의해서만.</em></h2>
   <p class="sec-lede reveal delay-2">
-    <span data-lang="en">The Aurum Century Club has one hundred founding seats. This limit is structural,
-    not marketing. The VCC format works best with a compact, cohesive membership that
-    shares a common understanding of the vehicle, a common time horizon, and a common
-    tolerance for illiquidity. A larger cohort would dilute cohort quality. A smaller
-    one would reduce the capital base below the threshold needed to deploy the private
-    credit strategy meaningfully.</span><span data-lang="ko">Aurum Century Club의 창설 좌석은 일백 석입니다. 이 한도는 마케팅상의
+    Aurum Century Club의 창설 좌석은 일백 석입니다. 이 한도는 마케팅상의
     표현이 아니라 구조적 요건입니다. VCC 형태는 동일한 비히클에 대한 공통의
     이해, 공통의 투자 기간, 공통의 비유동성 감수 역량을 공유하는 소수의
     응집된 회원으로 구성될 때 가장 효율적으로 기능합니다. 규모가 클수록
     코호트 품질이 희석됩니다. 규모가 지나치게 작으면 사모신용 전략을 의미
-    있는 수준으로 실행하는 데 필요한 자본 기반에 미달합니다.</span>
+    있는 수준으로 실행하는 데 필요한 자본 기반에 미달합니다.
   </p>
   <p class="sec-lede reveal delay-2">
-    <span data-lang="en">The cohort is the product as much as the gold. Members are individuals who have
-    demonstrated the capacity to participate in a closed-end illiquid vehicle, the
-    network to have received and accepted an invitation, and the judgment to evaluate
-    this document without hand-holding. These qualities matter to the cohort
-    collectively. A single forced redemption in year two, or a member who misunderstood
-    the LTV mechanics, affects everyone. Selection is therefore deliberate and
-    non-negotiable.</span><span data-lang="ko">코호트 자체가 금만큼이나 핵심적인 상품입니다. 회원은 폐쇄형 비유동
+    코호트 자체가 금만큼이나 핵심적인 상품입니다. 회원은 폐쇄형 비유동
     비히클에 참여할 수 있는 역량을 갖추고 있음을 입증한 개인, 초청을 받고
     수락할 수 있는 네트워크를 보유한 개인, 별도의 안내 없이 본 문서를
     평가할 수 있는 판단력을 갖춘 개인이어야 합니다. 이러한 자질은 코호트
     전체에 중요합니다. 2년차에 발생하는 단 한 건의 강제 환매, 또는 LTV
     메커니즘을 오해한 단 한 명의 회원이 모든 이에게 영향을 미칩니다.
-    따라서 선발은 신중하고 비협상적입니다.</span>
+    따라서 선발은 신중하고 비협상적입니다.
   </p>
   <p class="sec-lede reveal delay-2">
-    <span data-lang="en">The selection process is simple: an existing member, an advisor, or a relationship
-    of TACC Pte Ltd identifies a candidate. The candidate receives an introduction. The
-    introduction generates an access code. The candidate moves through the admission
-    stages on their own timeline. The cohort closes when it closes. There is no second
-    round on founding terms.</span><span data-lang="ko">선발 절차는 단순합니다. 기존 회원, 자문사, 또는 TACC Pte Ltd의 관계자가
+    선발 절차는 단순합니다. 기존 회원, 자문사, 또는 TACC Pte Ltd의 관계자가
     후보자를 추천합니다. 후보자는 소개를 받습니다. 소개를 통해 접속 코드가
     발급됩니다. 후보자는 자신의 일정에 따라 입회 단계를 진행합니다. 코호트는
-    마감되면 마감됩니다. 창설 조건으로의 2차 모집은 없습니다.</span>
+    마감되면 마감됩니다. 창설 조건으로의 2차 모집은 없습니다.
   </p>
 </section>
 
@@ -2570,55 +2529,54 @@ body.gate-active > *:not(.access-gate) { visibility: hidden; }
     <span class="divider-num">VI.</span>
     <div class="divider-eyebrow"><span class="en">ADMISSION</span></div>
   </div>
-  <h2 class="sec-h reveal delay-1"><span data-lang="en">Six stages. <em>No unnecessary friction.</em></span><span data-lang="ko">여섯 단계. <em>불필요한 절차 없음.</em></span></h2>
+  <h2 class="sec-h reveal delay-1">여섯 단계. <em>불필요한 절차 없음.</em></h2>
   <p class="sec-lede reveal delay-2">
-    <span data-lang="en">The admission process has been designed to be thorough without being burdensome.
-    There are six stages.</span><span data-lang="ko">입회 절차는 부담 없이 철저하게 진행되도록 설계되었습니다.
-    총 여섯 단계입니다.</span>
+    입회 절차는 부담 없이 철저하게 진행되도록 설계되었습니다.
+    총 여섯 단계입니다.
   </p>
 
   <div class="flow reveal" style="grid-template-columns:repeat(3,1fr);">
     <div class="step">
       <div class="roman">I.</div>
-      <div class="action"><span data-lang="en">INQUIRY</span><span data-lang="ko">문의 (INQUIRY)</span></div>
-      <h4><span data-lang="en">Your <em>interest</em> registered.</span><span data-lang="ko">귀하의 <em>관심이</em> 등록되었습니다.</span></h4>
-      <p><span data-lang="en">Your interest has been registered. You have received an introduction code.</span><span data-lang="ko">귀하의 관심이 등록되었습니다. 소개 코드를 수령하셨습니다.</span></p>
-      <div class="value"><span data-lang="en">INQUIRY</span><span data-lang="ko">문의</span><span class="sub"><span data-lang="en">STAGE ONE</span><span data-lang="ko">1단계</span></span></div>
+      <div class="action">문의 (INQUIRY)</div>
+      <h4>귀하의 <em>관심이</em> 등록되었습니다.</h4>
+      <p>귀하의 관심이 등록되었습니다. 소개 코드를 수령하셨습니다.</p>
+      <div class="value">문의<span class="sub">1단계</span></div>
     </div>
     <div class="step">
       <div class="roman">II.</div>
-      <div class="action"><span data-lang="en">INVITED</span><span data-lang="ko">초청 (INVITED)</span></div>
-      <h4><span data-lang="en">Code <em>accepted.</em></span><span data-lang="ko">코드 <em>수락.</em></span></h4>
-      <p><span data-lang="en">Your code has been accepted. You have access to the member portal.</span><span data-lang="ko">귀하의 코드가 수락되었습니다. 회원 포털에 접속하실 수 있습니다.</span></p>
-      <div class="value"><span data-lang="en">INVITED</span><span data-lang="ko">초청</span><span class="sub"><span data-lang="en">STAGE TWO</span><span data-lang="ko">2단계</span></span></div>
+      <div class="action">초청 (INVITED)</div>
+      <h4>코드 <em>수락.</em></h4>
+      <p>귀하의 코드가 수락되었습니다. 회원 포털에 접속하실 수 있습니다.</p>
+      <div class="value">초청<span class="sub">2단계</span></div>
     </div>
     <div class="step" style="border-right:none;">
       <div class="roman">III.</div>
-      <div class="action"><span data-lang="en">ACCESSED</span><span data-lang="ko">접속 (ACCESSED)</span></div>
-      <h4><span data-lang="en">Document <em>read.</em></span><span data-lang="ko">문서 <em>열람.</em></span></h4>
-      <p><span data-lang="en">You have read this document. The NDA is available to you.</span><span data-lang="ko">본 문서를 열람하셨습니다. NDA가 귀하께 제공됩니다.</span></p>
-      <div class="value"><span data-lang="en">ACCESSED</span><span data-lang="ko">접속</span><span class="sub"><span data-lang="en">STAGE THREE</span><span data-lang="ko">3단계</span></span></div>
+      <div class="action">접속 (ACCESSED)</div>
+      <h4>문서 <em>열람.</em></h4>
+      <p>본 문서를 열람하셨습니다. NDA가 귀하께 제공됩니다.</p>
+      <div class="value">접속<span class="sub">3단계</span></div>
     </div>
     <div class="step" style="border-top:1px solid var(--border);">
       <div class="roman">IV.</div>
-      <div class="action"><span data-lang="en">NDA SIGNED</span><span data-lang="ko">NDA 서명 (NDA SIGNED)</span></div>
-      <h4><span data-lang="en">NDA <em>executed.</em></span><span data-lang="ko">NDA <em>체결.</em></span></h4>
-      <p><span data-lang="en">Your executed NDA has been accepted. Subscription materials are unlocked.</span><span data-lang="ko">귀하의 서명된 NDA가 수락되었습니다. 청약 자료가 공개됩니다.</span></p>
-      <div class="value"><span data-lang="en">NDA SIGNED</span><span data-lang="ko">NDA 서명</span><span class="sub"><span data-lang="en">STAGE FOUR</span><span data-lang="ko">4단계</span></span></div>
+      <div class="action">NDA 서명 (NDA SIGNED)</div>
+      <h4>NDA <em>체결.</em></h4>
+      <p>귀하의 서명된 NDA가 수락되었습니다. 청약 자료가 공개됩니다.</p>
+      <div class="value">NDA 서명<span class="sub">4단계</span></div>
     </div>
     <div class="step" style="border-top:1px solid var(--border);">
       <div class="roman">V.</div>
-      <div class="action"><span data-lang="en">SUBSCRIBED</span><span data-lang="ko">청약 (SUBSCRIBED)</span></div>
-      <h4><span data-lang="en">Subscription <em>received.</em></span><span data-lang="ko">청약서 <em>수령.</em></span></h4>
-      <p><span data-lang="en">Your subscription form has been received. Wire instructions have been issued.</span><span data-lang="ko">귀하의 청약서가 수령되었습니다. 송금 안내가 발송되었습니다.</span></p>
-      <div class="value"><span data-lang="en">SUBSCRIBED</span><span data-lang="ko">청약</span><span class="sub"><span data-lang="en">STAGE FIVE</span><span data-lang="ko">5단계</span></span></div>
+      <div class="action">청약 (SUBSCRIBED)</div>
+      <h4>청약서 <em>수령.</em></h4>
+      <p>귀하의 청약서가 수령되었습니다. 송금 안내가 발송되었습니다.</p>
+      <div class="value">청약<span class="sub">5단계</span></div>
     </div>
     <div class="step" style="border-right:none;border-top:1px solid var(--border);">
       <div class="roman">VI.</div>
-      <div class="action"><span data-lang="en">FUNDED</span><span data-lang="ko">납입 (FUNDED)</span></div>
-      <h4><span data-lang="en">Position <em>established.</em></span><span data-lang="ko">포지션 <em>설정.</em></span></h4>
-      <p><span data-lang="en">Wire cleared. Your position is established. Your bar will be allocated and registered.</span><span data-lang="ko">송금이 확인되었습니다. 귀하의 포지션이 설정됩니다. 바가 할당 및 등록됩니다.</span></p>
-      <div class="value"><span data-lang="en">Active</span><span data-lang="ko">활성</span><span class="sub"><span data-lang="en">FUNDED</span><span data-lang="ko">납입 완료</span></span></div>
+      <div class="action">납입 (FUNDED)</div>
+      <h4>포지션 <em>설정.</em></h4>
+      <p>송금이 확인되었습니다. 귀하의 포지션이 설정됩니다. 바가 할당 및 등록됩니다.</p>
+      <div class="value">활성<span class="sub">납입 완료</span></div>
     </div>
   </div>
 </section>
@@ -2626,10 +2584,10 @@ body.gate-active > *:not(.access-gate) { visibility: hidden; }
 <!-- NUMBERS · 4 cells -->
 <section class="numbers reveal">
   <div class="qstats">
-    <div class="cell"><div class="k"><span data-lang="en">BASE IRR</span><span data-lang="ko">기준 IRR</span></div><div class="v">~<em>15</em>%</div></div>
-    <div class="cell"><div class="k"><span data-lang="en">FUND TERM</span><span data-lang="ko">펀드 만기</span></div><div class="v"><em>5–7</em>&nbsp;yr</div></div>
-    <div class="cell"><div class="k"><span data-lang="en">MINIMUM</span><span data-lang="ko">최소 투자</span></div><div class="v"><em>1</em>&nbsp;kg<em>+</em></div></div>
-    <div class="cell"><div class="k"><span data-lang="en">LTV CEILING</span><span data-lang="ko">LTV 상한</span></div><div class="v"><em>75</em>%</div></div>
+    <div class="cell"><div class="k">기준 IRR</div><div class="v">~<em>15</em>%</div></div>
+    <div class="cell"><div class="k">펀드 만기</div><div class="v"><em>5–7</em>&nbsp;yr</div></div>
+    <div class="cell"><div class="k">최소 투자</div><div class="v"><em>1</em>&nbsp;kg<em>+</em></div></div>
+    <div class="cell"><div class="k">LTV 상한</div><div class="v"><em>75</em>%</div></div>
   </div>
 </section>
 
@@ -2637,40 +2595,39 @@ body.gate-active > *:not(.access-gate) { visibility: hidden; }
 <section class="ctas" id="interest">
   <div class="sec-eyebrow reveal" style="justify-content:center;margin-bottom:32px;">NEXT STEPS</div>
   <h2 class="ctas-h reveal">
-    <span data-lang="en">Proceed to the <em>Non-Disclosure Agreement.</em></span><span data-lang="ko"><em>비밀유지계약서(NDA)</em>로 진행하십시오.</span>
+    <em>비밀유지계약서(NDA)</em>로 진행하십시오.
   </h2>
   <p class="ctas-sub reveal delay-1">
-    <span data-lang="en">Download the Non-Disclosure Agreement. Execute it. Return the signed copy.
-    Your subscription materials become available immediately upon acceptance.</span><span data-lang="ko">비밀유지계약서를 내려받아 서명하신 후 반송해 주십시오.
-    수락 즉시 청약 자료를 열람하실 수 있습니다.</span>
+    비밀유지계약서를 내려받아 서명하신 후 반송해 주십시오.
+    수락 즉시 청약 자료를 열람하실 수 있습니다.
   </p>
 
   <div class="path-wrap reveal delay-2" style="max-width:960px;margin-left:auto;margin-right:auto;">
     <div class="path-grid" style="grid-template-columns:repeat(3,1fr);">
       <div class="path-step">
         <div class="num">I.</div>
-        <div class="stage"><span data-lang="en">INDICATE</span><span data-lang="ko">문의 (INDICATE)</span></div>
-        <h4><span data-lang="en">Submit a <em>brief inquiry.</em></span><span data-lang="ko">간략한 <em>문의를</em> 제출합니다.</span></h4>
-        <p><span data-lang="en">A short form to the partners. On verification, you receive an <em>invitation code.</em></span><span data-lang="ko">파트너들에게 전달되는 짧은 양식입니다. 검증 완료 후 <em>초청 코드</em>를 받으십니다.</span></p>
+        <div class="stage">문의 (INDICATE)</div>
+        <h4>간략한 <em>문의를</em> 제출합니다.</h4>
+        <p>파트너들에게 전달되는 짧은 양식입니다. 검증 완료 후 <em>초청 코드</em>를 받으십니다.</p>
       </div>
       <div class="path-step">
         <div class="num">II.</div>
         <div class="stage">NDA</div>
-        <h4><span data-lang="en">Sign the <em>NDA.</em></span><span data-lang="ko"><em>NDA</em>에 서명합니다.</span></h4>
-        <p><span data-lang="en">The code unlocks the full deck and subscription materials.</span><span data-lang="ko">코드로 전체 자료 및 청약 서류가 잠금 해제됩니다.</span></p>
+        <h4><em>NDA</em>에 서명합니다.</h4>
+        <p>코드로 전체 자료 및 청약 서류가 잠금 해제됩니다.</p>
       </div>
       <div class="path-step">
         <div class="num">III.</div>
-        <div class="stage"><span data-lang="en">SUBSCRIBE</span><span data-lang="ko">청약 (SUBSCRIBE)</span></div>
-        <h4><span data-lang="en">Fund your <em>position.</em></span><span data-lang="ko">포지션을 <em>설정합니다.</em></span></h4>
-        <p><span data-lang="en">Wire receipt triggers bar procurement. Position is active on bar registration.</span><span data-lang="ko">송금 확인 시 바 매입이 개시됩니다. 바 등록 완료 시 포지션이 활성화됩니다.</span></p>
+        <div class="stage">청약 (SUBSCRIBE)</div>
+        <h4>포지션을 <em>설정합니다.</em></h4>
+        <p>송금 확인 시 바 매입이 개시됩니다. 바 등록 완료 시 포지션이 활성화됩니다.</p>
       </div>
     </div>
   </div>
 
   <div class="cta-row reveal delay-2" style="margin-top:56px;">
-    <a href="/nda" class="cta cta-primary">Proceed to NDA <span class="arrow">→</span></a>
-    <a href="/ndadocs" class="cta cta-ghost">View Documents <span class="arrow">→</span></a>
+    <a href="/nda" class="cta cta-primary">NDA 진행 <span class="arrow">→</span></a>
+    <a href="/documents" class="cta cta-ghost">문서 열람 <span class="arrow">→</span></a>
   </div>
 </section>
 
@@ -2691,7 +2648,7 @@ body.gate-active > *:not(.access-gate) { visibility: hidden; }
     <span class="sep">·</span>
     Seoul
   </div>
-  <div class="foot-r"><span data-lang="en">CONFIDENTIAL  ·  QUALIFIED INVESTORS ONLY</span><span data-lang="ko">기밀문서  ·  적격 투자자 전용</span></div>
+  <div class="foot-r">기밀문서  ·  적격 투자자 전용</div>
 </footer>
 
 <script src="/_scripts/shared.js"></script>
@@ -2934,23 +2891,6 @@ updateCounter(3);
     const el = document.getElementById('member-badge');
     if (el && d && d.member_number) { el.textContent = '#' + d.member_number; el.style.display = ''; }
   } catch {}
-})();
-
-// ═══ LANGUAGE TOGGLE ═══
-(function langToggle() {
-  var saved = localStorage.getItem('aurum-lang') || 'en';
-  if (saved === 'ko') document.documentElement.classList.add('lang-ko');
-  document.querySelectorAll('.lang-toggle button').forEach(function(btn) {
-    btn.classList.toggle('active', btn.dataset.lang === saved);
-    btn.addEventListener('click', function() {
-      var lang = btn.dataset.lang;
-      document.documentElement.classList.toggle('lang-ko', lang === 'ko');
-      document.querySelectorAll('.lang-toggle button').forEach(function(b) {
-        b.classList.toggle('active', b === btn);
-      });
-      localStorage.setItem('aurum-lang', lang);
-    });
-  });
 })();
 
 </script>
