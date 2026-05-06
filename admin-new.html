@@ -6641,6 +6641,7 @@ textarea.inp.mono-area {
   <div class="vcc-card">
     <div class="vcc-card-head">
       <span class="vcc-card-title">Sent Log</span>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--fg-dim);letter-spacing:0.08em;">Quarterly letters &amp; vault notices only · DMs not logged server-side</span>
     </div>
     <div class="vcc-card-body">
 
@@ -6995,7 +6996,15 @@ textarea.inp.mono-area {
         nav.querySelectorAll('.panel-link').forEach(function(b){ b.classList.remove('active'); });
         el.classList.add('active');
         var t = document.getElementById(el.dataset.panelGoto);
-        if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (t) {
+          var mc = document.getElementById('main-content');
+          if (mc) {
+            var off = t.getBoundingClientRect().top - mc.getBoundingClientRect().top + mc.scrollTop;
+            mc.scrollTo({ top: off - 12, behavior: 'smooth' });
+          } else {
+            t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
       });
     });
   }
@@ -7010,8 +7019,9 @@ textarea.inp.mono-area {
   document.querySelectorAll('.rail-icon[data-tab]').forEach(function(b){ b.addEventListener('click', function(){ goTab(b.dataset.tab); }); });
   document.querySelectorAll('.mobile-nav-item[data-tab]').forEach(function(b){ b.addEventListener('click', function(){ var t=b.dataset.tab; if(t!=='more') goTab(t); }); });
   document.querySelectorAll('[data-go-tab]').forEach(function(el){ el.addEventListener('click', function(){ goTab(el.dataset.goTab); }); });
-  // hash routing
+  // Init: always load Today data, then switch if URL has a tab hash
   updatePanelNav('today');
+  loadTab('today');
   if (location.hash) { var h = location.hash.slice(1); if (document.querySelector('.rail-icon[data-tab="' + h + '"]')) goTab(h); }
 
   /* ═══════════════════════════════════════════════════════════════════
@@ -9069,14 +9079,15 @@ textarea.inp.mono-area {
     });
     var jumpExc = document.getElementById('ir-jump-exc');
     var jumpAudit = document.getElementById('ir-jump-audit');
-    if (jumpExc) jumpExc.addEventListener('click', function(){
-      var el = document.getElementById('exc-anchor');
-      if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-    if (jumpAudit) jumpAudit.addEventListener('click', function(){
-      var el = document.getElementById('audit-anchor');
-      if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+    function scrollToSection(id) {
+      var el = document.getElementById(id);
+      var mc = document.getElementById('main-content');
+      if (!el) return;
+      if (mc) { var off = el.getBoundingClientRect().top - mc.getBoundingClientRect().top + mc.scrollTop; mc.scrollTo({ top: off - 12, behavior: 'smooth' }); }
+      else el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    if (jumpExc)   jumpExc.addEventListener('click',   function(){ scrollToSection('exc-anchor'); });
+    if (jumpAudit) jumpAudit.addEventListener('click', function(){ scrollToSection('audit-anchor'); });
   }
 
   /* ═══════════════════════════════════════════════════════════════════
