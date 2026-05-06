@@ -8329,21 +8329,35 @@ textarea.inp.mono-area {
     tb.innerHTML = rows.join('');
   }
   function derivePosture(s) {
-    var gold = s.gold_7d_pct || 1.4;
-    var ltv = s.ltv_pct || 48;
-    var pipe = (s.active_pipeline_count != null ? s.active_pipeline_count : 12);
+    // Only derive posture when we have real data — avoid misleading hardcoded fallbacks
+    var hasData = s && (s.gold_value_usd > 0 || s.members_count > 0);
+    var gold = s.gold_7d_pct != null ? s.gold_7d_pct : null;
+    var ltv = s.ltv_pct != null ? s.ltv_pct : null;
+    var pipe = s.active_pipeline_count != null ? s.active_pipeline_count : null;
+    var pv = document.getElementById('posture-val');
+    if (!hasData || gold === null || ltv === null) {
+      pv.textContent = '—'; pv.className = 'posture-verdict-val';
+      document.getElementById('posture-reason').textContent = 'Awaiting live data';
+      document.getElementById('post-gold-val').textContent = '—';
+      document.getElementById('post-gold-bar').style.width = '0%';
+      document.getElementById('post-ltv-val').textContent = '—';
+      document.getElementById('post-ltv-bar').style.width = '0%';
+      document.getElementById('post-pipe-val').textContent = '—';
+      document.getElementById('post-pipe-bar').style.width = '0%';
+      return;
+    }
+    var pipeVal = pipe !== null ? pipe : 0;
     var verdict = 'DEPLOY', kind = 'deploy', reason = 'Gold trending up · LTV headroom ample · pipeline active';
     if (gold < -2 || ltv > 70) { verdict = 'HOLD'; kind = 'hold'; reason = 'Risk elevated — pause new positions'; }
-    else if (gold < 0 || ltv > 60 || pipe < 4) { verdict = 'PACE'; kind = 'pace'; reason = 'Mixed signals — measured deployment'; }
-    var pv = document.getElementById('posture-val');
+    else if (gold < 0 || ltv > 60 || pipeVal < 4) { verdict = 'PACE'; kind = 'pace'; reason = 'Mixed signals — measured deployment'; }
     pv.textContent = verdict; pv.className = 'posture-verdict-val ' + kind;
     document.getElementById('posture-reason').textContent = reason;
     document.getElementById('post-gold-val').textContent = (gold >= 0 ? '+' : '') + gold.toFixed(2) + '%';
     document.getElementById('post-gold-bar').style.width = Math.min(Math.max((gold + 5) / 10 * 100, 0), 100) + '%';
     document.getElementById('post-ltv-val').textContent = (100 - ltv).toFixed(0) + '%';
     document.getElementById('post-ltv-bar').style.width = (100 - ltv) + '%';
-    document.getElementById('post-pipe-val').textContent = pipe + ' leads';
-    document.getElementById('post-pipe-bar').style.width = Math.min(pipe / 20 * 100, 100) + '%';
+    document.getElementById('post-pipe-val').textContent = pipeVal + ' leads';
+    document.getElementById('post-pipe-bar').style.width = Math.min(pipeVal / 20 * 100, 100) + '%';
   }
 
   /* ═══════════════════════════════════════════════════════════════════
