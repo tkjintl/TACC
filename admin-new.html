@@ -34,7 +34,7 @@
   /* ── Foreground scale ─────────────────────────────────────────────── */
   --fg:            #e8e8f0;
   --fg-muted:      #8888a8;
-  --fg-dim:        #7474a0;  /* was #55556a — lifted for WCAG contrast */
+  --fg-dim:        #7c7cb0;  /* WCAG AA ≥4.5:1 on --bg #050508 */
 
   /* ── Accent / Gold ────────────────────────────────────────────────── */
   --accent:        #c9a84c;
@@ -5640,27 +5640,27 @@ table.dt td {
       <div class="cap-engine">
         <div class="ce-row">
           <span class="ce-label">Fund Total Commitment</span>
-          <div id="cf-total" class="ce-val">$20.0M</div>
+          <div id="cf-total" class="ce-val is-loading">—</div>
         </div>
         <div class="ce-row">
           <span class="ce-label">Gold Collateral Value</span>
-          <div id="cf-gold" class="ce-val">$18.0M</div>
+          <div id="cf-gold" class="ce-val is-loading">—</div>
         </div>
         <div class="ce-row">
           <span class="ce-label">LTV Multiplier</span>
-          <div class="ce-val"><span id="cf-mult">0.7</span>&times;</div>
+          <div class="ce-val"><span id="cf-mult" class="is-loading">—</span>&times;</div>
         </div>
         <div class="ce-row" style="border-top: 1px dashed var(--border); padding-top: 6px; margin-top: 2px;">
           <span class="ce-label">Borrowing Ceiling</span>
-          <div id="cf-ceiling" class="ce-val" style="color: var(--accent)">$12.6M</div>
+          <div id="cf-ceiling" class="ce-val is-loading" style="color: var(--accent)">—</div>
         </div>
         <div class="ce-row">
           <span class="ce-label">Drawn</span>
-          <div id="cf-drawn" class="ce-val">$6.0M</div>
+          <div id="cf-drawn" class="ce-val is-loading">—</div>
         </div>
         <div class="ce-row">
           <span class="ce-label">Net Deployed</span>
-          <div id="cf-deployed" class="ce-val">$5.4M</div>
+          <div id="cf-deployed" class="ce-val is-loading">—</div>
         </div>
       </div>
 
@@ -5669,19 +5669,19 @@ table.dt td {
       <div class="runway-grid">
         <div class="rw-cell">
           <span class="rw-label">Active Deals</span>
-          <div id="rw-deals" class="rw-val">3</div>
+          <div id="rw-deals" class="rw-val is-loading">—</div>
         </div>
         <div class="rw-cell">
           <span class="rw-label">Avg Ticket</span>
-          <div id="rw-ticket" class="rw-val">$1.8M</div>
+          <div id="rw-ticket" class="rw-val is-loading">—</div>
         </div>
         <div class="rw-cell">
           <span class="rw-label">Runway (mo)</span>
-          <div id="rw-runway" class="rw-val">14</div>
+          <div id="rw-runway" class="rw-val is-loading">—</div>
         </div>
         <div class="rw-cell">
           <span class="rw-label">Review Date</span>
-          <div id="rw-review" class="rw-val">Jun 30</div>
+          <div id="rw-review" class="rw-val">—</div>
         </div>
       </div>
 
@@ -5737,7 +5737,7 @@ table.dt td {
         </div>
 
         <div class="vault-badge">
-          Vault: <span id="vault-last">Last: 14d ago</span>
+          Vault: <span id="vault-last">—</span>
         </div>
       </div>
 
@@ -8210,7 +8210,7 @@ textarea.inp.mono-area {
   function renderFundFromStats(s) {
     if (!s) return;
     clearFundLoading();
-    document.getElementById('fhp-nav').textContent = fmtUsd(s.nav_usd || 20000000);
+    document.getElementById('fhp-nav').textContent = fmtUsd(s.nav_usd || 0);
     document.getElementById('fhp-nav-sub').textContent = (s.nav_7d_pct != null ? ((s.nav_7d_pct >= 0 ? '+' : '') + Number(s.nav_7d_pct).toFixed(2) + '% / 7d') : '—');
     document.getElementById('fhp-gold').textContent = fmt(s.gold_kg || 0, 1) + ' kg';
     document.getElementById('fhp-gold-sub').textContent = fmtUsd(s.gold_value_usd || 0) + ' · LBMA';
@@ -8257,6 +8257,7 @@ textarea.inp.mono-area {
     }
     if (s.usd_krw) document.getElementById('xau-fx').textContent = fmt(s.usd_krw, 0);
     if (s.gold_cost_per_kg) document.getElementById('xau-cost').textContent = '$' + fmt(s.gold_cost_per_kg, 0);
+    if (s.sora_rate_pct != null) { var lgSora = document.getElementById('lg-sora'); if (lgSora) lgSora.textContent = s.sora_rate_pct.toFixed(2) + '%'; }
 
     // Right rail — Quick Stats (fund snapshot)
     var rrStats = document.getElementById('rr-stats');
@@ -8450,6 +8451,10 @@ textarea.inp.mono-area {
         document.getElementById('bar-tot-kg').textContent = fmt(d.total_kg || 0, 2) + ' kg';
         document.getElementById('bar-tot-cost').textContent = fmtUsd(d.total_cost_basis_usd || 0);
         document.getElementById('bar-tot-value').textContent = fmtUsd(d.total_value_usd || 0);
+        if (d.last_verification_at) {
+          var vaultLast = document.getElementById('vault-last');
+          if (vaultLast) vaultLast.textContent = relTime(d.last_verification_at);
+        }
         if (!_allBars.length) {
           tb.innerHTML = '<tr><td colspan="10"><div class="empty"><div class="empty-title">No bars yet — bars register on funded admission</div><div class="empty-hint">Bar registry will populate after first funded member</div></div></td></tr>';
           return;
@@ -8812,7 +8817,7 @@ textarea.inp.mono-area {
   /* ═══════════════════════════════════════════════════════════════════
      COMPLIANCE
      ═══════════════════════════════════════════════════════════════════ */
-  function loadCompliance() {
+  function loadCompliance(opts) {
     api('exceptions')
       .then(function(r){ return r.json(); })
       .then(function(d){
@@ -8844,13 +8849,20 @@ textarea.inp.mono-area {
         document.getElementById('exc-tbody').innerHTML = '<tr><td colspan="5"><div class="err"><div class="err-msg">Failed to load exceptions</div></div></td></tr>';
       });
 
-    api('audit-search')
+    var o = opts || {};
+    var qs = [];
+    if (o.q)     qs.push('q='     + encodeURIComponent(o.q));
+    if (o.actor) qs.push('actor=' + encodeURIComponent(o.actor));
+    if (o.from)  qs.push('from='  + encodeURIComponent(o.from));
+    if (o.to)    qs.push('to='    + encodeURIComponent(o.to));
+    var auditUrl = 'audit-search' + (qs.length ? '?' + qs.join('&') : '');
+    document.getElementById('audit-tbody').innerHTML = '<tr><td colspan="5"><div class="skel" style="margin:10px;"></div></td></tr>';
+    api(auditUrl)
       .then(function(r){ return r.json(); })
       .then(function(d){
-        // Backend returns { ok, entries }
         var items = (d && (d.entries || d.events)) || [];
         var tb = document.getElementById('audit-tbody');
-        if (!items.length) { tb.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-title">No audit events</div><div class="empty-hint">Actions are logged here</div></div></td></tr>'; return; }
+        if (!items.length) { tb.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-title">No audit events</div><div class="empty-hint">' + (qs.length ? 'No matches for current filters' : 'Actions are logged here') + '</div></div></td></tr>'; return; }
         tb.innerHTML = items.map(function(e){
           return '<tr><td data-lbl="Timestamp" class="mono-col">' + (e.at ? new Date(e.at).toLocaleString('en-GB', { timeZone: 'Asia/Singapore' }) : '—') + '</td><td data-lbl="Actor">' + esc(e.actor || 'system') + '</td><td data-lbl="Action">' + esc(e.action || '') + '</td><td data-lbl="Target">' + esc(e.target_name || e.target || e.leadId || '—') + '</td><td data-lbl="Memo">' + esc(e.memo || '') + '</td></tr>';
         }).join('');
@@ -8859,6 +8871,23 @@ textarea.inp.mono-area {
         document.getElementById('audit-tbody').innerHTML = '<tr><td colspan="5"><div class="err"><div class="err-msg">Audit log unavailable</div></div></td></tr>';
       });
   }
+
+  // Wire audit filter inputs → live re-fetch (debounced 400ms for text, immediate for selects/dates)
+  (function wireAuditFilters(){
+    var t; function scheduleReload() { clearTimeout(t); t = setTimeout(reloadAudit, 400); }
+    function reloadAudit() {
+      loadCompliance({
+        q:     (document.getElementById('audit-search').value || '').trim(),
+        actor: (document.getElementById('audit-actor').value || '').trim(),
+        from:  (document.getElementById('audit-from').value || '').trim(),
+        to:    (document.getElementById('audit-to').value || '').trim()
+      });
+    }
+    document.getElementById('audit-search').addEventListener('input', scheduleReload);
+    document.getElementById('audit-actor').addEventListener('change', reloadAudit);
+    document.getElementById('audit-from').addEventListener('change', reloadAudit);
+    document.getElementById('audit-to').addEventListener('change', reloadAudit);
+  })();
 
   document.getElementById('audit-export').addEventListener('click', function(){
     var q = (document.getElementById('audit-search').value || '').trim();
