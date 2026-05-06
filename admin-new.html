@@ -616,6 +616,7 @@ svg {
   border: 1px solid transparent;
 }
 .rail-icon:hover         { background: var(--elevated); color: var(--fg); border-color: var(--border); }
+.rail-icon:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .rail-icon.active        { background: var(--elevated); color: var(--accent); border-color: var(--accent-dim); }
 
 .rail-badge {
@@ -717,6 +718,7 @@ svg {
               border-color 0.18s ease-out;
 }
 .kpi-card:hover           { transform: translateY(-2px); }
+.kpi-card:focus-visible   { outline: 2px solid var(--accent); outline-offset: 2px; }
 .kpi-card.gold:hover      { box-shadow: 0 6px 20px rgba(201, 168, 76, 0.18); border-color: var(--accent-dim); }
 .kpi-card.blue:hover      { box-shadow: 0 6px 20px rgba(59, 130, 246, 0.18); border-color: rgba(59, 130, 246, 0.4); }
 .kpi-card.red:hover       { box-shadow: 0 6px 20px rgba(239, 68, 68, 0.18); border-color: rgba(239, 68, 68, 0.4); }
@@ -5867,6 +5869,7 @@ table.dt td {
   animation: panelIn 220ms var(--ease-entrance, cubic-bezier(0.22,1,0.36,1));
 }
 .tab-section.active { display: block; }
+#ap-members.tab-section.active { display: flex; flex-direction: column; }
 
 /* ── Section headings ──────────────────────────────────────────────── */
 .vcc-page-title {
@@ -6773,8 +6776,6 @@ textarea.inp.mono-area {
 </section><!-- /ap-compliance -->
 
 
-<!-- Scoped override: members pane must be flex, not block (07-vcc overrides .tab-section.active to display:block) -->
-<style>#ap-members.active { display: flex !important; flex-direction: column; }</style>
     </div>
 
   </main>
