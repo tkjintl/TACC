@@ -274,8 +274,10 @@ async function handleMine(req, res) {
     try {
       pdfBuffer = await getBlob(pathname);
     } catch {
-      // If pathname doesn't match exactly (e.g. timestamp differs), fetch by URL
-      const r = await fetch(lead.nda_file_url);
+      // If pathname doesn't match exactly (e.g. timestamp differs), fetch by URL with auth (private blob)
+      const blobHeaders = {};
+      if (process.env.BLOB_READ_WRITE_TOKEN) blobHeaders['Authorization'] = `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`;
+      const r = await fetch(lead.nda_file_url, { headers: blobHeaders });
       if (!r.ok) throw new Error(`fetch failed: ${r.status}`);
       pdfBuffer = Buffer.from(await r.arrayBuffer());
     }

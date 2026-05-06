@@ -53,7 +53,7 @@ export async function putBlob(pathname, buffer, contentType = 'application/octet
   }
   const { put } = await blobPkg();
   const result = await put(pathname, buffer, {
-    access: 'public',
+    access: 'private',
     contentType,
     token: process.env.BLOB_READ_WRITE_TOKEN,
   });
