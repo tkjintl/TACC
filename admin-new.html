@@ -6224,6 +6224,9 @@ textarea.inp.mono-area {
   align-items: center;
   margin-bottom: 10px;
 }
+.inp--flex    { flex: 1; min-width: 120px; }
+.inp--narrow  { width: 72px; flex-shrink: 0; }
+.sel--narrow  { width: 160px; flex-shrink: 0; }
 
 /* ── Compliance issue report panel ───────────────────────────────────── */
 .ir-panel {
@@ -6371,11 +6374,11 @@ textarea.inp.mono-area {
         </label>
         <label>
           Year from
-          <input id="bar-flt-year-min" type="number" class="inp" placeholder="2010" style="width:72px;">
+          <input id="bar-flt-year-min" type="number" class="inp inp--narrow" placeholder="2010">
         </label>
         <label>
           to
-          <input id="bar-flt-year-max" type="number" class="inp" placeholder="2026" style="width:72px;">
+          <input id="bar-flt-year-max" type="number" class="inp inp--narrow" placeholder="2026">
         </label>
         <button id="bar-flt-clear" class="vcc-btn vcc-btn--sm">Clear</button>
       </div>
@@ -6644,7 +6647,7 @@ textarea.inp.mono-area {
     <div class="vcc-card-body">
 
       <div class="sent-filter-bar">
-        <input id="sent-search" type="text" class="inp" placeholder="Search sent…" style="width:220px;">
+        <input id="sent-search" type="text" class="inp inp--flex" placeholder="Search sent…">
         <select id="sent-type" class="sel">
           <option value="">All types</option>
           <option value="dm">Direct Message</option>
@@ -6741,8 +6744,8 @@ textarea.inp.mono-area {
   <h2 id="audit-anchor" class="comp-anchor">Audit Log</h2>
 
   <div class="audit-filter-bar">
-    <input id="audit-search" type="text" class="inp" placeholder="Search actions…" style="width:200px;">
-    <select id="audit-actor" class="sel" style="width:160px;">
+    <input id="audit-search" type="text" class="inp inp--flex" placeholder="Search actions…">
+    <select id="audit-actor" class="sel sel--narrow">
       <option value="">All actors</option>
       <!-- options NOT populated by JS — see functional map note -->
     </select>
