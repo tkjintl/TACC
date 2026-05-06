@@ -1106,6 +1106,7 @@ svg {
 }
 .pipe-stage:last-child      { border-right: 0; }
 .pipe-stage:hover           { background: rgba(255,255,255,0.02); }
+.pipe-stage:focus-visible   { outline: 2px solid var(--accent); outline-offset: -2px; }
 .pipe-stage.active          { background: var(--goldMuted); }
 .pipe-stage.active::after   { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--accent); }
 .pipe-stage-num             { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; color: var(--fg-dim); }
@@ -1563,9 +1564,10 @@ select.input-field {
   transition: all 0.15s;
   white-space: nowrap;
 }
-.compose-tab:last-child { border-right: 0; }
-.compose-tab:hover      { color: var(--fg); }
-.compose-tab.active     { background: var(--goldMuted); color: var(--accent); }
+.compose-tab:last-child    { border-right: 0; }
+.compose-tab:hover         { color: var(--fg); }
+.compose-tab.active        { background: var(--goldMuted); color: var(--accent); }
+.compose-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 
 .compose-form { padding: 20px; border: 1px solid var(--border); background: var(--surface); border-radius: 6px; }
 
@@ -2287,12 +2289,12 @@ svg.spark   { overflow: visible; }
 @media (max-width: 380px) {
   .ah-row1   { padding: 0 8px; gap: 4px; }
   .ah-left   { gap: 6px; }
-  .ah-title  { font-size: 9px; letter-spacing: 0.16em; }
+  .ah-title  { font-size: 10px; letter-spacing: 0.16em; }
   .seal, .tb-seal { transform: scale(0.85); }
-  .ah-btn    { padding: 3px 5px; font-size: 9px; }
+  .ah-btn    { padding: 3px 5px; font-size: 10px; }
   .tk        { min-width: 86px; padding: 4px 8px; }
   .tk-val    { font-size: 11px; }
-  .ah-tab    { padding: 7px 10px; font-size: 9px; letter-spacing: 0.1em; }
+  .ah-tab    { padding: 7px 10px; font-size: 10px; letter-spacing: 0.1em; }
   .kpi-grid  { grid-template-columns: 1fr; }
   .kpi       { min-height: 80px; padding: 10px; }
   .kpi-val   { font-size: 22px; }
@@ -2302,8 +2304,8 @@ svg.spark   { overflow: visible; }
 /* 320px */
 @media (max-width: 320px) {
   .ah-row1   { padding: 0 6px; }
-  .ah-title  { font-size: 9px; }
-  .ah-btn    { padding: 2px 4px; font-size: 9px; letter-spacing: 0.06em; }
+  .ah-title  { font-size: 10px; }
+  .ah-btn    { padding: 2px 4px; font-size: 10px; letter-spacing: 0.06em; }
   .tk        { min-width: 76px; padding: 3px 6px; }
   .ah-tab    { padding: 6px 8px; }
 }
@@ -2674,7 +2676,7 @@ svg.spark   { overflow: visible; }
   align-items: center;
   justify-content: center;
   gap: 2px;
-  font-size: 9px;
+  font-size: 10px;
   font-family: var(--mono);
   letter-spacing: 0.06em;
   border: none;
@@ -2992,7 +2994,7 @@ svg.spark   { overflow: visible; }
   /* ── Tab bar ──────────────────────────────────────────────── */
   .ah-tab {
     padding: 8px 12px;
-    font-size: 9px;
+    font-size: 10px;
   }
 
   /* ── Compose form adjustments ─────────────────────────────── */
@@ -3002,7 +3004,7 @@ svg.spark   { overflow: visible; }
 
   .compose-tab {
     padding: 8px 10px;
-    font-size: 9px;
+    font-size: 10px;
   }
 
   .flt-row {
@@ -3504,7 +3506,7 @@ svg.spark   { overflow: visible; }
 
   .compose-tab {
     padding: 8px 10px;
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 0.14em;
   }
 
@@ -3532,7 +3534,7 @@ svg.spark   { overflow: visible; }
   /* ── Section heading ─────────────────────────────────────── */
   .sh { font-size: 18px; }
   .h2 { font-size: 15px; }
-  .h3 { font-size: 9px; }
+  .h3 { font-size: 10px; }
 }
 
 /* ============================================================
@@ -3578,7 +3580,7 @@ svg.spark   { overflow: visible; }
   /* ── Tab bar ─────────────────────────────────────────────── */
   .ah-tab {
     padding: 7px 10px;
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 0.12em;
   }
 
@@ -3671,11 +3673,11 @@ svg.spark   { overflow: visible; }
     gap: 3px;
   }
 
-  .ah-title { font-size: 9px; }
+  .ah-title { font-size: 10px; }
 
   .ah-btn {
     padding: 2px 4px;
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 0.08em;
   }
 
@@ -4578,7 +4580,8 @@ svg.spark   { overflow: visible; }
   cursor: pointer;
   transition: border-color 0.15s;
 }
-.pipe-select:focus { outline: none; border-color: var(--accent-dim); }
+.pipe-select:focus         { outline: none; border-color: var(--accent-dim); }
+.pipe-select:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
 
 .pipe-select-all-wrap {
   display: flex;
@@ -4765,7 +4768,7 @@ svg.spark   { overflow: visible; }
 /* ── Responsive: collapse to vertical scroll on very narrow screens ── */
 @media (max-width: 768px) {
   .kanban-cols {
-    grid-template-columns: repeat(7, minmax(152px, 1fr));
+    grid-template-columns: repeat(7, minmax(130px, 1fr));
   }
   .pipe-col-label { font-size: 10px; letter-spacing: 0.10em; }
   .pipe-card-name { font-size: 12px; }
@@ -4804,6 +4807,7 @@ svg.spark   { overflow: visible; }
   font-family: var(--sans);
 }
 .inp:focus        { border-color: var(--border-light); }
+.inp:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
 .inp::placeholder { color: var(--fg-dim); }
 
 .sel {
@@ -4824,7 +4828,8 @@ svg.spark   { overflow: visible; }
   padding-right: 28px;
   transition: border-color 0.15s;
 }
-.sel:focus { border-color: var(--border-light); }
+.sel:focus         { border-color: var(--border-light); }
+.sel:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
 
 /* ── Members split-pane layout ─────────────────────────────────────────
    Left pane: fixed 260px list + toolbar
@@ -8226,6 +8231,7 @@ textarea.inp.mono-area {
   }
   function renderFundFromStats(s) {
     if (!s) return;
+    if (!document.getElementById('fhp-nav')) return; // fund tab elements not yet in DOM
     clearFundLoading();
     document.getElementById('fhp-nav').textContent = fmtUsd(s.nav_usd || 0);
     document.getElementById('fhp-nav-sub').textContent = (s.nav_7d_pct != null ? ((s.nav_7d_pct >= 0 ? '+' : '') + Number(s.nav_7d_pct).toFixed(2) + '% / 7d') : '—');
@@ -8253,12 +8259,12 @@ textarea.inp.mono-area {
 
     // XAU
     if (s.xau_usd) {
-      document.getElementById('xau-price').textContent = '$' + fmt(s.xau_usd, 2);
-      document.getElementById('xau-kg').textContent = '$' + fmt(s.xau_usd * 32.15, 0);
+      var _xauP = document.getElementById('xau-price'); if (_xauP) _xauP.textContent = '$' + fmt(s.xau_usd, 2);
+      var _xauK = document.getElementById('xau-kg'); if (_xauK) _xauK.textContent = '$' + fmt(s.xau_usd * 32.15, 0);
     }
     if (s.xau_daily_pct != null) {
       var d = s.xau_daily_pct;
-      document.getElementById('xau-delta').innerHTML = '<span class="pill pill--' + (d > 0 ? 'green' : d < 0 ? 'red' : 'muted') + '">' + (d >= 0 ? '+' : '') + d.toFixed(2) + '%</span> · 1d';
+      var _xauD = document.getElementById('xau-delta'); if (_xauD) _xauD.innerHTML = '<span class="pill pill--' + (d > 0 ? 'green' : d < 0 ? 'red' : 'muted') + '">' + (d >= 0 ? '+' : '') + d.toFixed(2) + '%</span> · 1d';
       // Update sparkline direction to match daily delta (no history endpoint yet — directional only)
       var _noise = [0, -0.8, 1.2, -0.5, 1.8, 0.6, -1.1, 1.4, -0.3, 0.9, 0];
       var _trend = Math.max(-5, Math.min(5, d)) * 2.4;
