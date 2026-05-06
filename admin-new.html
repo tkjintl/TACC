@@ -7832,7 +7832,7 @@ textarea.inp.mono-area {
   }
   function openWireModal(lid, lead) {
     var kg = (lead && lead.subscription && lead.subscription.kg_requested) || 1;
-    var spotPerKg = 112000; // fallback
+    var spotPerKg = (window._tacc_stats && window._tacc_stats.xau_usd_kg_spot) || 112000;
     var defaultAmount = Math.round(kg * spotPerKg);
     showModal('Issue Wire Instructions', [
       '<div class="field-group"><label class="field-label">Subscription</label><div style="font-family:var(--font-mono);font-size:12px;color:var(--muted)">' + kg + ' kg requested</div></div>',
@@ -8799,7 +8799,7 @@ textarea.inp.mono-area {
           }
           return '<tr>' +
             '<td data-lbl="Name">' + esc(r.name || '—') + '</td>' +
-            '<td class="mono-col" data-lbl="Member#">#' + (r.member_no || r.member_number || '—') + '</td>' +
+            '<td class="mono-col" data-lbl="Member#">#' + esc(String(r.member_no || r.member_number || '—')) + '</td>' +
             '<td class="mono-col" data-lbl="Read at">' + (r.read_at ? new Date(r.read_at).toLocaleString('en-GB', { timeZone: 'Asia/Singapore' }) : '—') + '</td>' +
             '<td class="mono-col" data-lbl="Time-to-read">' + ttr + '</td>' +
           '</tr>';
