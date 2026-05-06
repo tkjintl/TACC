@@ -94,6 +94,22 @@
   --font-ui:       var(--sans);
   --font-mono:     var(--mono);
 
+  /* ── Z-index scale ──────────────────────────────────────────────────── */
+  --z-sticky:      2;    /* sticky kanban col header */
+  --z-rail:        50;   /* icon rail */
+  --z-header:      100;  /* topbar */
+  --z-nav:         200;  /* mobile nav, secondary nav */
+  --z-tooltip:     250;  /* tooltips, dropdowns */
+  --z-drawer-bd:   300;  /* drawer backdrop */
+  --z-drawer:      310;  /* drawer panel */
+  --z-sheet-bd:    390;  /* bottom-sheet backdrop */
+  --z-sheet:       400;  /* bottom sheets */
+  --z-modal-bd:    500;  /* modal backdrop */
+  --z-modal:       510;  /* modal panel */
+  --z-cmdk:        600;  /* command palette */
+  --z-toast:       700;  /* toast / notifications */
+  --z-veil:        9000; /* page transition veil */
+
   /* Legacy spacing */
   --pad-x:         clamp(20px, 5.5vw, 88px);
   --gap-section:   clamp(96px, 14vh, 160px);
@@ -185,7 +201,7 @@ svg {
   padding: 0 12px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  z-index: 100;
+  z-index: var(--z-header);
 }
 
 #ticker {
@@ -206,7 +222,7 @@ svg {
   align-items: center;
   padding: 8px 0;
   gap: 4px;
-  z-index: 10;
+  z-index: var(--z-rail);
 }
 
 #left-panel {
@@ -359,7 +375,7 @@ svg {
   border: 1px solid var(--border-light);
   border-radius: 4px;
   min-width: 180px;
-  z-index: 999;
+  z-index: var(--z-tooltip);
   display: none;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
 }
@@ -404,7 +420,7 @@ svg {
   -webkit-backdrop-filter: blur(20px);
   display: none;
   flex-direction: column;
-  z-index: 220;
+  z-index: var(--z-drawer);
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
 }
 .ah-tools-menu.open,
@@ -445,7 +461,7 @@ svg {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   display: none;
-  z-index: 220;
+  z-index: var(--z-drawer);
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
   padding: 14px;
 }
@@ -498,7 +514,7 @@ svg {
 }
 
 /* Legacy header element aliases */
-.ah { position: fixed; top: 0; left: 0; right: 0; z-index: 200; }
+.ah { position: fixed; top: 0; left: 0; right: 0; z-index: var(--z-nav); }
 .ah-row1 {
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 12px; height: var(--topbar-h); gap: 8px;
@@ -649,7 +665,7 @@ svg {
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s;
-  z-index: 200;
+  z-index: var(--z-tooltip);
 }
 .rail-icon:hover .rail-tooltip { opacity: 1; }
 
@@ -1625,7 +1641,7 @@ select.input-field {
   width: 380px;
   background: var(--elevated);
   border-left: 1px solid var(--border-light);
-  z-index: 500;
+  z-index: var(--z-modal);
   transform: translateX(100%);
   transition: transform 0.2s ease;
   overflow-y: auto;
@@ -1691,7 +1707,7 @@ select.input-field {
 .audit-event { font-size: 11px; color: var(--fg-muted); }
 
 /* Legacy drawer (dr-*) */
-.dr-backdrop { position: fixed; inset: 0; background: rgba(5, 5, 8, 0.7); z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.2s; backdrop-filter: blur(2px); }
+.dr-backdrop { position: fixed; inset: 0; background: rgba(5, 5, 8, 0.7); z-index: var(--z-drawer-bd); opacity: 0; pointer-events: none; transition: opacity 0.2s; backdrop-filter: blur(2px); }
 .dr-backdrop.open { opacity: 1; pointer-events: auto; }
 .dr {
   position: fixed;
@@ -1699,7 +1715,7 @@ select.input-field {
   width: 460px; max-width: 100vw;
   background: var(--near);
   border-left: 1px solid var(--goldBorderS);
-  z-index: 301;
+  z-index: var(--z-drawer);
   transform: translateX(100%);
   transition: transform 0.28s var(--ease-entrance);
   display: flex;
@@ -1732,7 +1748,7 @@ select.input-field {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.7);
-  z-index: 800;
+  z-index: var(--z-modal-bd);
   display: none;
   align-items: center;
   justify-content: center;
@@ -1756,7 +1772,7 @@ select.input-field {
 
 /* Legacy modal (mod-*) */
 .mod-bd {
-  position: fixed; inset: 0; background: rgba(5, 5, 8, 0.8); z-index: 500;
+  position: fixed; inset: 0; background: rgba(5, 5, 8, 0.8); z-index: var(--z-modal-bd);
   opacity: 0; pointer-events: none; transition: opacity 0.2s;
   display: flex; align-items: center; justify-content: center; padding: 20px;
 }
@@ -1782,7 +1798,7 @@ select.input-field {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  z-index: 1000;
+  z-index: var(--z-toast);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -1825,7 +1841,7 @@ select.input-field {
   background: var(--elevated);
   border: 1px solid var(--border-light);
   border-radius: 8px;
-  z-index: 900;
+  z-index: var(--z-modal);
   display: none;
   overflow: hidden;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.8);
@@ -1854,7 +1870,7 @@ select.input-field {
 
 /* Legacy cmdk-* */
 .cmdk-bd {
-  position: fixed; inset: 0; background: rgba(5, 5, 8, 0.8); z-index: 600;
+  position: fixed; inset: 0; background: rgba(5, 5, 8, 0.8); z-index: var(--z-cmdk);
   opacity: 0; pointer-events: none; transition: opacity 0.18s;
   display: flex; align-items: flex-start; justify-content: center;
   padding-top: 12vh; backdrop-filter: blur(4px);
@@ -2048,7 +2064,7 @@ svg.spark   { overflow: visible; }
   font-size: 10px;
   letter-spacing: 0.1em;
   padding: 3px 8px;
-  z-index: 1000;
+  z-index: var(--z-toast);
   pointer-events: none;
   border-radius: 3px;
 }
@@ -2096,7 +2112,7 @@ svg.spark   { overflow: visible; }
 .tl-time  { color: var(--fg-dim); font-size: 10px; flex-shrink: 0; }
 
 /* Page veil */
-.page-veil { position: fixed; inset: 0; z-index: 9999; background: var(--bg); opacity: 0; pointer-events: none; transition: opacity 280ms var(--ease-standard); }
+.page-veil { position: fixed; inset: 0; z-index: var(--z-veil); background: var(--bg); opacity: 0; pointer-events: none; transition: opacity 280ms var(--ease-standard); }
 .page-veil.covering { opacity: 1; pointer-events: all; }
 
 /* Gold gradient text */
@@ -2289,7 +2305,7 @@ svg.spark   { overflow: visible; }
   height: 56px;
   background: var(--surface);
   border-top: 1px solid var(--border);
-  z-index: 200;
+  z-index: var(--z-nav);
   align-items: center;
   justify-content: space-around;
   padding: 0 0 max(0px, env(safe-area-inset-bottom));
@@ -2324,7 +2340,7 @@ svg.spark   { overflow: visible; }
   background: var(--elevated);
   border-top: 1px solid var(--border-light);
   border-radius: 12px 12px 0 0;
-  z-index: 500;
+  z-index: var(--z-sheet);
   transform: translateY(100%);
   transition: transform 0.25s ease-out;
   padding: 16px 0;
@@ -2367,7 +2383,7 @@ svg.spark   { overflow: visible; }
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 499;
+  z-index: var(--z-sheet-bd);
   display: none;
 }
 .sheet-backdrop.open { display: block; }
@@ -2422,7 +2438,7 @@ svg.spark   { overflow: visible; }
   height: 56px;
   background: var(--surface);
   border-top: 1px solid var(--border);
-  z-index: 200;
+  z-index: var(--z-nav);
   /* Safe area inset for notched phones / home-indicator devices */
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -2516,7 +2532,7 @@ svg.spark   { overflow: visible; }
   background: var(--elevated);
   border-top: 1px solid var(--border-light);
   border-radius: 16px 16px 0 0;
-  z-index: 300;
+  z-index: var(--z-sheet);
   transform: translateY(100%);
   transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
   /* Pad below content for home-indicator */
@@ -2592,7 +2608,7 @@ svg.spark   { overflow: visible; }
   position: fixed;
   inset: 0;
   background: rgba(5, 5, 8, 0.55);
-  z-index: 299;
+  z-index: var(--z-sheet-bd);
   display: none;
   -webkit-tap-highlight-color: transparent;
 }
@@ -3003,7 +3019,7 @@ svg.spark   { overflow: visible; }
     background: var(--elevated);
     border-top: 1px solid var(--border-light);
     border-radius: 16px 16px 0 0;
-    z-index: 400;
+    z-index: var(--z-sheet);
     max-height: 70dvh;
     overflow-y: auto;
     transform: translateY(100%);
@@ -3203,7 +3219,7 @@ svg.spark   { overflow: visible; }
     inset: 0;
     top: var(--topbar-h);
     background: var(--surface);
-    z-index: 150;
+    z-index: var(--z-nav);
     overflow-y: auto;
     padding: 16px;
     padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
@@ -3912,7 +3928,7 @@ svg.spark   { overflow: visible; }
       background: var(--elevated);
       border-top: 1px solid var(--border-light);
       border-radius: 12px 12px 0 0;
-      z-index: 500;
+      z-index: var(--z-sheet);
       transform: translateY(100%);
       transition: transform 0.25s ease-out;
       padding: 16px 0;
@@ -3939,7 +3955,7 @@ svg.spark   { overflow: visible; }
       height: 56px;
       background: var(--surface);
       border-top: 1px solid var(--border);
-      z-index: 200;
+      z-index: var(--z-nav);
       align-items: center;
       justify-content: space-around;
       padding: 0 0 max(0px, env(safe-area-inset-bottom));
@@ -4619,7 +4635,7 @@ svg.spark   { overflow: visible; }
   flex-shrink: 0;
   position: sticky;
   top: 0;
-  z-index: 2;
+  z-index: var(--z-sticky);
 }
 
 .pipe-col-label {
@@ -7201,6 +7217,43 @@ textarea.inp.mono-area {
         document.getElementById('lane-cleared-count').textContent = clearedList.length;
         document.getElementById('badge-today').textContent = actionList.length;
         document.getElementById('badge-compliance').textContent = items.length;
+
+        // Populate right rail — Alerts panel
+        var rrAlerts = document.getElementById('rr-alerts');
+        if (rrAlerts) {
+          var allAlerts = actionList.concat(soonList);
+          if (!allAlerts.length) {
+            rrAlerts.innerHTML = '<div class="rr-kpi"><span class="rr-kpi-label" style="color:var(--green)">No active alerts</span></div>';
+          } else {
+            rrAlerts.innerHTML = allAlerts.slice(0, 5).map(function(x){
+              var sev = (x.severity === 'critical' || x.severity === 'red') ? 'high' : 'med';
+              return '<div class="alert-item ' + sev + '">' +
+                '<div class="alert-item-title">' + esc(x.leadName || x.name || 'Alert') + '</div>' +
+                '<div class="alert-item-sub">' + esc(x.type ? flagTitle(x.type) : (x.reason || '')) + '</div>' +
+              '</div>';
+            }).join('');
+          }
+        }
+
+        // Populate right rail — Recent Activity panel
+        var rrActivity = document.getElementById('rr-activity');
+        if (rrActivity) {
+          var recentFeed = feed.slice(0, 6);
+          if (!recentFeed.length) {
+            rrActivity.innerHTML = '<div class="rr-kpi"><span class="rr-kpi-label">No recent activity</span></div>';
+          } else {
+            rrActivity.innerHTML = recentFeed.map(function(e){
+              var label = (typeof humanizeAction === 'function') ? humanizeAction(e.action || '') : (e.action || '').replace(/_/g,' ');
+              return '<div class="activity-item">' +
+                '<div class="activity-dot"></div>' +
+                '<div style="min-width:0;flex:1">' +
+                  '<div class="activity-text">' + esc(e.target_name || e.target || 'System') + ' — ' + esc(label) + '</div>' +
+                  '<span class="activity-time">' + relTime(e.at || e.created_at) + '</span>' +
+                '</div>' +
+              '</div>';
+            }).join('');
+          }
+        }
       })
       .catch(function(){
         ['lane-action','lane-soon','lane-cleared'].forEach(function(id){
@@ -8204,6 +8257,22 @@ textarea.inp.mono-area {
     }
     if (s.usd_krw) document.getElementById('xau-fx').textContent = fmt(s.usd_krw, 0);
     if (s.gold_cost_per_kg) document.getElementById('xau-cost').textContent = '$' + fmt(s.gold_cost_per_kg, 0);
+
+    // Right rail — Quick Stats (fund snapshot)
+    var rrStats = document.getElementById('rr-stats');
+    if (rrStats) {
+      var _rrRows = [
+        { label: 'Members', val: (s.members_count || 0) + ' / ' + (s.members_capacity || 100) },
+        { label: 'Gold held', val: fmt(s.gold_kg || 0, 2) + ' kg' },
+        { label: 'LTV drawn', val: (s.ltv_pct || 0).toFixed(1) + '%' },
+        { label: 'Deployed', val: fmtUsd(s.deployed_usd || 0) },
+        { label: 'NAV', val: fmtUsd(s.nav_usd || 0) },
+        { label: 'SORA cost', val: fmtUsd(s.sora_cost_usd || 0) }
+      ];
+      rrStats.innerHTML = _rrRows.map(function(r){
+        return '<div class="rr-kpi"><span class="rr-kpi-label">' + r.label + '</span><span class="rr-kpi-val">' + r.val + '</span></div>';
+      }).join('');
+    }
 
     // Capital Engine
     var _goldVal = s.gold_value_usd || 0;
