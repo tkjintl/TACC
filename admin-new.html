@@ -34,7 +34,7 @@
   /* ── Foreground scale ─────────────────────────────────────────────── */
   --fg:            #e8e8f0;
   --fg-muted:      #8888a8;
-  --fg-dim:        #55556a;
+  --fg-dim:        #7474a0;  /* was #55556a — lifted for WCAG contrast */
 
   /* ── Accent / Gold ────────────────────────────────────────────────── */
   --accent:        #c9a84c;
@@ -4155,7 +4155,7 @@ svg.spark   { overflow: visible; }
 <section id="ap-today" class="tab-section ap active" data-tab="today">
 
   <!-- KPI cards row -->
-  <div class="kpi-grid">
+  <div id="today-kpis" class="kpi-grid">
 
     <!-- AUM card -->
     <div class="kpi-card gold" onclick="toggleKpi(this)">
@@ -4283,7 +4283,7 @@ svg.spark   { overflow: visible; }
   </div>
 
   <!-- Decision lanes -->
-  <div class="lanes-grid">
+  <div id="today-lanes" class="lanes-grid">
 
     <!-- Needs Action lane -->
     <div class="lane lane--red">
@@ -4319,7 +4319,7 @@ svg.spark   { overflow: visible; }
     </div>
 
     <!-- Activity Timeline lane -->
-    <div class="lane lane--gold">
+    <div id="today-timeline" class="lane lane--gold">
       <div class="lane-hdr">
         <span class="lane-title">Activity Timeline</span>
         <span id="lane-tl-count" class="lane-count">0</span>
@@ -5683,17 +5683,16 @@ table.dt td {
 
         <div class="xau-spark-wrap">
           <svg id="xau-spark" viewBox="0 0 200 36" preserveAspectRatio="none">
-            <!-- Static placeholder sparkline polylines -->
-            <polyline
-              points="0,28 20,26 40,22 60,24 80,18 100,20 120,14 140,16 160,10 180,12 200,8"
+            <polyline id="xau-spark-bg"
+              points="0,18 20,18 40,18 60,18 80,18 100,18 120,18 140,18 160,18 180,18 200,18"
               fill="none"
               stroke="var(--border)"
               stroke-width="1.5"
               stroke-linejoin="round"
               stroke-linecap="round"
             />
-            <polyline
-              points="0,28 20,26 40,22 60,24 80,18 100,20 120,14 140,16 160,10 180,12 200,8"
+            <polyline id="xau-spark-line"
+              points="0,18 20,18 40,18 60,18 80,18 100,18 120,18 140,18 160,18 180,18 200,18"
               fill="none"
               stroke="var(--accent)"
               stroke-width="1.5"
@@ -6976,8 +6975,9 @@ textarea.inp.mono-area {
     loadTab(tab);
   }
   document.querySelectorAll('.rail-icon[data-tab]').forEach(function(b){ b.addEventListener('click', function(){ goTab(b.dataset.tab); }); });
-  document.querySelectorAll('.mob-nav-item[data-tab]').forEach(function(b){ b.addEventListener('click', function(){ var t=b.dataset.tab; if(t!=='more') goTab(t); }); });
+  document.querySelectorAll('.mobile-nav-item[data-tab]').forEach(function(b){ b.addEventListener('click', function(){ var t=b.dataset.tab; if(t!=='more') goTab(t); }); });
   document.querySelectorAll('[data-go-tab]').forEach(function(el){ el.addEventListener('click', function(){ goTab(el.dataset.goTab); }); });
+  document.querySelectorAll('[data-panel-goto]').forEach(function(el){ el.addEventListener('click', function(){ var t=document.getElementById(el.dataset.panelGoto); if(t) t.scrollIntoView({ behavior:'smooth', block:'start' }); }); });
   // hash routing
   if (location.hash) { var h = location.hash.slice(1); if (document.querySelector('.rail-icon[data-tab="' + h + '"]')) goTab(h); }
 
@@ -7128,16 +7128,15 @@ textarea.inp.mono-area {
     document.getElementById('fund-sync').textContent = new Date().toLocaleTimeString('en-GB');
   }
   updateTicker();
-  setInterval(updateTicker, 60000);
-
-  // stale data banner — if no refresh in 15min
-  setInterval(function(){
+  var _tickerInterval = setInterval(updateTicker, 60000);
+  var _staleInterval = setInterval(function(){
     if (lastTickerTs && Date.now() - lastTickerTs > 15 * 60 * 1000) {
       document.getElementById('stale-banner').classList.add('show');
     } else {
       document.getElementById('stale-banner').classList.remove('show');
     }
   }, 30000);
+  window.addEventListener('beforeunload', function(){ clearInterval(_tickerInterval); clearInterval(_staleInterval); });
   var _rl = document.getElementById('refresh-link'); if (_rl) _rl.addEventListener('click', function(e){ e.preventDefault(); updateTicker(); });
 
   /* ═══════════════════════════════════════════════════════════════════
@@ -7435,9 +7434,11 @@ textarea.inp.mono-area {
   var dr = document.getElementById('dr');
   var drBd = document.getElementById('dr-bd');
   var lastFocus = null;
+  var _drawerLoadId = null;
 
   function openLeadDrawer(id) {
     lastFocus = document.activeElement;
+    _drawerLoadId = id;
     dr.classList.add('open'); drBd.classList.add('open');
     dr.setAttribute('aria-hidden', 'false');
     document.getElementById('dr-name').textContent = 'Loading…';
@@ -7445,9 +7446,11 @@ textarea.inp.mono-area {
     document.getElementById('dr-body').innerHTML = '<div class="skel" style="margin-bottom:12px;"></div><div class="skel" style="margin-bottom:12px;"></div><div class="skel"></div>';
     document.getElementById('dr-actions').innerHTML = '';
 
+    var _thisLoad = id;
     api('lead-detail&leadId=' + encodeURIComponent(id))
       .then(function(r){ return r.json(); })
       .then(function(d){
+        if (_drawerLoadId !== _thisLoad) return; // superseded by a newer click
         if (!d || d.ok === false) throw (d && d.error) || 'lead-detail-failed';
         var lead = d.lead || d;
         // Backend returns audit + computed as siblings. Merge for the renderer.
@@ -7458,6 +7461,7 @@ textarea.inp.mono-area {
         renderLeadDrawer(lead);
       })
       .catch(function(){
+        if (_drawerLoadId !== _thisLoad) return;
         // Fallback to list data
         var lead = allLeads.find(function(l){ return l.id === id; });
         if (lead) { lead.stage = resolveLeadStageClient(lead); renderLeadDrawer(lead); }
@@ -7973,14 +7977,17 @@ textarea.inp.mono-area {
         activeMember = r.dataset.mid;
         renderMemberList();
         renderMemberDetail(r.dataset.mid);
-        if (window.matchMedia('(max-width: 900px)').matches) {
+        if (window.matchMedia('(max-width: 768px)').matches) {
           var d = document.getElementById('mem-detail');
           if (d) setTimeout(function(){ d.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
         }
       });
     });
   }
+  var _memberDetailLoadId = null;
   function renderMemberDetail(id) {
+    _memberDetailLoadId = id;
+    var _thisLoad = id;
     var m = allMembers.find(function(x){ return x.id === id; });
     var el = document.getElementById('mem-detail');
     if (!m) { el.innerHTML = '<div class="mem-detail-empty">Select a member</div>'; return; }
@@ -7989,6 +7996,7 @@ textarea.inp.mono-area {
     api('lead-detail&leadId=' + encodeURIComponent(id))
       .then(function(r){ return r.json(); })
       .then(function(d){
+        if (_memberDetailLoadId !== _thisLoad) return;
         var lead = d.lead || d.member || m;
         // Merge audit + computed siblings
         if (d.audit && !lead.audit) lead.audit = d.audit;
@@ -8006,7 +8014,7 @@ textarea.inp.mono-area {
         lead.wealth_tier       = lead.wealth || lead.investable_assets || '—';
         renderMemberDetailHtml(lead);
       })
-      .catch(function(){ renderMemberDetailHtml(m); });
+      .catch(function(){ if (_memberDetailLoadId === _thisLoad) renderMemberDetailHtml(m); });
   }
   function renderMemberDetailHtml(m) {
     var el = document.getElementById('mem-detail');
@@ -8177,12 +8185,75 @@ textarea.inp.mono-area {
     if (s.xau_daily_pct != null) {
       var d = s.xau_daily_pct;
       document.getElementById('xau-delta').innerHTML = '<span class="pill pill--' + (d > 0 ? 'green' : d < 0 ? 'red' : 'muted') + '">' + (d >= 0 ? '+' : '') + d.toFixed(2) + '%</span> · 1d';
+      // Update sparkline direction to match daily delta (no history endpoint yet — directional only)
+      var _noise = [0, -0.8, 1.2, -0.5, 1.8, 0.6, -1.1, 1.4, -0.3, 0.9, 0];
+      var _trend = Math.max(-5, Math.min(5, d)) * 2.4;
+      var _pts = [];
+      for (var _i = 0; _i <= 10; _i++) {
+        var _x = _i * 20;
+        var _y = Math.max(4, Math.min(32, 28 - (_i / 10) * _trend + _noise[_i] * 1.5));
+        _pts.push(_x + ',' + _y.toFixed(1));
+      }
+      var _ptStr = _pts.join(' ');
+      var _sl = document.getElementById('xau-spark-line'); if (_sl) _sl.setAttribute('points', _ptStr);
+      var _sb = document.getElementById('xau-spark-bg'); if (_sb) _sb.setAttribute('points', _ptStr);
     }
     if (s.usd_krw) document.getElementById('xau-fx').textContent = fmt(s.usd_krw, 0);
     if (s.gold_cost_per_kg) document.getElementById('xau-cost').textContent = '$' + fmt(s.gold_cost_per_kg, 0);
 
+    // Capital Engine
+    var _goldVal = s.gold_value_usd || 0;
+    var _ltvCeil = s.ltv_ceiling_usd || 0;
+    var _ltvDrawn = s.ltv_drawn_usd || 0;
+    var _deployed = s.deployed_usd || 0;
+    var _mult = _goldVal > 0 && _ltvCeil > 0 ? (_ltvCeil / _goldVal) : 0.7;
+    var _ceTot = document.getElementById('cf-total'); if (_ceTot) _ceTot.textContent = fmtUsd(s.nav_usd || 0);
+    var _ceGold = document.getElementById('cf-gold'); if (_ceGold) _ceGold.textContent = fmtUsd(_goldVal);
+    var _ceMult = document.getElementById('cf-mult'); if (_ceMult) _ceMult.textContent = _mult.toFixed(2);
+    var _ceCeil = document.getElementById('cf-ceiling'); if (_ceCeil) _ceCeil.textContent = fmtUsd(_ltvCeil);
+    var _ceDrawn = document.getElementById('cf-drawn'); if (_ceDrawn) _ceDrawn.textContent = fmtUsd(_ltvDrawn);
+    var _ceDep = document.getElementById('cf-deployed'); if (_ceDep) _ceDep.textContent = fmtUsd(_deployed);
+
+    // Runway
+    var _activeDeals = s.deals_active_count || 0;
+    var _rwDeals = document.getElementById('rw-deals'); if (_rwDeals) _rwDeals.textContent = _activeDeals || '—';
+    if (_activeDeals > 0 && _deployed > 0) {
+      var _avgTicket = _deployed / _activeDeals;
+      var _rwTick = document.getElementById('rw-ticket'); if (_rwTick) _rwTick.textContent = fmtUsd(_avgTicket);
+      var _remaining = Math.max(0, _ltvCeil - _ltvDrawn);
+      var _runwayMo = _avgTicket > 0 ? Math.round((_remaining / _avgTicket) * 3) : 0;
+      var _rwRun = document.getElementById('rw-runway'); if (_rwRun) _rwRun.textContent = _runwayMo > 0 ? _runwayMo : '—';
+    }
+
     // Posture
     derivePosture(s);
+    renderLtvSensitivity(s);
+  }
+  function renderLtvSensitivity(s) {
+    var tb = document.getElementById('sens-tbody');
+    if (!tb) return;
+    var goldVal = s.gold_value_usd || 0;
+    var drawn = s.ltv_drawn_usd || 0;
+    var mult = (s.ltv_ceiling_usd && goldVal > 0) ? s.ltv_ceiling_usd / goldVal : 0.7;
+    if (!goldVal || !drawn) return; // no real data yet — keep placeholder rows
+    var scenarios = [-20, -10, 0, 10, 20];
+    var rows = scenarios.map(function(pct) {
+      var newGold = goldVal * (1 + pct / 100);
+      var newCeil = newGold * mult;
+      var newLtv = newCeil > 0 ? (drawn / newCeil) * 100 : 0;
+      var margin = Math.max(0, newCeil - drawn);
+      var buf = newLtv > 70 ? 'Tight' : newLtv > 60 ? 'OK' : newLtv > 50 ? 'Good' : 'Strong';
+      var bufClass = newLtv > 70 ? 'pill--red' : newLtv > 60 ? 'pill--amber' : newLtv > 50 ? 'pill--green' : 'pill--green';
+      var sign = pct > 0 ? '+' : pct < 0 ? '−' : '';
+      var absPct = Math.abs(pct);
+      return '<tr>' +
+        '<td class="mono-col">' + sign + absPct + '%</td>' +
+        '<td class="mono-col">' + newLtv.toFixed(1) + '%</td>' +
+        '<td class="mono-col">' + fmtUsd(margin) + '</td>' +
+        '<td class="mono-col"><span class="pill ' + bufClass + '">' + buf + '</span></td>' +
+        '</tr>';
+    });
+    tb.innerHTML = rows.join('');
   }
   function derivePosture(s) {
     var gold = s.gold_7d_pct || 1.4;
@@ -9353,7 +9424,7 @@ textarea.inp.mono-area {
       .then(function(r){ return r.json(); })
       .then(function(d){
         if (!d || !d.ok) {
-          if (d && d.error) console.warn('[bots-tick]', d.error);
+          if (d && d.error) { /* bots-tick error: d.error */ }
           return;
         }
         appendLiveLog(d.advanced || [], (d.state && d.state.last_tick_at) || Date.now());
@@ -9457,11 +9528,11 @@ textarea.inp.mono-area {
 
 // Mobile bottom nav wiring
 (function wireMobileNav() {
-  const moreBtn = document.querySelector('.mob-nav-item[data-tab="more"]');
+  const moreBtn = document.querySelector('.mobile-nav-item[data-tab="more"]');
   const moreSheet = document.getElementById('mob-more-sheet');
 
   // Wire mobile nav items to goTab
-  document.querySelectorAll('.mob-nav-item[data-tab]').forEach(item => {
+  document.querySelectorAll('.mobile-nav-item[data-tab]').forEach(item => {
     item.addEventListener('click', () => {
       const tab = item.dataset.tab;
       if (tab === 'more') {
@@ -9470,7 +9541,7 @@ textarea.inp.mono-area {
       }
       goTab(tab);
       // Update active state on mobile nav
-      document.querySelectorAll('.mob-nav-item').forEach(i => i.classList.remove('active'));
+      document.querySelectorAll('.mobile-nav-item').forEach(i => i.classList.remove('active'));
       item.classList.add('active');
       if (moreSheet) moreSheet.classList.remove('open');
     });
@@ -9536,125 +9607,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-<!-- Pipeline renderPipeTable is now inside the shared JS IIFE above -->
-<script>/* removed — renderPipeTable moved inside IIFE for scope access */
-/* ═══════════════════════════════════════════════════════════════════════
-   Pipeline — renderPipeTable() rewrite (Kanban card layout)
-   Replaces the original table-row writer with column-card appender.
-   All event wiring for #pipe-select-all is handled by Agent J shared JS.
-   ═══════════════════════════════════════════════════════════════════════ */
-
-function renderPipeTable() {
-  const leads = getFiltered();
-
-  // Clear all column bodies
-  document.querySelectorAll('.pipe-col-body').forEach(function(col) {
-    col.innerHTML = '';
-  });
-
-  if (leads.length === 0) {
-    const firstCol = document.querySelector('.pipe-col-body');
-    if (firstCol) firstCol.innerHTML = '<div class="lane-empty">No leads match filter</div>';
-    updateBulkStrip();
-    return;
-  }
-
-  leads.forEach(function(l) {
-    const age = l.stage_entered_at
-      ? Math.floor((Date.now() - new Date(l.stage_entered_at)) / 86400000)
-      : 0;
-    const ac = ageClass(age);
-    const checked = selectedLeads[l.id] ? 'checked' : '';
-
-    const card = document.createElement('div');
-    card.className = 'pipe-card';
-    card.dataset.leadId = l.id;
-
-    card.innerHTML =
-      '<div class="pipe-card-top">' +
-        '<label class="pipe-card-check" onclick="event.stopPropagation()">' +
-          '<input type="checkbox" data-lead-cb="' + esc(l.id) + '" ' + checked + '>' +
-        '</label>' +
-        '<span class="pipe-card-name name-col">' + esc(l.name || '—') + '</span>' +
-        '<span class="pipe-card-age mono-col ' + ac + '">' + age + 'd</span>' +
-      '</div>' +
-      '<div class="pipe-card-meta">' +
-        '<span class="pipe-card-country mono-col">' + esc(l.country || '—') + '</span>' +
-        '<span class="pipe-card-email mono-col">'   + esc(l.email   || '—') + '</span>' +
-      '</div>' +
-      '<div class="pipe-card-footer">' +
-        '<span class="pipe-card-updated mono-col">' + relTime(l.updated_at) + '</span>' +
-        '<button class="b b--sm" data-open-lead="' + esc(l.id) + '">Open</button>' +
-      '</div>';
-
-    // Route card to its stage column
-    const stageCol = document.querySelector(
-      '.pipe-col[data-stage="' + l.stage + '"] .pipe-col-body'
-    );
-    if (stageCol) {
-      stageCol.appendChild(card);
-    } else {
-      // Fallback: drop into first column if stage is unrecognised
-      const fallback = document.querySelector('.pipe-col-body');
-      if (fallback) fallback.appendChild(card);
-    }
-  });
-
-  // ── Wire: Open-lead buttons ──────────────────────────────────────
-  document.querySelectorAll('[data-open-lead]').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      openLeadDrawer(btn.dataset.openLead);
-    });
-  });
-
-  // ── Wire: Card-level click → open drawer ────────────────────────
-  document.querySelectorAll('.pipe-card[data-lead-id]').forEach(function(card) {
-    card.addEventListener('click', function(e) {
-      if (e.target.closest('input, button')) return;
-      openLeadDrawer(card.dataset.leadId);
-    });
-  });
-
-  // ── Wire: Checkboxes → bulk selection ───────────────────────────
-  document.querySelectorAll('[data-lead-cb]').forEach(function(cb) {
-    cb.addEventListener('change', function() {
-      if (cb.checked) {
-        selectedLeads[cb.dataset.leadCb] = true;
-      } else {
-        delete selectedLeads[cb.dataset.leadCb];
-      }
-      updateBulkStrip();
-    });
-  });
-}
-
-/* ───────────────────────────────────────────────────────────────────────
-   Mobile swipe-to-action on pipeline cards (swipe-left opens drawer)
-   ─────────────────────────────────────────────────────────────────────── */
-(function wireSwipe() {
-  var startX = 0;
-  var startY = 0;
-
-  document.addEventListener('touchstart', function(e) {
-    if (!e.target.closest('.pipe-card')) return;
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
-  }, { passive: true });
-
-  document.addEventListener('touchend', function(e) {
-    var card = e.target.closest('.pipe-card');
-    if (!card) return;
-    var dx = e.changedTouches[0].clientX - startX;
-    var dy = e.changedTouches[0].clientY - startY;
-    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
-      if (dx < 0) {
-        // Swipe left — open lead drawer
-        openLeadDrawer(card.dataset.leadId);
-      }
-    }
-  }, { passive: true });
-})();
+<!-- renderPipeTable and swipe handler are defined inside the shared JS IIFE above -->
+<script>/* renderPipeTable and wireSwipe are defined inside the shared JS IIFE above. This block intentionally left empty. */
 </script>
 
 </body>
