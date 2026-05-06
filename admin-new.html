@@ -7987,6 +7987,7 @@ textarea.inp.mono-area {
         document.getElementById('badge-members').textContent = allMembers.length;
         renderMemberList();
         populateRecipientSelects();
+        if (loaded.vault) renderVaultLtv();
       })
       .catch(function(){
         document.getElementById('mem-list').innerHTML = '<div class="err"><div class="err-msg">Failed to load members</div></div>';
@@ -8453,8 +8454,11 @@ textarea.inp.mono-area {
         tb.innerHTML = '<tr><td colspan="10"><div class="empty"><div class="empty-title">No bars yet — bars register on funded admission</div><div class="empty-hint">Backend endpoint pending</div></div></td></tr>';
       });
 
-    // LTV monitoring
+    renderVaultLtv();
+  }
+  function renderVaultLtv() {
     var ltvTb = document.getElementById('ltv-tbody');
+    if (!ltvTb) return;
     if (allMembers.length) {
       ltvTb.innerHTML = allMembers.map(function(m){
         var ceil = m.credit_ceiling_usd || m.ltv_ceiling_usd || m.ltv_ceiling_krw || 0;
@@ -8572,10 +8576,14 @@ textarea.inp.mono-area {
     e.preventDefault();
     var recipients = recipResolve('dm');
     if (!recipients || (Array.isArray(recipients) && !recipients.length)) { toast('Select recipients', 'error'); return; }
+    var subject = document.getElementById('dm-subject').value.trim();
+    var body = document.getElementById('dm-body').value.trim();
+    if (!subject) { toast('Subject required', 'error'); return; }
+    if (!body) { toast('Message body required', 'error'); return; }
     var payload = {
       recipients: recipients,
-      subject: document.getElementById('dm-subject').value,
-      body: document.getElementById('dm-body').value,
+      subject: subject,
+      body: body,
       type: document.getElementById('dm-type').value || 'gold'
     };
     api('send-message', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
@@ -8666,6 +8674,7 @@ textarea.inp.mono-area {
     e.preventDefault();
     var recipients = recipResolve('qtr');
     if (!recipients || (Array.isArray(recipients) && !recipients.length)) { toast('Select recipients', 'error'); return; }
+    if (!document.getElementById('qtr-body').value.trim()) { toast('Letter body required', 'error'); return; }
     var d = buildQuarterlyDraft();
     var payload = { quarter: d.quarter, year: d.year, subject: d.subject, html_body: d.html_body, recipients: recipients };
     if (isFinite(d.navM)) payload.nav_usd = Math.round(d.navM * 1e6);
@@ -8694,42 +8703,63 @@ textarea.inp.mono-area {
     document.querySelector('[data-compose="vv"]').click();
   });
 
+  var _allSentItems = [];
   function loadSent() {
-    // Backend has no admin op=messages. Use op=letters for the quarterly-letter ledger.
     api('letters')
       .then(function(r){ return r.json(); })
       .then(function(d){
-        var items = (d && (d.letters || d.messages)) || [];
-        // Normalize letter shape → renderer shape (which expects subject/type/recipient_count/sent_at/read_count)
-        items = items.map(function(l){
+        var raw = (d && (d.letters || d.messages)) || [];
+        _allSentItems = raw.map(function(l){
+          var rawType = l.type || (l.quarter ? 'qtr' : 'dm');
           return {
             id: l.id,
-            subject: l.subject || ('Q' + l.quarter + ' ' + l.year),
-            type: 'blue',
+            subject: l.subject || (l.quarter ? 'Q' + l.quarter + ' ' + l.year + ' — Partner Update' : '—'),
+            quarter: l.quarter ? 'Q' + l.quarter + ' ' + (l.year || '') : '—',
+            type: rawType,
             recipient_count: l.recipient_count || 0,
             sent_at: l.sent_at,
             read_count: l.read_count || 0
           };
         });
-        var tb = document.getElementById('sent-tbody');
-        if (!items.length) { tb.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-title">No messages sent yet</div><div class="empty-hint">Compose above to begin</div></div></td></tr>'; return; }
-        tb.innerHTML = items.map(function(m){
-          var typeClr = m.type === 'amber' ? 'amber' : m.type === 'blue' ? 'blue' : 'gold';
-          return '<tr>' +
-            '<td data-lbl="Subject">' + esc(m.subject || '—') + '</td>' +
-            '<td data-lbl="Type"><span class="pill pill--' + typeClr + '">' + esc(m.type || 'dm') + '</span></td>' +
-            '<td class="mono-col" data-lbl="Recipients">' + (m.recipient_count || 1) + '</td>' +
-            '<td class="mono-col" data-lbl="Sent">' + (m.sent_at ? new Date(m.sent_at).toLocaleDateString('en-GB') : '—') + '</td>' +
-            '<td class="mono-col" data-lbl="Read">' + (m.read_count || 0) + ' / ' + (m.recipient_count || 1) + '</td>' +
-            '<td data-lbl=""><button class="b b--sm" data-receipts="' + esc(m.id) + '" data-subject="' + esc(m.subject || '') + '">View receipts</button></td>' +
-          '</tr>';
-        }).join('');
-        tb.querySelectorAll('[data-receipts]').forEach(function(btn){
-          btn.addEventListener('click', function(){ openReadReceiptsModal(btn.dataset.receipts, btn.dataset.subject); });
-        });
+        renderSentLog();
       })
-      .catch(function(){});
+      .catch(function(){
+        document.getElementById('sent-tbody').innerHTML = '<tr><td colspan="6"><div class="err"><div class="err-msg">Couldn\'t load sent log</div></div></td></tr>';
+      });
   }
+  function renderSentLog() {
+    var q = (document.getElementById('sent-search').value || '').toLowerCase().trim();
+    var typeFilter = document.getElementById('sent-type').value;
+    var items = _allSentItems.filter(function(m){
+      if (typeFilter && m.type !== typeFilter) return false;
+      if (q && !(m.subject || '').toLowerCase().includes(q)) return false;
+      return true;
+    });
+    var tb = document.getElementById('sent-tbody');
+    if (!items.length) {
+      tb.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-title">' + (_allSentItems.length ? 'No matches' : 'No messages sent yet') + '</div><div class="empty-hint">' + (_allSentItems.length ? 'Try clearing filters' : 'Quarterly letters &amp; vault notices only') + '</div></div></td></tr>';
+      return;
+    }
+    var TYPE_PILL = { dm: 'blue', cap: 'amber', qtr: 'gold', vv: 'green' };
+    var TYPE_LBL  = { dm: 'DM', cap: 'Capital Call', qtr: 'Quarterly', vv: 'Vault Verif.' };
+    tb.innerHTML = items.map(function(m){
+      var pill = TYPE_PILL[m.type] || 'muted';
+      var lbl  = TYPE_LBL[m.type] || m.type;
+      return '<tr>' +
+        '<td data-lbl="Subject">' + esc(m.subject) + '</td>' +
+        '<td data-lbl="Quarter"><span class="pill pill--' + pill + '">' + esc(lbl) + '</span> ' + esc(m.quarter) + '</td>' +
+        '<td class="mono-col" data-lbl="Recipients">' + (m.recipient_count || 1) + '</td>' +
+        '<td class="mono-col" data-lbl="Read">' + (m.read_count || 0) + ' / ' + (m.recipient_count || 1) + '</td>' +
+        '<td class="mono-col" data-lbl="Sent">' + (m.sent_at ? new Date(m.sent_at).toLocaleDateString('en-GB') : '—') + '</td>' +
+        '<td data-lbl=""><button class="b b--sm" data-receipts="' + esc(m.id) + '" data-subject="' + esc(m.subject) + '">Receipts</button></td>' +
+      '</tr>';
+    }).join('');
+    tb.querySelectorAll('[data-receipts]').forEach(function(btn){
+      btn.addEventListener('click', function(){ openReadReceiptsModal(btn.dataset.receipts, btn.dataset.subject); });
+    });
+  }
+  document.getElementById('sent-search').addEventListener('input', renderSentLog);
+  document.getElementById('sent-type').addEventListener('change', renderSentLog);
 
   function openReadReceiptsModal(messageId, subject) {
     if (!messageId) { toast('Missing message id', 'error'); return; }
