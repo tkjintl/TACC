@@ -5804,7 +5804,7 @@ table.dt td {
           </div>
           <div class="lg-row">
             <span>SORA rate</span>
-            <span id="lg-sora">4.5%</span>
+            <span id="lg-sora" class="is-loading">—</span>
           </div>
         </div>
 
@@ -5852,36 +5852,7 @@ table.dt td {
         </tr>
       </thead>
       <tbody id="sens-tbody">
-        <tr>
-          <td class="mono-col">−20%</td>
-          <td class="mono-col">72%</td>
-          <td class="mono-col">$1.2M</td>
-          <td class="mono-col">Tight</td>
-        </tr>
-        <tr>
-          <td class="mono-col">−10%</td>
-          <td class="mono-col">63%</td>
-          <td class="mono-col">$2.8M</td>
-          <td class="mono-col">OK</td>
-        </tr>
-        <tr>
-          <td class="mono-col">0%</td>
-          <td class="mono-col">55%</td>
-          <td class="mono-col">$4.1M</td>
-          <td class="mono-col">Good</td>
-        </tr>
-        <tr>
-          <td class="mono-col">+10%</td>
-          <td class="mono-col">48%</td>
-          <td class="mono-col">$5.6M</td>
-          <td class="mono-col">Strong</td>
-        </tr>
-        <tr>
-          <td class="mono-col">+20%</td>
-          <td class="mono-col">42%</td>
-          <td class="mono-col">$7.3M</td>
-          <td class="mono-col">Strong</td>
-        </tr>
+        <tr><td colspan="4" style="text-align:center;color:var(--fg-dim);padding:12px 0;">Awaiting live data</td></tr>
       </tbody>
     </table>
   </div>
@@ -8327,7 +8298,7 @@ textarea.inp.mono-area {
     var goldVal = s.gold_value_usd || 0;
     var drawn = s.ltv_drawn_usd || 0;
     var mult = (s.ltv_ceiling_usd && goldVal > 0) ? s.ltv_ceiling_usd / goldVal : 0.7;
-    if (!goldVal || !drawn) return; // no real data yet — keep placeholder rows
+    if (!goldVal || !drawn) { tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--fg-dim);padding:12px 0;">Awaiting live data</td></tr>'; return; }
     var scenarios = [-20, -10, 0, 10, 20];
     var rows = scenarios.map(function(pct) {
       var newGold = goldVal * (1 + pct / 100);
