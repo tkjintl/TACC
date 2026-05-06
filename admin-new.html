@@ -109,6 +109,7 @@
   --z-cmdk:        600;  /* command palette */
   --z-toast:       700;  /* toast / notifications */
   --z-veil:        9000; /* page transition veil */
+  --z-overlay:     9100; /* top-level JS-created overlays (audit, sim modals) */
 
   /* Legacy spacing */
   --pad-x:         clamp(20px, 5.5vw, 88px);
@@ -9245,7 +9246,7 @@ textarea.inp.mono-area {
   function openAuditModal() {
     if (!auditModal) {
       auditModal = document.createElement('div');
-      auditModal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;padding:20px;';
+      auditModal.style.cssText = 'position:fixed;inset:0;z-index:9100;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;padding:20px;';
       auditModal.innerHTML = '<div style="background:var(--surface);border:1px solid var(--border);max-width:780px;width:100%;max-height:92vh;overflow:auto;padding:28px;display:flex;flex-direction:column;">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">' +
           '<div><div style="font-family:var(--font-display);font-size:24px;font-weight:300;">Platform Audit</div>' +
@@ -9341,7 +9342,7 @@ textarea.inp.mono-area {
   function openSimModal() {
     if (!simModal) {
       simModal = document.createElement('div');
-      simModal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;padding:20px;';
+      simModal.style.cssText = 'position:fixed;inset:0;z-index:9100;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;padding:20px;';
       simModal.innerHTML = '<div style="background:var(--surface);border:1px solid var(--border);max-width:880px;width:100%;max-height:92vh;overflow:auto;padding:28px;display:flex;flex-direction:column;">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">' +
           '<div><div style="font-family:var(--font-display);font-size:24px;font-weight:300;">Live Bots</div>' +
