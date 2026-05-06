@@ -190,12 +190,15 @@ svg {
 #app {
   display: grid;
   height: 100vh;
+  overflow: hidden;
   grid-template-rows: var(--topbar-h) var(--ticker-h) 1fr;
   grid-template-columns: var(--rail-w) var(--panel-w) 1fr var(--right-w);
 }
 
 #topbar {
   grid-column: 1 / -1;
+  position: sticky;
+  top: 0;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -207,6 +210,9 @@ svg {
 
 #ticker {
   grid-column: 1 / -1;
+  position: sticky;
+  top: var(--topbar-h);
+  z-index: calc(var(--z-header) - 1);
   background: #0a0a10;
   border-bottom: 1px solid var(--border);
   overflow: hidden;
@@ -996,9 +1002,9 @@ svg {
 .lane-row               { padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.04); }
 .lane-row:last-child    { border-bottom: 0; }
 .lane-row:hover         { background: rgba(255,255,255,0.02); }
-.lane-row-main          { min-width: 0; flex: 1; }
-.lane-row-name          { color: var(--fg); font-size: 13px; }
-.lane-row-meta          { font-family: var(--mono); font-size: 10px; color: var(--fg-muted); letter-spacing: 0.08em; margin-top: 2px; }
+.lane-row-main          { min-width: 0; flex: 1; overflow: hidden; }
+.lane-row-name          { color: var(--fg); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lane-row-meta          { font-family: var(--mono); font-size: 10px; color: var(--fg-muted); letter-spacing: 0.08em; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* ── 4.9 STAGE FUNNEL BAR ──────────────────────────────────────────── */
 .funnel-bar {
@@ -4137,20 +4143,7 @@ svg.spark   { overflow: visible; }
     <div class="panel-tab-context" id="panel-context-label">Today</div>
 
     <nav class="panel-nav" id="panel-nav" aria-label="Panel shortcuts">
-      <!-- JS populates context-sensitive links per active tab -->
-      <!-- Default Today shortcuts -->
-      <button class="panel-link active" data-panel-goto="today-kpis" type="button">
-        <span class="panel-link-icon">◈</span>
-        KPI Overview
-      </button>
-      <button class="panel-link" data-panel-goto="today-lanes" type="button">
-        <span class="panel-link-icon">▦</span>
-        Decision Lanes
-      </button>
-      <button class="panel-link" data-panel-goto="today-timeline" type="button">
-        <span class="panel-link-icon">⋯</span>
-        Activity Timeline
-      </button>
+      <!-- populated by updatePanelNav() on tab switch -->
     </nav>
 
     <div class="panel-footer">
@@ -6976,18 +6969,49 @@ textarea.inp.mono-area {
      TAB ROUTER
      ═══════════════════════════════════════════════════════════════════ */
   var currentTab = 'today';
+  var PANEL_SHORTCUTS = {
+    today:      [['◈','KPI Overview','today-kpis'],['▦','Decision Lanes','today-lanes'],['⋯','Activity Timeline','today-timeline']],
+    fund:       [['◈','Fund Snapshot','fhp-nav'],['◑','LTV Gauge','ltv-arc'],['▤','Capital Engine','cf-total'],['◆','XAU Spot','xau-price']],
+    vault:      [['◈','Latest Verification','vv-title'],['▦','Bar Registry','bar-totals']],
+    members:    [['▦','Member List','mem-list'],['◈','Member Detail','mem-detail']],
+    pipeline:   [['▦','Kanban Board','pipe-stages'],['⊞','Filter Bar','pipe-search']],
+    comms:      [['✉','Direct Message','pane-dm'],['◈','Capital Call','pane-cap']],
+    compliance: [['◈','Issue Report','ap-compliance'],['▦','Exceptions','exc-anchor'],['⋯','Audit Log','audit-anchor']]
+  };
+  var PANEL_LABELS = { today:'Today', fund:'Fund', vault:'Vault', members:'Members', pipeline:'Pipeline', comms:'Comms', compliance:'Compliance' };
+  function updatePanelNav(tab) {
+    var label = document.getElementById('panel-context-label');
+    if (label) label.textContent = PANEL_LABELS[tab] || tab;
+    var nav = document.getElementById('panel-nav');
+    if (!nav) return;
+    var shortcuts = PANEL_SHORTCUTS[tab] || [];
+    nav.innerHTML = shortcuts.map(function(s, i) {
+      return '<button class="panel-link' + (i === 0 ? ' active' : '') + '" data-panel-goto="' + s[2] + '" type="button">' +
+        '<span class="panel-link-icon">' + s[0] + '</span>' + s[1] +
+      '</button>';
+    }).join('');
+    nav.querySelectorAll('[data-panel-goto]').forEach(function(el) {
+      el.addEventListener('click', function() {
+        nav.querySelectorAll('.panel-link').forEach(function(b){ b.classList.remove('active'); });
+        el.classList.add('active');
+        var t = document.getElementById(el.dataset.panelGoto);
+        if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  }
   function goTab(tab) {
     currentTab = tab;
     document.querySelectorAll('.rail-icon[data-tab]').forEach(function(b){ b.classList.toggle('active', b.dataset.tab === tab); });
     document.querySelectorAll('.ap').forEach(function(p){ p.classList.toggle('active', p.dataset.tab === tab); });
+    updatePanelNav(tab);
     location.hash = tab;
     loadTab(tab);
   }
   document.querySelectorAll('.rail-icon[data-tab]').forEach(function(b){ b.addEventListener('click', function(){ goTab(b.dataset.tab); }); });
   document.querySelectorAll('.mobile-nav-item[data-tab]').forEach(function(b){ b.addEventListener('click', function(){ var t=b.dataset.tab; if(t!=='more') goTab(t); }); });
   document.querySelectorAll('[data-go-tab]').forEach(function(el){ el.addEventListener('click', function(){ goTab(el.dataset.goTab); }); });
-  document.querySelectorAll('[data-panel-goto]').forEach(function(el){ el.addEventListener('click', function(){ var t=document.getElementById(el.dataset.panelGoto); if(t) t.scrollIntoView({ behavior:'smooth', block:'start' }); }); });
   // hash routing
+  updatePanelNav('today');
   if (location.hash) { var h = location.hash.slice(1); if (document.querySelector('.rail-icon[data-tab="' + h + '"]')) goTab(h); }
 
   /* ═══════════════════════════════════════════════════════════════════
@@ -7275,8 +7299,8 @@ textarea.inp.mono-area {
       var actionLabel = x.action_label || (x.type ? flagAction(x.type) : '');
       return '<div class="lane-row" data-lead-id="' + esc(leadId) + '">' +
         '<div class="lane-row-main">' +
-          '<div class="lane-row-name">' + esc(leadName) + (title ? ' <span style="color:var(--muted);font-weight:400;">· ' + esc(title) + '</span>' : '') + '</div>' +
-          '<div class="lane-row-meta">' + esc(subtitle) + ' · ' + relTime(x.created_at || x.at) + '</div>' +
+          '<div class="lane-row-name">' + esc(leadName) + (title ? ' <span style="color:var(--fg-muted);font-weight:400;">· ' + esc(title) + '</span>' : '') + '</div>' +
+          '<div class="lane-row-meta">' + relTime(x.created_at || x.at) + (subtitle ? ' · ' + esc(subtitle.length > 48 ? subtitle.slice(0, 48) + '…' : subtitle) : '') + '</div>' +
         '</div>' +
         (actionLabel ? '<button class="b b--sm" data-act="' + esc(x.type || '') + '" data-lead="' + esc(leadId) + '">' + esc(actionLabel) + '</button>' : '') +
       '</div>';
