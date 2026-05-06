@@ -1499,6 +1499,7 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   -webkit-appearance: none;
 }
 .input-field:focus       { border-color: var(--border-light); }
+.input-field:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
 .input-field::placeholder{ color: var(--fg-dim); }
 textarea.input-field     { min-height: 90px; line-height: 1.5; resize: vertical; }
 
@@ -1629,6 +1630,7 @@ select.input-field {
   border-radius: 3px;
 }
 .b:hover        { color: var(--fg); border-color: rgba(255,255,255,0.2); }
+.b:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .b--gold        { color: var(--goldB); border-color: var(--goldBorderS); background: var(--goldMuted); }
 .b--gold:hover  { color: var(--goldC); border-color: var(--goldBorderM); }
 .b--green       { color: var(--green); border-color: var(--greenBd); background: rgba(34, 197, 94, 0.06); }
@@ -2759,7 +2761,7 @@ svg.spark   { overflow: visible; }
 
   .ah-btn {
     padding: 3px 7px;
-    font-size: 8px;
+    font-size: 10px;
   }
 
   /* ── Ticker ───────────────────────────────────────────────── */
@@ -4765,7 +4767,7 @@ svg.spark   { overflow: visible; }
   .kanban-cols {
     grid-template-columns: repeat(7, minmax(152px, 1fr));
   }
-  .pipe-col-label { font-size: 8px; letter-spacing: 0.12em; }
+  .pipe-col-label { font-size: 10px; letter-spacing: 0.10em; }
   .pipe-card-name { font-size: 12px; }
 }
 
@@ -8861,11 +8863,10 @@ textarea.inp.mono-area {
   /* ═══════════════════════════════════════════════════════════════════
      COMPLIANCE
      ═══════════════════════════════════════════════════════════════════ */
-  function loadCompliance(opts) {
+  function loadExceptions() {
     api('exceptions')
       .then(function(r){ return r.json(); })
       .then(function(d){
-        // Backend returns { ok, flags: [...] }
         var items = (d && (d.flags || d.exceptions)) || [];
         var tb = document.getElementById('exc-tbody');
         if (!items.length) { tb.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-title">No active exceptions</div><div class="empty-hint">All clear</div></div></td></tr>'; return; }
@@ -8884,7 +8885,7 @@ textarea.inp.mono-area {
             if (!leadId || !type) { toast('Cannot mute: missing leadId/type', 'error'); return; }
             api('mute-exception', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ leadId: leadId, type: type, duration: '30d' }) })
               .then(function(r){ return r.json(); })
-              .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : 'Muted 30d', d.ok === false ? 'error' : 'success'); loadCompliance(); })
+              .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : 'Muted 30d', d.ok === false ? 'error' : 'success'); loadExceptions(); })
               .catch(function(){ toast('Failed', 'error'); });
           });
         });
@@ -8892,7 +8893,9 @@ textarea.inp.mono-area {
       .catch(function(){
         document.getElementById('exc-tbody').innerHTML = '<tr><td colspan="5"><div class="err"><div class="err-msg">Failed to load exceptions</div></div></td></tr>';
       });
+  }
 
+  function loadCompliance(opts) {
     var o = opts || {};
     var qs = [];
     if (o.q)     qs.push('q='     + encodeURIComponent(o.q));
@@ -9051,7 +9054,7 @@ textarea.inp.mono-area {
     else if (tab === 'fund') { /* fund hydrated by stats poll */ }
     else if (tab === 'vault') { if (!loaded.members) loadMembers(); loadVault(); }
     else if (tab === 'comms') { if (!loaded.members) loadMembers(); loadSent(); }
-    else if (tab === 'compliance') { loadCompliance(); wireIssueReport(); }
+    else if (tab === 'compliance') { loadExceptions(); loadCompliance(); wireIssueReport(); }
   }
 
   // ─── Issue Report (Compliance tab) ──────────────────────────────────
