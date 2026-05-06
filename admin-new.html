@@ -6951,7 +6951,7 @@ textarea.inp.mono-area {
     Fund
   </button>
 
-  <button class="mobile-nav-item" id="mob-more-btn" type="button">
+  <button class="mobile-nav-item" id="mob-more-btn" data-tab="more" type="button">
     <span class="mobile-nav-icon">⋯</span>
     More
   </button>
@@ -9692,7 +9692,7 @@ textarea.inp.mono-area {
 
     // Close more sheet on backdrop tap
     document.addEventListener('click', e => {
-      if (moreSheet.classList.contains('open') && !moreSheet.contains(e.target) && !e.target.closest('.mob-nav-item[data-tab="more"]')) {
+      if (moreSheet.classList.contains('open') && !moreSheet.contains(e.target) && !e.target.closest('#mob-more-btn')) {
         moreSheet.classList.remove('open');
       }
     });
