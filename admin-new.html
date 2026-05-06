@@ -7123,17 +7123,18 @@ textarea.inp.mono-area {
         var prev = lastSpot;
         lastSpot = xauOz;
         var el = document.getElementById('tk-xau');
-        el.textContent = '$' + fmt(xauOz, 2) + '/oz';
-        if (prev && prev !== xauOz) {
-          var up = xauOz > prev;
-          el.style.color = up ? 'var(--green)' : 'var(--red)';
-          setTimeout(function(){ el.style.color = ''; }, 1800);
+        if (el) {
+          el.textContent = '$' + fmt(xauOz, 2) + '/oz';
+          if (prev && prev !== xauOz) {
+            var up = xauOz > prev;
+            el.style.color = up ? 'var(--green)' : 'var(--red)';
+            setTimeout(function(){ el.style.color = ''; }, 1800);
+          }
         }
         var d = spot.xau_daily_pct != null ? spot.xau_daily_pct : stats.xau_daily_pct;
         if (d != null) {
           var dEl = document.getElementById('tk-xau-d');
-          dEl.textContent = (d >= 0 ? '+' : '') + Number(d).toFixed(2) + '%';
-          dEl.className = 'tk-delta ' + (d > 0 ? 'up' : d < 0 ? 'dn' : 'flat');
+          if (dEl) { dEl.textContent = (d >= 0 ? '+' : '') + Number(d).toFixed(2) + '%'; dEl.className = 'tk-delta ' + (d > 0 ? 'up' : d < 0 ? 'dn' : 'flat'); }
         }
       }
       // USD per kg of gold. Spot endpoint: xau_usd_kg (with markup) and
@@ -7170,15 +7171,17 @@ textarea.inp.mono-area {
       }
       try { document.dispatchEvent(new CustomEvent('tacc:stats')); } catch (e) {}
     });
-    document.getElementById('fund-sync').textContent = new Date().toLocaleTimeString('en-GB');
+    var _fs = document.getElementById('fund-sync'); if (_fs) _fs.textContent = new Date().toLocaleTimeString('en-GB');
   }
   updateTicker();
   var _tickerInterval = setInterval(updateTicker, 60000);
   var _staleInterval = setInterval(function(){
+    var _sb = document.getElementById('stale-banner');
+    if (!_sb) return;
     if (lastTickerTs && Date.now() - lastTickerTs > 15 * 60 * 1000) {
-      document.getElementById('stale-banner').classList.add('show');
+      _sb.classList.add('show');
     } else {
-      document.getElementById('stale-banner').classList.remove('show');
+      _sb.classList.remove('show');
     }
   }, 30000);
   window.addEventListener('beforeunload', function(){ clearInterval(_tickerInterval); clearInterval(_staleInterval); });
@@ -7237,11 +7240,11 @@ textarea.inp.mono-area {
         renderLane('lane-soon', soonList, 'Nothing pending soon');
         renderLane('lane-cleared', clearedList, 'No recent confirmations');
 
-        document.getElementById('lane-action-count').textContent = actionList.length;
-        document.getElementById('lane-soon-count').textContent = soonList.length;
-        document.getElementById('lane-cleared-count').textContent = clearedList.length;
-        document.getElementById('badge-today').textContent = actionList.length;
-        document.getElementById('badge-compliance').textContent = items.length;
+        var _lac = document.getElementById('lane-action-count'); if (_lac) _lac.textContent = actionList.length;
+        var _lsc = document.getElementById('lane-soon-count'); if (_lsc) _lsc.textContent = soonList.length;
+        var _lcc = document.getElementById('lane-cleared-count'); if (_lcc) _lcc.textContent = clearedList.length;
+        var _bt = document.getElementById('badge-today'); if (_bt) _bt.textContent = actionList.length;
+        var _bc = document.getElementById('badge-compliance'); if (_bc) _bc.textContent = items.length;
 
         // Populate right rail — Alerts panel
         var rrAlerts = document.getElementById('rr-alerts');
@@ -7282,7 +7285,7 @@ textarea.inp.mono-area {
       })
       .catch(function(){
         ['lane-action','lane-soon','lane-cleared'].forEach(function(id){
-          document.getElementById(id).innerHTML = '<div class="err"><div class="err-msg">Failed to load</div><button class="b b--sm" onclick="location.reload()">Retry</button></div>';
+          var _el = document.getElementById(id); if (_el) _el.innerHTML = '<div class="err"><div class="err-msg">Failed to load</div><button class="b b--sm" onclick="location.reload()">Retry</button></div>';
         });
       });
   }
@@ -7302,6 +7305,7 @@ textarea.inp.mono-area {
   function flagAction(t){ return (FLAG_LABELS[t] && FLAG_LABELS[t].action) || ''; }
   function renderLane(id, items, emptyMsg) {
     var el = document.getElementById(id);
+    if (!el) return;
     if (!items.length) { el.innerHTML = '<div class="lane-empty">' + emptyMsg + '</div>'; return; }
     el.innerHTML = items.map(function(x){
       var leadId = x.leadId || x.lead_id || '';
@@ -7331,7 +7335,8 @@ textarea.inp.mono-area {
       .then(function(d){
         var items = (d && (d.entries || d.events)) || [];
         var el = document.getElementById('lane-timeline');
-        document.getElementById('lane-tl-count').textContent = items.length;
+        if (!el) return;
+        var tlCount = document.getElementById('lane-tl-count'); if (tlCount) tlCount.textContent = items.length;
         if (!items.length) { el.innerHTML = '<div class="lane-empty">No recent activity</div>'; return; }
         el.innerHTML = items.map(function(e){
           var act = String(e.action || '').toLowerCase();
@@ -7349,10 +7354,10 @@ textarea.inp.mono-area {
             '<div class="tl-time">' + relTime(e.at) + '</div>' +
           '</div>';
         }).join('');
-        if (items[0]) document.getElementById('op-last-action').textContent = relTime(items[0].at);
+        if (items[0]) { var _ola = document.getElementById('op-last-action'); if (_ola) _ola.textContent = relTime(items[0].at); }
       })
       .catch(function(){
-        document.getElementById('lane-timeline').innerHTML = '<div class="err"><div class="err-msg">Couldn\'t load activity</div><button class="b b--sm" onclick="loadActivityTimeline()">Retry</button></div>';
+        var _tl = document.getElementById('lane-timeline'); if (_tl) _tl.innerHTML = '<div class="err"><div class="err-msg">Couldn\'t load activity</div><button class="b b--sm" onclick="loadActivityTimeline()">Retry</button></div>';
       });
   }
 
@@ -7410,8 +7415,9 @@ textarea.inp.mono-area {
   function updateBulkStrip() {
     var n = Object.keys(selectedLeads).length;
     var s = document.getElementById('pipe-bulk');
+    if (!s) return;
     s.classList.toggle('show', n > 0);
-    document.getElementById('pipe-bulk-text').textContent = n + ' selected';
+    var _pbt = document.getElementById('pipe-bulk-text'); if (_pbt) _pbt.textContent = n + ' selected';
   }
 
   document.querySelectorAll('.pipe-stage').forEach(function(b){
@@ -9688,6 +9694,9 @@ textarea.inp.mono-area {
       if (Math.abs(dx) > Math.abs(dy) && dx < -50) openLeadDrawer(card.dataset.leadId);
     }, { passive: true });
   })();
+
+  // Expose goTab globally so external scripts (wireMobileNav) can reach it
+  window.goTab = goTab;
 
 })();
 
