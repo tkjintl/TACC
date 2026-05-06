@@ -7405,42 +7405,6 @@ textarea.inp.mono-area {
       return true;
     });
   }
-  function renderPipeTable() {
-    var rows = getFiltered();
-    var tb = document.getElementById('pipe-tbody');
-    if (!rows.length) {
-      tb.innerHTML = '<tr><td colspan="8"><div class="empty"><div class="empty-title">No leads match</div><div class="empty-hint">Try clearing filters</div></div></td></tr>';
-      return;
-    }
-    tb.innerHTML = rows.map(function(l){
-      var age = ageDays(l.stage_entered_at || l.created_at);
-      return '<tr data-lead-id="' + esc(l.id) + '">' +
-        '<td data-lbl="" onclick="event.stopPropagation()"><input type="checkbox" data-lead-cb="' + esc(l.id) + '" ' + (selectedLeads[l.id] ? 'checked' : '') + '></td>' +
-        '<td class="name-col" data-lbl="Name">' + esc(l.name || '—') + '</td>' +
-        '<td data-lbl="Email" class="mono-col">' + esc(l.email || '—') + '</td>' +
-        '<td data-lbl="Country" class="mono-col">' + esc(l.country || '—') + '</td>' +
-        '<td data-lbl="Stage"><span class="pill pill--' + (STAGE_PILL[l.stage] || 'muted') + '">' + esc(STAGE_LBL[l.stage] || l.stage) + '</span></td>' +
-        '<td data-lbl="Age" class="mono-col ' + ageClass(age) + '">' + age + 'd</td>' +
-        '<td data-lbl="Last action" class="mono-col">' + esc(relTime(l.updated_at || l.created_at)) + '</td>' +
-        '<td data-lbl=""><button class="b b--sm" data-open-lead="' + esc(l.id) + '">Open</button></td>' +
-      '</tr>';
-    }).join('');
-    tb.querySelectorAll('[data-open-lead]').forEach(function(b){
-      b.addEventListener('click', function(e){ e.stopPropagation(); openLeadDrawer(b.dataset.openLead); });
-    });
-    tb.querySelectorAll('tr[data-lead-id]').forEach(function(tr){
-      tr.addEventListener('click', function(e){
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
-        openLeadDrawer(tr.dataset.leadId);
-      });
-    });
-    tb.querySelectorAll('[data-lead-cb]').forEach(function(cb){
-      cb.addEventListener('change', function(){
-        if (cb.checked) selectedLeads[cb.dataset.leadCb] = true; else delete selectedLeads[cb.dataset.leadCb];
-        updateBulkStrip();
-      });
-    });
-  }
   function updateBulkStrip() {
     var n = Object.keys(selectedLeads).length;
     var s = document.getElementById('pipe-bulk');
