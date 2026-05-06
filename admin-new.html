@@ -8054,7 +8054,8 @@ textarea.inp.mono-area {
         lead.gold_kg           = c.kg || (lead.subscription && lead.subscription.kg_requested) || (lead.bars||[]).length || m.gold_kg || 0;
         lead.ltv_approved_pct  = lead.ltv_approved_pct || c.ltv_pct || m.ltv_approved_pct || 0;
         lead.admitted_at       = lead.funded_at || lead.admitted_at || m.admitted_at;
-        lead.gold_value_usd    = (lead.gold_kg || 0) * 112000;
+        var _spotKg = (window._tacc_stats && window._tacc_stats.xau_usd_kg_spot) || 112000;
+        lead.gold_value_usd    = (lead.gold_kg || 0) * _spotKg;
         lead.gold_cost_usd     = (lead.subscription && lead.subscription.usd_amount) || lead.gold_value_usd;
         lead.ltv_ceiling_krw   = lead.credit_ceiling_usd || 0;
         lead.ltv_drawn_krw     = lead.credit_outstanding_usd || 0;
