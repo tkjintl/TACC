@@ -6399,7 +6399,7 @@ textarea.inp.mono-area {
           </thead>
           <tbody id="bar-tbody">
             <tr>
-              <td colspan="9" style="text-align:center; color:var(--fg-dim); font-family:var(--mono); font-size:11px; padding:20px;">
+              <td colspan="10" style="text-align:center; color:var(--fg-dim); font-family:var(--mono); font-size:11px; padding:20px;">
                 Loading bars…
               </td>
             </tr>
@@ -8158,6 +8158,26 @@ textarea.inp.mono-area {
 
     el.innerHTML = html;
 
+    // Member action strip
+    el.querySelectorAll('[data-mact]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var act = btn.dataset.mact;
+        var mid = btn.dataset.mid;
+        if (act === 'quarterly')     { goTab('comms'); var t = document.querySelector('[data-compose="qtr"]'); if (t) t.click(); }
+        else if (act === 'capital-call')  { goTab('comms'); var t = document.querySelector('[data-compose="cap"]'); if (t) t.click(); }
+        else if (act === 'add-position')  { openPositionModal(mid, m); }
+        else if (act === 'upload-doc')    { toast('Document upload not yet available', 'error'); }
+        else if (act === 'resend-admission') {
+          btn.disabled = true; btn.textContent = 'Sending…';
+          api('resend-admission', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ leadId: mid }) })
+            .then(function(r){ return r.json(); })
+            .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : 'Admission email resent', d.ok === false ? 'error' : 'success'); btn.disabled = false; btn.textContent = 'Resend Admission'; })
+            .catch(function(){ toast('Failed', 'error'); btn.disabled = false; btn.textContent = 'Resend Admission'; });
+        }
+        else if (act === 'revoke') { confirmDestructive('Revoke access · ' + esc(m.name || 'member'), 'revoke-access', mid, 'reason'); }
+      });
+    });
+
     // Document download buttons → fetch signed URL, open in new tab
     el.querySelectorAll('[data-doc]').forEach(function(btn){
       btn.addEventListener('click', function(){
@@ -8461,12 +8481,19 @@ textarea.inp.mono-area {
     if (!ltvTb) return;
     if (allMembers.length) {
       ltvTb.innerHTML = allMembers.map(function(m){
-        var ceil = m.credit_ceiling_usd || m.ltv_ceiling_usd || m.ltv_ceiling_krw || 0;
-        var drawn = m.credit_outstanding_usd || m.ltv_drawn_usd || m.ltv_drawn_krw || 0;
-        var ltvUsed = (drawn && ceil) ? (drawn / ceil * 100) : 0;
-        var pill = ltvUsed > 80 ? 'red' : ltvUsed > 75 ? 'red' : ltvUsed > 70 ? 'amber' : ltvUsed > 60 ? 'gold' : 'green';
-        var status = ltvUsed > 80 ? 'CRITICAL' : ltvUsed > 75 ? 'HIGH' : ltvUsed > 70 ? 'WATCH' : 'OK';
-        return '<tr><td class="name-col" data-lbl="Member">' + esc(m.name) + '</td><td class="mono-col" data-lbl="LTV Approved">' + (m.ltv_approved_pct || 0) + '%</td><td class="mono-col" data-lbl="Ceiling">' + fmtUsd(ceil) + '</td><td class="mono-col" data-lbl="Drawn">' + fmtUsd(drawn) + '</td><td class="mono-col" data-lbl="Available">' + fmtUsd(ceil - drawn) + '</td><td data-lbl="Status"><span class="pill pill--' + pill + '">' + status + '</span></td></tr>';
+        var ceil = m.credit_ceiling_usd || m.ltv_ceiling_usd || 0;
+        var outstanding = m.credit_outstanding_usd || m.ltv_drawn_usd || 0;
+        var headroom = Math.max(0, ceil - outstanding);
+        var ltvUsed = (outstanding && ceil) ? (outstanding / ceil * 100) : 0;
+        var headroomClr = ltvUsed > 75 ? 'color:var(--red)' : ltvUsed > 60 ? 'color:var(--amber)' : '';
+        return '<tr>' +
+          '<td class="name-col" data-lbl="Member">' + esc(m.name || '—') + '</td>' +
+          '<td class="mono-col" data-lbl="Gold KG">' + fmt(m.gold_kg || 0, 2) + '</td>' +
+          '<td class="mono-col" data-lbl="LTV %">' + (m.ltv_approved_pct || 0) + '%</td>' +
+          '<td class="mono-col" data-lbl="Ceiling">' + fmtUsd(ceil) + '</td>' +
+          '<td class="mono-col" data-lbl="Outstanding">' + fmtUsd(outstanding) + '</td>' +
+          '<td class="mono-col" data-lbl="Headroom"' + (headroomClr ? ' style="' + headroomClr + '"' : '') + '>' + fmtUsd(headroom) + '</td>' +
+        '</tr>';
       }).join('');
     } else {
       ltvTb.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-title">No members to monitor</div><div class="empty-hint">Funded members appear here</div></div></td></tr>';
