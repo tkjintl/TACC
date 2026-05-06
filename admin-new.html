@@ -2180,6 +2180,12 @@ svg.spark   { overflow: visible; }
   .fhero-primary,
   .fhero-secondary { grid-template-columns: 1fr 1fr; }
   .four-col     { grid-template-columns: 1fr 1fr; }
+  /* Fund panels: 3-col → 1-col on mobile */
+  .fund-panels  { grid-template-columns: 1fr; }
+  /* Fund hero + strip → 2-col grids on mobile */
+  .fhp-grid     { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .fhs-strip    { grid-template-columns: 1fr 1fr; }
+  .ds-strip     { grid-template-columns: 1fr 1fr; }
 
   /* Kanban: single column (flat list) */
   .pipe-cols  { grid-template-columns: 1fr; }
@@ -5524,6 +5530,17 @@ table.dt td {
 .mono-col {
   font-family: var(--mono);
   color: var(--fg-muted);
+}
+
+/* ── Fund mobile: collapse 3-col panels to single-col ───────────── */
+@media (max-width: 768px) {
+  .fund-panels  { grid-template-columns: 1fr; }
+  .fhp-grid     { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .fhs-strip    { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .ds-strip     { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .runway-grid  { grid-template-columns: 1fr 1fr; }
+  .fund-grid-4  { grid-template-columns: 1fr 1fr; }
+  .fund-grid-2  { grid-template-columns: 1fr; }
 }
 </style>
 
