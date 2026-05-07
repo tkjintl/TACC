@@ -7027,6 +7027,7 @@ textarea.inp.mono-area {
   document.querySelectorAll('.mobile-nav-item[data-tab]').forEach(function(b){ b.addEventListener('click', function(){ var t=b.dataset.tab; if(t!=='more') goTab(t); }); });
   document.querySelectorAll('[data-go-tab]').forEach(function(el){ el.addEventListener('click', function(){ goTab(el.dataset.goTab); }); });
   // Init: always load Today data, then switch if URL has a tab hash
+  var loaded = {};
   updatePanelNav('today');
   loadTab('today');
   if (location.hash) { var h = location.hash.slice(1); if (document.querySelector('.rail-icon[data-tab="' + h + '"]')) goTab(h); }
@@ -9130,7 +9131,6 @@ textarea.inp.mono-area {
   /* ═══════════════════════════════════════════════════════════════════
      LAZY TAB LOADERS
      ═══════════════════════════════════════════════════════════════════ */
-  var loaded = {};
   function loadTab(tab) {
     if (loaded[tab]) return;
     loaded[tab] = true;
