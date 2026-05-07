@@ -21,7 +21,13 @@ const DAY = 86400 * 1000;
 
 function authorized(req) {
   const secret = process.env.CRON_SECRET;
-  if (!secret) return true;
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('[cron] CRON_SECRET not set in production — denying request');
+      return false;
+    }
+    return true; // dev only
+  }
   const header = req.headers.authorization || req.headers.Authorization || '';
   return header === `Bearer ${secret}`;
 }

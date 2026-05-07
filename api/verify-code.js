@@ -84,7 +84,6 @@ export default async function handler(req, res) {
   // Determine redirect target based on lead state
   let nextPath = '/main';
   if (lead.wire && lead.wire.cleared_at)  nextPath = '/portfolio';
-  else if (lead.nda_state === 'approved' && lead.status === 'funded') nextPath = '/portfolio';
   else if (lead.nda_state === 'approved') nextPath = '/memo';
 
   return ok(res, {
