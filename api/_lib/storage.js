@@ -945,14 +945,18 @@ export async function getMessageHistory(leadId, { limit = 50, offset = 0 } = {})
 const IDEM_KEY = (k) => `idem:${k}`;
 const IDEM_PENDING = '__pending__';
 
-async function _idemPoll(key, attempts = 5, intervalMs = 200) {
-  for (let i = 0; i < attempts; i++) {
-    await new Promise((r) => setTimeout(r, intervalMs));
+async function _idemPoll(key, maxMs = 10000) {
+  const start = Date.now();
+  let delay = 200;
+  while (Date.now() - start < maxMs) {
+    await new Promise((r) => setTimeout(r, delay));
+    delay = Math.min(delay * 2, 2000);
     const v = await callExt(['GET', IDEM_KEY(key)]);
     if (v == null) return null;
     if (v === IDEM_PENDING) continue;
     try { return typeof v === 'object' ? v : JSON.parse(v); } catch { return v; }
   }
+  console.warn('[idem] poll exhausted after 10s — graceful degrade taken', key);
   return null;
 }
 
@@ -1013,18 +1017,32 @@ const MEMBER_NUMBER_COUNTER_KEY = 'counter:member_number_next';
 const MEMBER_NUMBER_CAP = 100;
 
 export async function allocateNextMemberNumber(cap = MEMBER_NUMBER_CAP) {
-  // INCR on a fresh key starts at 1. If it returns >cap, decrement back and
-  // signal cohort-full to caller.
-  const v = await callExt(['INCR', MEMBER_NUMBER_COUNTER_KEY]);
+  // Lua script: atomically INCR then rollback if over cap.
+  // KEYS[1] = counter key, ARGV[1] = cap
+  // Returns the new counter value, or -1 if cohort is full.
+  const lua = `
+local n = redis.call('INCR', KEYS[1])
+if n > tonumber(ARGV[1]) then
+  redis.call('DECR', KEYS[1])
+  return -1
+end
+return n`;
+  let v;
+  try {
+    v = await callExt(['EVAL', lua, '1', MEMBER_NUMBER_COUNTER_KEY, String(cap)]);
+  } catch {
+    // Lua not supported (local fallback) — use non-atomic path
+    v = await callExt(['INCR', MEMBER_NUMBER_COUNTER_KEY]);
+    const fallback = parseInt(v, 10);
+    if (!Number.isFinite(fallback)) return null;
+    if (fallback > cap) {
+      try { await callExt(['DECR', MEMBER_NUMBER_COUNTER_KEY]); } catch {}
+      return null;
+    }
+    return fallback;
+  }
   const n = parseInt(v, 10);
-  if (!Number.isFinite(n)) {
-    // Counter corrupted — refuse to allocate.
-    return null;
-  }
-  if (n > cap) {
-    try { await callExt(['DECR', MEMBER_NUMBER_COUNTER_KEY]); } catch {}
-    return null;
-  }
+  if (!Number.isFinite(n) || n === -1) return null;
   return n;
 }
 
@@ -1136,6 +1154,9 @@ export async function softDeleteLead(leadId, reason, actor) {
   lead.deleted_reason = reason || null;
   await appendAudit(lead, { actor: actor || 'admin', action: 'lead_soft_deleted', memo: reason });
   if (fromStage) await _stageIncr(fromStage, -1);
+  // Remove secondary indexes so the email can be re-registered
+  if (lead.email) { try { await callExt(['DEL', EMAIL_KEY(lead.email)]); } catch {} }
+  try { await callExt(['ZREM', STAGE_INDEX_KEY(fromStage || 'inquiry'), leadId]); } catch {}
   await saveLead(lead);
   return lead;
 }

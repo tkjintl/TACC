@@ -16,6 +16,7 @@ import {
 } from './_lib/storage.js';
 import { trimErrorsOlderThan } from './_lib/error-shape.js';
 import { CRON_LAST_KEY } from './health.js';
+import { sendCapitalCallReminder } from './_lib/email.js';
 
 const DAY = 86400 * 1000;
 
@@ -60,6 +61,8 @@ export default async function handler(req, res) {
 
       case 'capital-call-reminders': {
         const now = Date.now();
+        // Deterministic date bucket — one reminder per (lead, call, day) regardless of re-invocation
+        const dateBucket = new Date(now).toISOString().slice(0, 10);
         const leads = await listLeads({ status: 'funded', limit: 500 });
         let reminded = 0;
         for (const lead of leads) {
@@ -73,9 +76,11 @@ export default async function handler(req, res) {
             const send = daysToDue === 7 || daysToDue === 1 ||
                          (daysToDue < 0 && Math.abs(daysToDue) % 3 === 0);
             if (!send) continue;
+            // Deterministic message ID — deduplicates re-invocations on same day
+            const msgId = `cc_remind_${lead.id}_${c.id || c.ref}_${dateBucket}`;
             try {
               await addMessage(lead.id, {
-                id: `cc_remind_${c.id}_${now}`,
+                id: msgId,
                 type: 'amber',
                 subject: `Reminder: Capital Call ${c.ref}`,
                 body: daysToDue >= 0
@@ -87,7 +92,13 @@ export default async function handler(req, res) {
               });
               reminded++;
             } catch (e) {
-              console.warn('[cron/cc-reminders]', lead.id, e && e.message);
+              console.warn('[cron/cc-reminders] addMessage', lead.id, e && e.message);
+            }
+            // Also send email
+            try {
+              await sendCapitalCallReminder(lead, c, daysToDue);
+            } catch (e) {
+              console.warn('[cron/cc-reminders] email', lead.id, e && e.message);
             }
           }
         }

@@ -547,3 +547,43 @@ export async function sendFundedConfirmation(lead) {
     text,
   });
 }
+
+// ── 9. Capital call reminder ──────────────────────────────────────────────────
+
+export async function sendCapitalCallReminder(lead, call, daysToDue) {
+  const ref      = call.ref || call.id || '—';
+  const overdue  = daysToDue < 0;
+  const daysAbs  = Math.abs(daysToDue);
+  const subject  = overdue
+    ? `Capital Call ${ref} — Overdue by ${daysAbs} day(s) · The Aurum Century Club`
+    : `Capital Call ${ref} — Due in ${daysToDue} day(s) · The Aurum Century Club`;
+
+  const bodyLine = overdue
+    ? `Capital call <strong style="color:#e8e3d8">${esc(ref)}</strong> is overdue by ${daysAbs} day(s). Please arrange payment immediately.`
+    : `Capital call <strong style="color:#e8e3d8">${esc(ref)}</strong> is due in <strong style="color:#e8e3d8">${daysToDue}</strong> day(s).`;
+
+  const inner = `
+  ${lockupRow}
+  <tr><td bgcolor="#0a0a0a" style="background:#0a0a0a;padding:36px 32px 8px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.34em;color:${overdue ? '#b05e56' : '#C5A572'}">${overdue ? 'OVERDUE · 연체' : 'REMINDER · 안내'}</td></tr>
+  <tr><td bgcolor="#0a0a0a" style="background:#0a0a0a;padding:0 32px 22px;font-family:Georgia,serif;font-weight:500;font-size:26px;line-height:1.2;color:#e8e3d8">Capital Call Notice</td></tr>
+  <tr><td bgcolor="#0a0a0a" style="background:#0a0a0a;padding:0 32px 22px;font-family:Georgia,serif;font-size:16px;line-height:1.78;color:#aaa39a">${bodyLine}</td></tr>
+  <tr><td bgcolor="#0a0a0a" align="left" style="background:#0a0a0a;padding:0 32px 32px">
+    <a href="${esc(siteUrl())}/messages" style="display:inline-block;padding:14px 26px;background:transparent;border:1px solid #C5A572;color:#C5A572;text-decoration:none;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.30em">VIEW DETAILS →</a>
+  </td></tr>
+  ${dividerRow()}
+  ${signOffRow()}
+  `;
+
+  const text = [
+    overdue
+      ? `Capital call ${ref} is overdue by ${daysAbs} day(s). Please arrange payment immediately.`
+      : `Capital call ${ref} is due in ${daysToDue} day(s).`,
+    '',
+    `View details: ${siteUrl()}/messages`,
+    '',
+    `— ${partnerName()}`,
+    'TACC Pte Ltd, Singapore',
+  ].join('\n');
+
+  return sendRaw({ to: lead.email, subject, html: shellHtml(inner, subject), text });
+}
