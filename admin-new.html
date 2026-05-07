@@ -7403,15 +7403,31 @@ textarea.inp.mono-area {
   function autoSeedIfEmpty() {
     if (_autoSeeded) return;
     _autoSeeded = true;
-    toast('No data found — seeding demo…', '');
+    // Show a full-screen overlay so the user knows what's happening
+    var overlay = document.createElement('div');
+    overlay.id = 'seed-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:var(--bg,#0a0a0a);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;';
+    overlay.innerHTML = '<div style="font-family:var(--font-mono,monospace);font-size:11px;letter-spacing:0.28em;color:#C5A572;text-transform:uppercase;">Loading demo data…</div>' +
+      '<div style="width:200px;height:2px;background:rgba(197,165,114,0.15);border-radius:1px;overflow:hidden;">' +
+        '<div id="seed-bar" style="height:100%;width:0%;background:#C5A572;transition:width 3s linear;border-radius:1px;"></div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    setTimeout(function(){ var b = document.getElementById('seed-bar'); if(b) b.style.width='90%'; }, 50);
     api('seed-demo', { method: 'POST' })
       .then(function(r){ return r.json(); })
       .then(function(d){
-        if (d && d.error) { toast('Seed failed: ' + d.error, 'error'); return; }
-        toast('Demo data loaded', 'success');
-        setTimeout(function(){ location.reload(); }, 600);
+        if (d && d.error) {
+          overlay.remove();
+          toast('Seed failed: ' + d.error, 'error');
+          return;
+        }
+        var b = document.getElementById('seed-bar'); if(b) b.style.width='100%';
+        setTimeout(function(){ location.reload(); }, 1200);
       })
-      .catch(function(){ toast('Auto-seed failed', 'error'); });
+      .catch(function(){
+        overlay.remove();
+        toast('Auto-seed failed — use Tools → Seed Demo manually', 'error');
+      });
   }
   function renderStageCounts() {
     document.querySelector('[data-stage-count="all"]').textContent = allLeads.length;
