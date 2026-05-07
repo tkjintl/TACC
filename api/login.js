@@ -10,13 +10,13 @@
 
 import {
   ok, bad, unauthorized, methodNotAllowed, serverError,
-  readBody, getQuery, setCookie,
+  readBody, getQuery, setCookie, clientIp,
 } from './_lib/http.js';
 import {
   signToken, verifyToken, hashPassword, verifyPassword,
   generateResetCode, cookieOptions, COOKIE_MEMBER, COOKIE_ADMIN,
 } from './_lib/auth.js';
-import { findLeadByEmail, getLead, saveLead } from './_lib/storage.js';
+import { findLeadByEmail, getLead, saveLead, isRateLimited } from './_lib/storage.js';
 import { sendPasswordReset } from './_lib/email.js';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
@@ -135,6 +135,11 @@ async function opAdminLogin(req, res) {
 // ── op: member-login ──────────────────────────────────────────────────────────
 
 async function opMemberLogin(req, res) {
+  const ip = clientIp(req);
+  if (await isRateLimited(`login:${ip}`, 10, 900)) {
+    return bad(res, 'Too many login attempts. Please try again later.', 429);
+  }
+
   let body;
   try { body = await readBody(req); }
   catch { return bad(res, 'invalid body'); }
@@ -225,6 +230,11 @@ async function opPasswordResetRequest(req, res) {
 // ── op: password-reset-confirm ────────────────────────────────────────────────
 
 async function opPasswordResetConfirm(req, res) {
+  const ip = clientIp(req);
+  if (await isRateLimited(`pwreset:${ip}`, 5, 900)) {
+    return bad(res, 'Too many reset attempts. Please try again later.', 429);
+  }
+
   let body;
   try { body = await readBody(req); }
   catch { return bad(res, 'invalid body'); }

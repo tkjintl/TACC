@@ -9,7 +9,7 @@
 
 import { ok, bad, unauthorized, methodNotAllowed, readBody, getQuery } from './_lib/http.js';
 import { signToken, COOKIE_MEMBER, cookieOptions } from './_lib/auth.js';
-import { getLead, leadIdForCode, saveLead } from './_lib/storage.js';
+import { getLead, leadIdForCode, saveLead, transitionStage } from './_lib/storage.js';
 import { extractGeo } from './_lib/geo.js';
 import { setCookie } from './_lib/http.js';
 
@@ -56,7 +56,10 @@ export default async function handler(req, res) {
     lead.audit  = lead.audit || [];
     lead.audit.push({ at: now, actor: 'member', action: 'code_consumed', geo: extractGeo(req) });
     lead.last_seen_at = now;
-    try { await saveLead(lead); } catch (e) {
+    try {
+      await transitionStage(lead, 'invited', 'accessed');
+      await saveLead(lead);
+    } catch (e) {
       console.warn('[verify-code] saveLead failed:', e && e.message);
     }
   } else {

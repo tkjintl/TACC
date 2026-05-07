@@ -6,7 +6,7 @@ import {
   getCookie, readBody,
 } from './_lib/http.js';
 import { verifyToken, COOKIE_MEMBER } from './_lib/auth.js';
-import { getLead, saveLead } from './_lib/storage.js';
+import { getLead, saveLead, transitionStage } from './_lib/storage.js';
 import { sendPartnerNotice } from './_lib/email.js';
 
 // ── Auth helper ───────────────────────────────────────────────────────────────
@@ -114,6 +114,7 @@ export default async function handler(req, res) {
     wire_amount_usd_indicative:      null, // set by admin on wire-issue
   };
 
+  const fromStg = lead.status;
   lead.status       = 'subscribed';
   lead.subscription = subscriptionRecord;
   lead.audit = lead.audit || [];
@@ -125,6 +126,7 @@ export default async function handler(req, res) {
   });
 
   try {
+    await transitionStage(lead, fromStg, 'subscribed');
     await saveLead(lead);
   } catch (e) {
     console.error('[subscription] saveLead failed:', e);

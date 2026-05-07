@@ -38,6 +38,10 @@ export async function sendRaw({ to, subject, html, text, replyTo }) {
     _PREVIEW.captured = { to, subject, html: html || '', text: text || '', replyTo: replyTo || null };
     return { sent: false, reason: 'preview-mode', captured: true };
   }
+  if (process.env.BOT_MODE) {
+    console.log('[aurum/email] BOT_MODE — suppressing send:', { to, subject });
+    return { sent: false, reason: 'bot-mode' };
+  }
   const key = process.env.RESEND_API_KEY;
   if (!key) {
     console.log('[aurum/email] RESEND_API_KEY not set — would send:', { to, subject, text: text?.slice(0, 200) });
