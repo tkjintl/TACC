@@ -7674,6 +7674,28 @@ textarea.inp.mono-area {
     if (l.member_number) html += kvRow('Member #', String(l.member_number).padStart(3,'0'));
     html += '</div>';
 
+    // IOI
+    if (l.ioi && l.ioi.submitted_at) {
+      var ioiVerified = l.ioi_verified_at;
+      var ioiDeclined = l.ioi_declined_at;
+      var ioiStatus = ioiVerified ? 'Verified ✓' : (ioiDeclined ? 'Declined' : 'Pending review');
+      html += '<div class="dr-section"><div class="dr-section-title">Indication of Interest</div>';
+      html += kvRow('kg requested', l.ioi.kg + ' kg');
+      html += kvRow('LTV requested', l.ioi.ltv_pct + '%');
+      if (l.ioi.krw_indicative) html += kvRow('Indicative KRW', '₩' + Number(l.ioi.krw_indicative).toLocaleString('ko-KR'));
+      html += kvRow('Submitted', new Date(l.ioi.submitted_at).toLocaleDateString());
+      html += kvRow('Status', ioiStatus);
+      if (ioiVerified) html += kvRow('Verified at', new Date(ioiVerified).toLocaleDateString());
+      if (l.ioi_decline_note) html += kvRow('Decline note', l.ioi_decline_note);
+      if (!ioiVerified && !ioiDeclined) {
+        html += '<div style="margin-top:10px;display:flex;gap:8px;">' +
+          '<button class="b b--green b--sm" data-ioi-act="verify-ioi" data-lid="' + esc(l.id) + '">Verify IOI</button>' +
+          '<button class="b b--red b--sm" data-ioi-act="decline-ioi" data-lid="' + esc(l.id) + '">Decline IOI</button>' +
+        '</div>';
+      }
+      html += '</div>';
+    }
+
     // Audit / Case Timeline
     html += '<div class="dr-section"><div class="dr-section-title">Case Timeline</div>';
     var audit = (l.audit || []).slice().reverse();
@@ -7710,6 +7732,11 @@ textarea.inp.mono-area {
     }
 
     document.getElementById('dr-body').innerHTML = html;
+
+    // Wire up IOI inline action buttons
+    document.getElementById('dr-body').querySelectorAll('[data-ioi-act]').forEach(function(b){
+      b.addEventListener('click', function(){ handleIoiAction(b.dataset.ioiAct, b.dataset.lid, l); });
+    });
 
     // Action panel — contextual
     var actions = stageActions(l);
@@ -7904,7 +7931,7 @@ textarea.inp.mono-area {
   function openPositionModal(lid, lead) {
     showModal('Add Position', [
       '<div class="field-group"><label class="field-label">Deal Name</label><input class="input-field" id="pos-deal" required></div>',
-      '<div class="field-group"><label class="field-label">Asset Class</label><input class="input-field" id="pos-class" placeholder="private_credit / mezz_debt / pre_ipo_equity"></div>',
+      '<div class="field-group"><label class="field-label">Asset Class</label><select class="input-field" id="pos-class"><option value="growth_equity">Growth Equity</option><option value="private_credit">Private Credit</option><option value="real_estate">Real Estate</option><option value="infrastructure">Infrastructure</option><option value="gold_only">Gold Only</option></select></div>',
       '<div class="field-group"><label class="field-label">Invested (USD)</label><input class="input-field" type="number" id="pos-amt" required></div>'
     ].join(''), [
       { label: 'Cancel', kind: '', cb: hideModal },
@@ -7913,7 +7940,7 @@ textarea.inp.mono-area {
         var ac  = document.getElementById('pos-class').value.trim();
         var amt = parseFloat(document.getElementById('pos-amt').value);
         if (!dn || !isFinite(amt) || amt <= 0) { toast('Deal name and amount required', 'error'); return; }
-        var payload = { leadId: lid, position: { deal_name: dn, asset_class: ac || 'private_credit', amount_usd: amt, invested_usd: amt, marked_usd: amt, status: 'active' } };
+        var payload = { leadId: lid, position: { deal_name: dn, asset_class: ac || 'growth_equity', amount_usd: amt, invested_usd: amt, marked_usd: amt, status: 'active' } };
         api('add-position', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
           .then(function(r){ return r.json(); })
           .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : 'Position added', d.ok === false ? 'error' : 'success'); if (d.ok !== false) { closeDrawer(); loadPipeline(); loadMembers(); } })
@@ -7923,6 +7950,45 @@ textarea.inp.mono-area {
     ]);
   }
 
+  function handleIoiAction(act, lid, lead) {
+    if (act === 'verify-ioi')  openVerifyIoiModal(lid, lead);
+    else if (act === 'decline-ioi') openDeclineIoiModal(lid, lead);
+  }
+  function openVerifyIoiModal(lid, lead) {
+    var kg  = lead.ioi && lead.ioi.kg;
+    var ltv = lead.ioi && lead.ioi.ltv_pct;
+    showModal('Verify IOI · ' + esc(lead.name || ''), [
+      '<p style="font-family:var(--font-mono);font-size:12px;color:var(--fg-muted);line-height:1.6;margin-bottom:12px;">Confirming ' + kg + ' kg @ ' + ltv + '% LTV. The member will be notified — spot price locks at wire receipt, not here.</p>',
+      '<p style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.06em;line-height:1.6;">Issue wire instructions separately after verification.</p>'
+    ].join(''), [
+      { label: 'Cancel', kind: '', cb: hideModal },
+      { label: 'Verify', kind: 'b--green', cb: function(){
+        api('verify-ioi', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ leadId: lid }) })
+          .then(function(r){ return r.json(); })
+          .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : 'IOI verified', d.ok === false ? 'error' : 'success'); if (d.ok !== false) { closeDrawer(); loadPipeline(); } })
+          .catch(function(){ toast('Verify IOI failed', 'error'); })
+          .finally(hideModal);
+      } }
+    ]);
+  }
+  function openDeclineIoiModal(lid, lead) {
+    showModal('Decline IOI · ' + esc(lead.name || ''), [
+      '<div class="field-group"><label class="field-label">Note (optional — internal only)</label>',
+      '<textarea class="input-field" id="decline-ioi-note" rows="3" placeholder="Reason for declining the IOI…"></textarea>',
+      '</div>',
+      '<p style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.06em;line-height:1.6;margin-top:6px;">The member will receive a professional decline email. The lead remains in pipeline for record-keeping.</p>'
+    ].join(''), [
+      { label: 'Cancel', kind: '', cb: hideModal },
+      { label: 'Decline IOI', kind: 'b--red', cb: function(){
+        var note = (document.getElementById('decline-ioi-note').value || '').trim();
+        api('decline-ioi', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ leadId: lid, note: note }) })
+          .then(function(r){ return r.json(); })
+          .then(function(d){ toast(d.ok === false ? (d.error||'Failed') : 'IOI declined', d.ok === false ? 'error' : 'success'); if (d.ok !== false) { closeDrawer(); loadPipeline(); } })
+          .catch(function(){ toast('Decline IOI failed', 'error'); })
+          .finally(hideModal);
+      } }
+    ]);
+  }
   function openDeclineModal(lid, lead) {
     var name = (lead && lead.name) || 'lead';
     showModal('Decline · ' + name, [
