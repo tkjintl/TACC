@@ -46,7 +46,7 @@ The minimum subscription is one kilogram of LBMA-grade physical gold at first cl
 
 **Q6. How does the credit line work, and who bears the risk of it?**
 
-The credit facility is drawn by the fund entity against the gold position held at Malca-Amit. The proceeds are deployed into private credit and pre-IPO equity positions per the Fund Agreement's investment criteria. Members do not sign the credit facility documentation and have no direct obligation to the bank. The risk members bear is through their LP interest: if the credit sleeve produces losses, or if a forced deleveraging event occurs at an unfavourable gold price, NAV is reduced accordingly. The fund does not represent that the credit line will generate a specific return; deployment and yield are subject to market conditions and opportunity availability. Full risk disclosures are in the PPM.
+The credit facility is drawn by the fund entity against the gold position held at Malca-Amit. The proceeds are deployed across growth equity, private credit, real estate, and infrastructure per the Fund Agreement's investment criteria. Members do not sign the credit facility documentation and have no direct obligation to the bank. The risk members bear is through their LP interest: if the credit sleeve produces losses, or if a forced deleveraging event occurs at an unfavourable gold price, NAV is reduced accordingly. The fund does not represent that the credit line will generate a specific return; deployment and yield are subject to market conditions and opportunity availability. Full risk disclosures are in the PPM.
 
 [NEEDS KO TRANSLATION]
 

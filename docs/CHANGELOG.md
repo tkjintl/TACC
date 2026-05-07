@@ -1,5 +1,63 @@
 # AURUM CC 2026 VF — Changelog
 
+## 2026-05-05 — Member Portal (tacc)
+
+### Added: /ndadocs — pre-NDA document review page
+- New `_pages/ndadocs.html`: bilingual (EN/KO) page titled "Review before signing."
+- Shows 3 docs: Onboarding Package, Structural Memo, Member FAQ
+- Accessible to any `accessed`+ member (before NDA signing)
+- "Proceed to NDA →" CTA at bottom links to `/nda`
+- Route wired in `vercel.json`: `/ndadocs` → `/api/doc?id=ndadocs-page`
+- Noindex/no-store headers added for `/ndadocs`
+
+### Changed: /main — View Documents CTA
+- "View Documents" CTA now points to `/ndadocs` (was `/documents`)
+- Pre-NDA members land on the 3-doc review page, not the funded-only vault
+
+### Changed: /documents — funded-only, no conditional logic
+- Reverted 2-gate approach (removed conditional show/hide based on status)
+- Page is funded members only; no toggle JS, no pre-NDA document section
+
+### Changed: api/doc.js — doc gate updates
+- Added `ndadocs-page` to PAGE_GATES (gate: `rank(status) >= accessed`)
+- `package` and `structural` doc gates loosened from `nda_state === 'approved'`
+  to `rank(status) >= accessed` so pre-NDA members can download review docs
+- `faq` gate was already `accessed+`, unchanged
+
+### Previously (same session):
+
+#### Added: /ioi — IOI/KYC page
+- Ported `ioi.html`, `api/ioi.js`, `api/_lib/krw.js` from livetest-aurum
+- Route: `/ioi` → `ndadocs-page` gate: `nda_state === 'approved'`
+- Added `/api/ioi` route in `vercel.json`
+
+#### Fixed: NDA template download (dead link)
+- PDFs uploaded to Vercel Blob (private store) via `scripts/upload-docs-to-blob.js`
+- `api/doc.js` tries Blob first, falls back to filesystem
+- `api/_lib/blob.js`: added `Authorization: Bearer` header for private blob reads
+- `api/nda.js`: added admin cookie bypass so admin can test NDA download
+
+#### Fixed: telescope tabs II & III not clickable on /main
+- data-pillar values changed from strings (`"vcc"`, `"credit"`, `"deploy"`) to
+  numerics (`1`, `2`, `3`) — JS uses `+p.dataset.pillar` which cast strings to NaN
+
+#### Fixed: founding member count showing 33 instead of 3
+- Removed `loadLiveCount()` async API fetch from `main.html`
+- Hardcoded `buildGrid(3); updateCounter(3);`
+
+#### Fixed: admin dashboard missing "Main Site" button
+- Restored `<a href="/main">Main Site</a>` to `admin.html` (dropped in commit fabfde6)
+
+#### Fixed: member badge empty box in nav
+- Badge element hidden by default; JS reveals only when `member_number` is set
+
+#### Removed: closing section from /main
+- Entire `<section class="closing">` block removed (redundant below NDA CTA)
+
+#### Added: /gold and /letters redirects
+- `/gold` → `/api/doc?id=portfolio-page`
+- `/letters` → `/api/doc?id=documents-page`
+
 ## 2026-05-02
 
 ### Fixed: phantom gold box around italic headline (every slide)

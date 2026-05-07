@@ -81,7 +81,7 @@ em { font-style: italic; }
   color: var(--text);
   position: relative;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   padding: 16mm 22mm 12mm;
   box-shadow: 0 14px 50px rgba(0,0,0,0.55);
   overflow: hidden;
@@ -155,7 +155,7 @@ em { font-style: italic; }
   position: relative;
   z-index: 2;
   min-height: 0;
-  overflow: hidden;
+  overflow: clip;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -463,7 +463,7 @@ em { font-style: italic; }
   grid-template-columns: 1fr 1fr;
   border: 1px solid var(--border);
 }
-.compare-col { padding: 14px 16px; }
+.compare-col { padding: 12px 12px; }
 .compare-col + .compare-col { border-left: 1px solid var(--border); }
 .compare-col.them { background: rgba(255,255,255,0.015); }
 .compare-col.us { background: rgba(197,165,114,0.04); }
@@ -479,7 +479,7 @@ em { font-style: italic; }
 .compare-list { list-style: none; display: flex; flex-direction: column; gap: 7px; }
 .compare-list li {
   font-family: var(--font-display);
-  font-size: 11pt;
+  font-size: 10pt;
   line-height: 1.45;
   color: rgba(237,232,223,0.80);
 }
@@ -493,14 +493,14 @@ em { font-style: italic; }
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 18mm;
-  align-items: center;
+  align-items: start;
 }
 .bar-stage {
   display: flex;
   align-items: center;
   justify-content: center;
   perspective: 700px;
-  height: 72mm;
+  height: 44mm;
 }
 .gold-bar-3d {
   width: 86mm;
@@ -633,7 +633,7 @@ em { font-style: italic; }
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-height: 56mm;
+  min-height: 50mm;
 }
 .mech-step-num {
   font-family: var(--font-mono);
@@ -700,15 +700,16 @@ em { font-style: italic; }
   display: flex;
   align-items: baseline;
   gap: 14px;
-  margin: 4mm 0 6mm;
-  padding-bottom: 6mm;
+  margin: 2mm 0 4mm;
+  padding-bottom: 4mm;
   border-bottom: 1px solid var(--goldBorderS);
 }
 .engines-hero-num {
   font-family: var(--font-display);
   font-weight: 300;
-  font-size: 80pt;
-  line-height: 0.9;
+  font-size: 64pt;
+  line-height: 1.05;
+  padding-bottom: 4px;
   background: linear-gradient(135deg, var(--goldA), var(--goldD));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -734,12 +735,12 @@ em { font-style: italic; }
   gap: 1px;
   background: var(--border);
   border: 1px solid var(--border);
-  margin-bottom: 5mm;
+  margin-bottom: 4mm;
 }
 .engine-card {
   background: var(--near);
-  padding: 14px 14px;
-  min-height: 38mm;
+  padding: 12px 14px;
+  min-height: 32mm;
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -769,7 +770,7 @@ em { font-style: italic; }
   border: 1px solid var(--border);
 }
 .fee-mini-cell {
-  padding: 10px 14px;
+  padding: 8px 14px;
   border-right: 1px solid var(--border);
   text-align: center;
 }
@@ -862,7 +863,7 @@ em { font-style: italic; }
 /* ═══════════════════════════════════════════════════════════════════
    SLIDE 10 — RISK
    ═══════════════════════════════════════════════════════════════════ */
-.ltv-wrap { margin: 6mm 0 12mm; padding: 8mm 6mm; }
+.ltv-wrap { margin: 6mm 0 14mm; padding: 8mm 6mm; }
 .ltv-track {
   position: relative;
   height: 40px;
@@ -872,8 +873,16 @@ em { font-style: italic; }
 .ltv-fill {
   position: absolute;
   left: 0; top: 0; bottom: 0;
-  width: 67%;
-  background: linear-gradient(90deg, rgba(90,158,114,0.28) 0%, rgba(197,165,114,0.32) 60%, rgba(184,131,58,0.42) 88%, rgba(176,94,86,0.50) 100%);
+  width: 75%;
+  /* Gradient stops align to tick positions on the full track:
+     0%→green (0% LTV) · 50/75≈67%→green (50% tick) · 60/75=80%→amber (60% tick)
+     70/75≈93%→gold (70% tick) · 100%→red (75% tick) */
+  background: linear-gradient(90deg,
+    rgba(90,158,114,0.45) 0%,
+    rgba(90,158,114,0.45) 67%,
+    rgba(184,131,58,0.50) 80%,
+    rgba(212,175,122,0.55) 93%,
+    rgba(176,94,86,0.65) 100%);
   border-right: 1px solid var(--goldBorderM);
 }
 .ltv-tick {
@@ -894,24 +903,47 @@ em { font-style: italic; }
 }
 .ltv-tick-sub {
   position: absolute;
-  bottom: -22px;
   left: 50%;
-  transform: translateX(-50%);
   font-family: var(--font-mono);
-  font-size: 7pt;
-  letter-spacing: 0.14em;
+  font-size: 6.5pt;
+  letter-spacing: 0.10em;
   color: var(--dim);
   white-space: nowrap;
   text-transform: uppercase;
 }
+/* Tick colors match the bar gradient at each tick's position.
+   50% sits in the green zone, 60% on the amber stop,
+   70% on the gold stop, 75% on the red stop. */
 .ltv-tick.t-50 { left: 50%; background: var(--green); }
 .ltv-tick.t-50 .ltv-tick-label { color: var(--green); }
-.ltv-tick.t-70 { left: 70%; background: var(--amber); }
-.ltv-tick.t-70 .ltv-tick-label { color: var(--amber); }
-.ltv-tick.t-75 { left: 75%; background: var(--goldB); }
-.ltv-tick.t-75 .ltv-tick-label { color: var(--goldB); }
-.ltv-tick.t-80 { left: 80%; background: var(--red); }
-.ltv-tick.t-80 .ltv-tick-label { color: var(--red); }
+.ltv-tick.t-50 .ltv-tick-sub { bottom: -22px; transform: translateX(-4px); }
+.ltv-tick.t-60 { left: 60%; background: var(--amber); }
+.ltv-tick.t-60 .ltv-tick-label { color: var(--amber); }
+.ltv-tick.t-60 .ltv-tick-sub { bottom: -22px; transform: translateX(-50%); }
+.ltv-tick.t-70 { left: 70%; background: var(--goldB); }
+.ltv-tick.t-70 .ltv-tick-label { color: var(--goldB); }
+.ltv-tick.t-70 .ltv-tick-sub { bottom: -38px; transform: translateX(-50%); }
+.ltv-tick.t-70 .ltv-tick-sub::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 1px;
+  height: 14px;
+  background: rgba(197,165,114,0.25);
+}
+.ltv-tick.t-75 { left: 75%; background: var(--red); }
+.ltv-tick.t-75 .ltv-tick-label { color: var(--red); }
+.ltv-tick.t-75 .ltv-tick-sub { bottom: -54px; transform: translateX(-50%); }
+.ltv-tick.t-75 .ltv-tick-sub::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 1px;
+  height: 30px;
+  background: rgba(176,94,86,0.30);
+}
 .covenant-list {
   margin-top: 8mm;
   display: grid;
@@ -1006,14 +1038,14 @@ em { font-style: italic; }
   gap: 1px;
   background: var(--border);
   border: 1px solid var(--border);
-  margin: 8mm 0;
+  margin: 5mm 0;
   width: 100%;
   max-width: 200mm;
   text-align: left;
 }
 .close-stage {
   background: var(--near);
-  padding: 10px 12px;
+  padding: 8px 12px;
 }
 .close-stage-num {
   font-family: var(--font-mono);
@@ -1033,13 +1065,13 @@ em { font-style: italic; }
   font-family: var(--font-display);
   font-style: italic;
   font-weight: 300;
-  font-size: 28pt;
+  font-size: 24pt;
   color: var(--goldB);
   letter-spacing: 0.04em;
-  line-height: 1.35;
+  line-height: 1.3;
   max-width: 28ch;
-  margin: 4mm auto 8mm;
-  padding: 6mm 0;
+  margin: 2mm auto 5mm;
+  padding: 4mm 0;
   border-top: 1px solid var(--goldBorderS);
   border-bottom: 1px solid var(--goldBorderS);
 }
@@ -1048,7 +1080,7 @@ em { font-style: italic; }
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 14px 36px;
+  padding: 12px 32px;
   background: var(--goldMuted);
   border: 1px solid var(--goldBorderM);
   color: var(--goldC);
@@ -1058,7 +1090,7 @@ em { font-style: italic; }
   letter-spacing: 0.28em;
   text-transform: uppercase;
   text-decoration: none;
-  margin-bottom: 6mm;
+  margin-bottom: 4mm;
 }
 .close-meta {
   font-family: var(--font-mono);
@@ -1325,8 +1357,8 @@ em { font-style: italic; }
         </div>
         <div class="baseline-stack">
           <div class="baseline-tier">
-            <span class="baseline-tier-label">04 · Yield</span>
-            <span class="baseline-tier-name">Private Credit Deployment</span>
+            <span class="baseline-tier-label">04 · Yield / Return</span>
+            <span class="baseline-tier-name">Deployed Capital Returns</span>
           </div>
           <div class="baseline-tier">
             <span class="baseline-tier-label">03 · Spread</span>
@@ -1347,8 +1379,8 @@ em { font-style: italic; }
           <div class="compare-h">A Domestic Gold Account</div>
           <ul class="compare-list">
             <li>Unallocated paper claim</li>
-            <li>Bank balance-sheet exposure</li>
-            <li>KRW-denominated counterparty</li>
+            <li>Bank balance-sheet risk</li>
+            <li>KRW counterparty exposure</li>
             <li>Static. No yield.</li>
           </ul>
         </div>
@@ -1356,9 +1388,9 @@ em { font-style: italic; }
           <div class="compare-h">The Kilo</div>
           <ul class="compare-list">
             <li>Serial-numbered allocated bar</li>
-            <li>Held outside any bank balance sheet</li>
+            <li>Off bank balance sheets</li>
             <li>Singapore VCC · LBMA · FTZ</li>
-            <li>Productive collateral. Three engines.</li>
+            <li>Productive collateral · 3 engines</li>
           </ul>
         </div>
       </div>
@@ -1398,8 +1430,8 @@ em { font-style: italic; }
             <div class="bar-stamp">1 KG · 999.9<br>LBMA</div>
           </div>
         </div>
-        <div class="slide-text" style="margin-top: 6mm;">
-          <p>Each member's bullion is held in allocated, segregated custody at Malca-Amit Singapore Free Trade Zone. Bars are serial-numbered, refiner-certified, and audited.</p>
+        <div class="slide-text" style="margin-top: 3mm; font-size: 11pt; line-height: 1.5;">
+          <p>Each member's bullion is held in allocated, segregated custody at an LBMA-affiliated vault within a Singapore Free Trade Zone. Bars are serial-numbered, refiner-certified, and audited.</p>
           <p><strong>No rehypothecation. No pooled account. No paper claim standing in for the bar.</strong></p>
         </div>
       </div>
@@ -1408,17 +1440,17 @@ em { font-style: italic; }
         <div class="registry-row"><span class="registry-key">Format</span><span class="registry-val">1 kg cast bar</span></div>
         <div class="registry-row"><span class="registry-key">Fineness</span><span class="registry-val">999.9</span></div>
         <div class="registry-row"><span class="registry-key">Standard</span><span class="registry-val">LBMA Good Delivery</span></div>
-        <div class="registry-row"><span class="registry-key">Custodian</span><span class="registry-val">Malca-Amit SG</span></div>
+        <div class="registry-row"><span class="registry-key">Custodian</span><span class="registry-val">LBMA-affiliated vault</span></div>
         <div class="registry-row"><span class="registry-key">Location</span><span class="registry-val">Singapore FTZ</span></div>
         <div class="registry-row"><span class="registry-key">Allocation</span><span class="registry-val">Segregated · Member</span></div>
         <div class="registry-row"><span class="registry-key">Audit</span><span class="registry-val">Annual · Independent</span></div>
-        <div class="registry-row"><span class="registry-key">Insurance</span><span class="registry-val">Full replacement</span></div>
+        <div class="registry-row"><span class="registry-key">Insurance</span><span class="registry-val">Institutionally insured</span></div>
       </div>
     </div>
   </div>
   <footer class="slide-foot">
     <p class="slide-caveat">
-      Bar registry shown is a specimen format. The Fund maintains a live registry; full bar-list disclosure to admitted members on funding. Custody terms governed by the Custody Agreement with Malca-Amit Singapore.
+      Bar registry shown is a specimen format. The Fund maintains a live registry; full bar-list disclosure to admitted members on funding. Custody terms governed by the Custody Agreement with the appointed vault provider, disclosed to admitted members.
     </p>
     <div class="slide-foot-meta">
       <span class="slide-foot-pageno">05 / 12</span>
@@ -1492,13 +1524,13 @@ em { font-style: italic; }
     </div>
   </header>
   <div class="slide-body">
-    <h2 class="slide-headline">
+    <h2 class="slide-headline" style="font-size: 38pt; margin-bottom: 6mm;">
       <span class="hl-w">Gold collateralises.</span>
       <span class="hl-g">Credit deploys.</span>
       <span class="hl-w">Discipline returns.</span>
     </h2>
     <div class="slide-text">
-      <p>The kilogram is pledged to a senior credit facility at a maximum loan-to-value of seventy-five percent. Drawn capital is deployed by the investment committee into private credit and select pre-IPO positions. Yield, principal, and metal appreciation flow through the waterfall. The collateral does not move.</p>
+      <p>The kilogram is pledged to a senior credit facility at a maximum loan-to-value of seventy-five percent. Drawn capital is deployed by the investment committee across growth equity, private credit, real estate, and infrastructure. Yield, principal, and metal appreciation flow through the waterfall. The collateral does not move.</p>
     </div>
     <div class="mech-flow">
       <div class="mech-step">
@@ -1517,8 +1549,8 @@ em { font-style: italic; }
       </div>
       <div class="mech-step">
         <span class="mech-step-num">03 · Deployment</span>
-        <span class="mech-step-title">Private <em>Credit + Equity</em></span>
-        <span class="mech-step-detail">Investment committee selects sleeve-by-sleeve. Diversified across private credit and pre-IPO positions.</span>
+        <span class="mech-step-title">Deployed <em>Capital</em></span>
+        <span class="mech-step-detail">Investment committee selects sleeve-by-sleeve. Growth equity, private credit, real estate, and infrastructure.</span>
         <span class="mech-step-figure">15–25% Gross Tgt</span>
         <span class="mech-arrow"></span>
       </div>
@@ -1554,11 +1586,11 @@ em { font-style: italic; }
     </div>
   </header>
   <div class="slide-body">
-    <h2 class="slide-headline">
+    <h2 class="slide-headline" style="margin-bottom: 5mm;">
       <span class="hl-w">Three engines.</span>
       <span class="hl-g">One waterfall.</span>
     </h2>
-    <div class="engines-hero">
+    <div class="engines-hero" style="margin: 0 0 3mm; padding-bottom: 3mm;">
       <div class="engines-hero-num">~15%</div>
       <div class="engines-hero-label">
         <strong>Target net IRR</strong>
@@ -1573,8 +1605,8 @@ em { font-style: italic; }
       </div>
       <div class="engine-card">
         <div class="engine-card-num">02</div>
-        <div class="engine-card-title">Private Credit Yield</div>
-        <div class="engine-card-desc">Contractual yield on deployed capital. Targeted gross 15–25% across the deployment book, sleeve-selected.</div>
+        <div class="engine-card-title">Yield / Return</div>
+        <div class="engine-card-desc">Income and return generated across growth equity, private credit, real estate, and infrastructure. Target gross 15–25%, sleeve-selected by the investment committee.</div>
       </div>
       <div class="engine-card">
         <div class="engine-card-num">03</div>
@@ -1708,14 +1740,14 @@ em { font-style: italic; }
       <div class="ltv-track">
         <div class="ltv-fill"></div>
         <div class="ltv-tick t-50"><span class="ltv-tick-label">50%</span><span class="ltv-tick-sub">Min LTV · Fund Rule</span></div>
-        <div class="ltv-tick t-70"><span class="ltv-tick-label">70%</span><span class="ltv-tick-sub">Member Alert</span></div>
-        <div class="ltv-tick t-75"><span class="ltv-tick-label">75%</span><span class="ltv-tick-sub">Target Ceiling</span></div>
-        <div class="ltv-tick t-80"><span class="ltv-tick-label">80%</span><span class="ltv-tick-sub">Bank Margin</span></div>
+        <div class="ltv-tick t-60"><span class="ltv-tick-label">60%</span><span class="ltv-tick-sub">Member Alert</span></div>
+        <div class="ltv-tick t-70"><span class="ltv-tick-label">70%</span><span class="ltv-tick-sub">Target Ceiling</span></div>
+        <div class="ltv-tick t-75"><span class="ltv-tick-label">75%</span><span class="ltv-tick-sub">Bank Ceiling</span></div>
       </div>
     </div>
     <div class="covenant-list">
-      <div class="covenant"><span class="covenant-mark">◆</span><span class="covenant-text">Loan-to-value capped at <strong>75%</strong> under normal market conditions.</span></div>
-      <div class="covenant"><span class="covenant-mark">◆</span><span class="covenant-text">Member alert at <strong>70%</strong>; bank margin at <strong>80%</strong>.</span></div>
+      <div class="covenant"><span class="covenant-mark">◆</span><span class="covenant-text">Target loan-to-value capped at <strong>70%</strong> under normal market conditions.</span></div>
+      <div class="covenant"><span class="covenant-mark">◆</span><span class="covenant-text">Member alert at <strong>60%</strong>; bank ceiling at <strong>75%</strong>.</span></div>
       <div class="covenant"><span class="covenant-mark">◆</span><span class="covenant-text"><strong>20%</strong> fund-level cash reserve as a drawdown buffer.</span></div>
       <div class="covenant"><span class="covenant-mark">◆</span><span class="covenant-text">Capital calls capped at <strong>100%</strong> of original commitment.</span></div>
       <div class="covenant"><span class="covenant-mark">◆</span><span class="covenant-text">Independent custody. No rehypothecation. No related-party deployment.</span></div>

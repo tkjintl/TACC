@@ -6,7 +6,7 @@
 
 ## 1. Opening Statement
 
-The Aurum Century Club is a Singapore-registered variable capital company established to hold physical gold on behalf of a founding cohort of 100 members. Each member holds an LP interest in a fund whose principal asset is one or more LBMA-compliant one-kilogram gold bars, held in allocated, segregated custody at Singapore Freeport and collateralised against an institutional credit facility deployed into private credit and pre-IPO equity positions. The fund structure sits under the Singapore Variable Capital Companies Act. It is not a commodity pool, not a digital asset vehicle, and not a yield product. It is a managed fund whose base position is physical gold, with a secondary credit and equity sleeve funded by the credit line drawn against that gold.
+The Aurum Century Club is a Singapore-registered variable capital company established to hold physical gold on behalf of a founding cohort of 100 members. Each member holds an LP interest in a fund whose principal asset is one or more LBMA-compliant one-kilogram gold bars, held in allocated, segregated custody at Singapore Freeport and collateralised against an institutional credit facility deployed across growth equity, private credit, real estate, and infrastructure. The fund structure sits under the Singapore Variable Capital Companies Act. It is not a commodity pool, not a digital asset vehicle, and not a yield product. It is a managed fund whose base position is physical gold, with a secondary multi-asset sleeve funded by the credit line drawn against that gold.
 
 The inaugural close is Q3 2026. 100 seats. No reopening after close.
 
@@ -26,7 +26,7 @@ An independent physical inspection is conducted annually. The resulting vault ve
 
 The fund operates a gold-collateralised credit facility with a Singapore institutional bank. The facility is drawn against the fund's allocated gold position. The Fund Agreement imposes a minimum equity covenant of 50% — meaning the loan balance cannot exceed 50% of the gold position's value at LBMA spot — and a maximum LTV ceiling of 75%.
 
-Within that 50–75% band, the Manager draws on the facility to deploy capital into the credit and equity sleeve. The 20% fund-level cash reserve, funded from the remaining 20% of each member's subscription wire, sits outside the credit line and is maintained as a first response to LTV stress: if gold falls materially, the reserve is applied to principal reduction before the bank's margin threshold is approached.
+Within that 50–75% band, the Manager draws on the facility to deploy capital into the multi-asset sleeve. The 20% fund-level cash reserve, funded from the remaining 20% of each member's subscription wire, sits outside the credit line and is maintained as a first response to LTV stress: if gold falls materially, the reserve is applied to principal reduction before the bank's margin threshold is approached.
 
 Members have no direct obligation to the bank. The credit facility is an obligation of the fund entity. Members may, however, receive capital calls as provided in the Fund Agreement and PPM §7.4 — these are not a recourse mechanism but a mechanism for pro-rata reserve replenishment and, where applicable, trough-acquisition of additional gold. Capital calls are capped in aggregate at 100% of the member's original commitment over the term.
 

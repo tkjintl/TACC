@@ -1,3 +1,15 @@
+## MANDATORY: Always provide clickable hyperlinks
+
+**Every single time** you reference a file path or URL in a response, you MUST format it as a clickable markdown hyperlink. No exceptions.
+
+- Local file: `[filename.html](file:///C:/Users/thoma/TACC/filename.html)`
+- Web URL: `[label](https://example.com)`
+- Never output a bare path like `C:\Users\thoma\TACC\file.html` — always wrap it.
+
+This applies to ALL output: file you just created, file you just edited, deployment URL, any link whatsoever.
+
+---
+
 ## PDF Generation from HTML
 
 When I ask you to convert HTML to PDF, follow these rules exactly. Do not deviate.
