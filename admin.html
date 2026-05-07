@@ -950,7 +950,9 @@ svg {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  height: calc(100vh - 260px);
   min-height: 200px;
+  max-height: 700px;
 }
 
 .lane-head {
@@ -2176,9 +2178,10 @@ svg.spark   { overflow: visible; }
   /* KPI grid: 2 columns */
   .kpi-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
 
-  /* Lanes: single column */
+  /* Lanes: single column, shorter fixed height with internal scroll */
   .lanes-grid { grid-template-columns: 1fr; }
   .lane-grid  { grid-template-columns: 1fr; }
+  .lane { height: 40vh; max-height: 40vh; }
 
   /* Member grid: single column */
   .member-grid { grid-template-columns: 1fr; }
@@ -2808,9 +2811,10 @@ svg.spark   { overflow: visible; }
     scroll-snap-type: x mandatory;
   }
 
-  /* ── Decision Lanes: single column ───────────────────────── */
+  /* ── Decision Lanes: single column, internal scroll ─────── */
   .lanes-grid { grid-template-columns: 1fr; }
   .lane-grid  { grid-template-columns: 1fr; }
+  .lane { height: 40vh; max-height: 40vh; }
 
   /* ── Member grid / split pane ─────────────────────────────── */
   .member-grid {
