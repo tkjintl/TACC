@@ -415,6 +415,32 @@
         </div>
 
         <div class="field-group">
+          <label class="field-label">Transaction Types Sought <span style="color:var(--muted);font-weight:300;">(select all that apply)</span></label>
+          <div style="display:flex;flex-wrap:wrap;gap:10px 20px;margin-top:8px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--font-ui);font-size:13.5px;color:var(--text);">
+              <input type="checkbox" name="transaction_types" value="growth_equity" style="accent-color:var(--gold);width:15px;height:15px;flex-shrink:0;">
+              <span>Growth Equity</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--font-ui);font-size:13.5px;color:var(--text);">
+              <input type="checkbox" name="transaction_types" value="private_credit" style="accent-color:var(--gold);width:15px;height:15px;flex-shrink:0;">
+              <span>Private Credit</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--font-ui);font-size:13.5px;color:var(--text);">
+              <input type="checkbox" name="transaction_types" value="real_estate" style="accent-color:var(--gold);width:15px;height:15px;flex-shrink:0;">
+              <span>Real Estate</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--font-ui);font-size:13.5px;color:var(--text);">
+              <input type="checkbox" name="transaction_types" value="infrastructure" style="accent-color:var(--gold);width:15px;height:15px;flex-shrink:0;">
+              <span>Infrastructure</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--font-ui);font-size:13.5px;color:var(--text);">
+              <input type="checkbox" name="transaction_types" value="gold_only" style="accent-color:var(--gold);width:15px;height:15px;flex-shrink:0;">
+              <span>Gold Only</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field-group">
           <label class="field-label" for="referrer-name">Referrer's name <span style="color:var(--muted);font-weight:300;">(if applicable)</span></label>
           <input class="input-field" type="text" id="referrer-name" name="referrer_name" placeholder="Optional — name of the person who introduced you" autocomplete="off">
         </div>
@@ -544,6 +570,7 @@
     const allocation = document.getElementById('allocation').value;
     const referralSrc = document.getElementById('referral').value;
     const referrerName = document.getElementById('referrer-name').value.trim();
+    const transactionTypes = Array.from(document.querySelectorAll('input[name="transaction_types"]:checked')).map(function(el) { return el.value; });
 
     let valid = true;
     function check(id, ok) { showError(id, !ok); if (!ok) valid = false; }
@@ -587,6 +614,7 @@
       referral: referralSrc,
       referral_source: referralSrc,
       referrer_name: referrerName || null,
+      transaction_types: transactionTypes,
       reverse_solicitation_ack: true
     };
 

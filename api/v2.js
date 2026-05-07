@@ -18,6 +18,8 @@
 //   POST ?resource=admin&op=issue-capital-call
 //   GET  ?resource=admin&op=read-receipt
 //   GET  ?resource=member&op=deals          — Prism bridge deal feed
+//   POST ?resource=admin&op=verify-ioi
+//   POST ?resource=admin&op=decline-ioi
 
 import {
   ok, bad, unauthorized, notFound, methodNotAllowed, serverError,
@@ -53,6 +55,7 @@ import { clientIp } from './_lib/http.js';
 import {
   sendInvitation, sendFundedConfirmation, sendWireInstructions,
   sendQuarterlyLetterNotification, sendVaultVerificationNotification,
+  sendIoiVerified, sendIoiDeclined,
 } from './_lib/email.js';
 import { generateMemberCertificate } from './_lib/pdf.js';
 
@@ -439,6 +442,8 @@ async function handleAdmin(req, res, op) {
     case 'migrate-tax-statements':  return adminMigrateTaxStatements(req, res, session);
     case 'recount-member-number':   return adminRecountMemberNumber(req, res, session);
     case 'test-capital-call-targeting': return adminTestCapitalCallTargeting(req, res, session);
+    case 'verify-ioi':              return adminVerifyIoi(req, res, session);
+    case 'decline-ioi':             return adminDeclineIoi(req, res, session);
     default:                        return bad(res, `unknown admin op: ${op}`);
   }
 }
@@ -1546,13 +1551,13 @@ async function adminSeedDemo(req, res, session) {
 
   // 2. Deal book ───────────────────────────────────────────────────────────────
   const dealsSpec = [
-    { id: 'demo_deal_1', name: 'Hyundai Mezz 2026',           asset_class: 'mezz_debt',       advisor: 'Korea Capital Partners', stage: 'realized',     health: 'green', target_irr_pct: 14.2, term_months: 18, total_commitment_usd: 2_400_000, deployed_usd: 2_400_000, invested_usd: 2_400_000, marked_usd: 2_400_000, funding_source: 'reserve', member_visible: true,  created_days_ago: 240 },
-    { id: 'demo_deal_2', name: 'Samsung Pre-IPO Series F',    asset_class: 'pre_ipo_equity',  advisor: 'Seoul Growth Advisors',  stage: 'closing',      health: 'green', target_irr_pct: 22.0, term_months: 36, total_commitment_usd: 4_200_000, deployed_usd: 3_800_000, invested_usd: 3_800_000, marked_usd: 4_220_000, funding_source: 'mixed',   member_visible: true,  created_days_ago: 120 },
-    { id: 'demo_deal_3', name: 'Lotte Logistics Senior',      asset_class: 'private_credit',  advisor: 'Asian Bridge Credit',    stage: 'terms',        health: 'green', target_irr_pct:  9.8, term_months: 12, total_commitment_usd: 1_800_000, deployed_usd: 0,         invested_usd: 0,         marked_usd: 0,         funding_source: 'ltv',     member_visible: true,  created_days_ago: 30  },
-    { id: 'demo_deal_4', name: 'Coupang Bond Tranche B',      asset_class: 'mezz_debt',       advisor: 'TKJ Direct',             stage: 'due_diligence',health: 'green', target_irr_pct: 11.5, term_months: 24, total_commitment_usd: 2_000_000, deployed_usd: 0,         invested_usd: 0,         marked_usd: 0,         funding_source: 'mixed',   member_visible: false, created_days_ago: 21  },
-    { id: 'demo_deal_5', name: 'K-Beauty SPAC Bridge',        asset_class: 'private_credit',  advisor: 'Seoul Growth Advisors',  stage: 'ioi',          health: 'green', target_irr_pct: 13.0, term_months:  9, total_commitment_usd: 1_000_000, deployed_usd: 0,         invested_usd: 0,         marked_usd: 0,         funding_source: 'ltv',     member_visible: false, created_days_ago: 14  },
-    { id: 'demo_deal_6', name: 'Singapore Industrial REIT JV',asset_class: 'real_estate',     advisor: 'Asian Bridge Credit',    stage: 'live_ioi',     health: 'green', target_irr_pct: 10.2, term_months: 60, total_commitment_usd: 5_000_000, deployed_usd: 0,         invested_usd: 0,         marked_usd: 0,         funding_source: 'mixed',   member_visible: false, created_days_ago: 9   },
-    { id: 'demo_deal_7', name: 'Jeju Tourism Hotel Mezz',     asset_class: 'mezz_debt',       advisor: 'Korea Capital Partners', stage: 'review',       health: 'amber', target_irr_pct: 12.0, term_months: 36, total_commitment_usd: 3_000_000, deployed_usd: 0,         invested_usd: 0,         marked_usd: 0,         funding_source: 'reserve', member_visible: false, created_days_ago: 5   },
+    { id: 'demo_deal_1', name: 'Hyundai Senior Credit 2026',   asset_class: 'private_credit',  advisor: 'Korea Capital Partners', stage: 'realized',     health: 'green', target_irr_pct: 14.2, term_months: 18, total_commitment_usd: 2_400_000, deployed_usd: 2_400_000, invested_usd: 2_400_000, marked_usd: 2_400_000, funding_source: 'reserve', member_visible: true,  created_days_ago: 240 },
+    { id: 'demo_deal_2', name: 'Samsung Growth Equity F',      asset_class: 'growth_equity',   advisor: 'Seoul Growth Advisors',  stage: 'closing',      health: 'green', target_irr_pct: 22.0, term_months: 36, total_commitment_usd: 4_200_000, deployed_usd: 3_800_000, invested_usd: 3_800_000, marked_usd: 4_220_000, funding_source: 'mixed',   member_visible: true,  created_days_ago: 120 },
+    { id: 'demo_deal_3', name: 'Lotte Logistics Senior',       asset_class: 'private_credit',  advisor: 'Asian Bridge Credit',    stage: 'terms',        health: 'green', target_irr_pct:  9.8, term_months: 12, total_commitment_usd: 1_800_000, deployed_usd: 0,         invested_usd: 0,         marked_usd: 0,         funding_source: 'ltv',     member_visible: true,  created_days_ago: 30  },
+    { id: 'demo_deal_4', name: 'Coupang Bond Tranche B',       asset_class: 'private_credit',  advisor: 'TKJ Direct',             stage: 'due_diligence',health: 'green', target_irr_pct: 11.5, term_months: 24, total_commitment_usd: 2_000_000, deployed_usd: 0,         invested_usd: 0,         marked_usd: 0,         funding_source: 'mixed',   member_visible: false, created_days_ago: 21  },
+    { id: 'demo_deal_5', name: 'K-Beauty SPAC Bridge',         asset_class: 'private_credit',  advisor: 'Seoul Growth Advisors',  stage: 'ioi',          health: 'green', target_irr_pct: 13.0, term_months:  9, total_commitment_usd: 1_000_000, deployed_usd: 0,         invested_usd: 0,         marked_usd: 0,         funding_source: 'ltv',     member_visible: false, created_days_ago: 14  },
+    { id: 'demo_deal_6', name: 'Singapore Industrial REIT JV', asset_class: 'real_estate',     advisor: 'Asian Bridge Credit',    stage: 'live_ioi',     health: 'green', target_irr_pct: 10.2, term_months: 60, total_commitment_usd: 5_000_000, deployed_usd: 0,         invested_usd: 0,         marked_usd: 0,         funding_source: 'mixed',   member_visible: false, created_days_ago: 9   },
+    { id: 'demo_deal_7', name: 'Jeju Tourism Hotel Credit',    asset_class: 'private_credit',  advisor: 'Korea Capital Partners', stage: 'review',       health: 'amber', target_irr_pct: 12.0, term_months: 36, total_commitment_usd: 3_000_000, deployed_usd: 0,         invested_usd: 0,         marked_usd: 0,         funding_source: 'reserve', member_visible: false, created_days_ago: 5   },
     { id: 'demo_deal_8', name: 'DOA Crypto Lender Senior',    asset_class: 'private_credit',  advisor: 'TKJ Direct',             stage: 'killed',       health: 'red',   target_irr_pct: 0,    term_months:  0, total_commitment_usd: 0,         deployed_usd: 0,         invested_usd: 0,         marked_usd: 0,         funding_source: 'reserve', member_visible: false, created_days_ago: 60  },
   ];
   const dealsCreated = [];
@@ -3014,6 +3019,78 @@ async function adminDeclineLead(req, res, session) {
     declined_at: lead.declined_at,
     declined_reason: lead.declined_reason,
   } });
+}
+
+// ── admin op=verify-ioi ────────────────────────────────────────────────────
+// Partner verifies a submitted IOI. Sends verified email to member.
+// Wire instructions are issued separately via op=wire-issue.
+
+async function adminVerifyIoi(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return err(res, 'invalid body', 'BAD_BODY'); }
+  const leadId = String(body.leadId || '').trim();
+  if (!leadId) return err(res, 'leadId required', 'MISSING_LEAD_ID');
+
+  const lead = await getLead(leadId);
+  if (!lead) return notFound(res);
+  if (!lead.ioi || !lead.ioi.submitted_at) return err(res, 'no IOI on file', 'NO_IOI');
+
+  const now = Date.now();
+  lead.ioi_verified_at = now;
+  lead.ioi_verified_by = session.email || session.id || 'admin';
+
+  await appendAudit(lead, {
+    actor: _actor(session),
+    action: 'ioi_verified',
+    next: { ioi_verified_at: now },
+    ip: clientIp(req),
+  });
+  try { await saveLead(lead); } catch (e) { return serverError(res, e); }
+
+  // Email member — best effort
+  try { await sendIoiVerified(lead); } catch (e) {
+    console.warn('[v2/verify-ioi] email failed', e && e.message);
+  }
+
+  return ok(res, { ok: true, ioi_verified_at: now });
+}
+
+// ── admin op=decline-ioi ────────────────────────────────────────────────────
+// Partner declines a submitted IOI. Sends decline notice to member.
+
+async function adminDeclineIoi(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return err(res, 'invalid body', 'BAD_BODY'); }
+  const leadId = String(body.leadId || '').trim();
+  const note = String(body.note || '').trim().slice(0, 500);
+  if (!leadId) return err(res, 'leadId required', 'MISSING_LEAD_ID');
+
+  const lead = await getLead(leadId);
+  if (!lead) return notFound(res);
+  if (!lead.ioi || !lead.ioi.submitted_at) return err(res, 'no IOI on file', 'NO_IOI');
+
+  const now = Date.now();
+  lead.ioi_declined_at = now;
+  lead.ioi_declined_by = session.email || session.id || 'admin';
+  if (note) lead.ioi_decline_note = note;
+
+  await appendAudit(lead, {
+    actor: _actor(session),
+    action: 'ioi_declined',
+    memo: note || undefined,
+    next: { ioi_declined_at: now },
+    ip: clientIp(req),
+  });
+  try { await saveLead(lead); } catch (e) { return serverError(res, e); }
+
+  // Email member — best effort
+  try { await sendIoiDeclined(lead, note || null); } catch (e) {
+    console.warn('[v2/decline-ioi] email failed', e && e.message);
+  }
+
+  return ok(res, { ok: true, ioi_declined_at: now });
 }
 
 // ── admin op=capital-call-paid ──────────────────────────────────────────────

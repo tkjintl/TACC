@@ -27,9 +27,8 @@
 import { ok, bad, notFound, methodNotAllowed, readBody, getQuery, getCookie } from './_lib/http.js';
 import { verifyToken } from './_lib/auth.js';
 import { getLead, saveLead, leadIdForIoiCode } from './_lib/storage.js';
-import { sendRaw, buildPartnerNotice, buildIoiReceivedEmail, partnerBcc, partnerEmailsOff } from './_lib/email.js';
+import { sendIoiReceived, sendIoiPartnerNotice, partnerEmailsOff } from './_lib/email.js';
 import { getKrwPerKg } from './_lib/krw.js';
-import { formatKRW } from './_lib/format.js';
 
 export default async function handler(req, res) {
   const op = String(getQuery(req).op || '').toLowerCase();
@@ -239,33 +238,29 @@ async function opSubmitIoi(req, res) {
   const profile = body.profile || {};
   const ioi = body.ioi || {};
 
-  const krw = Math.round(Number(ioi.krw) || 0);
-  const ltv_pct = Math.max(0, Math.min(75, Math.round(Number(ioi.ltv_pct) || 0)));
+  // kg is the primary input (0.5 increments, min 1)
+  const kg = Math.round(Number(ioi.kg) * 2) / 2;
+  const ltv_pct = Math.max(50, Math.min(75, Math.round(Number(ioi.ltv_pct) || 50)));
   const signature = String(ioi.signature || '').trim().slice(0, 200);
-  if (!krw || krw < 1) return bad(res, 'invalid commitment amount');
+  if (!kg || kg < 1) return bad(res, 'minimum 1 kg required');
   if (!signature) return bad(res, 'signature required');
   if (!ioi.checkbox_indicative || !ioi.checkbox_materials || !ioi.checkbox_seven_day || !ioi.checkbox_spot_caveat) {
     return bad(res, 'all checkboxes required');
   }
 
-  // Snapshot spot at submit time
+  // Snapshot live spot for reference — settlement price is at wire receipt, not here
   const spot = await getKrwPerKg();
   const krw_per_kg = spot.krw_per_kg;
-  const kg = krw / krw_per_kg;
-  if (kg < 1) return bad(res, `commitment below 1 kg minimum at current spot`);
+  const krw_indicative = Math.round((kg * krw_per_kg) / 0.80); // indicative wire total
 
   const now = Date.now();
   lead.profile = {
     ...lead.profile,
-    income_range: String(profile.income_range || '').slice(0, 100),
-    net_worth: String(profile.net_worth || '').slice(0, 100),
-    liquid_net_worth: String(profile.liquid_net_worth || '').slice(0, 100),
     investment_experience_yrs: String(profile.investment_experience_yrs || '').slice(0, 50),
     offshore_exposure_text: String(profile.offshore_exposure_text || '').slice(0, 1000),
     pep: profile.pep === true || profile.pep === 'yes',
     pep_relation: profile.pep ? String(profile.pep_relation || '').slice(0, 500) : '',
     source_of_funds_commit: String(profile.source_of_funds_commit || '').slice(0, 100),
-    tax_residency: String(profile.tax_residency || '').slice(0, 100),
     korean_fx_bank: String(profile.korean_fx_bank || '').slice(0, 200),
     submitted_at: now,
   };
@@ -288,14 +283,10 @@ async function opSubmitIoi(req, res) {
     }
   }
   lead.ioi = {
-    krw,
     kg,
     ltv_pct,
     krw_per_kg_at_submit: krw_per_kg,
-    krw_at_submit: krw,
-    krw_per_kg_at_verify: null,
-    krw_at_verify: null,
-    krw_at_settle: null,
+    krw_indicative,
     signature,
     checkboxes: {
       indicative: !!ioi.checkbox_indicative,
@@ -309,59 +300,26 @@ async function opSubmitIoi(req, res) {
   lead.audit.push({
     at: now,
     action: wasRevision ? 'ioi_revised' : 'ioi_submitted',
-    krw, kg: kg.toFixed(4), ltv_pct,
+    krw_indicative, kg: Number(kg.toFixed(2)), ltv_pct,
   });
   await saveLead(lead);
 
-  // Optional: notify partners that an IOI just landed.
-  // Suppressed when PARTNER_EMAILS_OFF=1 (testing mode).
+  // Partner notification (suppressed when PARTNER_EMAILS_OFF=1)
   try {
     if (partnerEmailsOff()) {
       lead.audit = lead.audit || [];
       lead.audit.push({ at: Date.now(), actor: 'system', action: 'partner_notify_suppressed', kind: 'ioi_submitted', reason: 'PARTNER_EMAILS_OFF' });
     } else {
-    const notify = (process.env.NOTIFY_EMAILS || '').split(',').map((s) => s.trim()).filter(Boolean);
-    if (notify.length) {
-      const krwFmt = formatKRW(krw);
-      const spotFmt = formatKRW(krw_per_kg);
-      await sendRaw({
-        to: notify,
-        subject: `[AURUM] IOI submitted · ${lead.name || 'Unnamed'} · ${kg.toFixed(2)} kg`,
-        text: [
-          `${lead.name || 'Unnamed'} just submitted an IOI.`,
-          ``,
-          `KRW:        ${krwFmt}`,
-          `kg:         ${kg.toFixed(4)}`,
-          `LTV req:    ${ltv_pct}%`,
-          `Spot:       ${spotFmt} /kg (${spot.source})`,
-          ``,
-          `Review:     ${process.env.SITE_URL || 'https://www.theaurumcc.com'}/admin?lead=${encodeURIComponent(lead.id)}`,
-        ].join('\n'),
-        html: `<pre style="font:14px monospace">${lead.name || 'Unnamed'} just submitted an IOI.
-
-KRW:        ${krwFmt}
-kg:         ${kg.toFixed(4)}
-LTV req:    ${ltv_pct}%
-Spot:       ${spotFmt} /kg (${spot.source})
-
-Review:     <a href="${process.env.SITE_URL || 'https://www.theaurumcc.com'}/admin?lead=${encodeURIComponent(lead.id)}">dashboard</a></pre>`,
-      });
+      await sendIoiPartnerNotice(lead, lead.ioi);
     }
-    } // end else branch (partner emails enabled)
   } catch (e) {
-    console.warn('partner notify after IOI failed', e);
+    console.warn('[ioi] partner notify failed', e && e.message);
   }
 
-  // Acknowledgement email to the lead — quiet receipt confirmation. Best effort.
+  // Member receipt — best effort
   if (lead.email) {
     try {
-      const tpl = buildIoiReceivedEmail({ lead, ioi: lead.ioi });
-      const r = await sendRaw({
-        to: lead.email,
-        subject: tpl.subject, html: tpl.html, text: tpl.text,
-        replyTo: process.env.REPLY_TO || undefined,
-        bcc: partnerBcc(),
-      });
+      const r = await sendIoiReceived(lead, lead.ioi);
       lead.audit = lead.audit || [];
       lead.audit.push({
         at: Date.now(), actor: 'system',
@@ -370,7 +328,7 @@ Review:     <a href="${process.env.SITE_URL || 'https://www.theaurumcc.com'}/adm
       });
       await saveLead(lead);
     } catch (e) {
-      console.warn('ioi ack email failed', e);
+      console.warn('[ioi] member ack email failed', e && e.message);
     }
   }
 
@@ -478,7 +436,7 @@ async function opPortfolio(req, res) {
       ltv_pct_requested: lead.ioi.ltv_pct,
       submitted_at: lead.ioi.submitted_at,
       verified_at: lead.ioi_verified_at || null,
-      krw_at_submit: lead.ioi.krw_at_submit || null,
+      krw_indicative: lead.ioi.krw_indicative || null,
     },
     wire: {
       ref: (lead.wire && lead.wire.ref) || null,

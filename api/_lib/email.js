@@ -587,3 +587,249 @@ export async function sendCapitalCallReminder(lead, call, daysToDue) {
 
   return sendRaw({ to: lead.email, subject, html: shellHtml(inner, subject), text });
 }
+
+// ── IOI helpers ───────────────────────────────────────────────────────────────
+
+export function partnerBcc() {
+  const bcc = (process.env.PARTNER_BCC_EMAILS || '')
+    .split(',').map((s) => s.trim()).filter(Boolean);
+  return bcc.length ? bcc : undefined;
+}
+
+export function partnerEmailsOff() {
+  return process.env.PARTNER_EMAILS_OFF === '1';
+}
+
+// ── 10. IOI received — member receipt ────────────────────────────────────────
+
+export function buildIoiReceivedEmail({ lead, ioi }) {
+  const subject = 'Indication of Interest Received — The Aurum Century Club';
+  const kgRaw = ioi && ioi.kg != null ? Number(ioi.kg) : null;
+  const kg = kgRaw != null ? (kgRaw % 1 === 0 ? String(kgRaw) : kgRaw.toFixed(1)) : '—';
+  const ltv = ioi && ioi.ltv_pct != null ? `${ioi.ltv_pct}%` : '—';
+
+  const inner = `
+  ${lockupRow}
+  <tr><td bgcolor="#0a0a0a" style="background:#0a0a0a;padding:36px 32px 8px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.34em;color:#C5A572">IOI RECEIVED · 의향서 접수</td></tr>
+  <tr><td bgcolor="#0a0a0a" style="background:#0a0a0a;padding:0 32px 22px;font-family:Georgia,serif;font-weight:500;font-size:30px;line-height:1.2;color:#e8e3d8">
+    Your indication is <span style="font-style:italic;color:#C5A572">received.</span>
+  </td></tr>
+  <tr><td bgcolor="#0a0a0a" style="background:#0a0a0a;padding:0 32px 22px;font-family:Georgia,serif;font-size:16px;line-height:1.78;color:#aaa39a">
+    Dear ${esc(lead.name || 'Member')}, your Indication of Interest has been received and is under partner review. We will be in touch once the indication has been verified.
+  </td></tr>
+  <tr><td bgcolor="#0a0a0a" style="background:#0a0a0a;padding:0 32px 22px">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;border:1px solid rgba(197,165,114,0.30)">
+      <tr><td style="padding:18px 22px">
+        <table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse">
+          <tr><td style="padding:7px 14px 7px 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9.5px;letter-spacing:.26em;color:#8a7d6b;width:160px;vertical-align:top">COMMITMENT</td><td style="padding:7px 0;font-family:Georgia,serif;font-size:14px;color:#e8e3d8">${esc(kg)} kg</td></tr>
+          <tr><td style="padding:7px 14px 7px 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9.5px;letter-spacing:.26em;color:#8a7d6b;vertical-align:top">LTV REQUESTED</td><td style="padding:7px 0;font-family:Georgia,serif;font-size:14px;color:#e8e3d8">${esc(ltv)}</td></tr>
+          <tr><td style="padding:7px 14px 7px 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9.5px;letter-spacing:.26em;color:#8a7d6b;vertical-align:top">STATUS</td><td style="padding:7px 0;font-family:Georgia,serif;font-size:14px;color:#C5A572">Under partner review</td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </td></tr>
+  <tr><td bgcolor="#0a0a0a" style="background:#0a0a0a;padding:0 32px 24px">
+    <div style="padding:16px 20px;border-left:2px solid rgba(197,165,114,0.50);background:rgba(197,165,114,0.04)">
+      <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:8.5px;letter-spacing:.30em;color:#8a7d6b;margin-bottom:10px">IMPORTANT · SPOT PRICE NOTICE</div>
+      <div style="font-family:Georgia,serif;font-style:italic;font-size:14px;line-height:1.75;color:#aaa39a">Your final allocation in kilograms is calculated at the LBMA gold spot price on the date your wire is <strong style="color:#e8e3d8;font-style:normal">received</strong> by the fund. Aurum does not purchase or reserve gold prior to cleared funds. The KRW figures shown in your IOI are indicative only.</div>
+    </div>
+  </td></tr>
+  ${dividerRow()}
+  ${signOffRow()}
+  `;
+
+  const text = [
+    `Dear ${lead.name || 'Member'},`,
+    ``,
+    `Your Indication of Interest has been received and is under partner review.`,
+    ``,
+    `Commitment:    ${kg} kg`,
+    `LTV Requested: ${ltv}`,
+    `Status:        Under partner review`,
+    ``,
+    `IMPORTANT: Your final allocation in kilograms is calculated at the LBMA gold`,
+    `spot price on the date your wire is received by the fund. Aurum does not`,
+    `purchase or reserve gold prior to cleared funds.`,
+    ``,
+    `— ${partnerName()}`,
+    `TACC Pte Ltd, Singapore`,
+  ].join('\n');
+
+  return { subject, html: shellHtml(inner, 'Your IOI has been received by The Aurum Century Club.'), text };
+}
+
+export async function sendIoiReceived(lead, ioi) {
+  if (!lead.email) return { sent: false, reason: 'no-email' };
+  const tpl = buildIoiReceivedEmail({ lead, ioi });
+  return sendRaw({
+    to: lead.email,
+    subject: tpl.subject,
+    html: tpl.html,
+    text: tpl.text,
+    replyTo: process.env.REPLY_TO || undefined,
+    bcc: partnerBcc(),
+  });
+}
+
+// ── 11. IOI partner notice ────────────────────────────────────────────────────
+
+export async function sendIoiPartnerNotice(lead, ioi) {
+  const to = notifyEmails();
+  if (!to.length) return { sent: false, reason: 'no-notify-emails' };
+
+  const kgRaw = ioi && ioi.kg != null ? Number(ioi.kg) : null;
+  const kg = kgRaw != null ? (kgRaw % 1 === 0 ? String(kgRaw) : kgRaw.toFixed(1)) : '—';
+  const ltv = ioi && ioi.ltv_pct != null ? `${ioi.ltv_pct}%` : '—';
+  const subject = `[AURUM] IOI · ${lead.name || 'Unnamed'} · ${kg} kg · LTV ${ltv}`;
+  const adminUrl = `${siteUrl()}/admin?lead=${encodeURIComponent(lead.id)}`;
+
+  const rows = [
+    lead.name  && `<tr><td style="padding:5px 12px 5px 0;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.28em;color:#8a7d6b;width:120px">NAME</td><td style="padding:5px 0;color:#e8e3d8;font-size:14px">${esc(lead.name)}</td></tr>`,
+    lead.email && `<tr><td style="padding:5px 12px 5px 0;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.28em;color:#8a7d6b">EMAIL</td><td style="padding:5px 0;color:#e8e3d8;font-size:14px">${esc(lead.email)}</td></tr>`,
+    `<tr><td style="padding:5px 12px 5px 0;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.28em;color:#8a7d6b">COMMITMENT</td><td style="padding:5px 0;color:#C5A572;font-size:16px;font-weight:600">${esc(kg)} kg</td></tr>`,
+    `<tr><td style="padding:5px 12px 5px 0;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.28em;color:#8a7d6b">LTV REQ</td><td style="padding:5px 0;color:#e8e3d8;font-size:14px">${esc(ltv)}</td></tr>`,
+    ioi && ioi.krw_per_kg_at_submit ? `<tr><td style="padding:5px 12px 5px 0;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.28em;color:#8a7d6b">REF SPOT</td><td style="padding:5px 0;color:#8a7d6b;font-size:13px">${Number(ioi.krw_per_kg_at_submit).toLocaleString()} KRW/kg (at submit)</td></tr>` : '',
+  ].filter(Boolean).join('\n');
+
+  const html = `<!doctype html><html><body style="margin:0;padding:0;background:#0a0a0a;color:#e8e3d8;font-family:Georgia,serif">
+<div style="max-width:560px;margin:0 auto;padding:32px 28px">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.32em;color:#C5A572;margin-bottom:4px">NEW IOI</div>
+  <h1 style="font-family:Georgia,serif;font-weight:500;font-size:26px;color:#e8e3d8;margin:0 0 22px">${esc(lead.name || 'Unnamed')}</h1>
+  <table cellpadding="0" cellspacing="0" style="width:100%">${rows}</table>
+  <div style="margin-top:28px">
+    <a href="${esc(adminUrl)}" style="display:inline-block;padding:13px 22px;background:#C5A572;color:#0a0a0a;text-decoration:none;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.28em">REVIEW IN DASHBOARD →</a>
+  </div>
+  <div style="margin-top:28px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08);font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.28em;color:#6b655e">TACC PTE LTD · ${new Date().getUTCFullYear()} · ID: ${esc(lead.id)}</div>
+</div></body></html>`;
+
+  const text = [
+    `New IOI — ${lead.name || 'Unnamed'}`,
+    `Email: ${lead.email || '—'}`,
+    `Commitment: ${kg} kg`,
+    `LTV Requested: ${ltv}`,
+    ``,
+    `Review: ${adminUrl}`,
+  ].join('\n');
+
+  return sendRaw({ to, subject, html, text });
+}
+
+// ── 12. IOI verified — member notice ─────────────────────────────────────────
+
+export async function sendIoiVerified(lead) {
+  if (!lead.email) return { sent: false, reason: 'no-email' };
+  const ioi = lead.ioi || {};
+  const kgRaw = ioi.kg != null ? Number(ioi.kg) : null;
+  const kg = kgRaw != null ? (kgRaw % 1 === 0 ? String(kgRaw) : kgRaw.toFixed(1)) : '—';
+  const ltv = ioi.ltv_pct != null ? `${ioi.ltv_pct}%` : '—';
+  const subject = 'Indication Verified — Wire Instructions to Follow · The Aurum Century Club';
+  const portalUrl = `${siteUrl()}/portfolio`;
+
+  const inner = `
+  ${lockupRow}
+  <tr><td bgcolor="#0a0a0a" style="background:#0a0a0a;padding:36px 32px 8px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.34em;color:#C5A572">VERIFIED · 확인 완료</td></tr>
+  <tr><td bgcolor="#0a0a0a" style="background:#0a0a0a;padding:0 32px 22px;font-family:Georgia,serif;font-weight:500;font-size:30px;line-height:1.2;color:#e8e3d8">
+    Your indication is <span style="font-style:italic;color:#C5A572">verified.</span>
+  </td></tr>
+  <tr><td bgcolor="#0a0a0a" style="background:#0a0a0a;padding:0 32px 22px;font-family:Georgia,serif;font-size:16px;line-height:1.78;color:#aaa39a">
+    Dear ${esc(lead.name || 'Member')}, a partner has reviewed and verified your Indication of Interest. Wire instructions will follow shortly from a team member.
+  </td></tr>
+  <tr><td bgcolor="#0a0a0a" style="background:#0a0a0a;padding:0 32px 22px">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;border:1px solid rgba(197,165,114,0.30)">
+      <tr><td style="padding:18px 22px">
+        <table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse">
+          <tr><td style="padding:7px 14px 7px 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9.5px;letter-spacing:.26em;color:#8a7d6b;width:160px;vertical-align:top">COMMITMENT</td><td style="padding:7px 0;font-family:Georgia,serif;font-size:14px;color:#e8e3d8">${esc(kg)} kg</td></tr>
+          <tr><td style="padding:7px 14px 7px 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9.5px;letter-spacing:.26em;color:#8a7d6b;vertical-align:top">LTV REQUESTED</td><td style="padding:7px 0;font-family:Georgia,serif;font-size:14px;color:#e8e3d8">${esc(ltv)}</td></tr>
+          <tr><td style="padding:7px 14px 7px 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9.5px;letter-spacing:.26em;color:#8a7d6b;vertical-align:top">STATUS</td><td style="padding:7px 0;font-family:Georgia,serif;font-size:14px;color:#C5A572">Verified · awaiting wire</td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </td></tr>
+  <tr><td bgcolor="#0a0a0a" style="background:#0a0a0a;padding:0 32px 24px">
+    <div style="padding:16px 20px;border-left:2px solid rgba(197,165,114,0.50);background:rgba(197,165,114,0.04)">
+      <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:8.5px;letter-spacing:.30em;color:#8a7d6b;margin-bottom:10px">IMPORTANT · SPOT PRICE NOTICE</div>
+      <div style="font-family:Georgia,serif;font-style:italic;font-size:14px;line-height:1.75;color:#aaa39a">Your final allocation in kilograms is calculated at the LBMA gold spot price on the date your wire is <strong style="color:#e8e3d8;font-style:normal">received</strong> by the fund. Aurum does not purchase or reserve gold prior to cleared funds. The KRW figures in your IOI are indicative only.</div>
+    </div>
+  </td></tr>
+  <tr><td bgcolor="#0a0a0a" align="left" style="background:#0a0a0a;padding:0 32px 32px">
+    <a href="${esc(portalUrl)}" style="display:inline-block;padding:14px 26px;background:transparent;border:1px solid #C5A572;color:#C5A572;text-decoration:none;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.30em">VIEW PORTFOLIO →</a>
+  </td></tr>
+  ${dividerRow()}
+  ${signOffRow()}
+  `;
+
+  const text = [
+    `Dear ${lead.name || 'Member'},`,
+    ``,
+    `A partner has reviewed and verified your Indication of Interest.`,
+    `Wire instructions will follow shortly from a team member.`,
+    ``,
+    `Commitment:    ${kg} kg`,
+    `LTV Requested: ${ltv}`,
+    ``,
+    `IMPORTANT: Your final allocation in kilograms is calculated at the LBMA gold`,
+    `spot price on the date your wire is received by the fund. Aurum does not`,
+    `purchase or reserve gold prior to cleared funds.`,
+    ``,
+    `View portfolio: ${portalUrl}`,
+    ``,
+    `— ${partnerName()}`,
+    `TACC Pte Ltd, Singapore`,
+  ].join('\n');
+
+  return sendRaw({
+    to: lead.email,
+    subject,
+    html: shellHtml(inner, 'Your IOI has been verified — wire instructions to follow.'),
+    text,
+  });
+}
+
+// ── 13. IOI declined — member notice ─────────────────────────────────────────
+
+export async function sendIoiDeclined(lead, note) {
+  if (!lead.email) return { sent: false, reason: 'no-email' };
+  const subject = 'Regarding Your Indication of Interest — The Aurum Century Club';
+
+  const inner = `
+  ${lockupRow}
+  <tr><td bgcolor="#0a0a0a" style="background:#0a0a0a;padding:36px 32px 8px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.34em;color:#8a7d6b">NOTICE · 안내</td></tr>
+  <tr><td bgcolor="#0a0a0a" style="background:#0a0a0a;padding:0 32px 22px;font-family:Georgia,serif;font-weight:500;font-size:30px;line-height:1.2;color:#e8e3d8">
+    Dear <span style="font-style:italic;color:#C5A572">${esc(lead.name || 'Member')}.</span>
+  </td></tr>
+  <tr><td bgcolor="#0a0a0a" style="background:#0a0a0a;padding:0 32px 22px;font-family:Georgia,serif;font-size:16px;line-height:1.78;color:#aaa39a">
+    Thank you for your Indication of Interest in The Aurum Century Club. After careful review, we are not able to proceed with your indication at this time.
+  </td></tr>
+  ${note ? `<tr><td bgcolor="#0a0a0a" style="background:#0a0a0a;padding:0 32px 22px">
+    <div style="padding:16px 20px;border-left:2px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.02)">
+      <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:8.5px;letter-spacing:.30em;color:#6b655e;margin-bottom:10px">NOTE FROM PARTNER</div>
+      <div style="font-family:Georgia,serif;font-style:italic;font-size:14px;line-height:1.75;color:#8a7d6b">${esc(note)}</div>
+    </div>
+  </td></tr>` : ''}
+  <tr><td bgcolor="#0a0a0a" style="background:#0a0a0a;padding:0 32px 28px;font-family:Georgia,serif;font-style:italic;font-size:14px;line-height:1.7;color:#6b655e">
+    We appreciate your interest in the programme. Should circumstances change, please do not hesitate to reach out.
+  </td></tr>
+  ${dividerRow()}
+  ${signOffRow()}
+  `;
+
+  const text = [
+    `Dear ${lead.name || 'Member'},`,
+    ``,
+    `Thank you for your Indication of Interest in The Aurum Century Club.`,
+    `After careful review, we are not able to proceed with your indication at this time.`,
+    note ? `\nNote: ${note}` : '',
+    ``,
+    `We appreciate your interest in the programme.`,
+    ``,
+    `— ${partnerName()}`,
+    `TACC Pte Ltd, Singapore`,
+  ].filter((l) => l !== null && l !== undefined).join('\n');
+
+  return sendRaw({
+    to: lead.email,
+    subject,
+    html: shellHtml(inner, 'Regarding your indication to The Aurum Century Club.'),
+    text,
+  });
+}

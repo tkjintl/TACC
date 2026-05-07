@@ -37,6 +37,9 @@ export default async function handler(req, res) {
   const sourceOfWealth    = String(body.source_of_wealth || '').trim();
   const anticipatedKg     = String(body.anticipated_allocation_kg || '').trim();
   const referrerName      = String(body.referrer_name || '').trim();
+  const transactionTypes  = Array.isArray(body.transaction_types)
+    ? body.transaction_types.map((s) => String(s).trim()).filter(Boolean).slice(0, 10)
+    : [];
 
   if (!name)                                       return bad(res, 'missing field: name');
   if (!email)                                      return bad(res, 'missing field: email');
@@ -83,6 +86,7 @@ export default async function handler(req, res) {
     referral:   referral || null,
     referral_source: referral || null,
     referrer_name: referrerName || null,
+    transaction_types: transactionTypes.length ? transactionTypes : null,
     reverse_solicitation_ack: body.reverse_solicitation_ack === true,
     status:     'inquiry',
     member_number: null,
