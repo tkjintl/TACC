@@ -7392,10 +7392,26 @@ textarea.inp.mono-area {
         renderStageCounts();
         renderPipeTable();
         document.getElementById('badge-pipeline').textContent = allLeads.filter(function(l){ return l.stage !== 'funded'; }).length;
+        // Auto-seed demo data if the database is completely empty
+        if (allLeads.length === 0) autoSeedIfEmpty();
       })
       .catch(function(){
         document.getElementById('pipe-tbody').innerHTML = '<tr><td colspan="8"><div class="err"><div class="err-msg">Failed to load leads</div><button class="b b--sm" onclick="location.reload()">Retry</button></div></td></tr>';
       });
+  }
+  var _autoSeeded = false;
+  function autoSeedIfEmpty() {
+    if (_autoSeeded) return;
+    _autoSeeded = true;
+    toast('No data found — seeding demo…', '');
+    api('seed-demo', { method: 'POST' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d && d.error) { toast('Seed failed: ' + d.error, 'error'); return; }
+        toast('Demo data loaded', 'success');
+        setTimeout(function(){ location.reload(); }, 600);
+      })
+      .catch(function(){ toast('Auto-seed failed', 'error'); });
   }
   function renderStageCounts() {
     document.querySelector('[data-stage-count="all"]').textContent = allLeads.length;
