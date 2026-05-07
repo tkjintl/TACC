@@ -7216,6 +7216,19 @@ textarea.inp.mono-area {
     });
     var _fs = document.getElementById('fund-sync'); if (_fs) _fs.textContent = new Date().toLocaleTimeString('en-GB');
   }
+  function updateClock() {
+    var el = document.getElementById('clock');
+    if (!el) return;
+    var now = new Date();
+    var sgt = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Singapore' }));
+    var h = String(sgt.getHours()).padStart(2,'0');
+    var m = String(sgt.getMinutes()).padStart(2,'0');
+    var s = String(sgt.getSeconds()).padStart(2,'0');
+    el.textContent = h + ':' + m + ':' + s + ' SGT';
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
   updateTicker();
   var _tickerInterval = setInterval(updateTicker, 60000);
   var _staleInterval = setInterval(function(){
