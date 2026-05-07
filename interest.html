@@ -1,284 +1,196 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
-<meta name="theme-color" content="#070706">
-<title>Inquire — The Aurum Century Club</title>
-<meta name="description" content="Submit an enquiry to join the Aurum Century Club founding round. By introduction only.">
-<meta name="robots" content="noindex, nofollow">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23070706'/><rect x='4' y='4' width='24' height='24' fill='none' stroke='%23C5A572' stroke-width='1'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='14' font-style='italic' fill='%23C5A572'>Au</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400&family=DM+Sans:wght@400;500&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/styles/tokens.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>Request an Introduction · The Aurum Century Club</title>
+  <meta name="description" content="Submit an enquiry to join the Aurum Century Club founding round. By introduction only.">
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230a0a0a'/><rect x='4' y='4' width='24' height='24' fill='none' stroke='%23C5A572' stroke-width='1.2'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='15' font-style='italic' fill='%23C5A572'>Au</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Noto+Serif+KR:wght@300;400;500&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-<style>
-.page-wrap {
-  min-height: 100vh;
-  padding: 120px var(--pad-x) 80px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-}
+  <style>
+    :root {
+      --bg:#0a0a0a; --card:#0f0d0a; --card-2:#131210;
+      --text:#e8e3d8; --sub:#aaa39a; --muted:#6b655e;
+      --gold:#C5A572; --goldB:#E3C187; --goldD:#8a7d6b; --goldDeep:#6a5a3a;
+      --goldBorder:rgba(197,165,114,0.22); --goldBorderS:rgba(197,165,114,0.50);
+      --goldWash:rgba(197,165,114,0.04); --goldWashS:rgba(197,165,114,0.10);
+      --goldGlow:rgba(197,165,114,0.20); --border:rgba(255,255,255,0.08); --rule:rgba(255,255,255,0.06);
+      --red:#c77061;
+      --serif:'Cormorant Garamond','Noto Serif KR',Georgia,serif;
+      --sans:'Outfit',system-ui,sans-serif;
+      --mono:'JetBrains Mono',ui-monospace,monospace;
+      --pad-x:clamp(20px,5.5vw,64px);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{background:var(--bg);color:var(--text);min-height:100vh}
+    body{font-family:var(--serif);font-weight:300;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    a{color:inherit;text-decoration:none}
+    em{font-style:italic}
+    ::selection{background:rgba(197,165,114,0.28)}
 
-.page-inner {
-  width: 100%;
-  max-width: 1100px;
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 80px;
-  align-items: start;
-}
+    /* ── Ambient ─────────────────────────────────────────── */
+    .amb{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 1100px 700px at 50% 0%,rgba(197,165,114,0.07),transparent 65%)}
 
-@media (max-width: 900px) {
-  .page-inner {
-    grid-template-columns: 1fr;
-    gap: 60px;
-  }
-  .context-panel {
-    display: none;
-  }
-}
+    /* ── Nav ─────────────────────────────────────────────── */
+    .nav{position:fixed;top:0;left:0;right:0;z-index:50;padding:16px var(--pad-x);background:linear-gradient(180deg,rgba(10,10,10,0.90),rgba(10,10,10,0));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .lockup{display:flex;align-items:center;gap:14px}
+    .seal{width:34px;height:34px;border:1px solid var(--gold);display:inline-flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;color:var(--gold);font-size:16px;letter-spacing:-0.04em;flex-shrink:0;transition:box-shadow .3s,border-color .3s}
+    .lockup:hover .seal{box-shadow:0 0 18px var(--goldGlow);border-color:var(--goldB)}
+    .lockup-text{display:flex;flex-direction:column;line-height:1}
+    .lockup-text .word{font-family:var(--sans);font-weight:600;font-size:14px;letter-spacing:0.34em;color:var(--text);white-space:nowrap}
+    .lockup-text .program{font-family:var(--mono);font-size:8.5px;letter-spacing:0.36em;color:var(--goldD);margin-top:5px;white-space:nowrap}
+    .nav-signin{font-family:var(--mono);font-size:10px;letter-spacing:0.26em;color:var(--goldD);padding:8px 14px;border:1px solid var(--border);transition:color .2s,border-color .2s}
+    .nav-signin:hover{color:var(--gold);border-color:var(--goldBorder)}
 
-/* ─── Form panel ───────────────────────────────────────────────────── */
-.form-panel {
-  width: 100%;
-}
+    /* ── Page layout ─────────────────────────────────────── */
+    .page{position:relative;z-index:2;min-height:100vh;padding:clamp(100px,14vh,140px) var(--pad-x) 100px;max-width:1160px;margin:0 auto;display:grid;grid-template-columns:1fr 300px;gap:80px;align-items:start}
+    @media(max-width:960px){.page{grid-template-columns:1fr;gap:60px}.context-panel{display:none}}
+    @media(max-width:720px){.page{padding:100px 20px 80px}}
 
-.form-header {
-  margin-bottom: 48px;
-}
+    /* ── Header ──────────────────────────────────────────── */
+    .eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:0.34em;color:var(--gold);margin-bottom:18px}
+    h1.title{font-family:var(--serif);font-weight:500;font-size:clamp(36px,5vw,52px);line-height:1.1;letter-spacing:-0.015em;color:var(--text);margin-bottom:16px}
+    h1.title em{font-family:var(--serif);font-style:italic;color:var(--gold)}
+    .lede{font-family:var(--serif);font-weight:300;font-size:16px;line-height:1.78;color:var(--sub);max-width:580px;margin-bottom:52px}
 
-.form-eyebrow {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.25em;
-  color: var(--muted);
-  text-transform: uppercase;
-  margin-bottom: 20px;
-}
+    /* ── Form card ───────────────────────────────────────── */
+    .form-card{padding:32px;margin-bottom:28px;border:1px solid var(--border);background:var(--card)}
+    @media(max-width:720px){.form-card{padding:24px 18px}}
+    .card-label{font-family:var(--mono);font-size:9.5px;letter-spacing:0.34em;color:var(--goldD);margin-bottom:24px;text-transform:uppercase}
 
-.form-title {
-  font-family: var(--font-display);
-  font-weight: 300;
-  font-size: clamp(32px, 4.5vw, 52px);
-  letter-spacing: 0.04em;
-  line-height: 1.1;
-  margin-bottom: 16px;
-}
+    /* ── Field ───────────────────────────────────────────── */
+    .field{display:block;margin-bottom:22px}
+    .field:last-child{margin-bottom:0}
+    .field .lbl{display:block;margin-bottom:8px;font-family:var(--mono);font-size:9px;letter-spacing:0.28em;color:var(--goldD);text-transform:uppercase}
+    .field .lbl .req{color:var(--gold);margin-left:3px}
+    .field .hint{font-family:var(--mono);font-size:9px;letter-spacing:0.18em;color:var(--muted);margin-top:5px;font-style:italic;text-transform:none;letter-spacing:0.04em;font-family:var(--serif)}
 
-.form-sub {
-  font-family: var(--font-display);
-  font-size: 17px;
-  font-weight: 300;
-  color: var(--muted);
-  line-height: 1.75;
-}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+    @media(max-width:600px){.grid-2{grid-template-columns:1fr;gap:0}}
 
-.enquiry-form {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
+    input[type="text"],input[type="email"],input[type="tel"],select{
+      width:100%;background:rgba(255,255,255,0.02);color:var(--text);
+      font-family:var(--serif);font-size:16px;font-weight:300;
+      border:1px solid var(--rule);border-bottom:1px solid var(--goldBorder);
+      padding:13px 14px;transition:border-color .2s,background .2s;
+      -webkit-appearance:none;appearance:none;border-radius:0;
+    }
+    input:focus,select:focus{outline:none;border-color:var(--gold);background:rgba(197,165,114,0.04)}
+    input::placeholder{color:var(--muted)}
 
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
+    select{
+      background-color:var(--card);
+      background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3 5l5 5 5-5' stroke='%23C5A572' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+      background-repeat:no-repeat;background-position:right 14px center;background-size:12px;
+      padding-right:38px;cursor:pointer;
+    }
+    select option{background-color:#0f0d0a;color:var(--text)}
+    select:invalid,select option[value=""]{color:var(--muted)}
 
-@media (max-width: 600px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-}
+    /* ── Transaction type pills ──────────────────────────── */
+    .pill-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+    .pill-group input[type="checkbox"]{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+    .pill{display:inline-flex;align-items:center;padding:8px 16px;border:1px solid var(--border);background:transparent;cursor:pointer;font-family:var(--mono);font-size:9.5px;letter-spacing:0.22em;color:var(--muted);text-transform:uppercase;transition:all .2s;user-select:none}
+    .pill:hover{border-color:var(--goldBorder);color:var(--goldD)}
+    .pill.selected{border-color:var(--goldBorderS);background:var(--goldWash);color:var(--gold)}
 
-/* ─── Mobile fixes ─────────────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .page-wrap {
-    padding: 100px 20px 60px;
-  }
-}
+    /* ── Error message ───────────────────────────────────── */
+    .err{font-family:var(--mono);font-size:9px;letter-spacing:0.18em;color:var(--red);margin-top:5px;text-transform:uppercase;display:none}
+    .err.shown{display:block}
 
-@media (max-width: 430px) {
-  .page-wrap {
-    padding: 90px 16px 60px;
-  }
-  /* iOS zoom prevention */
-  .input-field { font-size: 16px !important; }
-  select.input-field { font-size: 16px !important; }
-  /* Touch targets */
-  #submit-btn { min-height: 48px; width: 100%; }
-  .form-submit-row .btn-primary { align-self: stretch; }
-  /* Nav padding safe area */
-  .nav-bar { padding-top: max(20px, env(safe-area-inset-top)); }
-}
+    /* ── Legal ack ───────────────────────────────────────── */
+    .ack{display:flex;align-items:flex-start;gap:14px;padding:18px 0;font-family:var(--serif);font-size:14px;line-height:1.7;color:var(--sub);cursor:pointer;border-top:1px solid var(--border);margin-top:4px}
+    .ack input[type="checkbox"]{margin-top:4px;flex-shrink:0;accent-color:var(--gold);width:15px;height:15px;cursor:pointer}
+    .ack em{font-style:italic;color:var(--text)}
 
-@media (max-width: 390px) {
-  .form-title { font-size: clamp(26px, 8vw, 36px); }
-}
+    /* ── Submit ──────────────────────────────────────────── */
+    .submit-row{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:28px}
+    .btn{display:inline-flex;align-items:center;gap:10px;padding:14px 28px;background:var(--gold);color:var(--bg);border:0;cursor:pointer;font-family:var(--mono);font-weight:600;font-size:11px;letter-spacing:0.26em;white-space:nowrap;transition:background .2s,box-shadow .2s,transform .15s}
+    .btn:hover:not([disabled]){background:var(--goldB);box-shadow:0 6px 22px rgba(227,193,135,0.25);transform:translateY(-1px)}
+    .btn[disabled]{opacity:0.45;cursor:not-allowed}
+    .submit-note{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--muted)}
+    .loading{display:inline-block;width:11px;height:11px;border:2px solid rgba(10,10,10,0.3);border-top-color:var(--bg);border-radius:50%;animation:spin 0.7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
 
-@media (max-width: 375px) {
-  .form-title { font-size: 26px; }
-  .page-wrap { padding: 86px 14px 60px; }
-}
+    /* ── Success card ────────────────────────────────────── */
+    .done-card{display:none;padding:52px 40px;border:1px solid var(--goldBorderS);background:linear-gradient(180deg,var(--goldWash),transparent)}
+    .done-card.visible{display:block}
+    @media(max-width:720px){.done-card{padding:36px 22px}}
+    .done-check{width:44px;height:44px;border:1px solid var(--gold);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:20px;color:var(--gold);margin-bottom:24px}
+    .done-title{font-family:var(--serif);font-weight:500;font-size:30px;line-height:1.1;color:var(--text);margin-bottom:14px}
+    .done-title em{font-style:italic;color:var(--gold)}
+    .done-body{font-family:var(--serif);font-size:16px;line-height:1.78;color:var(--sub);max-width:460px}
 
-.form-submit-row {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding-top: 8px;
-}
+    /* ── Context panel ───────────────────────────────────── */
+    .context-panel{position:sticky;top:120px;padding-top:4px}
+    .ctx-seal{width:38px;height:38px;border:1px solid var(--goldBorder);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;color:var(--gold);font-size:17px;letter-spacing:-0.04em;margin-bottom:32px}
+    .ctx-point{padding:20px 0;border-bottom:1px solid var(--border)}
+    .ctx-point:first-of-type{border-top:1px solid var(--border)}
+    .ctx-num{font-family:var(--mono);font-size:9.5px;letter-spacing:0.22em;color:var(--gold);margin-bottom:6px}
+    .ctx-text{font-family:var(--serif);font-weight:400;font-size:15px;line-height:1.65;color:var(--text)}
+    .ctx-note{margin-top:28px;font-family:var(--mono);font-size:9px;letter-spacing:0.20em;color:var(--muted);line-height:1.8;text-transform:uppercase}
 
-.form-disclaimer {
-  font-family: var(--font-ui);
-  font-size: 12px;
-  color: var(--dim);
-  line-height: 1.65;
-}
-
-/* ─── Success state ────────────────────────────────────────────────── */
-.form-success {
-  display: none;
-  padding: 52px 0;
-}
-
-.form-success.visible {
-  display: block;
-}
-
-.form-success-icon {
-  width: 44px;
-  height: 44px;
-  border: 1px solid var(--goldBorderS);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 28px;
-}
-
-.form-success-icon svg {
-  width: 18px;
-  height: 18px;
-}
-
-.form-success-title {
-  font-family: var(--font-display);
-  font-weight: 300;
-  font-size: 28px;
-  letter-spacing: 0.04em;
-  margin-bottom: 16px;
-}
-
-.form-success-body {
-  font-family: var(--font-display);
-  font-size: 17px;
-  font-weight: 300;
-  color: var(--muted);
-  line-height: 1.8;
-  max-width: 440px;
-}
-
-/* ─── Context panel ────────────────────────────────────────────────── */
-.context-panel {
-  position: sticky;
-  top: 120px;
-}
-
-.context-seal-wrap {
-  margin-bottom: 36px;
-}
-
-.context-points {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  margin-bottom: 48px;
-}
-
-.context-point {
-  padding: 24px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.context-point:first-child {
-  border-top: 1px solid var(--border);
-}
-
-.context-point-num {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  color: var(--goldA);
-  margin-bottom: 8px;
-}
-
-.context-point-text {
-  font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 400;
-  color: var(--text);
-  line-height: 1.65;
-}
-
-.context-note {
-  font-family: var(--font-ui);
-  font-size: 12px;
-  color: var(--dim);
-  line-height: 1.7;
-}
-</style>
+    /* ── Footer ──────────────────────────────────────────── */
+    footer{position:relative;z-index:2;margin-top:80px;padding:28px var(--pad-x);border-top:1px solid var(--border);font-family:var(--mono);font-size:9px;letter-spacing:0.28em;color:var(--muted);text-align:center}
+  </style>
 </head>
 <body>
 
-<div class="page-veil" id="page-veil"></div>
+<div class="amb"></div>
 
-<!-- Navigation -->
-<nav class="nav-bar" role="navigation" aria-label="Primary">
-  <a href="/" class="nav-lockup" aria-label="Aurum Century Club home">
-    <div class="seal"><em>Au</em></div>
-    <div class="nav-wordmark">
-      <span class="nav-wordmark-title">Aurum</span>
-      <span class="nav-wordmark-sub">Century Club</span>
-    </div>
+<nav class="nav">
+  <a href="/" class="lockup" aria-label="Home">
+    <span class="seal">Au</span>
+    <span class="lockup-text">
+      <span class="word">AURUM</span>
+      <span class="program">CENTURY · CLUB</span>
+    </span>
   </a>
-  <div class="nav-actions">
-    <a href="/login" class="btn-ghost" style="padding:9px 18px;font-size:11px;">Member Sign In</a>
-  </div>
+  <a href="/login" class="nav-signin">MEMBER SIGN IN →</a>
 </nav>
 
-<div class="page-wrap">
-  <div class="page-inner">
+<div class="page">
 
-    <!-- Form panel -->
-    <div class="form-panel">
-      <div class="form-header" data-reveal>
-        <p class="form-eyebrow">Founding Membership Enquiry</p>
-        <h1 class="form-title">Request an<br><em class="gold-gradient">Introduction</em></h1>
-        <p class="form-sub">Complete the form below. Enquiries are reviewed at the discretion of Aurum management.</p>
-      </div>
+  <!-- ── Form column ───────────────────────────── -->
+  <div>
+    <div class="eyebrow">FOUNDING MEMBERSHIP · 창립 회원</div>
+    <h1 class="title">Request an <em>introduction.</em></h1>
+    <p class="lede">Complete the form below. Enquiries are reviewed at the discretion of Aurum management within two business days.</p>
 
-      <!-- The form -->
-      <form class="enquiry-form" id="enquiry-form" novalidate data-reveal data-delay="100">
-        <div class="form-row">
-          <div class="field-group">
-            <label class="field-label" for="full-name">Full Name</label>
-            <input class="input-field" type="text" id="full-name" name="full_name" placeholder="Your full name" autocomplete="name" required>
-            <span class="field-error" id="err-name">Please enter your full name.</span>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="email">Email Address</label>
-            <input class="input-field" type="email" id="email" name="email" placeholder="your@email.com" autocomplete="email" required>
-            <span class="field-error" id="err-email">Please enter a valid email address.</span>
-          </div>
+    <form id="enquiry-form" novalidate>
+
+      <!-- I. Identity -->
+      <div class="form-card">
+        <div class="card-label">IDENTITY · 신원</div>
+
+        <div class="grid-2">
+          <label class="field">
+            <span class="lbl">FULL NAME<span class="req">·</span></span>
+            <input type="text" id="full-name" name="full_name" placeholder="Your full name" autocomplete="name" required>
+            <span class="err" id="err-name">Required</span>
+          </label>
+          <label class="field">
+            <span class="lbl">EMAIL ADDRESS<span class="req">·</span></span>
+            <input type="email" id="email" name="email" placeholder="your@email.com" autocomplete="email" required>
+            <span class="err" id="err-email">Valid email required</span>
+          </label>
         </div>
 
-        <div class="form-row">
-          <div class="field-group">
-            <label class="field-label" for="country">Country of Residence</label>
-            <select class="input-field" id="country" name="country" required>
-              <option value="" disabled selected>Select country</option>
+        <div class="grid-2">
+          <label class="field">
+            <span class="lbl">PHONE (WITH CODE)<span class="req">·</span></span>
+            <input type="tel" id="phone" name="phone" placeholder="+82 10 1234 5678" autocomplete="tel" required>
+            <span class="err" id="err-phone">Required</span>
+          </label>
+          <label class="field">
+            <span class="lbl">COUNTRY OF RESIDENCE<span class="req">·</span></span>
+            <select id="country" name="country" required>
+              <option value="" disabled selected>— Select —</option>
               <option value="SG">Singapore</option>
               <option value="KR">Korea, Republic of</option>
               <option value="HK">Hong Kong SAR</option>
@@ -300,67 +212,66 @@
               <option value="VN">Vietnam</option>
               <option value="OTHER">Other</option>
             </select>
-            <span class="field-error" id="err-country">Please select your country of residence.</span>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="assets">Estimated Investable Assets</label>
-            <select class="input-field" id="assets" name="investable_assets" required>
-              <option value="" disabled selected>Select range</option>
+            <span class="err" id="err-country">Required</span>
+          </label>
+        </div>
+
+        <div class="grid-2">
+          <label class="field">
+            <span class="lbl">TAX RESIDENCY<span class="req">·</span></span>
+            <select id="tax-residency" name="tax_residency" required>
+              <option value="" disabled selected>— Select —</option>
+              <option value="SG">Singapore</option>
+              <option value="KR">Korea, Republic of</option>
+              <option value="HK">Hong Kong SAR</option>
+              <option disabled>─────────────</option>
+              <option value="AE">United Arab Emirates</option>
+              <option value="AU">Australia</option>
+              <option value="CH">Switzerland</option>
+              <option value="CN">China</option>
+              <option value="DE">Germany</option>
+              <option value="FR">France</option>
+              <option value="GB">United Kingdom</option>
+              <option value="ID">Indonesia</option>
+              <option value="IN">India</option>
+              <option value="JP">Japan</option>
+              <option value="MY">Malaysia</option>
+              <option value="TH">Thailand</option>
+              <option value="TW">Taiwan</option>
+              <option value="US">United States</option>
+              <option value="VN">Vietnam</option>
+              <option value="OTHER">Other</option>
+            </select>
+            <span class="err" id="err-tax-residency">Required</span>
+          </label>
+          <label class="field">
+            <span class="lbl">OCCUPATION / INDUSTRY<span class="req">·</span></span>
+            <input type="text" id="occupation" name="occupation" placeholder="e.g. Private investor, Finance" autocomplete="organization-title" required>
+            <span class="err" id="err-occupation">Required</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- II. Financial profile -->
+      <div class="form-card">
+        <div class="card-label">FINANCIAL PROFILE · 재무 프로필</div>
+
+        <div class="grid-2">
+          <label class="field">
+            <span class="lbl">ESTIMATED INVESTABLE ASSETS<span class="req">·</span></span>
+            <select id="assets" name="investable_assets" required>
+              <option value="" disabled selected>— Select —</option>
               <option value="1m_5m">SGD 1M – 5M</option>
               <option value="5m_20m">SGD 5M – 20M</option>
               <option value="20m_50m">SGD 20M – 50M</option>
               <option value="50m_plus">SGD 50M+</option>
             </select>
-            <span class="field-error" id="err-assets">Please select an asset range.</span>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="field-group">
-            <label class="field-label" for="phone">Phone (with country code)</label>
-            <input class="input-field" type="tel" id="phone" name="phone" placeholder="+82 10 1234 5678" autocomplete="tel" required>
-            <span class="field-error" id="err-phone">Please enter a valid phone number.</span>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="tax-residency">Tax Residency</label>
-            <select class="input-field" id="tax-residency" name="tax_residency" required>
-              <option value="" disabled selected>Select tax residency</option>
-              <option value="SG">Singapore</option>
-              <option value="KR">Korea, Republic of</option>
-              <option value="HK">Hong Kong SAR</option>
-              <option disabled>─────────────</option>
-              <option value="AE">United Arab Emirates</option>
-              <option value="AU">Australia</option>
-              <option value="CH">Switzerland</option>
-              <option value="CN">China</option>
-              <option value="DE">Germany</option>
-              <option value="FR">France</option>
-              <option value="GB">United Kingdom</option>
-              <option value="ID">Indonesia</option>
-              <option value="IN">India</option>
-              <option value="JP">Japan</option>
-              <option value="MY">Malaysia</option>
-              <option value="TH">Thailand</option>
-              <option value="TW">Taiwan</option>
-              <option value="US">United States</option>
-              <option value="VN">Vietnam</option>
-              <option value="OTHER">Other</option>
-            </select>
-            <span class="field-error" id="err-tax-residency">Please select your tax residency.</span>
-          </div>
-        </div>
-
-        <div class="field-group">
-          <label class="field-label" for="occupation">Occupation / Industry</label>
-          <input class="input-field" type="text" id="occupation" name="occupation" placeholder="e.g. Private investor, Finance, Technology" autocomplete="organization-title" required>
-          <span class="field-error" id="err-occupation">Please describe your occupation or industry.</span>
-        </div>
-
-        <div class="form-row">
-          <div class="field-group">
-            <label class="field-label" for="investor-class">Investor Classification</label>
-            <select class="input-field" id="investor-class" name="investor_classification" required>
-              <option value="" disabled selected>Select classification</option>
+            <span class="err" id="err-assets">Required</span>
+          </label>
+          <label class="field">
+            <span class="lbl">INVESTOR CLASSIFICATION<span class="req">·</span></span>
+            <select id="investor-class" name="investor_classification" required>
+              <option value="" disabled selected>— Select —</option>
               <option value="hnw">High Net Worth Individual</option>
               <option value="family_office">Family Office (Single)</option>
               <option value="multi_family_office">Family Office (Multi)</option>
@@ -368,284 +279,233 @@
               <option value="qualified_investor">Qualified Investor (SG/KR)</option>
               <option value="other">Other</option>
             </select>
-            <span class="field-error" id="err-investor-class">Please select a classification.</span>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="source-of-wealth">Primary Source of Wealth</label>
-            <select class="input-field" id="source-of-wealth" name="source_of_wealth" required>
-              <option value="" disabled selected>Select source</option>
-              <option value="business">Business / Entrepreneurship</option>
-              <option value="employment">Employment / Compensation</option>
-              <option value="inheritance">Inheritance / Family Wealth</option>
-              <option value="investments">Investment Returns</option>
-              <option value="real_estate">Real Estate</option>
-              <option value="financial_services">Financial Services / Fund Management</option>
-              <option value="other">Other</option>
-            </select>
-            <span class="field-error" id="err-source-of-wealth">Please select a source of wealth.</span>
-          </div>
+            <span class="err" id="err-investor-class">Required</span>
+          </label>
         </div>
 
-        <div class="form-row">
-          <div class="field-group">
-            <label class="field-label" for="allocation">Anticipated Allocation (kg)</label>
-            <select class="input-field" id="allocation" name="anticipated_allocation_kg" required>
-              <option value="" disabled selected>Select range</option>
-              <option value="1">1 kg ($112K)</option>
-              <option value="2">2 kg ($224K)</option>
-              <option value="3_5">3 – 5 kg ($335K – $560K)</option>
-              <option value="5_10">5 – 10 kg ($560K – $1.12M)</option>
-              <option value="10_plus">10+ kg ($1.12M+)</option>
+        <label class="field">
+          <span class="lbl">PRIMARY SOURCE OF WEALTH<span class="req">·</span></span>
+          <select id="source-of-wealth" name="source_of_wealth" required>
+            <option value="" disabled selected>— Select —</option>
+            <option value="business">Business / Entrepreneurship</option>
+            <option value="employment">Employment / Compensation</option>
+            <option value="inheritance">Inheritance / Family Wealth</option>
+            <option value="investments">Investment Returns</option>
+            <option value="real_estate">Real Estate</option>
+            <option value="financial_services">Financial Services / Fund Management</option>
+            <option value="other">Other</option>
+          </select>
+          <span class="err" id="err-source-of-wealth">Required</span>
+        </label>
+      </div>
+
+      <!-- III. Investment interest -->
+      <div class="form-card">
+        <div class="card-label">INVESTMENT INTEREST · 투자 관심</div>
+
+        <div class="grid-2">
+          <label class="field">
+            <span class="lbl">ANTICIPATED ALLOCATION<span class="req">·</span></span>
+            <select id="allocation" name="anticipated_allocation_kg" required>
+              <option value="" disabled selected>— Select —</option>
+              <option value="1">1 kg</option>
+              <option value="2">2 kg</option>
+              <option value="3_5">3 – 5 kg</option>
+              <option value="5_10">5 – 10 kg</option>
+              <option value="10_plus">10+ kg</option>
               <option value="discuss">Prefer to discuss</option>
             </select>
-            <span class="field-error" id="err-allocation">Please indicate anticipated allocation.</span>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="referral">How did you hear about us?</label>
-            <select class="input-field" id="referral" name="referral_source" required>
-              <option value="" disabled selected>Select</option>
+            <span class="err" id="err-allocation">Required</span>
+          </label>
+          <label class="field">
+            <span class="lbl">HOW DID YOU HEAR ABOUT US?<span class="req">·</span></span>
+            <select id="referral" name="referral_source" required>
+              <option value="" disabled selected>— Select —</option>
               <option value="personal_intro">Personal introduction</option>
               <option value="existing_member">Existing member</option>
               <option value="introducer">Family office introducer</option>
               <option value="prior_relationship">Prior relationship with partner</option>
               <option value="other">Other</option>
             </select>
-            <span class="field-error" id="err-referral">Please tell us how you heard about us.</span>
-          </div>
-        </div>
-
-        <div class="field-group">
-          <label class="field-label">Transaction Types Sought <span style="color:var(--muted);font-weight:300;">(select all that apply)</span></label>
-          <div style="display:flex;flex-wrap:wrap;gap:10px 20px;margin-top:8px;">
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--font-ui);font-size:13.5px;color:var(--text);">
-              <input type="checkbox" name="transaction_types" value="growth_equity" style="accent-color:var(--gold);width:15px;height:15px;flex-shrink:0;">
-              <span>Growth Equity</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--font-ui);font-size:13.5px;color:var(--text);">
-              <input type="checkbox" name="transaction_types" value="private_credit" style="accent-color:var(--gold);width:15px;height:15px;flex-shrink:0;">
-              <span>Private Credit</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--font-ui);font-size:13.5px;color:var(--text);">
-              <input type="checkbox" name="transaction_types" value="real_estate" style="accent-color:var(--gold);width:15px;height:15px;flex-shrink:0;">
-              <span>Real Estate</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--font-ui);font-size:13.5px;color:var(--text);">
-              <input type="checkbox" name="transaction_types" value="infrastructure" style="accent-color:var(--gold);width:15px;height:15px;flex-shrink:0;">
-              <span>Infrastructure</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--font-ui);font-size:13.5px;color:var(--text);">
-              <input type="checkbox" name="transaction_types" value="gold_only" style="accent-color:var(--gold);width:15px;height:15px;flex-shrink:0;">
-              <span>Gold Only</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="field-group">
-          <label class="field-label" for="referrer-name">Referrer's name <span style="color:var(--muted);font-weight:300;">(if applicable)</span></label>
-          <input class="input-field" type="text" id="referrer-name" name="referrer_name" placeholder="Optional — name of the person who introduced you" autocomplete="off">
-        </div>
-
-        <div class="field-group" style="border-top:1px solid var(--border);padding-top:24px;margin-top:8px;">
-          <label style="display:flex;gap:12px;align-items:flex-start;cursor:pointer;font-family:var(--font-ui);font-size:13px;line-height:1.6;color:var(--text);">
-            <input type="checkbox" id="reverse-solicit" name="reverse_solicitation_ack" value="1" required style="margin-top:3px;flex-shrink:0;">
-            <span>
-              I confirm that I am submitting this enquiry on my own initiative. The Aurum Century Club has not solicited my interest, and no marketing material has been directed to me. I am requesting information of my own accord.
-            </span>
+            <span class="err" id="err-referral">Required</span>
           </label>
-          <div class="field-error" id="err-reverse-solicit" style="display:none;margin-top:8px;">Please confirm to continue.</div>
         </div>
 
-        <div class="form-submit-row">
-          <button type="submit" class="btn-primary" id="submit-btn" style="align-self:flex-start;padding:15px 36px;">
-            Submit Enquiry
+        <div class="field">
+          <span class="lbl">TRANSACTION TYPES SOUGHT</span>
+          <div class="pill-group" id="tx-pill-group">
+            <label class="pill" id="pill-ge"><input type="checkbox" name="transaction_types" value="growth_equity">Growth Equity</label>
+            <label class="pill" id="pill-pc"><input type="checkbox" name="transaction_types" value="private_credit">Private Credit</label>
+            <label class="pill" id="pill-re"><input type="checkbox" name="transaction_types" value="real_estate">Real Estate</label>
+            <label class="pill" id="pill-inf"><input type="checkbox" name="transaction_types" value="infrastructure">Infrastructure</label>
+            <label class="pill" id="pill-go"><input type="checkbox" name="transaction_types" value="gold_only">Gold Only</label>
+          </div>
+          <span class="hint" style="font-family:var(--mono);font-size:9px;letter-spacing:0.18em;color:var(--muted);margin-top:8px;display:block;text-transform:uppercase">Select all that apply · optional</span>
+        </div>
+
+        <label class="field">
+          <span class="lbl">REFERRER NAME <span style="color:var(--muted);letter-spacing:0">(if applicable)</span></span>
+          <input type="text" id="referrer-name" name="referrer_name" placeholder="Optional — name of the person who introduced you" autocomplete="off">
+        </label>
+      </div>
+
+      <!-- IV. Acknowledge -->
+      <div class="form-card">
+        <div class="card-label">ACKNOWLEDGEMENT · 확인</div>
+
+        <label class="ack">
+          <input type="checkbox" id="reverse-solicit" name="reverse_solicitation_ack" value="1" required>
+          <span>I confirm that I am submitting this enquiry on <em>my own initiative</em>. The Aurum Century Club has not solicited my interest, and no marketing material has been directed to me. I am requesting information of my own accord.</span>
+        </label>
+        <span class="err" id="err-reverse-solicit" style="margin-top:8px">Required to continue</span>
+
+        <div class="submit-row">
+          <button type="submit" class="btn" id="submit-btn">
+            <span id="btn-label">SUBMIT ENQUIRY</span>
+            <span class="arrow">→</span>
           </button>
-          <p class="form-disclaimer">
-            Enquiries are reviewed at the discretion of Aurum management. Admission is not guaranteed.
-            Your information will not be shared with third parties.
-          </p>
+          <span class="submit-note">Reviewed within two business days.</span>
         </div>
-      </form>
-
-      <!-- Success state -->
-      <div class="form-success" id="form-success">
-        <div class="form-success-icon">
-          <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <polyline points="3,9 7,13 15,5" stroke="#C5A572" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <h2 class="form-success-title">Enquiry Received</h2>
-        <p class="form-success-body">
-          Your enquiry has been received. A member of the Aurum team will be in touch within two business days.
-        </p>
+        <span class="err" id="err-form" style="margin-top:14px"></span>
       </div>
+
+    </form>
+
+    <!-- Success -->
+    <div class="done-card" id="done-card">
+      <div class="done-check">✓</div>
+      <h2 class="done-title">Enquiry <em>received.</em></h2>
+      <p class="done-body">Your enquiry has been received. A member of the Aurum team will be in touch within two business days from a private address.</p>
     </div>
-
-    <!-- Context panel -->
-    <aside class="context-panel" aria-label="Membership information">
-      <div class="context-seal-wrap" data-reveal>
-        <div class="seal seal--lg"><em>Au</em></div>
-      </div>
-      <div class="context-points">
-        <div class="context-point" data-reveal>
-          <div class="context-point-num">01</div>
-          <p class="context-point-text">By invitation only. One hundred founding seats.</p>
-        </div>
-        <div class="context-point" data-reveal data-delay="100">
-          <div class="context-point-num">02</div>
-          <p class="context-point-text">Singapore VCC. Physical gold custody. LBMA standard.</p>
-        </div>
-        <div class="context-point" data-reveal data-delay="200">
-          <div class="context-point-num">03</div>
-          <p class="context-point-text">Enquiries reviewed within two business days.</p>
-        </div>
-      </div>
-      <p class="context-note" data-reveal data-delay="300">
-        The Aurum Century Club is a private vehicle. Admission is subject to eligibility review and suitability assessment. This form does not constitute an offer or commitment of any kind.
-      </p>
-    </aside>
-
   </div>
+
+  <!-- ── Context panel ─────────────────────────── -->
+  <aside class="context-panel">
+    <div class="ctx-seal">Au</div>
+    <div class="ctx-point">
+      <div class="ctx-num">01</div>
+      <p class="ctx-text">By invitation only. One hundred founding seats.</p>
+    </div>
+    <div class="ctx-point">
+      <div class="ctx-num">02</div>
+      <p class="ctx-text">Singapore VCC. Physical gold custody. LBMA standard.</p>
+    </div>
+    <div class="ctx-point">
+      <div class="ctx-num">03</div>
+      <p class="ctx-text">Enquiries reviewed within two business days.</p>
+    </div>
+    <p class="ctx-note">The Aurum Century Club is a private vehicle. Admission is subject to eligibility review. This form does not constitute an offer or commitment of any kind.</p>
+  </aside>
+
 </div>
 
+<footer>AURUM · TACC PTE LTD · SINGAPORE · CONFIDENTIAL</footer>
+
 <script>
-(function () {
+(function() {
   'use strict';
 
-  const lang = localStorage.getItem('lang');
-  if (lang) document.documentElement.lang = lang;
-
-  const veil = document.getElementById('page-veil');
-  document.querySelectorAll('a[href]').forEach(function (link) {
-    const href = link.getAttribute('href');
-    if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto')) return;
-    link.addEventListener('click', function (e) {
-      e.preventDefault();
-      veil.classList.add('covering');
-      setTimeout(function () { window.location.href = href; }, 290);
+  // ── Pill toggle ──────────────────────────────────────
+  document.querySelectorAll('.pill').forEach(function(pill) {
+    var cb = pill.querySelector('input[type="checkbox"]');
+    pill.addEventListener('click', function() {
+      setTimeout(function() {
+        pill.classList.toggle('selected', cb.checked);
+      }, 0);
     });
   });
 
-  // Scroll reveal
-  const revealEls = document.querySelectorAll('[data-reveal]');
-  if ('IntersectionObserver' in window) {
-    const observer = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('revealed');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.1 });
-    revealEls.forEach(function (el) { observer.observe(el); });
-  } else {
-    revealEls.forEach(function (el) { el.classList.add('revealed'); });
+  // ── Form submit ──────────────────────────────────────
+  var form = document.getElementById('enquiry-form');
+  var submitBtn = document.getElementById('submit-btn');
+  var btnLabel = document.getElementById('btn-label');
+  var doneCard = document.getElementById('done-card');
+
+  function showErr(id, show) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('shown', !!show);
   }
 
-  // Form validation + submit
-  const form = document.getElementById('enquiry-form');
-  const submitBtn = document.getElementById('submit-btn');
-  const successEl = document.getElementById('form-success');
+  function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
 
-  function showError(id, show) {
-    const el = document.getElementById(id);
-    if (el) el.classList.toggle('visible', show);
-  }
-
-  function isValidEmail(val) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
-  }
-
-  form.addEventListener('submit', function (e) {
+  form.addEventListener('submit', function(e) {
     e.preventDefault();
 
-    const name = document.getElementById('full-name').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const country = document.getElementById('country').value;
-    const assets = document.getElementById('assets').value;
-    const phone = document.getElementById('phone').value.trim();
-    const taxResidency = document.getElementById('tax-residency').value;
-    const occupation = document.getElementById('occupation').value.trim();
-    const investorClass = document.getElementById('investor-class').value;
-    const sourceOfWealth = document.getElementById('source-of-wealth').value;
-    const allocation = document.getElementById('allocation').value;
-    const referralSrc = document.getElementById('referral').value;
-    const referrerName = document.getElementById('referrer-name').value.trim();
-    const transactionTypes = Array.from(document.querySelectorAll('input[name="transaction_types"]:checked')).map(function(el) { return el.value; });
+    var name        = document.getElementById('full-name').value.trim();
+    var email       = document.getElementById('email').value.trim();
+    var phone       = document.getElementById('phone').value.trim();
+    var country     = document.getElementById('country').value;
+    var taxRes      = document.getElementById('tax-residency').value;
+    var occupation  = document.getElementById('occupation').value.trim();
+    var assets      = document.getElementById('assets').value;
+    var investorCls = document.getElementById('investor-class').value;
+    var wealth      = document.getElementById('source-of-wealth').value;
+    var allocation  = document.getElementById('allocation').value;
+    var referral    = document.getElementById('referral').value;
+    var referrer    = document.getElementById('referrer-name').value.trim();
+    var ack         = document.getElementById('reverse-solicit').checked;
+    var txTypes     = Array.from(document.querySelectorAll('input[name="transaction_types"]:checked')).map(function(el) { return el.value; });
 
-    let valid = true;
-    function check(id, ok) { showError(id, !ok); if (!ok) valid = false; }
-    check('err-name', !!name);
-    check('err-email', !!email && isValidEmail(email));
-    check('err-country', !!country);
-    check('err-assets', !!assets);
-    check('err-phone', phone.length >= 7);
-    check('err-tax-residency', !!taxResidency);
-    check('err-occupation', !!occupation);
-    check('err-investor-class', !!investorClass);
-    check('err-source-of-wealth', !!sourceOfWealth);
-    check('err-allocation', !!allocation);
-    check('err-referral', !!referralSrc);
+    var valid = true;
+    function chk(id, ok) { showErr(id, !ok); if (!ok) valid = false; }
 
-    const ackEl = document.getElementById('reverse-solicit');
-    const ackErr = document.getElementById('err-reverse-solicit');
-    if (!ackEl.checked) { ackErr.style.display = 'block'; valid = false; }
-    else ackErr.style.display = 'none';
+    chk('err-name',           !!name);
+    chk('err-email',          !!email && isEmail(email));
+    chk('err-phone',          phone.length >= 7);
+    chk('err-country',        !!country);
+    chk('err-tax-residency',  !!taxRes);
+    chk('err-occupation',     !!occupation);
+    chk('err-assets',         !!assets);
+    chk('err-investor-class', !!investorCls);
+    chk('err-source-of-wealth', !!wealth);
+    chk('err-allocation',     !!allocation);
+    chk('err-referral',       !!referral);
+    showErr('err-reverse-solicit', !ack);
+    if (!ack) valid = false;
 
     if (!valid) return;
 
-    // Disable and show pending state
-    submitBtn.setAttribute('aria-busy', 'true');
-    submitBtn.textContent = '—';
+    submitBtn.disabled = true;
+    btnLabel.innerHTML = '<span class="loading"></span>';
 
-    const payload = {
-      // Send both legacy and current field names so backend stays compatible.
-      name: name,
-      full_name: name,
+    var payload = {
+      name: name, full_name: name,
       email: email,
-      country: country,
-      wealth: assets,
-      investable_assets: assets,
       phone: phone,
-      tax_residency: taxResidency,
+      country: country,
+      tax_residency: taxRes,
       occupation: occupation,
-      investor_classification: investorClass,
-      source_of_wealth: sourceOfWealth,
+      wealth: assets, investable_assets: assets,
+      investor_classification: investorCls,
+      source_of_wealth: wealth,
       anticipated_allocation_kg: allocation,
-      referral: referralSrc,
-      referral_source: referralSrc,
-      referrer_name: referrerName || null,
-      transaction_types: transactionTypes,
-      reverse_solicitation_ack: true
+      referral: referral, referral_source: referral,
+      referrer_name: referrer || null,
+      transaction_types: txTypes,
+      reverse_solicitation_ack: true,
     };
 
     fetch('/api/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-    .then(function (r) {
-      if (!r.ok) throw new Error('Request failed');
+      body: JSON.stringify(payload),
+    }).then(function(r) {
+      if (!r.ok) throw new Error('failed');
       return r.json();
-    })
-    .then(function () {
+    }).then(function() {
       form.style.display = 'none';
-      successEl.classList.add('visible');
-    })
-    .catch(function () {
-      submitBtn.removeAttribute('aria-busy');
-      submitBtn.textContent = 'Submit Enquiry';
-      // Show a gentle error without alarming language
-      const existing = document.getElementById('submit-error');
-      if (!existing) {
-        const errMsg = document.createElement('p');
-        errMsg.id = 'submit-error';
-        errMsg.style.cssText = 'font-family:var(--font-ui);font-size:13px;color:var(--red);margin-top:8px;';
-        errMsg.textContent = 'Your enquiry could not be submitted at this time. Please try again, or contact us directly.';
-        submitBtn.parentNode.insertBefore(errMsg, submitBtn.nextSibling);
-      }
+      doneCard.classList.add('visible');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }).catch(function() {
+      submitBtn.disabled = false;
+      btnLabel.textContent = 'SUBMIT ENQUIRY';
+      var errEl = document.getElementById('err-form');
+      errEl.textContent = 'Submission failed — please try again.';
+      errEl.classList.add('shown');
     });
   });
-}());
+})();
 </script>
+
 </body>
 </html>
