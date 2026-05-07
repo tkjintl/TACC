@@ -950,9 +950,7 @@ svg {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 260px);
   min-height: 200px;
-  max-height: 700px;
 }
 
 .lane-head {
@@ -2178,10 +2176,9 @@ svg.spark   { overflow: visible; }
   /* KPI grid: 2 columns */
   .kpi-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
 
-  /* Lanes: single column, shorter fixed height with internal scroll */
+  /* Lanes: single column */
   .lanes-grid { grid-template-columns: 1fr; }
   .lane-grid  { grid-template-columns: 1fr; }
-  .lane { height: 40vh; max-height: 40vh; }
 
   /* Member grid: single column */
   .member-grid { grid-template-columns: 1fr; }
@@ -2811,10 +2808,9 @@ svg.spark   { overflow: visible; }
     scroll-snap-type: x mandatory;
   }
 
-  /* ── Decision Lanes: single column, internal scroll ─────── */
+  /* ── Decision Lanes: single column ───────────────────────── */
   .lanes-grid { grid-template-columns: 1fr; }
   .lane-grid  { grid-template-columns: 1fr; }
-  .lane { height: 40vh; max-height: 40vh; }
 
   /* ── Member grid / split pane ─────────────────────────────── */
   .member-grid {
@@ -4314,7 +4310,7 @@ svg.spark   { overflow: visible; }
     <!-- Needs Action lane -->
     <div class="lane lane--red">
       <div class="lane-hdr">
-        <span class="lane-title">Needs Action</span>
+        <span class="lane-title">Admin To-Do</span>
         <span id="lane-action-count" class="lane-count">0</span>
       </div>
       <div id="lane-action" class="lane-body">
@@ -4325,7 +4321,7 @@ svg.spark   { overflow: visible; }
     <!-- Coming Soon lane -->
     <div class="lane lane--amber">
       <div class="lane-hdr">
-        <span class="lane-title">Coming Soon</span>
+        <span class="lane-title">Awaiting Response</span>
         <span id="lane-soon-count" class="lane-count">0</span>
       </div>
       <div id="lane-soon" class="lane-body">
@@ -4336,7 +4332,7 @@ svg.spark   { overflow: visible; }
     <!-- Recently Cleared lane -->
     <div class="lane lane--green">
       <div class="lane-hdr">
-        <span class="lane-title">Recently Cleared</span>
+        <span class="lane-title">Cleared Today</span>
         <span id="lane-cleared-count" class="lane-count">0</span>
       </div>
       <div id="lane-cleared" class="lane-body">
@@ -4347,7 +4343,7 @@ svg.spark   { overflow: visible; }
     <!-- Activity Timeline lane -->
     <div id="today-timeline" class="lane lane--gold">
       <div class="lane-hdr">
-        <span class="lane-title">Activity Timeline</span>
+        <span class="lane-title">Activity Feed</span>
         <span id="lane-tl-count" class="lane-count">0</span>
       </div>
       <div id="lane-timeline" class="lane-body">
@@ -4794,6 +4790,42 @@ svg.spark   { overflow: visible; }
    .tab-section is the v2 equivalent — define here if not in foundation. */
 .tab-section          { display: none; height: 100%; overflow: hidden; }
 .tab-section.active   { display: flex; flex-direction: column; animation: panelIn 220ms var(--ease-entrance); }
+
+/* ── Today tab: viewport-fit columns with internal scroll ──────────
+   Scoped to #ap-today so no other tab is affected.
+   High specificity (ID + 2 classes) beats .ap.active (2 classes).  */
+#ap-today.tab-section.active {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--topbar-h) - var(--ticker-h));
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 16px 0;
+  box-sizing: border-box;
+}
+#ap-today #today-kpis  { flex-shrink: 0; }
+#ap-today #today-lanes {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  align-items: stretch;
+}
+#ap-today .lane { height: 100%; min-height: 0; }
+
+/* Mobile: stacked single column, each lane fixed 40vh with internal scroll */
+@media (max-width: 768px) {
+  #ap-today.tab-section.active {
+    display: block;
+    height: auto;
+    overflow: visible;
+    padding: 8px 8px 80px;
+  }
+  #ap-today #today-lanes { flex: none; overflow: visible; }
+  #ap-today .lane { height: 40vh; min-height: 180px; }
+}
+@media (max-width: 480px) {
+  #ap-today .lane { height: 40vh; min-height: 160px; }
+}
 
 /* ── Lightweight .inp / .sel aliases ───────────────────────────────────
    .input-field is the canonical class; .inp/.sel are shorthand used in
@@ -6982,7 +7014,7 @@ textarea.inp.mono-area {
      ═══════════════════════════════════════════════════════════════════ */
   var currentTab = 'today';
   var PANEL_SHORTCUTS = {
-    today:      [['◈','KPI Overview','today-kpis'],['▦','Decision Lanes','today-lanes'],['⋯','Activity Timeline','today-timeline']],
+    today:      [['◈','KPI Overview','today-kpis'],['▦','Action Lanes','today-lanes'],['⋯','Activity Feed','today-timeline']],
     fund:       [['◈','Fund Snapshot','fhp-nav'],['◑','LTV Gauge','ltv-arc'],['▤','Capital Engine','cf-total'],['◆','XAU Spot','xau-price']],
     vault:      [['◈','Latest Verification','vv-title'],['▦','Bar Registry','bar-totals']],
     members:    [['▦','Member List','mem-list'],['◈','Member Detail','mem-detail']],
@@ -7008,10 +7040,11 @@ textarea.inp.mono-area {
         el.classList.add('active');
         var t = document.getElementById(el.dataset.panelGoto);
         if (t) {
-          var mc = document.getElementById('main-content');
-          if (mc) {
-            var off = t.getBoundingClientRect().top - mc.getBoundingClientRect().top + mc.scrollTop;
-            mc.scrollTo({ top: off - 12, behavior: 'smooth' });
+          var scroller = (currentTab === 'today' ? document.getElementById('ap-today') : null)
+                         || document.getElementById('main-content');
+          if (scroller) {
+            var off = t.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
+            scroller.scrollTo({ top: off - 12, behavior: 'smooth' });
           } else {
             t.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
