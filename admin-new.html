@@ -4075,6 +4075,7 @@ svg.spark   { overflow: visible; }
           <span id="tk-xau">—</span>
           <span id="tk-xau-d" class="tk-delta flat">—</span>
         </div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--fg-muted);text-align:center;margin-top:2px;"><span id="tk-xau-krw">—</span></div>
       </div>
       <div class="tk">
         <div class="tk-lbl">Gold ₩/kg</div>
@@ -7193,7 +7194,7 @@ textarea.inp.mono-area {
         lastSpot = xauOz;
         var el = document.getElementById('tk-xau');
         if (el) {
-          el.textContent = '$' + fmt(xauOz, 2) + '/oz';
+          el.textContent = '$' + fmt(xauOz, 0) + '/oz';
           if (prev && prev !== xauOz) {
             var up = xauOz > prev;
             el.style.color = up ? 'var(--green)' : 'var(--red)';
@@ -7206,18 +7207,18 @@ textarea.inp.mono-area {
           if (dEl) { dEl.textContent = (d >= 0 ? '+' : '') + Number(d).toFixed(2) + '%'; dEl.className = 'tk-delta ' + (d > 0 ? 'up' : d < 0 ? 'dn' : 'flat'); }
         }
       }
-      // USD per kg of gold. Spot endpoint: xau_usd_kg (with markup) and
-      // xau_usd_kg_spot (raw). Stats: xau_usd_kg.
-      var usdKg = Number(spot.xau_usd_kg || stats.xau_usd_kg) || 0;
-      if (usdKg) {
-        var usdKgEl = document.getElementById('tk-krw-kg');
-        if (usdKgEl) usdKgEl.textContent = '$' + Math.round(usdKg).toLocaleString();
+      // KRW per kg — use live spot.xau_krw_kg (= gold $/kg × live USD/KRW).
+      // Fallback: compute from xauOz if spot field missing.
+      var krwKg = Number(spot.xau_krw_kg) || 0;
+      if (!krwKg && xauOz && spot.usd_krw) {
+        krwKg = Math.round(xauOz * 32.1507 * Number(spot.usd_krw));
       }
-      // Show oz→kg conversion factor as the secondary line
-      var rawKg = Number(spot.xau_usd_kg_spot) || 0;
-      if (rawKg && usdKg) {
-        var deltaEl = document.getElementById('tk-krw-kg-d');
-        if (deltaEl) deltaEl.textContent = 'spot $' + Math.round(rawKg).toLocaleString() + ' +3%';
+      if (krwKg) {
+        var krwKgEl = document.getElementById('tk-krw-kg');
+        if (krwKgEl) krwKgEl.textContent = '₩' + Math.round(krwKg).toLocaleString('ko-KR') + '/kg';
+        // Sub-line inside the $/oz cell: ₩/kg conversion
+        var xauKrwEl = document.getElementById('tk-xau-krw');
+        if (xauKrwEl) xauKrwEl.textContent = '₩' + Math.round(krwKg).toLocaleString('ko-KR') + '/kg';
       }
       var tkNav = document.getElementById('tk-nav'); if (stats.nav_usd && tkNav) tkNav.textContent = fmtUsd(stats.nav_usd);
       var tkGold = document.getElementById('tk-gold'); if (stats.gold_kg != null && tkGold) tkGold.textContent = fmt(stats.gold_kg, 1) + ' kg';
