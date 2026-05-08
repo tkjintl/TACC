@@ -24,7 +24,7 @@
     { "source": "/nda",               "destination": "/api/doc?id=nda-page" },
     { "source": "/memo",              "destination": "/api/doc?id=memo-page" },
     { "source": "/subscription",      "destination": "/api/doc?id=subscription-page" },
-    { "source": "/portfolio",         "destination": "/portal-v4-wired.html" },
+    { "source": "/portfolio",         "destination": "/portal-v4-wired" },
     { "source": "/documents",         "destination": "/api/doc?id=documents-page" },
     { "source": "/ndadocs",           "destination": "/api/doc?id=ndadocs-page" },
     { "source": "/messages",          "destination": "/api/doc?id=messages-page" },
