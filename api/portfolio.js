@@ -284,10 +284,8 @@ async function buildPortfolioResponse(res, lead) {
       positions:           lead.positions     || [],
       capital_calls:       lead.capital_calls || [],
       docs,
-      messages: {
-        items:        messages,
-        unread_count: unreadCount,
-      },
+      messages:      messages,
+      unread_count:  unreadCount,
       audit:       (lead.audit || []).slice(-50),
       // Full structured next-action (type/label/url) for new code paths.
       next_action_meta: nextActionObj,
