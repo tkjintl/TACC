@@ -5,16 +5,28 @@
 import {
   ok, bad, unauthorized, serverError, methodNotAllowed, getCookie, getQuery, readBody,
 } from './_lib/http.js';
-import { verifyToken, COOKIE_MEMBER } from './_lib/auth.js';
+import { verifyToken, COOKIE_MEMBER, COOKIE_ADMIN } from './_lib/auth.js';
 import { getLead, saveLead, markMessageRead } from './_lib/storage.js';
 
 async function requireMember(req) {
   const token = getCookie(req, COOKIE_MEMBER);
   const session = await verifyToken(token);
-  if (!session || !session.leadId) return null;
-  const lead = await getLead(session.leadId);
-  if (!lead) return null;
-  return lead;
+  if (session && session.leadId) {
+    const lead = await getLead(session.leadId);
+    if (lead) return lead;
+  }
+  // Admin preview fallback
+  const adminToken = getCookie(req, COOKIE_ADMIN);
+  const adminSession = await verifyToken(adminToken);
+  if (adminSession && adminSession.sub === 'admin') {
+    const previewId = String(getQuery(req).preview_lead || '').trim();
+    if (previewId) {
+      const lead = await getLead(previewId);
+      if (lead) return lead;
+    }
+    return { id: '_admin_browse', messages: [], _adminPreview: true };
+  }
+  return null;
 }
 
 export default async function handler(req, res) {
