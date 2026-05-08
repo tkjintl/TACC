@@ -140,24 +140,26 @@ async function buildPortfolioResponse(res, lead) {
     const kg = (lead.subscription && lead.subscription.kg_requested) || null;
     let goldSection = null;
 
-    if (kg && xau && sgdPerUsd && krwPerUsd) {
+    if (kg && xau && krwPerUsd) {
       // Use member-facing (marked-up) price_usd_per_kg for current NAV
       const valueUsd  = kg * xau.price_usd_per_kg;
-      const valueSgd  = valueUsd * sgdPerUsd;
+      const valueSgd  = sgdPerUsd ? valueUsd * sgdPerUsd : null;
       const valueKrw  = valueUsd * krwPerUsd;
 
       // Entry price: wire amount, 80% allocated to gold, divided by kg
       const wirePaid  = wire.amount_usd;
       const entryUsd  = wirePaid ? (wirePaid * 0.80) / kg : null;
-      const entrySgd  = entryUsd ? entryUsd * sgdPerUsd : null;
-      const changePct = entrySgd ? ((valueSgd - entrySgd) / entrySgd) * 100 : null;
+      const entrySgd  = (entryUsd && sgdPerUsd) ? entryUsd * sgdPerUsd : null;
+      const changePct = entryUsd ? ((valueUsd - entryUsd) / entryUsd) * 100 : null;
 
       goldSection = {
         kg,
-        value_sgd:       Math.round(valueSgd),
         value_usd:       Math.round(valueUsd),
+        value_sgd:       valueSgd ? Math.round(valueSgd) : null,
         value_krw:       Math.round(valueKrw),
+        entry_price_usd: entryUsd ? Math.round(entryUsd) : null,
         entry_price_sgd: entrySgd ? Math.round(entrySgd) : null,
+        entry_value_usd: entryUsd ? Math.round(entryUsd * kg) : null,
         change_pct:      changePct !== null ? Math.round(changePct * 100) / 100 : null,
         spot: {
           xau_usd_oz:      Math.round(xau.price_usd_per_oz * 100) / 100,
@@ -259,8 +261,10 @@ async function buildPortfolioResponse(res, lead) {
       : null;
     const nextActionObj = resolveNextAction(lead);
     const subUsd      = wire.amount_usd || (subKg ? subKg * 108000 : null);
-    const entryPrice  = goldSection ? goldSection.entry_price_sgd : null;
-    const entryValue  = (entryPrice && kilos) ? Math.round(entryPrice * kilos) : null;
+    const entryPrice    = goldSection ? goldSection.entry_price_usd : null;
+    const entryPriceSgd = goldSection ? goldSection.entry_price_sgd : null;
+    const entryValue    = goldSection ? goldSection.entry_value_usd : null;
+    const entryValueSgd = (entryPriceSgd && kilos) ? Math.round(entryPriceSgd * kilos) : null;
 
     res.setHeader('Cache-Control', 'no-store');
     return ok(res, {
@@ -314,10 +318,13 @@ async function buildPortfolioResponse(res, lead) {
       bar_standard:            lead.bar_standard   || null,
       last_audit_date:         lead.last_audit_date || null,
       gold_purchases:          lead.gold_purchases  || [],
+      current_value_usd:       goldSection ? goldSection.value_usd : null,
       current_value_sgd:       goldSection ? goldSection.value_sgd : null,
       current_value_krw:       goldSection ? goldSection.value_krw : null,
-      entry_price_sgd:         entryPrice,
-      entry_value_sgd:         entryValue,
+      entry_price_usd:         entryPrice,
+      entry_price_sgd:         entryPriceSgd,
+      entry_value_usd:         entryValue,
+      entry_value_sgd:         entryValueSgd,
       // Subscription / wire
       subscription_amount_usd: subUsd,
       subscription_date:       (lead.subscription && lead.subscription.submitted_at) || null,

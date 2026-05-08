@@ -2599,8 +2599,9 @@
     if (tierEl) tierEl.textContent = d.tier || 'Founding Member';
 
     var aumEl = document.getElementById('ov-aum');
-    if (aumEl && d.current_value_sgd) {
-      TACC.countUp(aumEl, parseFloat(d.current_value_sgd), 1400, 'SGD ', '', 0);
+    var _ovAumVal = d.current_value_usd || d.current_value_sgd;
+    if (aumEl && _ovAumVal) {
+      TACC.countUp(aumEl, parseFloat(_ovAumVal), 1400, 'USD ', '', 0);
     }
     var aumSgdEl = document.getElementById('ov-aum-sgd');
     if (aumSgdEl && d.current_value_krw) {
@@ -2617,14 +2618,14 @@
     }
 
     // v2 KPI row
-    var goldVal = parseFloat(d.current_value_sgd || 0);
-    var entryVal = parseFloat(d.entry_value_sgd || 0);
+    var goldVal = parseFloat(d.current_value_usd || d.current_value_sgd || 0);
+    var entryVal = parseFloat(d.entry_value_usd || d.entry_value_sgd || 0);
     var ltvOutstanding = parseFloat((d.ltv && d.ltv.credit_outstanding) || 0);
     var positions = d.positions || [];
 
     var goldValEl = document.getElementById('ov-gold-val');
     if (goldValEl && goldVal) {
-      TACC.countUp(goldValEl, goldVal, 1200, 'SGD ', '', 0);
+      TACC.countUp(goldValEl, goldVal, 1200, 'USD ', '', 0);
       var goldSubEl = document.getElementById('ov-gold-sub');
       if (goldSubEl) goldSubEl.textContent = (d.gold_kg || d.kilos || '—') + ' kg · LBMA Certified';
     }
@@ -2632,7 +2633,7 @@
     var ltvValEl = document.getElementById('ov-ltv-val');
     if (ltvValEl) {
       if (ltvOutstanding > 0) {
-        TACC.countUp(ltvValEl, ltvOutstanding, 1200, 'SGD ', '', 0);
+        TACC.countUp(ltvValEl, ltvOutstanding, 1200, 'USD ', '', 0);
         var ltvSubEl = document.getElementById('ov-ltv-sub');
         if (ltvSubEl) ltvSubEl.textContent = (positions.length || 0) + ' active position' + (positions.length !== 1 ? 's' : '');
       } else {
@@ -2746,7 +2747,7 @@
 
   function fmSgd(n) {
     if (!n) return '—';
-    return 'SGD ' + Math.round(n).toLocaleString('en-SG');
+    return 'USD ' + Math.round(n).toLocaleString('en-US');
   }
 
   /* ─── INVESTMENTS ──────────────────────────────────────────────── */
@@ -2800,7 +2801,7 @@
       var stageText = p.status_note || STAGE_TEXT[stageKey] || stageKey;
       var posAmt = n > 0 && ltvDeployed ? ltvDeployed / n : 0;
       var allocPct = n > 0 ? (100 / n).toFixed(1) : '0';
-      var posKg = posAmt && d.current_value_sgd ? (posAmt / parseFloat(d.current_value_sgd) * gold_kg).toFixed(3) : null;
+      var posKg = posAmt && (d.current_value_usd || d.current_value_sgd) ? (posAmt / parseFloat(d.current_value_usd || d.current_value_sgd) * gold_kg).toFixed(3) : null;
       var stats = [];
       if (p.vintage) stats.push({ label: 'Vintage', val: p.vintage });
       if (p.geography) stats.push({ label: 'Geography', val: p.geography });
@@ -3080,9 +3081,9 @@
     }
 
     var sgdEl = document.getElementById('gold-sgd');
-    if (sgdEl && d.current_value_sgd) {
-      var sgdNum = parseFloat(d.current_value_sgd);
-      TACC.countUp(sgdEl, sgdNum, 1400, 'SGD ', '', 0);
+    var _goldUsdVal = d.current_value_usd || d.current_value_sgd;
+    if (sgdEl && _goldUsdVal) {
+      TACC.countUp(sgdEl, parseFloat(_goldUsdVal), 1400, 'USD ', '', 0);
     }
 
     var krwLargeEl = document.getElementById('gold-krw-large');
@@ -3102,7 +3103,7 @@
           var ghSpot = document.getElementById('gh-spot');
           if (ctx) {
             var now = new Date();
-            ctx.textContent = 'XAU SPOT  $' + spotUsd.toFixed(2) + '/oz  ·  SGD ' + parseFloat(spot.sgd_per_gram || 0).toFixed(2) + '/g  ·  Updated ' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0') + ' SGT';
+            ctx.textContent = 'XAU SPOT  $' + spotUsd.toFixed(2) + '/oz  ·  $' + (spotUsd / 32.1507).toFixed(2) + '/g  ·  Updated ' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0') + ' UTC';
           }
           if (ghSpot && spotUsd > 0) {
             // Flash if price changed
@@ -3132,11 +3133,13 @@
     var todayEl = document.getElementById('since-today');
     var changeEl = document.getElementById('since-change');
 
-    if (d.entry_price_sgd && entryEl) entryEl.textContent = 'SGD ' + parseInt(d.entry_price_sgd).toLocaleString('en-US');
-    if (d.current_value_sgd && todayEl) todayEl.textContent = 'SGD ' + parseInt(d.current_value_sgd).toLocaleString('en-US');
-    if (d.entry_price_sgd && d.current_value_sgd && changeEl) {
-      var entry = parseFloat(d.entry_price_sgd);
-      var curr = parseFloat(d.current_value_sgd);
+    var _entryUsd = d.entry_price_usd || d.entry_price_sgd;
+    var _currUsd  = d.current_value_usd || d.current_value_sgd;
+    if (_entryUsd && entryEl) entryEl.textContent = 'USD ' + parseInt(_entryUsd).toLocaleString('en-US');
+    if (_currUsd && todayEl) todayEl.textContent = 'USD ' + parseInt(_currUsd).toLocaleString('en-US');
+    if (_entryUsd && _currUsd && changeEl) {
+      var entry = parseFloat(_entryUsd);
+      var curr = parseFloat(_currUsd);
       var pct = ((curr - entry) / entry * 100);
       changeEl.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
       changeEl.classList.add(pct >= 0 ? 'green' : 'amber');

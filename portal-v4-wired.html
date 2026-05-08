@@ -4140,7 +4140,7 @@ function renderKpis(member) {
   // Gold data
   var goldData      = member.gold || {};
   var goldValueUsd  = SPOT ? goldKg * SPOT.price_usd_per_kg : (goldData.value_usd || null);
-  var goldValueSgd  = goldData.value_sgd || null;
+  var goldValueSgd  = goldData.value_usd || goldData.value_sgd || null; // USD preferred
   var goldChangePct = goldData.change_pct || null;
 
   // PE / portfolio
@@ -4203,7 +4203,7 @@ function renderKpis(member) {
   _set('wealthGoldKg',  goldKg.toFixed(3) + ' kg');
   _set('wealthGoldOz',  oz.toFixed(2) + ' oz');
   _set('wealthGoldVal', goldValueUsd !== null ? fmU(goldValueUsd) : '—');
-  _set('wealthGoldSgd', goldValueSgd !== null ? 'S$' + Math.round(goldValueSgd).toLocaleString() : '—');
+  _set('wealthGoldSgd', goldValueSgd !== null ? '$' + Math.round(goldValueSgd).toLocaleString() : '—');
   if (goldGainUsd !== null) {
     var gainEl    = document.getElementById('wealthGoldGain');
     var gainPctEl = document.getElementById('wealthGoldGainPct');
@@ -4397,18 +4397,18 @@ function loadPortfolio() {
   if (auditEl) auditEl.textContent = member.last_audit_date ? fmDate(member.last_audit_date) + ' ✓' : '—';
 
   // Entry price
-  var entryPriceSgd = member.entry_price_sgd || (member.gold && member.gold.entry_price_sgd) || null;
+  var entryPriceUsd = member.entry_price_usd || (member.gold && member.gold.entry_price_usd) || null;
   var epEl = document.getElementById('vaultEntryPrice');
-  if (epEl) epEl.textContent = entryPriceSgd ? 'SGD ' + Math.round(entryPriceSgd).toLocaleString() + '/kg' : '—';
+  if (epEl) epEl.textContent = entryPriceUsd ? 'USD ' + Math.round(entryPriceUsd).toLocaleString() + '/kg' : '—';
 
   // Unrealised gain
-  var entryValSgd   = member.entry_value_sgd || null;
-  var currentValSgd = member.current_value_sgd || (member.gold && member.gold.value_sgd) || null;
+  var entryValUsd   = member.entry_value_usd || null;
+  var currentValUsd = member.current_value_usd || (member.gold && member.gold.value_usd) || null;
   var gainEl = document.getElementById('vaultUnrealisedGain');
-  if (gainEl && entryValSgd && currentValSgd) {
-    var gainAbs = currentValSgd - entryValSgd;
-    var gainPct = (gainAbs / entryValSgd) * 100;
-    var gainStr = (gainAbs >= 0 ? '+' : '') + 'SGD ' + Math.round(Math.abs(gainAbs)).toLocaleString()
+  if (gainEl && entryValUsd && currentValUsd) {
+    var gainAbs = currentValUsd - entryValUsd;
+    var gainPct = (gainAbs / entryValUsd) * 100;
+    var gainStr = (gainAbs >= 0 ? '+' : '') + 'USD ' + Math.round(Math.abs(gainAbs)).toLocaleString()
                 + ' (' + (gainAbs >= 0 ? '+' : '-') + Math.abs(gainPct).toFixed(1) + '%)';
     gainEl.textContent = gainStr;
     gainEl.className   = 'vault-row-value mono ' + (gainAbs >= 0 ? 'green-val' : 'red-val');
@@ -4515,7 +4515,8 @@ function renderOverview(member) {
   var pfSub = document.getElementById('pfSub');
   if (pfSub) pfSub.textContent = (member.full_name || '—') + (member.tier ? ' · ' + member.tier : '');
   var pfAum = document.getElementById('pfTotalAum');
-  if (pfAum && member.current_value_sgd) pfAum.textContent = 'SGD ' + Math.round(member.current_value_sgd).toLocaleString();
+  var _pfAumVal = member.current_value_usd || member.current_value_sgd;
+  if (pfAum && _pfAumVal) pfAum.textContent = 'USD ' + Math.round(_pfAumVal).toLocaleString();
   var pfAumSub = document.getElementById('pfTotalAumSub');
   if (pfAumSub && member.current_value_krw) pfAumSub.textContent = '≈ ' + Math.round(member.current_value_krw / 1000000).toLocaleString() + 'M KRW';
 
@@ -4525,7 +4526,8 @@ function renderOverview(member) {
   var tierEl = document.getElementById('ovHeroTier');
   if (tierEl) tierEl.textContent = member.tier || 'Founding Member';
   var aumEl = document.getElementById('ovHeroAum');
-  if (aumEl && member.current_value_sgd) animateCounter(aumEl, 0, parseFloat(member.current_value_sgd), 1400, function(v) { return 'SGD ' + Math.round(v).toLocaleString(); });
+  var _heroAumVal = member.current_value_usd || member.current_value_sgd;
+  if (aumEl && _heroAumVal) animateCounter(aumEl, 0, parseFloat(_heroAumVal), 1400, function(v) { return 'USD ' + Math.round(v).toLocaleString(); });
   var aumSubEl = document.getElementById('ovHeroAumSub');
   if (aumSubEl && member.current_value_krw) aumSubEl.textContent = '≈ ' + Math.round(parseFloat(member.current_value_krw) / 1000000).toLocaleString() + 'M KRW';
   var metaEl = document.getElementById('ovHeroMeta');
@@ -4539,15 +4541,16 @@ function renderOverview(member) {
 
   // KPIs
   var kpiGold = document.getElementById('ovKpiGold');
-  if (kpiGold && member.current_value_sgd) {
-    animateCounter(kpiGold, 0, parseFloat(member.current_value_sgd), 1200, function(v) { return 'SGD ' + Math.round(v).toLocaleString(); });
+  var _kpiGoldVal = member.current_value_usd || member.current_value_sgd;
+  if (kpiGold && _kpiGoldVal) {
+    animateCounter(kpiGold, 0, parseFloat(_kpiGoldVal), 1200, function(v) { return 'USD ' + Math.round(v).toLocaleString(); });
     var kpiGoldSub = document.getElementById('ovKpiGoldSub');
     if (kpiGoldSub) kpiGoldSub.textContent = goldKg.toFixed(3) + ' kg · LBMA Certified';
   }
   var kpiLtv = document.getElementById('ovKpiLtv');
   if (kpiLtv) {
     if (ltvDeployed > 0) {
-      animateCounter(kpiLtv, 0, ltvDeployed, 1200, function(v) { return 'SGD ' + Math.round(v).toLocaleString(); });
+      animateCounter(kpiLtv, 0, ltvDeployed, 1200, function(v) { return 'USD ' + Math.round(v).toLocaleString(); });
       var kpiLtvSub = document.getElementById('ovKpiLtvSub');
       if (kpiLtvSub) kpiLtvSub.textContent = positions.length + ' active position' + (positions.length !== 1 ? 's' : '');
     } else {
@@ -4570,7 +4573,8 @@ function renderOverview(member) {
 
   // Allocation ring
   var circ = 2 * Math.PI * 72;
-  var invPct  = ltvFacility > 0 && member.current_value_sgd ? Math.round(ltvDeployed / parseFloat(member.current_value_sgd) * 100) : 0;
+  var _allocBase = member.current_value_usd || member.current_value_sgd;
+  var invPct  = ltvFacility > 0 && _allocBase ? Math.round(ltvDeployed / parseFloat(_allocBase) * 100) : 0;
   var goldPct = Math.max(0, 100 - invPct);
   var cashPct = 0;
   var ovRingGold = document.getElementById('ovRingGold');
@@ -4596,13 +4600,14 @@ function renderOverview(member) {
   if (ovLtvBar) ovLtvBar.style.width = Math.min(ltvPct, 100) + '%';
   var ovLtvDetail = document.getElementById('ovLtvDetail');
   if (ovLtvDetail && ltvFacility) {
-    ovLtvDetail.textContent = 'SGD ' + Math.round(ltvDeployed).toLocaleString() + ' deployed of SGD ' + Math.round(ltvFacility).toLocaleString() + ' facility';
+    ovLtvDetail.textContent = 'USD ' + Math.round(ltvDeployed).toLocaleString() + ' deployed of USD ' + Math.round(ltvFacility).toLocaleString() + ' facility';
   }
 
   // Composition
   var compEl = document.getElementById('ovCompRows');
-  if (compEl && member.current_value_sgd) {
-    var totalVal = parseFloat(member.current_value_sgd);
+  var _compBase = member.current_value_usd || member.current_value_sgd;
+  if (compEl && _compBase) {
+    var totalVal = parseFloat(_compBase);
     var rows = [
       { label: 'Physical Gold (' + goldKg.toFixed(3) + ' kg)', value: totalVal, width: '85%', color: 'var(--gold)' }
     ];
@@ -4611,12 +4616,12 @@ function renderOverview(member) {
       return '<div class="ov-comp-row">' +
         '<div class="ov-comp-label">' + esc(r.label) + '</div>' +
         '<div class="ov-comp-bar-wrap"><div class="ov-comp-bar" style="width:' + r.width + ';background:' + r.color + '"></div></div>' +
-        '<div class="ov-comp-value">SGD ' + Math.round(r.value).toLocaleString() + '</div>' +
+        '<div class="ov-comp-value">USD ' + Math.round(r.value).toLocaleString() + '</div>' +
       '</div>';
     }).join('');
   }
   var compTotal = document.getElementById('ovCompTotal');
-  if (compTotal && member.current_value_sgd) compTotal.textContent = 'SGD ' + Math.round(parseFloat(member.current_value_sgd)).toLocaleString();
+  if (compTotal && _compBase) compTotal.textContent = 'USD ' + Math.round(parseFloat(_compBase)).toLocaleString();
 
   // Activity feed
   var actEl = document.getElementById('ovActivityFeed');
@@ -4630,7 +4635,7 @@ function renderOverview(member) {
       var ts = now.toLocaleDateString('en-SG', { day:'2-digit', month:'short' });
       acts.push({ color: 'gold', text: 'Portfolio loaded successfully', time: ts });
       if (positions.length) acts.push({ color: 'blue', text: positions.length + ' active position' + (positions.length !== 1 ? 's' : '') + ' via deal feed', time: ts });
-      if (ltvDeployed) acts.push({ color: 'green', text: 'LTV facility active · SGD ' + Math.round(ltvDeployed).toLocaleString() + ' deployed', time: ts });
+      if (ltvDeployed) acts.push({ color: 'green', text: 'LTV facility active · USD ' + Math.round(ltvDeployed).toLocaleString() + ' deployed', time: ts });
     }
     actEl.innerHTML = acts.slice(0,5).map(function(a) {
       return '<div class="ov-activity-item">' +
@@ -4651,7 +4656,7 @@ function renderInvestments(member) {
 
   // Summary
   var depEl = document.getElementById('invLtvDeployed');
-  if (depEl) depEl.textContent = ltvDeployed ? 'SGD ' + Math.round(ltvDeployed).toLocaleString() : '—';
+  if (depEl) depEl.textContent = ltvDeployed ? 'USD ' + Math.round(ltvDeployed).toLocaleString() : '—';
   var posEl = document.getElementById('invActivePos');
   if (posEl) posEl.textContent = n;
   var irrEl = document.getElementById('invAvgIrr');
@@ -4675,7 +4680,7 @@ function renderInvestments(member) {
         var posAmt = ltvDeployed / n;
         return '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-3)">' +
           '<div style="width:6px;height:6px;border-radius:50%;background:' + (COLORS[i] || COLORS[0]) + ';flex-shrink:0"></div>' +
-          name + ' · SGD ' + Math.round(posAmt).toLocaleString() + ' · ' + perPos.toFixed(1) + '%' +
+          name + ' · USD ' + Math.round(posAmt).toLocaleString() + ' · ' + perPos.toFixed(1) + '%' +
         '</div>';
       }).join('');
     }
@@ -4721,7 +4726,7 @@ function renderInvestments(member) {
       '</div>' +
       '<div class="inv-deal-right">' +
         '<div class="inv-deal-pos-label">Your Position</div>' +
-        '<div class="inv-deal-pos-value">SGD ' + Math.round(posAmt).toLocaleString() + '</div>' +
+        '<div class="inv-deal-pos-value">USD ' + Math.round(posAmt).toLocaleString() + '</div>' +
         '<div class="inv-deal-ltv-wrap"><div class="inv-deal-ltv-bar" style="width:' + allocPct + '%"></div></div>' +
         '<div class="inv-deal-ltv-pct">' + allocPct + '% of LTV</div>' +
         '<div class="inv-stage-row"><div class="inv-stage-dot ' + (STAGE_DOT[stageKey]||'') + '"></div><span class="inv-stage-text">' + esc(STAGE_TEXT[stageKey] || stageKey) + '</span></div>' +

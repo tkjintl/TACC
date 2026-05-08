@@ -717,10 +717,6 @@
         <span class="calc-label">Estimated Value (USD)</span>
         <span class="calc-value" id="calc-usd">—</span>
       </div>
-      <div class="calc-row">
-        <span class="calc-label">Estimated Value (SGD)</span>
-        <span class="calc-value" id="calc-sgd">—</span>
-      </div>
       <p class="calc-note">Illustrative — actual amount fixed at trade execution</p>
     </div>
 
@@ -802,11 +798,11 @@
         <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
           <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;">
             <input type="radio" name="ai-status" value="assets" style="margin-top:3px;accent-color:var(--goldA);" required>
-            <span style="font-family:var(--font-ui);font-size:14px;color:var(--muted);line-height:1.6;">Net personal assets exceeding S$2 million (or equivalent)</span>
+            <span style="font-family:var(--font-ui);font-size:14px;color:var(--muted);line-height:1.6;">Net personal assets exceeding USD 1.5 million (or equivalent)</span>
           </label>
           <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;">
             <input type="radio" name="ai-status" value="income" style="margin-top:3px;accent-color:var(--goldA);">
-            <span style="font-family:var(--font-ui);font-size:14px;color:var(--muted);line-height:1.6;">Net income exceeding S$300,000 in the preceding three years</span>
+            <span style="font-family:var(--font-ui);font-size:14px;color:var(--muted);line-height:1.6;">Net income exceeding USD 200,000 per annum in the preceding three years</span>
           </label>
           <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;">
             <input type="radio" name="ai-status" value="institutional" style="margin-top:3px;accent-color:var(--goldA);">
@@ -936,7 +932,7 @@
   /* ─── State ──────────────────────────────────────────────────── */
   var currentSection = 1;
   var spotUSD = 0;
-  var sgdRate = 1.35; // fallback
+  var sgdRate = 1; // unused — display is USD only
   var kilos = 1;
 
   var formData = {
@@ -975,7 +971,6 @@
       })
       .then(function (d) {
         spotUSD = parseFloat(d.spot_usd || d.price || 0);
-        sgdRate = parseFloat(d.sgd_rate || sgdRate);
         if (el) {
           TACC.flashGoldPrice(el, spotUSD);
           el.textContent = '$' + spotUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -1001,11 +996,8 @@
     // 1 troy oz = 32.1507 troy oz per kg
     var ozPerKg = 32.1507;
     var totalUSD = kilos * ozPerKg * spotUSD;
-    var totalSGD = totalUSD * sgdRate;
     var usdEl = document.getElementById('calc-usd');
-    var sgdEl = document.getElementById('calc-sgd');
     if (usdEl) usdEl.textContent = 'USD ' + Math.round(totalUSD).toLocaleString('en-US');
-    if (sgdEl) sgdEl.textContent = 'SGD ' + Math.round(totalSGD).toLocaleString('en-US');
   }
 
   loadSpot();
@@ -1129,18 +1121,17 @@
     var rows = document.getElementById('review-rows');
     var ozPerKg = 32.1507;
     var totalUSD = formData.kilos * ozPerKg * spotUSD;
-    var totalSGD = totalUSD * sgdRate;
 
     var aiLabels = {
-      assets: 'Net assets > S$2M',
-      income: 'Net income > S$300K (3 years)',
+      assets: 'Net assets > USD 1.5M',
+      income: 'Net income > USD 200K (3 years)',
       institutional: 'Institutional investor',
       'reverse-solicitation': 'Reverse solicitation'
     };
 
     var items = [
       ['Gold Subscription', formData.kilos + ' kilogram bar' + (formData.kilos > 1 ? 's' : '')],
-      ['Estimated Value', 'SGD ' + Math.round(totalSGD).toLocaleString('en-US') + ' / USD ' + Math.round(totalUSD).toLocaleString('en-US')],
+      ['Estimated Value', 'USD ' + Math.round(totalUSD).toLocaleString('en-US')],
       ['Legal Name', formData.legalName],
       ['Passport / NRIC', formData.passport],
       ['Nationality', formData.nationality],

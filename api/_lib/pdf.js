@@ -307,7 +307,6 @@ export async function generateTaxStatement(lead, fiscalYear, goldPriceAtYearStar
       [`Gold Held (grams)`,          `${fmt(gramsHeld, 1)} g`,       `${fmt(gramsHeld, 1)} g`,       '—'],
       [`XAU/USD (per kg)`,           `$${fmt(goldPriceAtYearStart)}`, `$${fmt(goldPriceAtYearEnd)}`,  '—'],
       [`USD/KRW Rate`,               fmt(krwStart, 2),               fmt(krwEnd, 2),                 '—'],
-      [`USD/SGD Rate`,               fmt(sgdStart, 4),               fmt(sgdEnd, 4),                 '—'],
       [`Acquisition Cost (USD)`,     `$${fmt(valueStartUsd)}`,       '—',                            '—'],
       [`Year-End Value (USD)`,        '—',                            `$${fmt(valueEndUsd)}`,         '—'],
       [`Unrealized Gain/Loss (USD)`, '',                              '',                             `${unrealizedUsd >= 0 ? '+' : ''}$${fmt(unrealizedUsd)}`],

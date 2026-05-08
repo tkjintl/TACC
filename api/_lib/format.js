@@ -40,14 +40,10 @@ export function fmKg(n) {
 
 /**
  * fmSgd(n, decimals)
- * Formats a SGD value: "SGD 1,234,567"
+ * @deprecated Alias for fmUsd — all display is now USD.
  */
 export function fmSgd(n, decimals = 0) {
-  if (!n || isNaN(n)) return '—';
-  return 'SGD ' + Number(n).toLocaleString('en-US', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  });
+  return fmUsd(n, decimals);
 }
 
 /**
