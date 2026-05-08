@@ -7832,10 +7832,18 @@ textarea.inp.mono-area {
 
     // Artifacts — read correct field names
     var wire = l.wire || {};
-    var hasArtifacts = l.nda_url || (l.documents && l.documents.length) || wire.reference;
+    var ndaFileUrl = l.nda_file_url || l.nda_url || null;
+    var hasArtifacts = ndaFileUrl || (l.documents && l.documents.length) || wire.reference;
     if (hasArtifacts) {
       html += '<div class="dr-section"><div class="dr-section-title">Artifacts</div>';
-      if (l.nda_url) html += '<div style="margin-bottom:10px;"><a class="b b--sm" href="' + esc(l.nda_url) + '" target="_blank">View NDA PDF</a></div>';
+      if (ndaFileUrl) {
+        var isDemo = ndaFileUrl.indexOf('example.com') !== -1;
+        if (isDemo) {
+          html += '<div style="margin-bottom:10px;"><span class="b b--sm" style="opacity:0.4;cursor:not-allowed;">View NDA PDF</span> <span style="font-size:10px;color:var(--muted);">(no file — demo lead)</span></div>';
+        } else {
+          html += '<div style="margin-bottom:10px;"><a class="b b--sm" href="' + esc(ndaFileUrl) + '" target="_blank">View NDA PDF</a></div>';
+        }
+      }
       if (l.documents && l.documents.length) html += '<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:8px;">' + l.documents.length + ' document(s) on file</div>';
       if (wire.reference) {
         html += kvRow('Wire ref', wire.reference);
