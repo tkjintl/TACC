@@ -1585,6 +1585,176 @@ body {
 .holding-link:hover { color: var(--gold); }
 
 /* ============================================================
+   PORTFOLIO PAGE HEADER
+   ============================================================ */
+.pf-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 32px 48px 0;
+}
+.pf-eyebrow { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-3); margin-bottom: 4px; }
+.pf-title { font-family: var(--serif); font-size: 28px; font-weight: 600; color: var(--text); letter-spacing: 0.01em; }
+.pf-sub { font-size: 13px; color: var(--text-3); margin-top: 2px; }
+.pf-header-right { text-align: right; }
+.pf-aum-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); margin-bottom: 4px; }
+.pf-aum { font-family: var(--mono); font-size: 24px; font-weight: 500; color: var(--gold-b); }
+.pf-aum-sub { font-family: var(--mono); font-size: 12px; color: var(--text-3); margin-top: 2px; }
+
+/* ============================================================
+   OVERVIEW SUBVIEW
+   ============================================================ */
+.ov-wrap { padding: 32px 48px 80px; max-width: 1200px; }
+
+.ov-hero {
+  background: linear-gradient(135deg, #0f0f0d 0%, #111110 60%, #0d0d0b 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 36px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.ov-hero::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: 280px;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(197,165,114,0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+.ov-hero-left { flex: 1; min-width: 0; }
+.ov-hero-right { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding: 20px 0; }
+.ov-hero-eyebrow { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
+.ov-hero-name { font-family: var(--serif); font-size: 36px; font-weight: 600; color: var(--text); letter-spacing: 0.01em; line-height: 1.1; margin-bottom: 8px; }
+.ov-hero-tier {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 10px; background: var(--gold-bg); border: 1px solid var(--gold-bd);
+  border-radius: 4px; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold);
+  margin-bottom: 20px;
+}
+.ov-hero-aum-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); margin-bottom: 4px; }
+.ov-hero-aum { font-family: var(--mono); font-size: 40px; font-weight: 500; color: var(--gold-b); line-height: 1; letter-spacing: -0.01em; }
+.ov-hero-aum-sub { font-family: var(--mono); font-size: 14px; color: var(--text-3); margin-top: 4px; }
+.ov-hero-meta { display: flex; align-items: center; gap: 16px; margin-top: 16px; font-size: 11px; color: var(--text-3); flex-wrap: wrap; }
+
+.ov-kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.ov-kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 16px 20px; }
+.ov-kpi-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
+.ov-kpi-value { font-family: var(--mono); font-size: 22px; font-weight: 500; color: var(--text); line-height: 1; margin-bottom: 4px; }
+.ov-kpi-sub { font-size: 11px; color: var(--text-3); }
+
+.ov-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.ov-grid-left, .ov-grid-right { display: flex; flex-direction: column; gap: 20px; }
+
+.ov-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 20px 24px; }
+.ov-card-label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-3); margin-bottom: 12px; }
+
+.ov-alloc-inner { display: flex; align-items: center; gap: 28px; }
+.ov-alloc-legend { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.ov-legend-row { display: flex; align-items: center; gap: 10px; }
+.ov-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.ov-legend-name { font-size: 12px; color: var(--text-2); flex: 1; }
+.ov-legend-pct { font-family: var(--mono); font-size: 12px; color: var(--text); font-weight: 500; }
+
+.ov-ltv-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.ov-ltv-pct { font-family: var(--mono); font-size: 24px; color: var(--green-b); font-weight: 500; }
+.ov-ltv-track { height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+.ov-ltv-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--green-b) 0%, var(--green-b) 60%, var(--amber-b) 80%, #c0392b 100%); transition: width 1s var(--ease); }
+.ov-ltv-ticks { position: relative; height: 16px; font-family: var(--mono); letter-spacing: 0.05em; }
+.ov-ltv-ticks span { position: absolute; transform: translateX(-50%); font-size: 9px; color: var(--text-3); }
+.ov-ltv-ticks span:last-child { transform: translateX(-100%); }
+
+.ov-comp-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.ov-comp-row:last-child { border-bottom: none; }
+.ov-comp-label { font-size: 12px; color: var(--text-2); flex: 1; }
+.ov-comp-bar-wrap { width: 100px; height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; }
+.ov-comp-bar { height: 100%; border-radius: 2px; }
+.ov-comp-value { font-family: var(--mono); font-size: 12px; color: var(--text); width: 80px; text-align: right; }
+
+.ov-activity-item { display: flex; align-items: flex-start; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.ov-activity-item:last-child { border-bottom: none; }
+.ov-activity-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-3); flex-shrink: 0; margin-top: 6px; }
+.ov-activity-dot.gold { background: var(--gold); }
+.ov-activity-dot.green { background: var(--green-b); }
+.ov-activity-dot.blue { background: var(--blue-b); }
+.ov-activity-text { font-size: 12px; color: var(--text-2); flex: 1; line-height: 1.4; }
+.ov-activity-time { font-family: var(--mono); font-size: 10px; color: var(--text-3); white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+
+/* ============================================================
+   INVESTMENTS SUBVIEW
+   ============================================================ */
+.inv-wrap { padding: 32px 48px 80px; max-width: 1200px; }
+
+.inv-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+.inv-summary-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 16px 20px; }
+.inv-summary-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); margin-bottom: 6px; }
+.inv-summary-value { font-family: var(--mono); font-size: 22px; color: var(--text); font-weight: 500; }
+
+.inv-deal-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 24px 28px; display: grid; grid-template-columns: 1fr auto; gap: 32px;
+  align-items: start; margin-bottom: 12px; transition: border-color 0.15s;
+}
+.inv-deal-card:hover { border-color: var(--border-m); }
+.inv-deal-chips { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+.inv-deal-chip {
+  display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px;
+  font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.inv-deal-chip.credit { background: var(--blue-bg); border: 1px solid var(--blue-bd); color: var(--blue-b); }
+.inv-deal-chip.equity { background: var(--gold-bg); border: 1px solid var(--gold-bd); color: var(--gold); }
+.inv-deal-chip.re     { background: var(--green-bg); border: 1px solid var(--green-bd); color: var(--green-b); }
+.inv-deal-chip.geo    { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text-3); }
+.inv-deal-name { font-family: var(--serif); font-size: 20px; font-weight: 600; color: var(--text); line-height: 1.2; margin-bottom: 4px; }
+.inv-deal-thesis { font-size: 12px; color: var(--text-3); line-height: 1.5; margin-bottom: 16px; max-width: 460px; }
+.inv-deal-stats { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.inv-deal-stat-label { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); margin-bottom: 2px; }
+.inv-deal-stat-value { font-family: var(--mono); font-size: 12px; color: var(--text-2); }
+.inv-deal-stat-value.irr { color: var(--gold); }
+
+.inv-deal-right { min-width: 180px; text-align: right; }
+.inv-deal-pos-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); margin-bottom: 4px; }
+.inv-deal-pos-value { font-family: var(--mono); font-size: 28px; font-weight: 500; color: var(--gold-b); line-height: 1; margin-bottom: 8px; }
+.inv-deal-ltv-wrap { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; margin-bottom: 8px; }
+.inv-deal-ltv-bar { height: 100%; border-radius: 2px; background: var(--gold); }
+.inv-deal-ltv-pct { font-family: var(--mono); font-size: 10px; color: var(--text-3); text-align: right; margin-bottom: 12px; }
+.inv-stage-row { display: flex; align-items: center; gap: 5px; justify-content: flex-end; margin-bottom: 12px; }
+.inv-stage-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.inv-stage-dot.dd   { background: var(--amber-b); }
+.inv-stage-dot.terms{ background: var(--gold); }
+.inv-stage-dot.live { background: var(--green-b); }
+.inv-stage-text { font-size: 11px; color: var(--text-3); }
+.inv-deal-cta {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
+  background: var(--gold-bg); border: 1px solid var(--gold-bd); border-radius: 6px;
+  font-size: 11px; color: var(--gold); cursor: pointer; transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap; font-family: var(--sans);
+}
+.inv-deal-cta:hover { background: rgba(197,165,114,0.12); border-color: rgba(197,165,114,0.4); }
+
+.inv-divider { display: flex; align-items: center; gap: 16px; margin: 32px 0 20px; }
+.inv-divider-line { flex: 1; height: 1px; background: var(--border); }
+.inv-divider-label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-3); white-space: nowrap; }
+
+.inv-hist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.inv-hist-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 18px 20px; display: flex; align-items: center; gap: 16px;
+}
+.inv-hist-left { flex: 1; min-width: 0; }
+.inv-hist-name { font-family: var(--serif); font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.inv-hist-meta { font-size: 11px; color: var(--text-3); margin-bottom: 8px; }
+.inv-hist-nums { display: flex; gap: 16px; }
+.inv-hist-num-label { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); }
+.inv-hist-num-value { font-family: var(--mono); font-size: 12px; color: var(--text-2); }
+.inv-hist-right { text-align: right; flex-shrink: 0; }
+
+/* ============================================================
    DOCUMENTS TAB
    ============================================================ */
 .docs-subtab-bar {
@@ -2616,9 +2786,19 @@ body {
   .vault-docs-section { padding: 0 20px 48px; }
   .docs-subview#docs-subview-vaultdocs { padding-left: 20px; padding-right: 20px; }
 
-  /* Holdings */
-  .holdings-section { padding: 32px 20px; }
-  .holdings-grid { grid-template-columns: 1fr; }
+  /* Overview + Investments */
+  .pf-header { flex-direction: column; gap: 16px; padding: 24px 20px 0; }
+  .pf-header-right { text-align: left; }
+  .ov-wrap, .inv-wrap { padding: 20px 20px 80px; }
+  .ov-hero { flex-direction: column; padding: 24px 20px; }
+  .ov-hero-right { display: none; }
+  .ov-kpi-row { grid-template-columns: 1fr 1fr; }
+  .ov-grid { grid-template-columns: 1fr; }
+  .ov-alloc-inner { flex-direction: column; }
+  .inv-summary { grid-template-columns: 1fr; }
+  .inv-deal-card { grid-template-columns: 1fr; }
+  .inv-deal-right { min-width: unset; text-align: left; }
+  .inv-hist-grid { grid-template-columns: 1fr; }
 
   /* Documents */
   .docs-view { padding: 40px 20px 56px; }
@@ -2896,14 +3076,166 @@ body {
      ============================================================ -->
 <section class="view" id="view-portfolio">
 
-  <!-- Sub-tabs -->
-  <div class="subtab-bar">
-    <button class="subtab active" data-subtab="gold"     onclick="showSubTab('gold')">Gold</button>
-    <button class="subtab"        data-subtab="holdings" onclick="showSubTab('holdings')">Holdings</button>
+  <!-- Portfolio Page Header -->
+  <div class="pf-header">
+    <div class="pf-header-left">
+      <div class="pf-eyebrow" id="pfEyebrow">Member #—</div>
+      <div class="pf-title">Portfolio</div>
+      <div class="pf-sub" id="pfSub">—</div>
+    </div>
+    <div class="pf-header-right">
+      <div class="pf-aum-label">Total AUM</div>
+      <div class="pf-aum" id="pfTotalAum">—</div>
+      <div class="pf-aum-sub" id="pfTotalAumSub">—</div>
+    </div>
   </div>
 
+  <!-- Sub-tabs -->
+  <div class="subtab-bar">
+    <button class="subtab active"  data-subtab="overview"    onclick="showSubTab('overview')">Overview</button>
+    <button class="subtab"         data-subtab="gold"        onclick="showSubTab('gold')">Gold</button>
+    <button class="subtab"         data-subtab="investments" onclick="showSubTab('investments')">Investments</button>
+  </div>
+
+  <!-- OVERVIEW SUB-VIEW -->
+  <div class="subview active" id="subview-overview">
+    <div class="ov-wrap">
+
+      <!-- Hero -->
+      <div class="ov-hero">
+        <div class="ov-hero-left">
+          <div class="ov-hero-eyebrow">Wealth at a Glance</div>
+          <div class="ov-hero-name" id="ovHeroName">—</div>
+          <div class="ov-hero-tier" id="ovHeroTier">Founding Member</div>
+          <div class="ov-hero-aum-label">Total Assets Under Management</div>
+          <div class="ov-hero-aum" id="ovHeroAum">—</div>
+          <div class="ov-hero-aum-sub" id="ovHeroAumSub">—</div>
+          <div class="ov-hero-meta" id="ovHeroMeta"></div>
+        </div>
+        <div class="ov-hero-right">
+          <div class="bar-wrapper" style="transform-style:preserve-3d;transform:perspective(800px) rotateX(20deg) rotateY(var(--ry));animation:barSpin 6s ease-in-out infinite alternate,breatheGlow 4s ease-in-out infinite">
+            <div class="bar-3d">
+              <div class="bar-top"></div>
+              <div class="bar-front">
+                <div class="bar-stamp-line1">London Good Delivery</div>
+                <div class="bar-stamp-line2">999.9 Fine Gold</div>
+              </div>
+              <div class="bar-right"></div>
+              <div class="bar-bottom"></div>
+              <div class="bar-left"></div>
+            </div>
+          </div>
+          <div class="bar-reflection"></div>
+        </div>
+      </div>
+
+      <!-- KPI Row -->
+      <div class="ov-kpi-row">
+        <div class="ov-kpi-card">
+          <div class="ov-kpi-label">Gold Value</div>
+          <div class="ov-kpi-value gold-val" id="ovKpiGold">—</div>
+          <div class="ov-kpi-sub" id="ovKpiGoldSub">—</div>
+        </div>
+        <div class="ov-kpi-card">
+          <div class="ov-kpi-label">LTV Deployed</div>
+          <div class="ov-kpi-value" id="ovKpiLtv">—</div>
+          <div class="ov-kpi-sub" id="ovKpiLtvSub">—</div>
+        </div>
+        <div class="ov-kpi-card">
+          <div class="ov-kpi-label">Unrealised Gain</div>
+          <div class="ov-kpi-value" id="ovKpiGain">—</div>
+          <div class="ov-kpi-sub" id="ovKpiGainSub">vs. cost basis</div>
+        </div>
+        <div class="ov-kpi-card">
+          <div class="ov-kpi-label">Active Positions</div>
+          <div class="ov-kpi-value" id="ovKpiPos">0</div>
+          <div class="ov-kpi-sub" id="ovKpiPosSub">—</div>
+        </div>
+      </div>
+
+      <!-- Overview Grid -->
+      <div class="ov-grid">
+        <div class="ov-grid-left">
+
+          <!-- Allocation Ring -->
+          <div class="ov-card">
+            <div class="ov-card-label">Wealth Allocation</div>
+            <div class="ov-alloc-inner">
+              <div style="position:relative;width:180px;height:180px;flex-shrink:0">
+                <svg width="180" height="180" viewBox="0 0 180 180">
+                  <defs>
+                    <linearGradient id="ovGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#C5A572"/><stop offset="50%" stop-color="#E3C187"/><stop offset="100%" stop-color="#A8813A"/>
+                    </linearGradient>
+                  </defs>
+                  <g transform="rotate(-90 90 90)">
+                    <circle cx="90" cy="90" r="72" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="14"/>
+                    <circle cx="90" cy="90" r="72" fill="none" stroke="url(#ovGoldGrad)" stroke-width="12" stroke-linecap="round" stroke-dasharray="452 0" id="ovRingGold"/>
+                    <circle cx="90" cy="90" r="72" fill="none" stroke="#4A7BA7" stroke-width="12" opacity="0.6" stroke-linecap="round" stroke-dasharray="0 452" id="ovRingInv" stroke-dashoffset="0"/>
+                    <circle cx="90" cy="90" r="72" fill="none" stroke="#7A7265" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 452" id="ovRingCash" stroke-dashoffset="0"/>
+                  </g>
+                </svg>
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+                  <span style="font-family:var(--mono);font-size:22px;color:var(--gold);font-weight:500" id="ovRingPct">—%</span>
+                  <span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-3)">Gold</span>
+                </div>
+              </div>
+              <div class="ov-alloc-legend">
+                <div class="ov-legend-row"><div class="ov-legend-dot" style="background:var(--gold)"></div><span class="ov-legend-name">Physical Gold</span><span class="ov-legend-pct" id="ovLegGold">—%</span></div>
+                <div class="ov-legend-row"><div class="ov-legend-dot" style="background:#4A7BA7"></div><span class="ov-legend-name">Active Allocations</span><span class="ov-legend-pct" id="ovLegInv">—%</span></div>
+                <div class="ov-legend-row"><div class="ov-legend-dot" style="background:#7A7265"></div><span class="ov-legend-name">Cash Reserve</span><span class="ov-legend-pct" id="ovLegCash">—%</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- LTV Bar -->
+          <div class="ov-card">
+            <div class="ov-card-label" style="margin-bottom:4px">LTV Utilisation</div>
+            <div class="ov-ltv-header">
+              <div style="font-size:12px;color:var(--text-3)" id="ovLtvDetail">—</div>
+              <div class="ov-ltv-pct" id="ovLtvPct">—%</div>
+            </div>
+            <div class="ov-ltv-track"><div class="ov-ltv-fill" id="ovLtvBar" style="width:0%"></div></div>
+            <div class="ov-ltv-ticks">
+              <span style="left:0">0%</span><span style="left:35%">35%</span><span style="left:55%">55%</span><span style="left:100%">100%</span>
+            </div>
+            <div style="display:flex;gap:16px;margin-top:12px">
+              <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text-3)"><div style="width:6px;height:6px;border-radius:50%;background:var(--green-b)"></div> Safe &lt; 35%</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text-3)"><div style="width:6px;height:6px;border-radius:50%;background:var(--amber-b)"></div> Moderate 35–55%</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text-3)"><div style="width:6px;height:6px;border-radius:50%;background:#c0392b"></div> High &gt; 55%</div>
+            </div>
+          </div>
+
+        </div>
+        <div class="ov-grid-right">
+
+          <!-- Composition -->
+          <div class="ov-card">
+            <div class="ov-card-label">Wealth Composition</div>
+            <div id="ovCompRows"></div>
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:11px;color:var(--text-3)">Total AUM</div>
+              <div style="font-family:var(--mono);font-size:14px;color:var(--gold-b);font-weight:500" id="ovCompTotal">—</div>
+            </div>
+          </div>
+
+          <!-- Activity Feed -->
+          <div class="ov-card">
+            <div class="ov-card-label">Recent Activity</div>
+            <div id="ovActivityFeed"></div>
+            <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+              <a href="#" onclick="showSubTab('gold');return false;" style="font-size:11px;color:var(--text-3);text-decoration:none;font-family:var(--mono)">View gold details →</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /subview-overview -->
+
   <!-- GOLD SUB-VIEW -->
-  <div class="subview active" id="subview-gold">
+  <div class="subview" id="subview-gold">
 
     <!-- Gold Hero -->
     <div class="gold-hero">
@@ -3091,33 +3423,47 @@ body {
 
   </div><!-- /subview-gold -->
 
-  <!-- HOLDINGS SUB-VIEW -->
-  <div class="subview" id="subview-holdings">
-    <div class="holdings-section">
-      <div class="section-label" style="padding:0;margin-bottom:24px">Private Positions</div>
-      <div class="holdings-grid" id="holdingsGrid">
-        <!-- populated by loadPortfolio() -->
-        <div class="deal-skel-card">
-          <div class="skel" style="height:22px;width:55%"></div>
-          <div class="skel" style="height:14px;width:70%"></div>
-          <div class="skel" style="height:28px;width:45%"></div>
-          <div class="skel" style="height:32px;width:100%"></div>
+  <!-- INVESTMENTS SUB-VIEW -->
+  <div class="subview" id="subview-investments">
+    <div class="inv-wrap">
+
+      <!-- Summary Bar -->
+      <div class="inv-summary">
+        <div class="inv-summary-item">
+          <div class="inv-summary-label">LTV Deployed</div>
+          <div class="inv-summary-value" id="invLtvDeployed">—</div>
         </div>
-        <div class="deal-skel-card">
-          <div class="skel" style="height:22px;width:55%"></div>
-          <div class="skel" style="height:14px;width:70%"></div>
-          <div class="skel" style="height:28px;width:45%"></div>
-          <div class="skel" style="height:32px;width:100%"></div>
+        <div class="inv-summary-item">
+          <div class="inv-summary-label">Active Positions</div>
+          <div class="inv-summary-value" id="invActivePos">0</div>
         </div>
-        <div class="deal-skel-card">
-          <div class="skel" style="height:22px;width:55%"></div>
-          <div class="skel" style="height:14px;width:70%"></div>
-          <div class="skel" style="height:28px;width:45%"></div>
-          <div class="skel" style="height:32px;width:100%"></div>
+        <div class="inv-summary-item">
+          <div class="inv-summary-label">Avg Target IRR</div>
+          <div class="inv-summary-value gold-val" id="invAvgIrr">—</div>
         </div>
       </div>
+
+      <!-- LTV Allocation Bar -->
+      <div class="ov-card" style="margin-bottom:24px">
+        <div class="ov-card-label">LTV Allocation Breakdown</div>
+        <div class="inv-ltv-bar" id="invLtvAllocBar" style="display:flex;height:8px;border-radius:4px;overflow:hidden;gap:2px;margin:12px 0"></div>
+        <div class="inv-ltv-legend" id="invLtvAllocLegend" style="display:flex;gap:20px;flex-wrap:wrap"></div>
+      </div>
+
+      <div class="ov-card-label" style="padding:0 0 12px">Active Positions</div>
+      <div id="invPositionsGrid"></div>
+
+      <!-- Historical Divider -->
+      <div class="inv-divider">
+        <div class="inv-divider-line"></div>
+        <div class="inv-divider-label">Historical Positions</div>
+        <div class="inv-divider-line"></div>
+      </div>
+
+      <div class="inv-hist-grid" id="invHistGrid"></div>
+
     </div>
-  </div><!-- /subview-holdings -->
+  </div><!-- /subview-investments -->
 
 </section>
 
@@ -3583,8 +3929,8 @@ function showSubTab(id) {
   if (sv) sv.classList.add('active');
 
   if (id === 'gold') setTimeout(triggerPortfolioAnimations, 100);
-  if (id === 'holdings') {
-    var cont = document.getElementById('subview-holdings');
+  if (id === 'overview' || id === 'investments') {
+    var cont = document.getElementById('subview-' + id);
     if (cont) triggerFadeUps(cont);
   }
 }
@@ -4117,8 +4463,9 @@ function loadPortfolio() {
   // Acquisition history
   renderAcqTable(member);
 
-  // Holdings
-  renderHoldings(member);
+  // Overview + Investments
+  renderOverview(member);
+  renderInvestments(member);
 
   // Trigger animations
   setTimeout(triggerPortfolioAnimations, 100);
@@ -4177,41 +4524,265 @@ function renderAcqTable(member) {
   }
 }
 
-function renderHoldings(member) {
-  var grid = document.getElementById('holdingsGrid');
-  if (!grid) return;
+function renderOverview(member) {
+  var goldKg  = member.gold_kg || 0;
   var positions = member.positions || [];
+  var spot    = SPOT || {};
+  var priceKg = spot.price_usd_per_kg || (spot.price_usd_per_oz ? spot.price_usd_per_oz * 32.1507 : 0);
+  var goldUsd = goldKg * priceKg;
+  var ltvData = member.ltv || {};
+  var ltvDeployed = parseFloat(ltvData.credit_outstanding || 0);
+  var ltvFacility = parseFloat(ltvData.approved_amount || 0);
+  var ltvPct = ltvFacility > 0 ? (ltvDeployed / ltvFacility * 100) : 0;
+  var costBasis = member.cost_basis_usd || 0;
+  var gainPct = costBasis > 0 ? ((goldUsd - costBasis) / costBasis * 100) : null;
 
-  if (!positions.length) {
-    grid.innerHTML = '<div class="state-box"><div class="state-box-title">No private positions yet.</div><div class="state-box-sub">Private equity positions will appear here once allocated.</div></div>';
+  // Portfolio header
+  var eyebrow = document.getElementById('pfEyebrow');
+  if (eyebrow && member.member_number) eyebrow.textContent = 'Member #' + member.member_number;
+  var pfSub = document.getElementById('pfSub');
+  if (pfSub) pfSub.textContent = (member.full_name || '—') + (member.tier ? ' · ' + member.tier : '');
+  var pfAum = document.getElementById('pfTotalAum');
+  if (pfAum && member.current_value_sgd) pfAum.textContent = 'SGD ' + Math.round(member.current_value_sgd).toLocaleString();
+  var pfAumSub = document.getElementById('pfTotalAumSub');
+  if (pfAumSub && member.current_value_krw) pfAumSub.textContent = '≈ ' + Math.round(member.current_value_krw / 1000000).toLocaleString() + 'M KRW';
+
+  // Hero
+  var nameEl = document.getElementById('ovHeroName');
+  if (nameEl) nameEl.textContent = member.full_name || 'Member';
+  var tierEl = document.getElementById('ovHeroTier');
+  if (tierEl) tierEl.textContent = member.tier || 'Founding Member';
+  var aumEl = document.getElementById('ovHeroAum');
+  if (aumEl && member.current_value_sgd) animateCounter(aumEl, 0, parseFloat(member.current_value_sgd), 1400, function(v) { return 'SGD ' + Math.round(v).toLocaleString(); });
+  var aumSubEl = document.getElementById('ovHeroAumSub');
+  if (aumSubEl && member.current_value_krw) aumSubEl.textContent = '≈ ' + Math.round(parseFloat(member.current_value_krw) / 1000000).toLocaleString() + 'M KRW';
+  var metaEl = document.getElementById('ovHeroMeta');
+  if (metaEl) {
+    var parts = [];
+    if (member.active_since) parts.push('Member since ' + member.active_since);
+    if (member.member_number) parts.push('Member #' + member.member_number);
+    if (member.vault_location) parts.push(member.vault_location);
+    metaEl.innerHTML = parts.map(function(p) { return '<span>' + esc(p) + '</span>'; }).join('');
+  }
+
+  // KPIs
+  var kpiGold = document.getElementById('ovKpiGold');
+  if (kpiGold && member.current_value_sgd) {
+    animateCounter(kpiGold, 0, parseFloat(member.current_value_sgd), 1200, function(v) { return 'SGD ' + Math.round(v).toLocaleString(); });
+    var kpiGoldSub = document.getElementById('ovKpiGoldSub');
+    if (kpiGoldSub) kpiGoldSub.textContent = goldKg.toFixed(3) + ' kg · LBMA Certified';
+  }
+  var kpiLtv = document.getElementById('ovKpiLtv');
+  if (kpiLtv) {
+    if (ltvDeployed > 0) {
+      animateCounter(kpiLtv, 0, ltvDeployed, 1200, function(v) { return 'SGD ' + Math.round(v).toLocaleString(); });
+      var kpiLtvSub = document.getElementById('ovKpiLtvSub');
+      if (kpiLtvSub) kpiLtvSub.textContent = positions.length + ' active position' + (positions.length !== 1 ? 's' : '');
+    } else {
+      kpiLtv.textContent = '—';
+      var kpiLtvSub2 = document.getElementById('ovKpiLtvSub');
+      if (kpiLtvSub2) kpiLtvSub2.textContent = 'No active facility';
+    }
+  }
+  var kpiGain = document.getElementById('ovKpiGain');
+  if (kpiGain) {
+    if (gainPct !== null) {
+      kpiGain.textContent = (gainPct >= 0 ? '+' : '') + gainPct.toFixed(2) + '%';
+      kpiGain.className = 'ov-kpi-value ' + (gainPct >= 0 ? 'green-val' : 'red-val');
+    } else { kpiGain.textContent = '—'; }
+  }
+  var kpiPos = document.getElementById('ovKpiPos');
+  if (kpiPos) kpiPos.textContent = positions.length || '0';
+  var kpiPosSub = document.getElementById('ovKpiPosSub');
+  if (kpiPosSub) kpiPosSub.textContent = positions.length ? 'Active deal positions' : 'No positions yet';
+
+  // Allocation ring
+  var circ = 2 * Math.PI * 72;
+  var invPct  = ltvFacility > 0 && member.current_value_sgd ? Math.round(ltvDeployed / parseFloat(member.current_value_sgd) * 100) : 0;
+  var goldPct = Math.max(0, 100 - invPct);
+  var cashPct = 0;
+  var ovRingGold = document.getElementById('ovRingGold');
+  var ovRingInv  = document.getElementById('ovRingInv');
+  if (ovRingGold) ovRingGold.setAttribute('stroke-dasharray', (circ * goldPct / 100).toFixed(1) + ' ' + circ.toFixed(1));
+  if (ovRingInv) {
+    ovRingInv.setAttribute('stroke-dasharray', (circ * invPct / 100).toFixed(1) + ' ' + circ.toFixed(1));
+    ovRingInv.setAttribute('stroke-dashoffset', String(-(circ * goldPct / 100)));
+  }
+  var ovRingPct = document.getElementById('ovRingPct');
+  if (ovRingPct) ovRingPct.textContent = goldPct + '%';
+  var ovLegGold = document.getElementById('ovLegGold');
+  if (ovLegGold) ovLegGold.textContent = goldPct + '%';
+  var ovLegInv = document.getElementById('ovLegInv');
+  if (ovLegInv) ovLegInv.textContent = invPct + '%';
+  var ovLegCash = document.getElementById('ovLegCash');
+  if (ovLegCash) ovLegCash.textContent = cashPct + '%';
+
+  // LTV bar
+  var ovLtvPct = document.getElementById('ovLtvPct');
+  if (ovLtvPct) ovLtvPct.textContent = ltvPct.toFixed(0) + '%';
+  var ovLtvBar = document.getElementById('ovLtvBar');
+  if (ovLtvBar) ovLtvBar.style.width = Math.min(ltvPct, 100) + '%';
+  var ovLtvDetail = document.getElementById('ovLtvDetail');
+  if (ovLtvDetail && ltvFacility) {
+    ovLtvDetail.textContent = 'SGD ' + Math.round(ltvDeployed).toLocaleString() + ' deployed of SGD ' + Math.round(ltvFacility).toLocaleString() + ' facility';
+  }
+
+  // Composition
+  var compEl = document.getElementById('ovCompRows');
+  if (compEl && member.current_value_sgd) {
+    var totalVal = parseFloat(member.current_value_sgd);
+    var rows = [
+      { label: 'Physical Gold (' + goldKg.toFixed(3) + ' kg)', value: totalVal, width: '85%', color: 'var(--gold)' }
+    ];
+    if (ltvDeployed > 0) rows.push({ label: 'LTV Deployed', value: ltvDeployed, width: (ltvDeployed / totalVal * 85).toFixed(1) + '%', color: '#4A7BA7' });
+    compEl.innerHTML = rows.map(function(r) {
+      return '<div class="ov-comp-row">' +
+        '<div class="ov-comp-label">' + esc(r.label) + '</div>' +
+        '<div class="ov-comp-bar-wrap"><div class="ov-comp-bar" style="width:' + r.width + ';background:' + r.color + '"></div></div>' +
+        '<div class="ov-comp-value">SGD ' + Math.round(r.value).toLocaleString() + '</div>' +
+      '</div>';
+    }).join('');
+  }
+  var compTotal = document.getElementById('ovCompTotal');
+  if (compTotal && member.current_value_sgd) compTotal.textContent = 'SGD ' + Math.round(parseFloat(member.current_value_sgd)).toLocaleString();
+
+  // Activity feed
+  var actEl = document.getElementById('ovActivityFeed');
+  if (actEl) {
+    var acts = [];
+    (member.audit || []).slice(-5).reverse().forEach(function(a) {
+      acts.push({ color: '', text: esc(a.action.replace(/_/g,' ')), time: new Date(a.at).toLocaleDateString('en-SG', { day:'2-digit', month:'short' }) });
+    });
+    if (!acts.length) {
+      var now = new Date();
+      var ts = now.toLocaleDateString('en-SG', { day:'2-digit', month:'short' });
+      acts.push({ color: 'gold', text: 'Portfolio loaded successfully', time: ts });
+      if (positions.length) acts.push({ color: 'blue', text: positions.length + ' active position' + (positions.length !== 1 ? 's' : '') + ' via deal feed', time: ts });
+      if (ltvDeployed) acts.push({ color: 'green', text: 'LTV facility active · SGD ' + Math.round(ltvDeployed).toLocaleString() + ' deployed', time: ts });
+    }
+    actEl.innerHTML = acts.slice(0,5).map(function(a) {
+      return '<div class="ov-activity-item">' +
+        '<div class="ov-activity-dot ' + (a.color || '') + '"></div>' +
+        '<div class="ov-activity-text">' + a.text + '</div>' +
+        '<div class="ov-activity-time">' + a.time + '</div>' +
+      '</div>';
+    }).join('');
+  }
+}
+
+function renderInvestments(member) {
+  var positions = member.positions || [];
+  var ltvData   = member.ltv || {};
+  var ltvDeployed  = parseFloat(ltvData.credit_outstanding || 0);
+  var ltvFacility  = parseFloat(ltvData.approved_amount || 0);
+  var n = positions.length;
+
+  // Summary
+  var depEl = document.getElementById('invLtvDeployed');
+  if (depEl) depEl.textContent = ltvDeployed ? 'SGD ' + Math.round(ltvDeployed).toLocaleString() : '—';
+  var posEl = document.getElementById('invActivePos');
+  if (posEl) posEl.textContent = n;
+  var irrEl = document.getElementById('invAvgIrr');
+  if (irrEl) {
+    var irrs = positions.filter(function(p) { return p.target_irr || p.irr_target; }).map(function(p) { return parseFloat(p.target_irr || p.irr_target); });
+    irrEl.textContent = irrs.length ? (irrs.reduce(function(a,b){return a+b;},0)/irrs.length).toFixed(1) + '%' : '—';
+  }
+
+  // LTV allocation bar
+  var allocBar = document.getElementById('invLtvAllocBar');
+  var allocLegend = document.getElementById('invLtvAllocLegend');
+  var COLORS = ['#4A7BA7', '#C5A572', '#3D9460', '#D4922A', '#7A7265'];
+  if (allocBar && n > 0) {
+    var perPos = 100 / n;
+    allocBar.innerHTML = positions.map(function(_, i) {
+      return '<div style="flex:' + perPos.toFixed(2) + ';background:' + (COLORS[i] || COLORS[0]) + ';opacity:0.7;border-radius:2px"></div>';
+    }).join('');
+    if (allocLegend) {
+      allocLegend.innerHTML = positions.map(function(p, i) {
+        var name = esc(p.name || p.deal_name || p.id || '—');
+        var posAmt = ltvDeployed / n;
+        return '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-3)">' +
+          '<div style="width:6px;height:6px;border-radius:50%;background:' + (COLORS[i] || COLORS[0]) + ';flex-shrink:0"></div>' +
+          name + ' · SGD ' + Math.round(posAmt).toLocaleString() + ' · ' + perPos.toFixed(1) + '%' +
+        '</div>';
+      }).join('');
+    }
+  } else if (allocBar) {
+    allocBar.innerHTML = '<div style="flex:1;background:rgba(255,255,255,0.06);border-radius:4px"></div>';
+  }
+
+  // Position cards
+  var grid = document.getElementById('invPositionsGrid');
+  if (!grid) return;
+
+  if (!n) {
+    grid.innerHTML = '<div class="state-box"><div class="state-box-title">No Active Positions</div><div class="state-box-sub">Deal positions will appear here once your LTV facility is activated.</div></div>';
     return;
   }
 
-  var statusClass = { active: 'active', exiting: 'exiting', closing: 'closing' };
+  var CHIP_MAP = { credit: 'credit', equity: 'equity', re: 're', real_estate: 're', infrastructure: 'equity' };
+  var CHIP_LABEL = { credit: 'Private Credit', equity: 'Private Equity', re: 'Real Estate', real_estate: 'Real Estate', infrastructure: 'Infrastructure' };
+  var STAGE_DOT  = { live: 'live', dd: 'dd', terms: 'terms', review: 'dd', close: 'live' };
+  var STAGE_TEXT = { live: 'Live', dd: 'Due Diligence', terms: 'Terms Agreed', review: 'Under Review', close: 'Closing' };
 
-  grid.innerHTML = positions.map(function(pos) {
-    var sc      = statusClass[pos.status || 'active'] || 'active';
-    var posName = pos.name || pos.code || pos.deal_name || '—';
-    var sector  = pos.sector || pos.asset_class || '—';
-    var irr     = pos.target_irr || pos.irr_target || pos.irr || null;
-    var entryDt = pos.entry_date || pos.invested_at || pos.entry || null;
-    var entryFmt = entryDt ? (function() {
-      try { return new Date(entryDt).toLocaleDateString('en-SG', { month: 'short', year: 'numeric' }); }
-      catch(e) { return entryDt; }
-    })() : '—';
-    return '<div class="holding-card fade-up">' +
-      '<div class="holding-name">' + esc(posName) + '</div>' +
-      '<div class="holding-sector-chip">' + esc(sector) + '</div>' +
-      '<div class="holding-amount">' + fmU(pos.marked_usd || pos.amount_usd || pos.invested_usd) + '</div>' +
-      '<div class="holding-stats">' +
-        '<div class="holding-stat">Entry: <span>' + entryFmt + '</span></div>' +
-        (irr ? '<div class="holding-stat">Target IRR: <span>' + esc(irr) + '</span></div>' : '') +
+  grid.innerHTML = positions.map(function(p, i) {
+    var typeKey  = (p.type || p.asset_class || 'credit').toLowerCase();
+    var chipCls  = CHIP_MAP[typeKey] || 'credit';
+    var chipLbl  = CHIP_LABEL[typeKey] || esc(p.type || 'Deal');
+    var stageKey = (p.stage || 'review').toLowerCase();
+    var posAmt   = ltvDeployed / n;
+    var allocPct = (100 / n).toFixed(1);
+    var color    = COLORS[i] || COLORS[0];
+    return '<div class="inv-deal-card" style="border-left:2px solid ' + color + '">' +
+      '<div>' +
+        '<div class="inv-deal-chips">' +
+          '<span class="inv-deal-chip ' + chipCls + '">' + chipLbl + '</span>' +
+          (p.geography ? '<span class="inv-deal-chip geo">' + esc(p.geography) + '</span>' : '') +
+        '</div>' +
+        '<div class="inv-deal-name">' + esc(p.name || p.deal_name || '—') + '</div>' +
+        (p.thesis || p.description ? '<div class="inv-deal-thesis">' + esc(p.thesis || p.description) + '</div>' : '') +
+        '<div class="inv-deal-stats">' +
+          (p.target_irr ? '<div><div class="inv-deal-stat-label">Target IRR</div><div class="inv-deal-stat-value irr">' + esc(p.target_irr) + '%</div></div>' : '') +
+          (p.term_months ? '<div><div class="inv-deal-stat-label">Term</div><div class="inv-deal-stat-value">' + p.term_months + ' mo</div></div>' : '') +
+          '<div><div class="inv-deal-stat-label">Stage</div><div class="inv-deal-stat-value">' + esc(STAGE_TEXT[stageKey] || stageKey) + '</div></div>' +
+        '</div>' +
       '</div>' +
-      '<div class="holding-status ' + sc + '">' + sc.charAt(0).toUpperCase() + sc.slice(1) + '</div>' +
-      (pos.thesis || pos.description ? '<div class="holding-thesis">' + esc(pos.thesis || pos.description) + '</div>' : '') +
-      '<button class="holding-link" onclick="">View Details →</button>' +
+      '<div class="inv-deal-right">' +
+        '<div class="inv-deal-pos-label">Your Position</div>' +
+        '<div class="inv-deal-pos-value">SGD ' + Math.round(posAmt).toLocaleString() + '</div>' +
+        '<div class="inv-deal-ltv-wrap"><div class="inv-deal-ltv-bar" style="width:' + allocPct + '%"></div></div>' +
+        '<div class="inv-deal-ltv-pct">' + allocPct + '% of LTV</div>' +
+        '<div class="inv-stage-row"><div class="inv-stage-dot ' + (STAGE_DOT[stageKey]||'') + '"></div><span class="inv-stage-text">' + esc(STAGE_TEXT[stageKey] || stageKey) + '</span></div>' +
+        '<button class="inv-deal-cta">Speak to your advisor →</button>' +
+      '</div>' +
     '</div>';
   }).join('');
+
+  // Historical positions (exited)
+  var histGrid = document.getElementById('invHistGrid');
+  var exited = (member.historical_positions || []).concat(
+    positions.filter(function(p) { return p.status === 'exited' || p.status === 'realized'; })
+  );
+  if (histGrid) {
+    if (!exited.length) {
+      histGrid.innerHTML = '<div class="state-box" style="grid-column:1/-1"><div class="state-box-sub">No historical positions on record.</div></div>';
+    } else {
+      histGrid.innerHTML = exited.map(function(p) {
+        return '<div class="inv-hist-card">' +
+          '<div class="inv-hist-left">' +
+            '<div class="inv-hist-name">' + esc(p.name || p.deal_name || '—') + '</div>' +
+            '<div class="inv-hist-meta">' + esc([p.type, p.geography, p.entry_date ? 'Entered ' + p.entry_date : ''].filter(Boolean).join(' · ')) + '</div>' +
+            '<div class="inv-hist-nums">' +
+              (p.invested_usd ? '<div><div class="inv-hist-num-label">Invested</div><div class="inv-hist-num-value">' + fmU(p.invested_usd) + '</div></div>' : '') +
+              (p.returned_usd ? '<div><div class="inv-hist-num-label">Returned</div><div class="inv-hist-num-value green-val">' + fmU(p.returned_usd) + '</div></div>' : '') +
+              (p.irr_achieved ? '<div><div class="inv-hist-num-label">IRR Achieved</div><div class="inv-hist-num-value gold-val">' + esc(p.irr_achieved) + '%</div></div>' : '') +
+            '</div>' +
+          '</div>' +
+          '<div class="inv-hist-right"><span class="settled-chip">Exited</span></div>' +
+        '</div>';
+      }).join('');
+    }
+  }
 }
 
 // ============================================================
