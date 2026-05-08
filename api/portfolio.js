@@ -173,21 +173,24 @@ async function buildPortfolioResponse(res, lead) {
       };
     }
 
-    // LTV calculation if applicable
+    // LTV section — always shown for funded members with a gold position.
+    // approved_pct: admin sets this at wire-issue (lead.ltv_approved_pct); structural minimum is 50%.
     let ltvSection = null;
-    if (wire.amount_usd && goldSection) {
-      const creditOutstanding = lead.credit_outstanding_usd || 0;
-      if (creditOutstanding > 0) {
-        const ltv = (creditOutstanding / goldSection.value_usd) * 100;
-        ltvSection = {
-          ltv_pct:            Math.round(ltv * 100) / 100,
-          credit_outstanding: creditOutstanding,
-          ceiling:            75,
-          alert_threshold:    70,
-          margin_call:        80,
-          status:             ltv >= 80 ? 'margin_call' : ltv >= 75 ? 'breach' : ltv >= 70 ? 'alert' : 'ok',
-        };
-      }
+    if (goldSection) {
+      const creditOutstanding  = lead.credit_outstanding_usd || 0;
+      const approvedPct        = lead.ltv_approved_pct || 50;
+      const creditCeilingUsd   = Math.round((approvedPct / 100) * goldSection.value_usd);
+      const ltv                = creditOutstanding > 0 ? (creditOutstanding / goldSection.value_usd) * 100 : 0;
+      ltvSection = {
+        ltv_pct:            Math.round(ltv * 100) / 100,
+        credit_outstanding: creditOutstanding,
+        credit_ceiling_usd: creditCeilingUsd,
+        approved_pct:       approvedPct,
+        ceiling:            0.75,   // fraction — portal bar: barFrac / ceiling
+        alert_threshold:    70,
+        margin_call:        80,
+        status:             ltv >= 80 ? 'margin_call' : ltv >= 75 ? 'breach' : ltv >= 70 ? 'alert' : ltv > 0 ? 'ok' : 'undrawn',
+      };
     }
 
     // Messages

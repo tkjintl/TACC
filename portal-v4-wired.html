@@ -2646,7 +2646,7 @@ body {
               <div class="today-ltv-bar" id="wealthLtvBar" style="width:0%"></div>
             </div>
             <div class="today-ltv-credit">
-              <span class="today-stat-label">Credit Outstanding</span>
+              <span class="today-stat-label" id="wealthLtvCreditLabel">Credit Outstanding</span>
               <span class="today-stat-sub mono" id="wealthLtvCredit">—</span>
             </div>
           </div>
@@ -3612,11 +3612,14 @@ function renderKpis(member) {
   var totalValue  = goldValueUsd !== null ? goldValueUsd + peMarked : null;
 
   // LTV
-  var ltv         = member.ltv || {};
-  var ltvPct      = ltv.ltv_pct || 0;
-  var ltvCredit   = ltv.credit_outstanding || 0;
-  var ltvStatus   = ltv.status || (ltvPct > 0 ? 'Active' : 'None');
-  var ltvCeiling  = ltv.ceiling || 0.6;
+  var ltv            = member.ltv || {};
+  var ltvPct         = ltv.ltv_pct || 0;
+  var ltvCredit      = ltv.credit_outstanding || 0;
+  var ltvApprovedPct = ltv.approved_pct || 50;
+  var ltvCeilingUsd  = ltv.credit_ceiling_usd || 0;
+  var ltvUndrawn     = (ltv.status === 'undrawn') || (ltvPct === 0 && ltvCeilingUsd > 0);
+  var ltvStatus      = ltvUndrawn ? 'Available' : (ltv.status === 'margin_call' ? 'Margin Call' : ltv.status === 'breach' ? 'Breach' : ltv.status === 'alert' ? 'Alert' : ltv.status === 'ok' ? 'Active' : 'None');
+  var ltvCeiling     = ltv.ceiling || 0.75;
 
   // Unrealised gain on gold
   var costBasisUsd = member.cost_basis_usd || null;
@@ -3655,7 +3658,7 @@ function renderKpis(member) {
     var snapGrEl = document.getElementById('snapGoldReturn');
     if (snapGrEl) { snapGrEl.textContent = gpSign + goldGainPct.toFixed(2) + '%'; snapGrEl.style.color = goldGainPct >= 0 ? 'var(--green-b)' : '#C0534A'; }
   } else { _set('snapGoldReturn', '—'); }
-  _set('snapLtv',       ltvPct > 0 ? (ltvPct <= 1 ? (ltvPct * 100).toFixed(1) : ltvPct.toFixed(1)) + '%' : 'None');
+  _set('snapLtv',       ltvUndrawn ? '0.0% (' + ltvApprovedPct + '% fac.)' : ltvPct > 0 ? (ltvPct <= 1 ? (ltvPct * 100).toFixed(1) : ltvPct.toFixed(1)) + '%' : '—');
   _set('snapCommitted', committed > 0 ? fmU(committed) : '—');
 
   // --- Wealth card: Gold ---
@@ -3688,7 +3691,9 @@ function renderKpis(member) {
     ltvBadgeEl.textContent = ltvStatus;
     ltvBadgeEl.className   = 'today-card-badge';
     var ltvFrac = ltvPct <= 1 ? ltvPct : ltvPct / 100;
-    if (ltvFrac === 0) {
+    if (ltvUndrawn) {
+      ltvBadgeEl.classList.add('green');
+    } else if (ltvFrac === 0) {
       ltvBadgeEl.classList.add('gold');
     } else if (ltvFrac < 0.4) {
       ltvBadgeEl.classList.add('green');
@@ -3699,14 +3704,26 @@ function renderKpis(member) {
     }
   }
 
-  _set('wealthLtvPct',    ltvPct > 0 ? (ltvPct <= 1 ? (ltvPct * 100).toFixed(1) : ltvPct.toFixed(1)) + '%' : '—');
-  _set('wealthLtvCredit', ltvCredit > 0 ? fmU(ltvCredit) : 'None');
+  // LTV % label: show drawn/approved when undrawn, plain % when drawn
+  _set('wealthLtvPct', ltvUndrawn
+    ? '0.0% / ' + ltvApprovedPct + '% approved'
+    : ltvPct > 0 ? (ltvPct <= 1 ? (ltvPct * 100).toFixed(1) : ltvPct.toFixed(1)) + '%' : '—');
+
+  // Credit line: show available facility when undrawn, outstanding when drawn
+  var ltvCreditLabelEl = document.getElementById('wealthLtvCreditLabel');
+  if (ltvUndrawn) {
+    if (ltvCreditLabelEl) ltvCreditLabelEl.textContent = 'Available Facility';
+    _set('wealthLtvCredit', ltvCeilingUsd > 0 ? fmU(ltvCeilingUsd) : ltvApprovedPct + '% of gold');
+  } else {
+    if (ltvCreditLabelEl) ltvCreditLabelEl.textContent = 'Credit Outstanding';
+    _set('wealthLtvCredit', ltvCredit > 0 ? fmU(ltvCredit) : '—');
+  }
 
   // LTV bar
   var barEl = document.getElementById('wealthLtvBar');
   if (barEl) {
     var barFrac = ltvPct <= 1 ? ltvPct : ltvPct / 100;
-    var barW    = Math.min(barFrac / (ltvCeiling > 0 ? ltvCeiling : 0.6), 1) * 100;
+    var barW    = Math.min(barFrac / (ltvCeiling > 0 ? ltvCeiling : 0.75), 1) * 100;
     setTimeout(function() { barEl.style.width = barW.toFixed(1) + '%'; }, 80);
     barEl.className = 'today-ltv-bar';
     if (barFrac < 0.35)     { barEl.classList.add('ltv-safe'); }
