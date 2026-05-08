@@ -7524,12 +7524,23 @@ textarea.inp.mono-area {
       return true;
     });
   }
+  // Stages where bulk ops make sense → which buttons to show
+  var BULK_OPS_BY_STAGE = {
+    inquiry:     { approve: true,  decline: true,  remind: false },
+    invited:     { approve: false, decline: true,  remind: true  },
+    nda_pending: { approve: false, decline: true,  remind: false }
+  };
+
   function updateBulkStrip() {
     var n = Object.keys(selectedLeads).length;
     var s = document.getElementById('pipe-bulk');
     if (!s) return;
     s.classList.toggle('show', n > 0);
     var _pbt = document.getElementById('pipe-bulk-text'); if (_pbt) _pbt.textContent = n + ' selected';
+    var ops = BULK_OPS_BY_STAGE[pipeStage] || {};
+    var ba = document.getElementById('pipe-bulk-approve'); if (ba) ba.style.display = ops.approve ? '' : 'none';
+    var bd = document.getElementById('pipe-bulk-decline'); if (bd) bd.style.display = ops.decline ? '' : 'none';
+    var br = document.getElementById('pipe-bulk-remind');  if (br) br.style.display = ops.remind  ? '' : 'none';
   }
 
   document.querySelectorAll('.pipe-stage').forEach(function(b){
@@ -7537,6 +7548,8 @@ textarea.inp.mono-area {
       document.querySelectorAll('.pipe-stage').forEach(function(x){ x.classList.remove('active'); });
       b.classList.add('active');
       pipeStage = b.dataset.stage;
+      selectedLeads = {};  // clear cross-stage selection on filter change
+      updateSelectAll();
       renderPipeTable();
     });
   });
@@ -7553,6 +7566,12 @@ textarea.inp.mono-area {
   document.getElementById('pipe-bulk-approve').addEventListener('click', function(){ confirmBulk('approve', 'Approve & issue codes for'); });
   document.getElementById('pipe-bulk-decline').addEventListener('click', function(){ confirmBulk('decline', 'Decline'); });
   document.getElementById('pipe-bulk-remind').addEventListener('click', function(){ confirmBulk('remind', 'Send reminder to'); });
+
+  // Show/hide select-all based on whether current stage supports bulk ops
+  function updateSelectAll() {
+    var wrap = document.querySelector('.pipe-select-all-wrap');
+    if (wrap) wrap.style.display = BULK_OPS_BY_STAGE[pipeStage] ? '' : 'none';
+  }
 
   function confirmBulk(op, verb) {
     var ids = Object.keys(selectedLeads);
@@ -9898,11 +9917,12 @@ textarea.inp.mono-area {
       var age = l.stage_entered_at ? Math.floor((Date.now() - new Date(l.stage_entered_at)) / 86400000) : 0;
       var ac = ageClass(age);
       var checked = selectedLeads[l.id] ? 'checked' : '';
+      var showCb = !!BULK_OPS_BY_STAGE[pipeStage];  // only show checkbox for bulk-capable stages
       var card = document.createElement('div');
       card.className = 'pipe-card'; card.dataset.leadId = l.id;
       card.innerHTML =
         '<div class="pipe-card-top">' +
-          '<label class="pipe-card-check" onclick="event.stopPropagation()"><input type="checkbox" data-lead-cb="' + esc(l.id) + '" ' + checked + '></label>' +
+          (showCb ? '<label class="pipe-card-check" onclick="event.stopPropagation()"><input type="checkbox" data-lead-cb="' + esc(l.id) + '" ' + checked + '></label>' : '') +
           '<span class="pipe-card-name name-col">' + esc(l.name || '—') + '</span>' +
           '<span class="pipe-card-age mono-col ' + ac + '">' + age + 'd</span>' +
         '</div>' +
