@@ -4075,7 +4075,10 @@ svg.spark   { overflow: visible; }
           <span id="tk-xau">—</span>
           <span id="tk-xau-d" class="tk-delta flat">—</span>
         </div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--fg-muted);text-align:center;margin-top:2px;"><span id="tk-xau-krw">—</span></div>
+      </div>
+      <div class="tk">
+        <div class="tk-lbl">Gold $/kg</div>
+        <div class="tk-val"><span id="tk-usd-kg">—</span></div>
       </div>
       <div class="tk">
         <div class="tk-lbl">Gold ₩/kg</div>
@@ -4092,17 +4095,6 @@ svg.spark   { overflow: visible; }
       <div class="tk">
         <div class="tk-lbl">Portfolio LTV</div>
         <div class="tk-val"><span id="tk-ltv">—</span></div>
-      </div>
-      <div class="tk">
-        <div class="tk-lbl">Total P&amp;L</div>
-        <div class="tk-val-row">
-          <span id="tk-pnl">—</span>
-          <span id="tk-pnl-d" class="tk-delta flat">—</span>
-        </div>
-      </div>
-      <div class="tk">
-        <div class="tk-lbl">Updated</div>
-        <div class="tk-val"><span id="tk-clock">—</span></div>
       </div>
     </div>
   </div>
@@ -7213,23 +7205,21 @@ textarea.inp.mono-area {
       if (!krwKg && xauOz && spot.usd_krw) {
         krwKg = Math.round(xauOz * 32.1507 * Number(spot.usd_krw));
       }
+      // Gold ₩/kg — 억 format (e.g. ₩2.26억/kg)
       if (krwKg) {
         var krwKgEl = document.getElementById('tk-krw-kg');
-        if (krwKgEl) krwKgEl.textContent = '₩' + Math.round(krwKg).toLocaleString('ko-KR') + '/kg';
-        // Sub-line inside the $/oz cell: ₩/kg conversion
-        var xauKrwEl = document.getElementById('tk-xau-krw');
-        if (xauKrwEl) xauKrwEl.textContent = '₩' + Math.round(krwKg).toLocaleString('ko-KR') + '/kg';
+        if (krwKgEl) {
+          var eok = (krwKg / 100000000).toFixed(2);
+          krwKgEl.textContent = '₩' + eok + '억/kg';
+        }
       }
+      // Gold $/kg
+      var usdKg = Number(spot.xau_usd_kg || stats.xau_usd_kg) || 0;
+      var tkUsdKg = document.getElementById('tk-usd-kg');
+      if (usdKg && tkUsdKg) tkUsdKg.textContent = '$' + Math.round(usdKg).toLocaleString() + '/kg';
       var tkNav = document.getElementById('tk-nav'); if (stats.nav_usd && tkNav) tkNav.textContent = fmtUsd(stats.nav_usd);
       var tkGold = document.getElementById('tk-gold'); if (stats.gold_kg != null && tkGold) tkGold.textContent = fmt(stats.gold_kg, 1) + ' kg';
       var tkLtv = document.getElementById('tk-ltv'); if (stats.ltv_pct != null && tkLtv) tkLtv.textContent = fmt(stats.ltv_pct, 1) + '%';
-      if (stats.pnl_usd != null) {
-        var tkPnl = document.getElementById('tk-pnl');
-        if (tkPnl) tkPnl.textContent = (stats.pnl_usd >= 0 ? '+' : '') + fmtUsd(stats.pnl_usd);
-        var pe = document.getElementById('tk-pnl-d');
-        if (pe) { pe.textContent = (stats.pnl_pct != null ? (stats.pnl_pct >= 0 ? '+' : '') + Number(stats.pnl_pct).toFixed(2) + '%' : '—'); pe.className = 'tk-delta ' + (stats.pnl_pct > 0 ? 'up' : stats.pnl_pct < 0 ? 'dn' : 'flat'); }
-      }
-      var clkEl = document.getElementById('tk-clock'); var clk = new Date(); if (clkEl) clkEl.textContent = clk.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
       lastTickerTs = Date.now();
       // also distribute stats across UI
       window._tacc_stats = stats; renderTodayKpis(stats); renderFundFromStats(stats);
