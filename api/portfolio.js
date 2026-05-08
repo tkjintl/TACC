@@ -293,13 +293,21 @@ async function buildPortfolioResponse(res, lead) {
       next_action_meta: nextActionObj,
       vault_mode:  getVaultMode(),
 
-      // ── Flat (legacy renderer compatibility — _pages/portfolio.html) ─────
+      // ── Flat fields — used directly by portal-v4-wired.html renderers ──────
       // Identity
       full_name:               lead.name          || null,
+      name:                    lead.name          || null,
+      email:                   lead.email         || null,
       member_number:           lead.member_number || null,
+      tier:                    lead.tier          || 'Founding Member',
       active_since:            activeSince,
-      // Holdings
+      member_since:            lead.funded_at     || lead.created_at || null,
+      last_login:              lead.last_login_at || null,
+      // Holdings — portal reads gold_kg, committed_usd, vault_location
       kilos:                   kilos,
+      gold_kg:                 kilos,
+      committed_usd:           wire.amount_usd    || subUsd || null,
+      vault_location:          lead.vault_location || 'Singapore Freeport',
       current_value_sgd:       goldSection ? goldSection.value_sgd : null,
       current_value_krw:       goldSection ? goldSection.value_krw : null,
       entry_price_sgd:         entryPrice,
@@ -307,7 +315,10 @@ async function buildPortfolioResponse(res, lead) {
       // Subscription / wire
       subscription_amount_usd: subUsd,
       subscription_date:       (lead.subscription && lead.subscription.submitted_at) || null,
+      wire_date:               wire.cleared_at || wire.received_at || null,
       wire_status:             wire.cleared_at ? 'processing' : wire.received_at ? 'received' : 'awaiting',
+      // Activity feed — portal reads member.activity
+      activity:                lead.activity      || [],
       // Cohort grid
       founding_count:          foundingCount,
       member_seat_index:       (typeof lead.member_number === 'number' && lead.member_number > 0)
@@ -315,16 +326,10 @@ async function buildPortfolioResponse(res, lead) {
                                  : -1,
       // Fund metadata
       fund_period:             'Q3 2026',
-      // Renderer expects `next_action` as a string label. Full structured
-      // form is exposed above as `next_action_meta` for any new consumer.
       next_action:             nextActionObj ? nextActionObj.label : null,
       next_action_sub:         null,
-      // Bar registry (single-bar shape the renderer uses on Gold tab)
       bar:                     flatBar,
-      // Notice list (renderer renders these on Overview + Gold tabs)
       notices:                 generalNotices,
-      // Messages — flat array, renderer accepts both shapes but prefers flat
-      // (we leave the nested {items,unread_count} above for new paths)
     });
   } catch (e) {
     console.error('[portfolio]', e && e.message, e && e.stack);
