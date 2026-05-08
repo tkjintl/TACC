@@ -619,8 +619,9 @@ svg {
   gap: 1px;
 }
 .tk:last-child  { border-right: 0; }
-.tk-lbl  { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; color: var(--fg-dim); text-transform: uppercase; text-align: center; }
-.tk-val  { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--fg); letter-spacing: 0.04em; text-align: center; }
+.tk-lbl     { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; color: var(--fg-dim); text-transform: uppercase; text-align: center; }
+.tk-val     { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--fg); letter-spacing: 0.04em; text-align: center; }
+.tk-val-row { display: flex; align-items: baseline; justify-content: center; gap: 6px; }
 .tk-delta{ font-family: var(--mono); font-size: 10px; font-variant-numeric: tabular-nums; }
 .tk-delta.up   { color: var(--green); }
 .tk-delta.dn   { color: var(--red); }
@@ -4054,14 +4055,15 @@ svg.spark   { overflow: visible; }
   <div id="ticker" role="marquee" aria-label="Live market data">
     <div class="ah-ticker">
       <div class="tk">
-        <div class="tk-lbl">XAU/USD</div>
-        <div class="tk-val"><span id="tk-xau">—</span></div>
-        <div class="tk-delta flat"><span id="tk-xau-d">—</span></div>
+        <div class="tk-lbl">Gold $/oz</div>
+        <div class="tk-val-row">
+          <span id="tk-xau">—</span>
+          <span id="tk-xau-d" class="tk-delta flat">—</span>
+        </div>
       </div>
       <div class="tk">
-        <div class="tk-lbl">XAU/KRW kg</div>
+        <div class="tk-lbl">Gold ₩/kg</div>
         <div class="tk-val"><span id="tk-krw-kg">—</span></div>
-        <div class="tk-delta flat"><span id="tk-krw-kg-d">—</span></div>
       </div>
       <div class="tk">
         <div class="tk-lbl">NAV/Unit</div>
@@ -4077,13 +4079,14 @@ svg.spark   { overflow: visible; }
       </div>
       <div class="tk">
         <div class="tk-lbl">Total P&amp;L</div>
-        <div class="tk-val"><span id="tk-pnl">—</span></div>
-        <div class="tk-delta flat"><span id="tk-pnl-d">—</span></div>
+        <div class="tk-val-row">
+          <span id="tk-pnl">—</span>
+          <span id="tk-pnl-d" class="tk-delta flat">—</span>
+        </div>
       </div>
       <div class="tk">
         <div class="tk-lbl">Updated</div>
         <div class="tk-val"><span id="tk-clock">—</span></div>
-        <div class="tk-delta flat"><span id="tk-clock-rel">live</span></div>
       </div>
     </div>
   </div>
