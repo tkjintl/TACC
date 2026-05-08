@@ -3862,11 +3862,12 @@ svg.spark   { overflow: visible; }
     }
 
     /* Topbar right group — no margin-left:auto on children; use spacer flex:1 */
+    /* overflow: visible (not hidden) so absolute-positioned dropdowns aren't clipped */
     .tb-right {
       display: flex;
       align-items: center;
       gap: 6px;
-      overflow: hidden;
+      overflow: visible;
       min-width: 0;
       flex-shrink: 0;
     }
