@@ -1563,6 +1563,178 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* ─── Overview v2 ──────────────────────────────────────────────────── */
+.ov-hero {
+  background: linear-gradient(135deg, #0f0f0d 0%, #111110 60%, #0d0d0b 100%);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 36px 40px; display: flex; align-items: center;
+  justify-content: space-between; gap: 40px;
+  position: relative; overflow: hidden; margin-bottom: 20px;
+}
+.ov-hero::before {
+  content: ''; position: absolute; top: -60px; right: 280px;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(197,165,114,0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+.ov-hero-left { flex: 1; min-width: 0; }
+.ov-hero-eyebrow { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.ov-hero-name { font-family: var(--font-display); font-size: 36px; font-weight: 600; color: var(--text); letter-spacing: 0.01em; line-height: 1.1; margin-bottom: 8px; }
+.ov-hero-tier {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 10px; background: rgba(197,165,114,0.07); border: 1px solid rgba(197,165,114,0.25);
+  border-radius: 4px; font-size: 10px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--goldA); margin-bottom: 24px;
+}
+.ov-hero-aum-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.ov-hero-aum { font-family: var(--font-mono); font-size: 40px; font-weight: 500; color: var(--goldB); line-height: 1; letter-spacing: -0.01em; }
+.ov-hero-aum-sgd { font-family: var(--font-mono); font-size: 14px; color: var(--muted); margin-top: 4px; }
+.ov-hero-meta { display: flex; align-items: center; gap: 16px; margin-top: 16px; flex-wrap: wrap; }
+.ov-hero-meta-item { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+.ov-hero-meta-item span { color: var(--dim); }
+.ov-hero-right { flex-shrink: 0; }
+
+/* v2 KPI row */
+.ov-kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+@media (max-width: 768px) { .ov-kpi-row { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 375px) { .ov-kpi-row { grid-template-columns: 1fr 1fr; gap: 8px; } }
+.ov-kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; }
+.ov-kpi-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; font-family: var(--font-mono); }
+.ov-kpi-value { font-family: var(--font-mono); font-size: 22px; font-weight: 500; color: var(--text); line-height: 1; margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+.ov-kpi-value.gold { color: var(--goldB); }
+.ov-kpi-value.green { color: var(--green); }
+.ov-kpi-sub { font-size: 11px; color: var(--muted); }
+
+/* v2 overview grid */
+.ov-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+@media (max-width: 768px) { .ov-grid { grid-template-columns: 1fr; } }
+.ov-grid-left { display: flex; flex-direction: column; gap: 20px; }
+.ov-grid-right { display: flex; flex-direction: column; gap: 20px; }
+.ov-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px; }
+.ov-card-label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; font-family: var(--font-mono); }
+
+/* Allocation ring */
+.ov-alloc-inner { display: flex; align-items: center; gap: 28px; }
+.ov-alloc-legend { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.ov-legend-item { display: flex; align-items: center; gap: 10px; }
+.ov-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.ov-legend-name { font-size: 12px; color: var(--dim); flex: 1; }
+.ov-legend-pct { font-family: var(--font-mono); font-size: 12px; color: var(--text); font-weight: 500; }
+
+/* LTV bar */
+.ov-ltv-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.ov-ltv-pct { font-family: var(--font-mono); font-size: 24px; color: var(--green); font-weight: 500; }
+.ov-ltv-track { height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+.ov-ltv-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--green) 0%, var(--green) 60%, var(--amber) 80%, #c0392b 100%); }
+.ov-ltv-legend { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+.ov-ltv-legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--muted); }
+.ov-ltv-legend-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+/* Composition */
+.ov-comp-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.ov-comp-row:last-child { border-bottom: none; }
+.ov-comp-label { font-size: 12px; color: var(--dim); flex: 1; }
+.ov-comp-bar-wrap { width: 100px; height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; }
+.ov-comp-bar { height: 100%; border-radius: 2px; }
+.ov-comp-value { font-family: var(--font-mono); font-size: 12px; color: var(--text); width: 80px; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Activity feed */
+.ov-activity-item { display: flex; align-items: flex-start; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.ov-activity-item:last-child { border-bottom: none; }
+.ov-activity-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--muted); flex-shrink: 0; margin-top: 6px; }
+.ov-activity-dot.gold { background: var(--goldA); }
+.ov-activity-dot.green { background: var(--green); }
+.ov-activity-dot.blue { background: #4A7BA7; }
+.ov-activity-text { font-size: 12px; color: var(--dim); flex: 1; line-height: 1.4; }
+.ov-activity-time { font-family: var(--font-mono); font-size: 10px; color: var(--muted); white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+
+/* 3D gold bar (overview) */
+@property --ov-ry { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@keyframes ovBarSpin { 0%{--ov-ry:-25deg} 100%{--ov-ry:25deg} }
+@keyframes ovGlow { 0%,100%{filter:drop-shadow(0 0 20px rgba(197,165,114,.30)) drop-shadow(0 20px 50px rgba(0,0,0,.7))} 50%{filter:drop-shadow(0 0 45px rgba(197,165,114,.55)) drop-shadow(0 20px 60px rgba(0,0,0,.8))} }
+.ov-bar-wrapper {
+  transform-style: preserve-3d;
+  transform: perspective(800px) rotateX(20deg) rotateY(var(--ov-ry));
+  animation: ovBarSpin 6s ease-in-out infinite alternate, ovGlow 4s ease-in-out infinite;
+}
+.ov-bar-3d { position:relative; width:160px; height:80px; transform-style:preserve-3d; }
+.ov-bar-front { width:160px;height:80px; background:linear-gradient(180deg,#D4A843 0%,#9A7228 60%,#8B6520 100%); position:absolute;top:0;left:0;transform:translateZ(20px); display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px; border:1px solid rgba(255,220,100,.15); }
+.ov-bar-front::before { content:'';position:absolute;inset:5px;border:1px solid rgba(255,220,100,.12);border-radius:1px }
+.ov-bar-top { width:160px;height:40px; background:linear-gradient(135deg,#F0D080 0%,#C5A572 30%,#E8C870 60%,#A8813A 100%); position:absolute;top:0;left:0;transform:rotateX(90deg) translateZ(-20px) translateY(-20px); }
+.ov-bar-top::after { content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.15) 0%,transparent 60%) }
+.ov-bar-right { width:40px;height:80px;background:linear-gradient(180deg,#B8922E,#7A5A1E 60%,#6B4F18);position:absolute;top:0;left:0;transform:rotateY(90deg) translateX(20px);transform-origin:left center }
+.ov-bar-bottom { width:160px;height:40px;background:linear-gradient(180deg,#5A3D10,#3A2508);position:absolute;top:0;left:0;transform:rotateX(-90deg) translateZ(-20px) translateY(20px) }
+.ov-bar-left { width:40px;height:80px;background:linear-gradient(180deg,#9A7228,#6B4F18 60%,#5A3D10);position:absolute;top:0;left:0;transform:rotateY(-90deg) translateX(-20px);transform-origin:right center }
+.ov-bar-stamp { font-family:var(--font-mono);font-size:6px;color:rgba(0,0,0,.55);letter-spacing:.2em;text-transform:uppercase;font-weight:500;position:relative;z-index:1 }
+.ov-bar-reflection { width:200px;height:16px;background:radial-gradient(ellipse at center,rgba(197,165,114,.25) 0%,transparent 70%);margin-top:6px; }
+
+/* ─── Investments tab ───────────────────────────────────────────────── */
+.inv-alloc-header { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px; margin-bottom: 24px; }
+@media (max-width: 600px) { .inv-alloc-header { grid-template-columns: 1fr; gap: 12px; } }
+.inv-ah-title { font-family: var(--font-display); font-size: 28px; font-weight: 400; color: var(--text); letter-spacing: .01em; line-height: 1.2; margin-bottom: 8px; }
+.inv-ah-sub { font-size: 13px; color: var(--dim); line-height: 1.5; }
+.inv-ah-right { text-align: right; }
+.inv-ah-ltv-label { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 4px; font-family: var(--font-mono); }
+.inv-ah-ltv-val { font-family: var(--font-mono); font-size: 28px; color: var(--goldA); }
+.inv-ah-ltv-sub { font-size: 11px; color: var(--dim); margin-top: 2px; }
+
+.inv-deploy-bar {
+  background: linear-gradient(135deg, rgba(197,165,114,0.06) 0%, rgba(197,165,114,0.02) 100%);
+  border: 1px solid rgba(197,165,114,0.25);
+  border-radius: 10px; padding: 20px 24px;
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 0; margin-bottom: 32px;
+}
+@media (max-width: 600px) { .inv-deploy-bar { grid-template-columns: 1fr; gap: 16px; } .inv-deploy-cell { padding: 0 !important; border-right: none !important; border-bottom: 1px solid rgba(197,165,114,0.15); } .inv-deploy-cell:last-child { border-bottom: none; } }
+.inv-deploy-cell { padding: 0 20px; border-right: 1px solid rgba(197,165,114,0.25); }
+.inv-deploy-cell:first-child { padding-left: 0; }
+.inv-deploy-cell:last-child { border-right: none; }
+.inv-deploy-label { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: rgba(197,165,114,0.6); margin-bottom: 6px; font-family: var(--font-mono); }
+.inv-deploy-val { font-family: var(--font-mono); font-size: 20px; color: var(--goldA); font-variant-numeric: tabular-nums; }
+.inv-deploy-sub { font-size: 11px; color: var(--dim); margin-top: 3px; }
+
+.inv-pos-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.inv-pos-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; cursor: pointer; transition: border-color 300ms ease, box-shadow 300ms ease; }
+.inv-pos-card:hover { border-color: rgba(197,165,114,0.25); box-shadow: 0 0 0 1px rgba(197,165,114,0.08), 0 8px 32px rgba(0,0,0,0.4); }
+.inv-pos-inner { display: grid; grid-template-columns: 1fr 220px; }
+@media (max-width: 600px) { .inv-pos-inner { grid-template-columns: 1fr; } }
+.inv-pos-left { padding: 24px 28px; border-right: 1px solid var(--border); }
+@media (max-width: 600px) { .inv-pos-left { border-right: none; border-bottom: 1px solid var(--border); } }
+.inv-pos-right { padding: 24px; display: flex; flex-direction: column; justify-content: space-between; }
+.inv-pos-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.inv-pos-chip { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: 3px 9px; border-radius: 20px; }
+.inv-pos-chip.credit { background: rgba(43,92,138,0.07); color: #6BA3CC; border: 1px solid rgba(43,92,138,0.25); }
+.inv-pos-chip.pe { background: rgba(197,165,114,0.07); color: var(--goldB); border: 1px solid rgba(197,165,114,0.25); }
+.inv-pos-chip.re { background: rgba(46,110,72,0.07); color: var(--green); border: 1px solid rgba(46,110,72,0.25); }
+.inv-pos-chip.infra { background: rgba(120,100,160,0.07); color: #9B8FCC; border: 1px solid rgba(120,100,160,0.2); }
+.inv-pos-geo { font-size: 11px; color: var(--muted); }
+.inv-pos-name { font-family: var(--font-display); font-size: 22px; font-weight: 600; color: var(--text); margin-bottom: 8px; line-height: 1.2; }
+.inv-pos-thesis { font-size: 13px; color: var(--dim); line-height: 1.55; }
+.inv-pos-stats { display: flex; gap: 24px; margin-top: 20px; flex-wrap: wrap; }
+.inv-pos-stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 4px; font-family: var(--font-mono); }
+.inv-pos-stat-val { font-family: var(--font-mono); font-size: 14px; color: var(--text); }
+.inv-pos-stat-val.gold { color: var(--goldA); }
+.inv-pos-amount-label { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 6px; font-family: var(--font-mono); }
+.inv-pos-amount { font-family: var(--font-mono); font-size: 26px; font-weight: 500; color: var(--goldA); line-height: 1; margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+.inv-pos-amount-sub { font-size: 12px; color: var(--dim); margin-bottom: 16px; }
+.inv-pos-ltv-wrap { margin-bottom: 20px; }
+.inv-pos-ltv-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.inv-pos-ltv-row span { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-family: var(--font-mono); }
+.inv-pos-ltv-track { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+.inv-pos-ltv-fill { height: 100%; background: linear-gradient(90deg, rgba(168,129,58,1), var(--goldB)); border-radius: 2px; }
+.inv-pos-cta { display: flex; align-items: center; justify-content: center; width: 100%; padding: 10px 16px; border-radius: 6px; background: rgba(197,165,114,0.07); border: 1px solid rgba(197,165,114,0.25); color: var(--goldA); font-family: var(--font-ui); font-size: 12px; font-weight: 600; letter-spacing: .04em; cursor: pointer; transition: all 200ms ease; }
+.inv-pos-cta:hover { background: rgba(197,165,114,0.14); border-color: var(--goldA); color: var(--goldB); }
+.inv-pos-stage-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.inv-stage-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.inv-stage-dot.live { background: var(--green); }
+.inv-stage-dot.dd { background: var(--amber); }
+.inv-stage-dot.terms { background: #4A7BA7; }
+.inv-stage-text { font-size: 11px; color: var(--dim); }
+.inv-advisory-note { margin-top: 28px; padding: 18px 22px; border: 1px solid var(--border); border-radius: 10px; display: flex; align-items: flex-start; gap: 14px; }
+.inv-no-positions { padding: 60px 24px; text-align: center; }
+.inv-no-positions-title { font-family: var(--font-display); font-size: 20px; color: var(--dim); margin-bottom: 8px; }
+.inv-no-positions-sub { font-size: 13px; color: var(--muted); }
+
 /* ─── Print styles ─────────────────────────────────────────────────── */
 @media print {
   body { background: #fff; color: #000; }
@@ -1590,6 +1762,7 @@
   <div class="tab-bar" id="desktop-tabs" role="tablist">
     <div class="tab-item active" data-tab="overview" role="tab" tabindex="0"><span data-lang="en">Overview</span><span data-lang="ko">개요</span></div>
     <div class="tab-item" data-tab="gold" role="tab" tabindex="0"><span data-lang="en">Gold</span><span data-lang="ko">금</span></div>
+    <div class="tab-item" data-tab="investments" role="tab" tabindex="0"><span data-lang="en">Investments</span><span data-lang="ko">투자</span></div>
     <div class="tab-item" data-tab="documents" role="tab" tabindex="0"><span data-lang="en">Documents</span><span data-lang="ko">문서</span></div>
     <div class="tab-item" data-tab="messages" role="tab" tabindex="0"><span data-lang="en">Messages</span><span data-lang="ko">메시지</span></div>
     <div class="tab-item" data-tab="history" role="tab" tabindex="0"><span data-lang="en">History</span><span data-lang="ko">활동 내역</span></div>
@@ -1657,49 +1830,153 @@
   <!-- ─── OVERVIEW ──────────────────────────────────────────────────── -->
   <div class="tab-panel active" id="panel-overview" role="tabpanel">
 
-    <p class="greeting-line" id="greeting-line" data-reveal>
-      <span data-skeleton>Loading &nbsp;·&nbsp; Member #— &nbsp;·&nbsp; Active since —</span>
-    </p>
-
-    <!-- KPI strip -->
-    <div class="kpi-strip" data-reveal data-delay="100">
-
-      <div class="kpi-tile">
-        <div class="kpi-label">Your Gold</div>
-        <div class="kpi-value cormorant" id="kpi-kg" data-skeleton>—</div>
-        <div class="kpi-sub">Kilo Bar · LBMA Certified</div>
+    <!-- Hero -->
+    <div class="ov-hero" data-reveal>
+      <div class="ov-hero-left">
+        <div class="ov-hero-eyebrow">Wealth at a Glance</div>
+        <div class="ov-hero-name" id="ov-name" data-skeleton>—</div>
+        <div class="ov-hero-tier" id="ov-tier">Founding Member</div>
+        <div class="ov-hero-aum-label">Total Assets Under Management</div>
+        <div class="ov-hero-aum" id="ov-aum" data-skeleton>—</div>
+        <div class="ov-hero-aum-sgd" id="ov-aum-sgd"></div>
+        <div class="ov-hero-meta" id="ov-meta"></div>
       </div>
-
-      <div class="kpi-tile">
-        <div class="kpi-label">Current Value</div>
-        <div class="kpi-value" id="kpi-value" data-skeleton>—</div>
-        <div class="kpi-sub" id="kpi-value-time">As of — SGT</div>
-        <div class="kpi-krw" id="kpi-krw"></div>
+      <div class="ov-hero-right">
+        <div style="display:flex;flex-direction:column;align-items:center;padding:20px 0">
+          <div class="ov-bar-wrapper">
+            <div class="ov-bar-3d">
+              <div class="ov-bar-top"></div>
+              <div class="ov-bar-front">
+                <div class="ov-bar-stamp">London Good Delivery</div>
+                <div class="ov-bar-stamp" style="font-size:7px">999.9 Fine Gold</div>
+              </div>
+              <div class="ov-bar-right"></div>
+              <div class="ov-bar-bottom"></div>
+              <div class="ov-bar-left"></div>
+            </div>
+          </div>
+          <div class="ov-bar-reflection"></div>
+        </div>
       </div>
+    </div>
 
-      <div class="kpi-tile">
-        <div class="kpi-label">Fund Status</div>
-        <div class="kpi-value" id="kpi-fund-status" data-skeleton>—</div>
-        <div class="kpi-sub" id="kpi-fund-period">—</div>
+    <!-- KPI row -->
+    <div class="ov-kpi-row" data-reveal data-delay="80">
+      <div class="ov-kpi-card">
+        <div class="ov-kpi-label">Gold Value</div>
+        <div class="ov-kpi-value gold" id="ov-gold-val" data-skeleton>—</div>
+        <div class="ov-kpi-sub" id="ov-gold-sub">—</div>
       </div>
-
-      <div class="kpi-tile">
-        <div class="kpi-label">Next Action</div>
-        <div class="kpi-value" id="kpi-next-action" style="font-size:14px;font-family:var(--font-ui);font-weight:400;" data-skeleton>—</div>
-        <div class="kpi-sub" id="kpi-next-action-sub"></div>
+      <div class="ov-kpi-card">
+        <div class="ov-kpi-label">LTV Deployed</div>
+        <div class="ov-kpi-value" id="ov-ltv-val" data-skeleton>—</div>
+        <div class="ov-kpi-sub" id="ov-ltv-sub">—</div>
       </div>
-
+      <div class="ov-kpi-card">
+        <div class="ov-kpi-label">Unrealised Gain</div>
+        <div class="ov-kpi-value" id="ov-gain-val" data-skeleton>—</div>
+        <div class="ov-kpi-sub" id="ov-gain-sub"></div>
+      </div>
+      <div class="ov-kpi-card">
+        <div class="ov-kpi-label">Active Positions</div>
+        <div class="ov-kpi-value" id="ov-pos-val" data-skeleton>—</div>
+        <div class="ov-kpi-sub" id="ov-pos-sub">—</div>
+      </div>
     </div>
 
     <!-- Active notice zone: capital call card + other notices -->
     <div id="capital-call-zone"></div>
     <div class="notice-zone" id="notice-zone"></div>
 
-    <!-- Founding grid -->
-    <div class="grid-section" data-reveal data-delay="200">
-      <div class="grid-count" id="grid-count">— / 100</div>
-      <div class="grid-label">Founding Seats Filled</div>
-      <div class="seat-grid" id="seat-grid" role="img" aria-label="Founding seat availability"></div>
+    <!-- Overview grid: allocation ring + LTV | composition + activity -->
+    <div class="ov-grid" data-reveal data-delay="160">
+      <div class="ov-grid-left">
+
+        <!-- Allocation ring -->
+        <div class="ov-card">
+          <div class="ov-card-label">Wealth Allocation</div>
+          <div class="ov-alloc-inner">
+            <div style="position:relative;width:160px;height:160px;flex-shrink:0">
+              <svg width="160" height="160" viewBox="0 0 160 160" id="ov-alloc-svg">
+                <defs>
+                  <linearGradient id="ovGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#C5A572"/>
+                    <stop offset="50%" stop-color="#E3C187"/>
+                    <stop offset="100%" stop-color="#A8813A"/>
+                  </linearGradient>
+                </defs>
+                <g transform="rotate(-90 80 80)">
+                  <circle cx="80" cy="80" r="64" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="12"/>
+                  <circle id="ov-ring-gold" cx="80" cy="80" r="64" fill="none" stroke="url(#ovGoldGrad)" stroke-width="10" stroke-linecap="round" stroke-dasharray="402 0"/>
+                  <circle id="ov-ring-inv" cx="80" cy="80" r="64" fill="none" stroke="#4A7BA7" stroke-width="10" opacity="0.7" stroke-linecap="round" stroke-dasharray="0 402" stroke-dashoffset="0"/>
+                  <circle id="ov-ring-cash" cx="80" cy="80" r="64" fill="none" stroke="#7A7265" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 402" stroke-dashoffset="0"/>
+                </g>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+                <span style="font-family:var(--font-mono);font-size:20px;color:var(--goldA);font-weight:500" id="ov-ring-pct">100%</span>
+                <span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Gold</span>
+              </div>
+            </div>
+            <div class="ov-alloc-legend">
+              <div class="ov-legend-item">
+                <div class="ov-legend-dot" style="background:var(--goldA)"></div>
+                <div class="ov-legend-name">Physical Gold</div>
+                <div class="ov-legend-pct" id="ov-leg-gold">100%</div>
+              </div>
+              <div class="ov-legend-item">
+                <div class="ov-legend-dot" style="background:#4A7BA7"></div>
+                <div class="ov-legend-name">Active Allocations</div>
+                <div class="ov-legend-pct" id="ov-leg-inv">0%</div>
+              </div>
+              <div class="ov-legend-item">
+                <div class="ov-legend-dot" style="background:#7A7265"></div>
+                <div class="ov-legend-name">Cash Reserve</div>
+                <div class="ov-legend-pct" id="ov-leg-cash">0%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LTV utilisation -->
+        <div class="ov-card">
+          <div class="ov-card-label" style="margin-bottom:4px">LTV Utilisation</div>
+          <div class="ov-ltv-header">
+            <div>
+              <div style="font-size:12px;color:var(--muted)" id="ov-ltv-detail">—</div>
+            </div>
+            <div class="ov-ltv-pct" id="ov-ltv-pct">—</div>
+          </div>
+          <div class="ov-ltv-track"><div class="ov-ltv-fill" id="ov-ltv-bar" style="width:0%"></div></div>
+          <div class="ov-ltv-legend">
+            <div class="ov-ltv-legend-item"><div class="ov-ltv-legend-dot" style="background:var(--green)"></div> Safe &lt; 35%</div>
+            <div class="ov-ltv-legend-item"><div class="ov-ltv-legend-dot" style="background:var(--amber)"></div> Moderate 35–55%</div>
+            <div class="ov-ltv-legend-item"><div class="ov-ltv-legend-dot" style="background:#c0392b"></div> High &gt; 55%</div>
+          </div>
+        </div>
+
+      </div>
+      <div class="ov-grid-right">
+
+        <!-- Wealth composition -->
+        <div class="ov-card">
+          <div class="ov-card-label">Wealth Composition</div>
+          <div id="ov-comp-rows"></div>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:11px;color:var(--muted)">Total AUM</div>
+            <div style="font-family:var(--font-mono);font-size:14px;color:var(--goldB);font-weight:500;font-variant-numeric:tabular-nums" id="ov-comp-total">—</div>
+          </div>
+        </div>
+
+        <!-- Activity feed -->
+        <div class="ov-card">
+          <div class="ov-card-label">Recent Activity</div>
+          <div id="ov-activity-feed"></div>
+          <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+            <a href="#" data-tab="history" style="font-size:11px;color:var(--muted);text-decoration:none;font-family:var(--font-mono)">View full history →</a>
+          </div>
+        </div>
+
+      </div>
     </div>
 
   </div>
@@ -1793,6 +2070,55 @@
             Allocated &amp; Segregated
           </div>
         </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ─── INVESTMENTS ────────────────────────────────────────────── -->
+  <div class="tab-panel" id="panel-investments" role="tabpanel">
+
+    <!-- Allocation header -->
+    <div class="inv-alloc-header" id="inv-alloc-header" data-reveal>
+      <div>
+        <div class="inv-ah-title">Your Active Positions</div>
+        <div class="inv-ah-sub" id="inv-ah-sub">Your LTV facility is deployed across curated deals managed by the Aurum advisory team.</div>
+      </div>
+      <div class="inv-ah-right">
+        <div class="inv-ah-ltv-label">LTV Deployed</div>
+        <div class="inv-ah-ltv-val" id="inv-ltv-deployed">—</div>
+        <div class="inv-ah-ltv-sub" id="inv-ltv-sub">—</div>
+      </div>
+    </div>
+
+    <!-- LTV deploy summary bar -->
+    <div class="inv-deploy-bar" data-reveal data-delay="80">
+      <div class="inv-deploy-cell">
+        <div class="inv-deploy-label">Gold Held</div>
+        <div class="inv-deploy-val" id="inv-gold-held">—</div>
+        <div class="inv-deploy-sub" id="inv-gold-held-sub">—</div>
+      </div>
+      <div class="inv-deploy-cell">
+        <div class="inv-deploy-label">Available Facility</div>
+        <div class="inv-deploy-val" id="inv-facility">—</div>
+        <div class="inv-deploy-sub">50% of gold market value</div>
+      </div>
+      <div class="inv-deploy-cell">
+        <div class="inv-deploy-label">Per Position</div>
+        <div class="inv-deploy-val" id="inv-per-pos">—</div>
+        <div class="inv-deploy-sub" id="inv-per-pos-sub">—</div>
+      </div>
+    </div>
+
+    <!-- Position cards -->
+    <div class="inv-pos-grid" id="inv-pos-grid" data-reveal data-delay="160"></div>
+
+    <!-- Advisory note -->
+    <div class="inv-advisory-note" data-reveal data-delay="240">
+      <div style="width:6px;height:6px;border-radius:50%;background:var(--goldA);margin-top:5px;flex-shrink:0"></div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">Position sizes are calculated automatically</div>
+        <div style="font-size:12px;color:var(--dim);line-height:1.6">Your LTV facility is evenly allocated across all active fund deals. The Aurum advisory team manages deal selection and sizing. Speak to your advisor for questions about your specific positions.</div>
       </div>
     </div>
 
@@ -1936,6 +2262,10 @@
   <div class="mobile-tab-item" data-tab="gold" role="tab">
     <span class="mobile-tab-icon">◈</span>
     <span class="mobile-tab-label"><span data-lang="en">Gold</span><span data-lang="ko">금</span></span>
+  </div>
+  <div class="mobile-tab-item" data-tab="investments" role="tab">
+    <span class="mobile-tab-icon">⊞</span>
+    <span class="mobile-tab-label"><span data-lang="en">Invest</span><span data-lang="ko">투자</span></span>
   </div>
   <div class="mobile-tab-item" data-tab="documents" role="tab">
     <span class="mobile-tab-icon">⊟</span>
@@ -2250,84 +2580,263 @@
   function renderAll(d) {
     renderOverview(d);
     renderGold(d);
+    renderInvestments(d);
     renderDocuments(d);
     renderMessages(d);
     loadHistory();
   }
 
-  /* ─── OVERVIEW ─────────────────────────────────────────────────── */
+  /* ─── OVERVIEW v2 ──────────────────────────────────────────────── */
   function renderOverview(d) {
     var badge = document.getElementById('member-badge');
     if (badge && d.member_number) badge.textContent = '#' + d.member_number;
 
-    // Greeting
-    var gl = document.getElementById('greeting-line');
-    if (gl) {
-      gl.textContent = (d.full_name || 'Member') + '  ·  Member #' + (d.member_number || '—') + '  ·  Active since ' + (d.active_since || '—');
+    // Hero
+    var nameEl = document.getElementById('ov-name');
+    if (nameEl) nameEl.textContent = d.full_name || 'Member';
+
+    var tierEl = document.getElementById('ov-tier');
+    if (tierEl) tierEl.textContent = d.tier || 'Founding Member';
+
+    var aumEl = document.getElementById('ov-aum');
+    if (aumEl && d.current_value_sgd) {
+      TACC.countUp(aumEl, parseFloat(d.current_value_sgd), 1400, 'SGD ', '', 0);
+    }
+    var aumSgdEl = document.getElementById('ov-aum-sgd');
+    if (aumSgdEl && d.current_value_krw) {
+      aumSgdEl.textContent = '≈ ' + fmKrw(parseFloat(d.current_value_krw));
     }
 
-    // KPI tiles with countup
-    var kgEl = document.getElementById('kpi-kg');
-    if (kgEl) {
-      var kg = parseFloat(d.kilos || 0);
-      if (kg > 0) {
-        kgEl.textContent = '0 kg';
-        TACC.countUp(kgEl, kg, 1200, '', ' kg', 3);
+    var metaEl = document.getElementById('ov-meta');
+    if (metaEl) {
+      var items = [];
+      if (d.active_since) items.push('Member since <span>' + d.active_since + '</span>');
+      if (d.member_number) items.push('Member <span>#' + d.member_number + '</span>');
+      if (d.vault_location) items.push(d.vault_location);
+      metaEl.innerHTML = items.map(function(i) { return '<div class="ov-hero-meta-item">' + i + '</div>'; }).join('');
+    }
+
+    // v2 KPI row
+    var goldVal = parseFloat(d.current_value_sgd || 0);
+    var entryVal = parseFloat(d.entry_value_sgd || 0);
+    var ltvOutstanding = parseFloat((d.ltv && d.ltv.credit_outstanding) || 0);
+    var positions = d.positions || [];
+
+    var goldValEl = document.getElementById('ov-gold-val');
+    if (goldValEl && goldVal) {
+      TACC.countUp(goldValEl, goldVal, 1200, 'SGD ', '', 0);
+      var goldSubEl = document.getElementById('ov-gold-sub');
+      if (goldSubEl) goldSubEl.textContent = (d.gold_kg || d.kilos || '—') + ' kg · LBMA Certified';
+    }
+
+    var ltvValEl = document.getElementById('ov-ltv-val');
+    if (ltvValEl) {
+      if (ltvOutstanding > 0) {
+        TACC.countUp(ltvValEl, ltvOutstanding, 1200, 'SGD ', '', 0);
+        var ltvSubEl = document.getElementById('ov-ltv-sub');
+        if (ltvSubEl) ltvSubEl.textContent = (positions.length || 0) + ' active position' + (positions.length !== 1 ? 's' : '');
       } else {
-        kgEl.textContent = d.kilos ? d.kilos + ' kg' : '—';
+        ltvValEl.textContent = '—';
+        var ltvSubEl2 = document.getElementById('ov-ltv-sub');
+        if (ltvSubEl2) ltvSubEl2.textContent = 'No active facility';
       }
     }
 
-    // Value with countup
-    var valueEl = document.getElementById('kpi-value');
-    if (valueEl && d.current_value_sgd) {
-      var val = parseFloat(d.current_value_sgd);
-      TACC.countUp(valueEl, val, 1400, 'SGD ', '', 0);
-
-      var entryVal = parseFloat(d.entry_value_sgd || 0);
-      if (entryVal > 0) {
-        var pct = (val - entryVal) / entryVal;
-        if (pct > 0.02) valueEl.classList.add('green');
-        else if (pct < -0.05) valueEl.classList.add('amber');
-      }
-    }
-
-    var timeEl = document.getElementById('kpi-value-time');
-    if (timeEl) {
-      var now = new Date();
-      timeEl.textContent = 'As of ' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0') + ' SGT';
-    }
-
-    var krwEl = document.getElementById('kpi-krw');
-    if (krwEl && d.current_value_krw) {
-      var krwNum = parseFloat(d.current_value_krw);
-      krwEl.textContent = fmKrw(krwNum);
-      TACC.countUp(krwEl, krwNum, 1400, '', '', 0);
-    }
-
-    // Fund status
-    var fsEl = document.getElementById('kpi-fund-status');
-    if (fsEl) fsEl.textContent = d.fund_status || 'Pre-Close';
-
-    var fpEl = document.getElementById('kpi-fund-period');
-    if (fpEl) fpEl.textContent = d.fund_period || 'Q3 2026';
-
-    // Next action
-    var naEl = document.getElementById('kpi-next-action');
-    var naSub = document.getElementById('kpi-next-action-sub');
-    if (naEl) {
-      if (d.next_action) {
-        naEl.textContent = d.next_action;
-        naEl.style.color = 'var(--amber)';
-        if (naSub && d.next_action_sub) naSub.textContent = d.next_action_sub;
+    var gainEl = document.getElementById('ov-gain-val');
+    if (gainEl) {
+      if (goldVal && entryVal) {
+        var gainPct = (goldVal - entryVal) / entryVal * 100;
+        gainEl.textContent = (gainPct >= 0 ? '+' : '') + gainPct.toFixed(2) + '%';
+        gainEl.classList.add(gainPct >= 0 ? 'green' : 'amber');
+        var gainSubEl = document.getElementById('ov-gain-sub');
+        if (gainSubEl) gainSubEl.textContent = 'vs. cost basis';
       } else {
-        naEl.textContent = 'Nothing required';
-        naEl.style.color = 'var(--dim)';
+        gainEl.textContent = '—';
       }
+    }
+
+    var posValEl = document.getElementById('ov-pos-val');
+    if (posValEl) {
+      posValEl.textContent = positions.length || '0';
+      var posSubEl = document.getElementById('ov-pos-sub');
+      if (posSubEl) posSubEl.textContent = positions.length ? 'Active deal positions' : 'No positions yet';
+    }
+
+    // Allocation ring
+    var goldPct = 100;
+    var invPct = 0;
+    var cashPct = 0;
+    if (goldVal > 0 && ltvOutstanding > 0) {
+      invPct = Math.round(ltvOutstanding / goldVal * 100);
+      goldPct = Math.max(0, 100 - invPct);
+    }
+    var circumference = 2 * Math.PI * 64;
+    var goldRing = document.getElementById('ov-ring-gold');
+    var invRing = document.getElementById('ov-ring-inv');
+    var cashRing = document.getElementById('ov-ring-cash');
+    if (goldRing) goldRing.setAttribute('stroke-dasharray', (circumference * goldPct / 100).toFixed(1) + ' ' + circumference.toFixed(1));
+    if (invRing) {
+      invRing.setAttribute('stroke-dasharray', (circumference * invPct / 100).toFixed(1) + ' ' + circumference.toFixed(1));
+      invRing.setAttribute('stroke-dashoffset', String(-(circumference * goldPct / 100)));
+    }
+    var ringPctEl = document.getElementById('ov-ring-pct');
+    if (ringPctEl) ringPctEl.textContent = goldPct + '%';
+    var legGold = document.getElementById('ov-leg-gold');
+    var legInv = document.getElementById('ov-leg-inv');
+    if (legGold) legGold.textContent = goldPct + '%';
+    if (legInv) legInv.textContent = invPct + '%';
+
+    // LTV utilisation bar
+    var ltvPct = d.ltv ? parseFloat(d.ltv.ltv_pct || 0) : 0;
+    var approvedPct = d.ltv ? parseFloat(d.ltv.approved_pct || 50) : 50;
+    var ltvPctEl = document.getElementById('ov-ltv-pct');
+    if (ltvPctEl) ltvPctEl.textContent = ltvPct.toFixed(0) + '%';
+    var ltvBar = document.getElementById('ov-ltv-bar');
+    if (ltvBar) ltvBar.style.width = Math.min(ltvPct, 100) + '%';
+    var ltvDetail = document.getElementById('ov-ltv-detail');
+    if (ltvDetail && d.ltv) {
+      var deployed = fmSgd(ltvOutstanding);
+      var facility = fmSgd(parseFloat(d.ltv.approved_amount || 0));
+      ltvDetail.textContent = deployed + ' deployed of ' + facility + ' facility';
+    }
+
+    // Composition
+    var compEl = document.getElementById('ov-comp-rows');
+    if (compEl && goldVal) {
+      var compItems = [
+        { label: 'Physical Gold (' + (d.gold_kg || d.kilos || '—') + ' kg)', value: goldVal, width: '85%', color: 'var(--goldA)' },
+      ];
+      if (ltvOutstanding > 0) compItems.push({ label: 'LTV Deployed', value: ltvOutstanding, width: (ltvOutstanding / goldVal * 85) + '%', color: '#4A7BA7' });
+      compEl.innerHTML = compItems.map(function(ci) {
+        return '<div class="ov-comp-row">' +
+          '<div class="ov-comp-label">' + ci.label + '</div>' +
+          '<div class="ov-comp-bar-wrap"><div class="ov-comp-bar" style="width:' + ci.width + ';background:' + ci.color + '"></div></div>' +
+          '<div class="ov-comp-value">' + fmSgd(ci.value) + '</div>' +
+        '</div>';
+      }).join('');
+    }
+    var compTotal = document.getElementById('ov-comp-total');
+    if (compTotal) compTotal.textContent = goldVal ? fmSgd(goldVal) : '—';
+
+    // Activity feed from audit trail / history
+    var actEl = document.getElementById('ov-activity-feed');
+    if (actEl) {
+      var acts = [];
+      (d.audit || []).slice(-5).reverse().forEach(function(a) {
+        acts.push({ color: '', text: a.action.replace(/_/g,' '), time: new Date(a.at).toLocaleDateString('en-SG', { day:'2-digit', month:'short' }) });
+      });
+      if (!acts.length) {
+        var now2 = new Date();
+        var timeStr = now2.toLocaleDateString('en-SG',{day:'2-digit',month:'short'});
+        acts.push({ color: 'gold', text: 'Portfolio loaded successfully', time: timeStr });
+        if (positions.length) acts.push({ color: 'blue', text: positions.length + ' active position' + (positions.length !== 1 ? 's' : '') + ' via Prism deal feed', time: timeStr });
+        if (d.ltv && ltvOutstanding) acts.push({ color: 'green', text: 'LTV facility active · ' + fmSgd(ltvOutstanding) + ' deployed', time: timeStr });
+      }
+      actEl.innerHTML = acts.slice(0,5).map(function(a) {
+        return '<div class="ov-activity-item">' +
+          '<div class="ov-activity-dot ' + (a.color || '') + '"></div>' +
+          '<div class="ov-activity-text">' + a.text + '</div>' +
+          '<div class="ov-activity-time">' + a.time + '</div>' +
+        '</div>';
+      }).join('');
     }
 
     renderNotices(d);
-    renderGrid(d);
+  }
+
+  function fmSgd(n) {
+    if (!n) return '—';
+    return 'SGD ' + Math.round(n).toLocaleString('en-SG');
+  }
+
+  /* ─── INVESTMENTS ──────────────────────────────────────────────── */
+  function renderInvestments(d) {
+    var positions = d.positions || [];
+    var gold_kg = parseFloat(d.gold_kg || d.kilos || 0);
+    var ltvFacility = d.ltv ? parseFloat(d.ltv.approved_amount || 0) : 0;
+    var ltvDeployed = d.ltv ? parseFloat(d.ltv.credit_outstanding || 0) : 0;
+    var n = positions.length;
+
+    // Alloc header
+    var deployedEl = document.getElementById('inv-ltv-deployed');
+    if (deployedEl) deployedEl.textContent = ltvDeployed ? fmSgd(ltvDeployed) : '—';
+    var ahSubEl = document.getElementById('inv-ah-sub');
+    if (ahSubEl && n > 0) ahSubEl.textContent = 'Your 50% LTV facility is fully deployed across ' + n + ' curated deal' + (n !== 1 ? 's' : '') + '. Positions are managed on your behalf by the Aurum advisory team.';
+    var ltvSubEl = document.getElementById('inv-ltv-sub');
+    if (ltvSubEl) ltvSubEl.textContent = n + ' active position' + (n !== 1 ? 's' : '') + (ltvFacility ? ' · ' + (ltvDeployed / ltvFacility * 100).toFixed(0) + '% deployed' : '');
+
+    // Deploy bar
+    var goldHeldEl = document.getElementById('inv-gold-held');
+    if (goldHeldEl) goldHeldEl.textContent = gold_kg ? gold_kg.toFixed(3) + ' kg' : '—';
+    var goldHeldSubEl = document.getElementById('inv-gold-held-sub');
+    if (goldHeldSubEl && gold_kg) goldHeldSubEl.textContent = (gold_kg * 32.1507).toFixed(2) + ' oz · ' + (d.vault_location || 'Singapore');
+    var facilityEl = document.getElementById('inv-facility');
+    if (facilityEl) facilityEl.textContent = ltvFacility ? fmSgd(ltvFacility) : '—';
+    var perPosEl = document.getElementById('inv-per-pos');
+    if (perPosEl && n > 0 && ltvDeployed) {
+      perPosEl.textContent = fmSgd(ltvDeployed / n);
+      var ppSub = document.getElementById('inv-per-pos-sub');
+      if (ppSub) ppSub.textContent = 'Equal split · ' + n + ' deal' + (n !== 1 ? 's' : '');
+    }
+
+    // Position cards
+    var grid = document.getElementById('inv-pos-grid');
+    if (!grid) return;
+    if (!positions.length) {
+      grid.innerHTML = '<div class="inv-no-positions"><div class="inv-no-positions-title">No Active Positions</div><div class="inv-no-positions-sub">Deal positions will appear here once your LTV facility is activated.</div></div>';
+      return;
+    }
+
+    var CHIP_MAP = { credit: 'credit', equity: 'pe', re: 're', real_estate: 're', infrastructure: 'infra', hybrid: 'pe' };
+    var CHIP_LABEL = { credit: 'Private Credit', equity: 'Private Equity', re: 'Real Estate', real_estate: 'Real Estate', infrastructure: 'Infrastructure', hybrid: 'Hybrid' };
+    var STAGE_DOT = { live: 'live', dd: 'dd', terms: 'terms', review: 'dd', close: 'live' };
+    var STAGE_TEXT = { live: 'Live · Open for commitment', dd: 'Due Diligence · In progress', terms: 'Term Sheet · Under negotiation', review: 'Under Review', close: 'Closing · Final documentation', realized: 'Realized' };
+
+    grid.innerHTML = positions.map(function(p) {
+      var chipKey = CHIP_MAP[p.type] || 'credit';
+      var chipLabel = CHIP_LABEL[p.type] || (p.type || 'Deal');
+      var stageKey = p.stage || 'review';
+      var stageDot = STAGE_DOT[stageKey] || '';
+      var stageText = p.status_note || STAGE_TEXT[stageKey] || stageKey;
+      var posAmt = n > 0 && ltvDeployed ? ltvDeployed / n : 0;
+      var allocPct = n > 0 ? (100 / n).toFixed(1) : '0';
+      var posKg = posAmt && d.current_value_sgd ? (posAmt / parseFloat(d.current_value_sgd) * gold_kg).toFixed(3) : null;
+      var stats = [];
+      if (p.vintage) stats.push({ label: 'Vintage', val: p.vintage });
+      if (p.geography) stats.push({ label: 'Geography', val: p.geography });
+      if (stageKey) stats.push({ label: 'Stage', val: stageKey.charAt(0).toUpperCase() + stageKey.slice(1) });
+      return '<div class="inv-pos-card">' +
+        '<div class="inv-pos-inner">' +
+          '<div class="inv-pos-left">' +
+            '<div class="inv-pos-top">' +
+              '<span class="inv-pos-chip ' + chipKey + '">' + chipLabel + '</span>' +
+              (p.geography ? '<span class="inv-pos-geo">' + p.geography + '</span>' : '') +
+            '</div>' +
+            '<div class="inv-pos-name">' + (p.name || p.id || '—') + '</div>' +
+            (p.status_note ? '<div class="inv-pos-thesis">' + p.status_note + '</div>' : '') +
+            (stats.length ? '<div class="inv-pos-stats">' + stats.map(function(s){ return '<div><div class="inv-pos-stat-label">' + s.label + '</div><div class="inv-pos-stat-val">' + s.val + '</div></div>'; }).join('') + '</div>' : '') +
+          '</div>' +
+          '<div class="inv-pos-right">' +
+            '<div>' +
+              '<div class="inv-pos-amount-label">Your Position</div>' +
+              '<div class="inv-pos-amount">' + (posAmt ? fmSgd(posAmt) : '—') + '</div>' +
+              (posKg ? '<div class="inv-pos-amount-sub">≈ ' + posKg + ' kg gold equivalent</div>' : '<div class="inv-pos-amount-sub">&nbsp;</div>') +
+              '<div class="inv-pos-ltv-wrap">' +
+                '<div class="inv-pos-ltv-row"><span>LTV Allocation</span><span>' + allocPct + '%</span></div>' +
+                '<div class="inv-pos-ltv-track"><div class="inv-pos-ltv-fill" style="width:' + allocPct + '%"></div></div>' +
+              '</div>' +
+            '</div>' +
+            '<div>' +
+              '<div class="inv-pos-stage-row">' +
+                '<div class="inv-stage-dot ' + stageDot + '"></div>' +
+                '<span class="inv-stage-text">' + stageText + '</span>' +
+              '</div>' +
+              '<div style="margin-top:10px"><button class="inv-pos-cta">Speak to your advisor →</button></div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
   }
 
   function renderNotices(d) {

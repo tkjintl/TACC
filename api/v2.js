@@ -20,6 +20,11 @@
 //   GET  ?resource=member&op=deals          — Prism bridge deal feed
 //   POST ?resource=admin&op=verify-ioi
 //   POST ?resource=admin&op=decline-ioi
+//   GET  ?resource=admin&op=list-portal-deals — Prism feed + portal publish state
+//   POST ?resource=admin&op=publish-deal      — add deal to member portal
+//   POST ?resource=admin&op=unpublish-deal    — remove deal from member portal
+//   POST ?resource=admin&op=save-alloc-config — save LTV allocation percentages
+//   POST ?resource=admin&op=sync-prism        — refresh Prism feed cache
 
 import {
   ok, bad, unauthorized, notFound, methodNotAllowed, serverError,
@@ -502,6 +507,12 @@ async function handleAdmin(req, res, op) {
     case 'verify-ioi':              return adminVerifyIoi(req, res, session);
     case 'decline-ioi':             return adminDeclineIoi(req, res, session);
     case 'member-certificate-url':  return adminMemberCertificateUrl(req, res, session);
+    // ── Deal publishing ─────────────────────────────────────────────────
+    case 'list-portal-deals':       return adminListPortalDeals(req, res, session);
+    case 'publish-deal':            return adminPublishDeal(req, res, session);
+    case 'unpublish-deal':          return adminUnpublishDeal(req, res, session);
+    case 'save-alloc-config':       return adminSaveAllocConfig(req, res, session);
+    case 'sync-prism':              return adminSyncPrism(req, res, session);
     default:                        return bad(res, `unknown admin op: ${op}`);
   }
 }
@@ -3818,5 +3829,144 @@ async function adminTestCapitalCallTargeting(req, res, session) {
     drift,
     test_capital_call_id:   callId,
     cleaned_leads:          cleaned,
+  });
+}
+
+// ── Deal publishing ops ────────────────────────────────────────────────────────
+
+const PORTAL_DEALS_KEY  = 'portal:deals';       // JSON array of portal deal records
+const ALLOC_CONFIG_KEY  = 'portal:alloc_config'; // JSON object { deal_id -> pct }
+
+async function getPortalDeals() {
+  const { getJSON: _getJSON } = await import('./_lib/storage.js');
+  const v = await _getJSON(PORTAL_DEALS_KEY);
+  return Array.isArray(v) ? v : [];
+}
+
+async function savePortalDeals(deals) {
+  const { setJSON: _setJSON } = await import('./_lib/storage.js');
+  await _setJSON(PORTAL_DEALS_KEY, deals);
+}
+
+async function getAllocConfig() {
+  const { getJSON: _getJSON } = await import('./_lib/storage.js');
+  const v = await _getJSON(ALLOC_CONFIG_KEY);
+  return (v && typeof v === 'object') ? v : {};
+}
+
+async function adminListPortalDeals(req, res, _session) {
+  if (req.method !== 'GET') return methodNotAllowed(res);
+
+  // Fetch Prism feed
+  let feed;
+  try {
+    const prismModule = await import('./_lib/prism-bridge.js');
+    feed = await prismModule.fetchPrismFeed();
+  } catch (err) {
+    feed = { bridge_active: false, deals: [], error: err.message };
+  }
+
+  const prismDeals = (feed && feed.deals) || [];
+  const portalDeals = await getPortalDeals();
+  const allocConfig = await getAllocConfig();
+
+  // Enrich portal deals with Prism data
+  const prismMap = {};
+  prismDeals.forEach(function(p) { prismMap[p.id] = p; });
+  const enrichedPortalDeals = portalDeals.map(function(pd) {
+    const prismDeal = prismMap[pd.prism_id] || {};
+    return Object.assign({}, prismDeal, pd);
+  });
+
+  // Member stats for KPIs
+  const funded = await listFundedMembers();
+  let totalLtv = 0;
+  funded.forEach(function(m) {
+    if (m.ltv && m.ltv.credit_outstanding) totalLtv += parseFloat(m.ltv.credit_outstanding) || 0;
+  });
+  const n = enrichedPortalDeals.length;
+  const avgPosition = n > 0 && funded.length > 0 ? totalLtv / funded.length : 0;
+
+  return ok(res, {
+    ok:           true,
+    bridge_active: feed ? feed.bridge_active : false,
+    fetched_at:   feed ? (feed.fetched_at || new Date().toISOString()) : null,
+    prism_deals:  prismDeals,
+    portal_deals: enrichedPortalDeals,
+    alloc_config: allocConfig,
+    funded_count: funded.length,
+    total_ltv:    totalLtv,
+    avg_position: avgPosition,
+    split_type:   'equal split',
+  });
+}
+
+async function adminPublishDeal(req, res, _session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return bad(res, 'invalid body'); }
+  const dealId = String(body.deal_id || '').trim();
+  if (!dealId) return bad(res, 'deal_id required');
+
+  // Fetch deal name from Prism feed
+  let dealName = dealId;
+  try {
+    const prismModule = await import('./_lib/prism-bridge.js');
+    const feed = await prismModule.fetchPrismFeed();
+    const found = (feed.deals || []).find(function(d) { return d.id === dealId; });
+    if (found) dealName = found.name || dealId;
+  } catch (_) {}
+
+  const portalDeals = await getPortalDeals();
+  const existing = portalDeals.find(function(d) { return (d.prism_id || d.id) === dealId; });
+  if (existing) return ok(res, { ok: true, message: 'already published' });
+
+  portalDeals.push({ id: dealId, prism_id: dealId, name: dealName, published_at: Date.now() });
+  await savePortalDeals(portalDeals);
+  return ok(res, { ok: true, deal_id: dealId });
+}
+
+async function adminUnpublishDeal(req, res, _session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return bad(res, 'invalid body'); }
+  const dealId = String(body.deal_id || '').trim();
+  if (!dealId) return bad(res, 'deal_id required');
+
+  const portalDeals = await getPortalDeals();
+  const updated = portalDeals.filter(function(d) { return (d.prism_id || d.id) !== dealId; });
+  await savePortalDeals(updated);
+  return ok(res, { ok: true, deal_id: dealId });
+}
+
+async function adminSaveAllocConfig(req, res, _session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return bad(res, 'invalid body'); }
+  const config = body.config;
+  if (!config || typeof config !== 'object') return bad(res, 'config object required');
+
+  const total = Object.values(config).reduce(function(a, b) { return a + (parseFloat(b) || 0); }, 0);
+  if (Math.abs(total - 100) > 0.5) return bad(res, 'allocations must total 100 (got ' + total.toFixed(1) + ')');
+
+  const { setJSON: _setJSON } = await import('./_lib/storage.js');
+  await _setJSON(ALLOC_CONFIG_KEY, config);
+  return ok(res, { ok: true });
+}
+
+async function adminSyncPrism(req, res, _session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let feed;
+  try {
+    const prismModule = await import('./_lib/prism-bridge.js');
+    feed = await prismModule.fetchPrismFeed();
+  } catch (err) {
+    return serverError(res, err);
+  }
+  return ok(res, {
+    ok:        true,
+    bridge_active: feed.bridge_active,
+    deal_count: (feed.deals || []).length,
+    fetched_at: feed.fetched_at || new Date().toISOString(),
   });
 }
