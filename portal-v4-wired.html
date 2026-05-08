@@ -2941,6 +2941,9 @@ function dashOr(v) { return (v !== null && v !== undefined && v !== '') ? v : 'â
 // ============================================================
 async function fetchSilent(url, opts) {
   try {
+    if (_previewLead && url.indexOf('resource=member') !== -1) {
+      url += (url.indexOf('?') === -1 ? '?' : '&') + 'preview_lead=' + encodeURIComponent(_previewLead);
+    }
     var r = await fetch(url, Object.assign({ credentials: 'include' }, opts || {}));
     if (r.status === 401 || r.status === 403) {
       window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
