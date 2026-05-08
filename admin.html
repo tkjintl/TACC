@@ -7417,16 +7417,17 @@ textarea.inp.mono-area {
       'kyc-expiring':               '__drawer',
       'nda-missing':                '__drawer',
       'member-inactive':            '__drawer',
-      'vault-verification-overdue': '__drawer'
+      'vault-verification-overdue': '__vault-tab'
     };
     el.querySelectorAll('button[data-act]').forEach(function(btn){
       btn.addEventListener('click', function(e){
         e.stopPropagation();
         var act = btn.dataset.act;
         var lid = btn.dataset.lead;
-        if (!lid) return;
         var op = FLAG_OP_MAP[act];
         if (!op) return;
+        if (op === '__vault-tab') { goTab('vault'); return; }
+        if (!lid) return;
         if (op === '__drawer') { openLeadDrawer(lid); return; }
         runStageAction(op, lid, null, btn);
       });
@@ -7652,6 +7653,24 @@ textarea.inp.mono-area {
     dr.setAttribute('aria-hidden', 'true');
     if (lastFocus && lastFocus.focus) lastFocus.focus();
   }
+
+  // Route to a comms compose pane with a specific member pre-selected as recipient.
+  function goCommsForMember(form, memberId) {
+    if (memberId && recipState[form]) {
+      recipState[form].mode = 'custom';
+      if (recipState[form].custom.indexOf(memberId) === -1) {
+        recipState[form].custom.push(memberId);
+      }
+      var radioCustom = document.querySelector('input[name="' + form + '-recip"][value="custom"]');
+      var radioAll    = document.querySelector('input[name="' + form + '-recip"][value="all"]');
+      if (radioCustom) radioCustom.checked = true;
+      if (radioAll)    radioAll.checked    = false;
+      refreshRecipUI(form);
+    }
+    goTab('comms');
+    var t = document.querySelector('[data-compose="' + form + '"]');
+    if (t) t.click();
+  }
   drBd.addEventListener('click', closeDrawer);
   document.getElementById('dr-close').addEventListener('click', closeDrawer);
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && dr.classList.contains('open')) closeDrawer(); });
@@ -7847,6 +7866,40 @@ textarea.inp.mono-area {
       html += '</div>';
     }
 
+    // Funded-only: LTV and capital calls (data present when opened via lead-detail)
+    if (l.stage === 'funded' || l.status === 'funded') {
+      var comp = l._computed || {};
+      var ceil  = comp.credit_ceiling_usd  != null ? comp.credit_ceiling_usd  : (l.credit_ceiling_usd  || 0);
+      var drawn = comp.credit_outstanding_usd != null ? comp.credit_outstanding_usd : (l.credit_outstanding_usd || 0);
+      var ltvPct = comp.ltv_pct != null ? comp.ltv_pct : (ceil > 0 ? Math.round((drawn / ceil) * 1000) / 10 : null);
+      var kg = comp.kg || (l.subscription && l.subscription.kg_requested) || (l.bars && l.bars.length) || 0;
+      html += '<div class="dr-section"><div class="dr-section-title">Portfolio & LTV</div>';
+      html += kvRow('Gold held', kg ? kg + ' kg' : '—');
+      html += kvRow('LTV ceiling', ceil > 0 ? fmtUsd(ceil) : '—');
+      html += kvRow('LTV drawn',   drawn > 0 ? fmtUsd(drawn) : '—');
+      if (ltvPct != null) {
+        var ltvColor = ltvPct >= 75 ? 'var(--red)' : ltvPct >= 70 ? 'var(--amber)' : 'var(--fg)';
+        html += '<div class="dr-kv"><span class="dr-kv-k">LTV ratio</span><span class="dr-kv-v" style="color:' + ltvColor + ';font-weight:500;">' + ltvPct.toFixed(1) + '%</span></div>';
+      }
+      if (l.last_login_at) html += kvRow('Last login', relTime(l.last_login_at));
+      html += '</div>';
+      if (l.capital_calls && l.capital_calls.length) {
+        html += '<div class="dr-section"><div class="dr-section-title">Capital Calls</div>';
+        html += '<div class="dt-wrap"><table class="dt"><thead><tr><th>Issued</th><th>Amount (USD)</th><th>Due</th><th>Status</th></tr></thead><tbody>';
+        html += l.capital_calls.map(function(c){
+          var issued = c.issued_at || c.created_at;
+          var due    = c.due_date  || c.due_at;
+          var amt    = c.amount_usd != null ? fmtUsd(c.amount_usd) : '—';
+          var stat   = c.acknowledged_at ? 'Acknowledged' : (c.status === 'paid' ? 'Paid' : 'Pending');
+          return '<tr><td>' + (issued ? new Date(issued).toLocaleDateString() : '—') + '</td>' +
+            '<td class="mono">' + amt + '</td>' +
+            '<td>' + (due ? new Date(due).toLocaleDateString() : '—') + '</td>' +
+            '<td>' + esc(stat) + '</td></tr>';
+        }).join('');
+        html += '</tbody></table></div></div>';
+      }
+    }
+
     document.getElementById('dr-body').innerHTML = html;
 
     // Wire up IOI inline action buttons
@@ -7932,8 +7985,8 @@ textarea.inp.mono-area {
 
     if (uiOp === 'issue-wire')         return openWireModal(lid, lead);
     if (uiOp === 'add-position')       return openPositionModal(lid, lead);
-    if (uiOp === 'send-message')       { closeDrawer(); goTab('comms'); return; }
-    if (uiOp === 'issue-capital-call') { closeDrawer(); goTab('comms'); var t=document.querySelector('[data-compose="cap"]'); if(t) t.click(); return; }
+    if (uiOp === 'send-message')       { closeDrawer(); goCommsForMember('dm', lid); return; }
+    if (uiOp === 'issue-capital-call') { closeDrawer(); goCommsForMember('cap', lid); return; }
     if (uiOp === 'mark-wire-received') return openWireReceivedModal(lid, lead);
     if (uiOp === 'mark-cleared-admit') return openWireClearedModal(lid, lead);
     if (spec.custom === 'decline')     return openDeclineModal(lid, lead);
@@ -8353,7 +8406,6 @@ textarea.inp.mono-area {
     html += '<div class="dr-actions" style="position:sticky;bottom:0;background:var(--surface);margin:-24px;margin-top:24px;padding:14px 24px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:8px;">' +
       '<button class="b b--sm" data-mact="quarterly" data-mid="' + esc(m.id) + '">Send Quarterly</button>' +
       '<button class="b b--sm" data-mact="add-position" data-mid="' + esc(m.id) + '">Add Position</button>' +
-      '<button class="b b--sm" data-mact="upload-doc" data-mid="' + esc(m.id) + '">Upload Doc</button>' +
       '<button class="b b--sm" data-mact="capital-call" data-mid="' + esc(m.id) + '">Capital Call</button>' +
       '<button class="b b--sm" data-mact="resend-admission" data-mid="' + esc(m.id) + '">Resend Admission</button>' +
       '<button class="b b--sm b--red" data-mact="revoke" data-mid="' + esc(m.id) + '">Revoke</button>' +
@@ -8366,10 +8418,9 @@ textarea.inp.mono-area {
       btn.addEventListener('click', function(){
         var act = btn.dataset.mact;
         var mid = btn.dataset.mid;
-        if (act === 'quarterly')     { goTab('comms'); var t = document.querySelector('[data-compose="qtr"]'); if (t) t.click(); }
-        else if (act === 'capital-call')  { goTab('comms'); var t = document.querySelector('[data-compose="cap"]'); if (t) t.click(); }
+        if (act === 'quarterly')          { goCommsForMember('qtr', mid); }
+        else if (act === 'capital-call')  { goCommsForMember('cap', mid); }
         else if (act === 'add-position')  { openPositionModal(mid, m); }
-        else if (act === 'upload-doc')    { toast('Document upload not yet available', 'error'); }
         else if (act === 'resend-admission') {
           btn.disabled = true; btn.textContent = 'Sending…';
           api('resend-admission', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ leadId: mid }) })
@@ -8781,9 +8832,10 @@ textarea.inp.mono-area {
     var quick = picker.querySelector('.recip-quick');
     var add = picker.querySelector('.recip-add');
     var pills = picker.querySelector('[data-pills]');
-    quick.addEventListener('change', function(){
-      recipState[form].mode = quick.value;
-      if (quick.value !== 'custom') recipState[form].custom = [];
+    quick.addEventListener('change', function(e){
+      var val = e.target.value;
+      recipState[form].mode = val === 'all' ? 'all-funded' : val;
+      if (val !== 'custom') recipState[form].custom = [];
       refreshRecipUI(form);
     });
     add.addEventListener('change', function(){
@@ -8799,8 +8851,10 @@ textarea.inp.mono-area {
       recipState[form].custom = recipState[form].custom.filter(function(x){ return x !== id; });
       refreshRecipUI(form);
     });
-    // initialize from default
-    recipState[form].mode = quick.value || '';
+    // initialize from checked radio
+    var checkedRadio = quick.querySelector('input:checked');
+    var initVal = checkedRadio ? checkedRadio.value : '';
+    recipState[form].mode = initVal === 'all' ? 'all-funded' : initVal;
   });
 
   document.getElementById('form-dm').addEventListener('submit', function(e){
