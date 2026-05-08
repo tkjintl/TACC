@@ -201,12 +201,15 @@ svg {
   top: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 12px;
+  padding: 0 20px;
+  gap: 0;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   z-index: var(--z-header);
 }
+.tb-left   { flex: 1; display: flex; align-items: center; gap: 8px; }
+.tb-center { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; margin: 0 auto; }
+.tb-right  { flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
 
 #ticker {
   grid-column: 1 / -1;
@@ -353,7 +356,7 @@ svg {
 
 .tb-operator { font-family: var(--mono); font-size: 11px; color: var(--fg-muted); }
 .tb-clock    { font-family: var(--mono); font-size: 11px; color: var(--accent); min-width: 80px; }
-.tb-spacer   { flex: 1; }
+.tb-spacer   { display: none; }
 
 .tb-btn {
   background: var(--elevated);
@@ -598,8 +601,8 @@ svg {
   display: flex;
   gap: 0;
   align-items: stretch;
-  border-bottom: 1px solid var(--border);
   background: #0a0a10;
+  width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -607,17 +610,18 @@ svg {
 .ah-ticker::-webkit-scrollbar { display: none; }
 
 .tk {
-  flex: 1 0 auto;
-  min-width: 130px;
-  padding: 5px 14px;
+  flex: 1;
+  min-width: 0;
+  padding: 5px 20px;
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 1px;
 }
 .tk:last-child  { border-right: 0; }
-.tk-lbl  { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; color: var(--fg-dim); text-transform: uppercase; }
-.tk-val  { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--fg); letter-spacing: 0.04em; }
+.tk-lbl  { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; color: var(--fg-dim); text-transform: uppercase; text-align: center; }
+.tk-val  { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--fg); letter-spacing: 0.04em; text-align: center; }
 .tk-delta{ font-family: var(--mono); font-size: 10px; font-variant-numeric: tabular-nums; }
 .tk-delta.up   { color: var(--green); }
 .tk-delta.dn   { color: var(--red); }
@@ -3994,22 +3998,23 @@ svg.spark   { overflow: visible; }
        ═══════════════════════════════════════════════ -->
   <header id="topbar">
 
-    <!-- Left: seal lockup + clock + live indicator + operator email -->
+    <!-- Left: seal + lockup only -->
     <div class="tb-left">
       <span class="tb-seal">Au</span>
       <span class="tb-lockup-text">
         <span class="tb-lockup-top">Aurum Century Club</span>
         <span class="tb-lockup-sub">Admin Console</span>
       </span>
+    </div>
+
+    <!-- Center: clock + live indicator + operator email (truly centered) -->
+    <div class="tb-center">
       <span class="tb-divider"></span>
       <span class="tb-clock" id="clock">--:--:-- SGT</span>
       <span class="tb-divider"></span>
       <span class="tb-live-dot"></span>
       <span class="tb-operator" id="admin-email">—</span>
     </div>
-
-    <!-- Spacer pushes right controls to the far right -->
-    <span class="tb-spacer"></span>
 
     <!-- Right: cmd-k, bots popover, tools dropdown -->
     <div class="tb-right">
