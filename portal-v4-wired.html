@@ -3132,12 +3132,15 @@ function renderNav(member) {
 // ============================================================
 function normalizeSpot(data) {
   if (!data) return null;
-  // Ensure both units always present regardless of API response shape
-  if (data.price_usd_per_oz  && !data.price_usd_per_kg) data.price_usd_per_kg = data.price_usd_per_oz  * 32.1507;
-  if (data.price_usd_per_kg  && !data.price_usd_per_oz) data.price_usd_per_oz = data.price_usd_per_kg  / 32.1507;
-  // Also handle alternate field names some APIs use
-  if (!data.price_usd_per_oz && data.xau_usd)           data.price_usd_per_oz = data.xau_usd;
-  if (!data.price_usd_per_kg && data.xau_usd)           data.price_usd_per_kg = data.xau_usd * 32.1507;
+  // Map actual API field names (xau_usd_oz / xau_usd_kg) to canonical names
+  if (!data.price_usd_per_oz && data.xau_usd_oz) data.price_usd_per_oz = data.xau_usd_oz;
+  if (!data.price_usd_per_kg && data.xau_usd_kg) data.price_usd_per_kg = data.xau_usd_kg;
+  // Legacy fallback: xau_usd was the old oz field name
+  if (!data.price_usd_per_oz && data.xau_usd)    data.price_usd_per_oz = data.xau_usd;
+  if (!data.price_usd_per_kg && data.xau_usd)    data.price_usd_per_kg = data.xau_usd * 32.1507;
+  // Cross-derive if one unit is still missing
+  if (data.price_usd_per_oz  && !data.price_usd_per_kg) data.price_usd_per_kg = data.price_usd_per_oz * 32.1507;
+  if (data.price_usd_per_kg  && !data.price_usd_per_oz) data.price_usd_per_oz = data.price_usd_per_kg / 32.1507;
   return data;
 }
 
