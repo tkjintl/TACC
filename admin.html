@@ -7632,9 +7632,11 @@ textarea.inp.mono-area {
       });
   }
 
-  // Mirror api/portfolio.js + api/_lib/storage.js _resolveStage
+  // Use server-computed stage if present (adminLeads now returns it).
+  // Client fallback only for lead-detail which returns the full lead object.
   function resolveLeadStageClient(l) {
     if (!l) return 'inquiry';
+    if (l.stage) return l.stage; // trust server
     if (l.status === 'funded') return 'funded';
     var w = l.wire || {};
     if (w.reference && w.received_at && !w.cleared_at) return 'wire_received';
