@@ -3218,36 +3218,6 @@ body {
 </main><!-- /main -->
 
 <!-- ============================================================
-     CAPITAL CALL MODAL
-     ============================================================ -->
-<div id="cc-modal">
-  <div class="cc-modal-inner">
-    <button class="cc-modal-close" onclick="closeCcModal()">×</button>
-    <div class="cc-modal-title" id="ccModalTitle">Capital Call</div>
-    <div class="cc-modal-amount" id="ccModalAmount">$—</div>
-    <div class="cc-modal-due" id="ccModalDue">Due —</div>
-    <div class="cc-modal-section">Wire Instructions</div>
-    <div class="cc-wire-grid" id="ccWireGrid">
-      <span class="cc-wire-key">Beneficiary</span>
-      <span class="cc-wire-val">The Aurum Century Club</span>
-      <span class="cc-wire-key">Bank</span>
-      <span class="cc-wire-val" id="ccWireBank">DBS Bank Singapore</span>
-      <span class="cc-wire-key">SWIFT</span>
-      <span class="cc-wire-val" id="ccWireSwift">—</span>
-      <span class="cc-wire-key">Account No.</span>
-      <span class="cc-wire-val" id="ccWireAccount">—</span>
-      <span class="cc-wire-key">Reference</span>
-      <span class="cc-wire-val" id="ccWireRef">—</span>
-    </div>
-    <div class="cc-ack-row">
-      <input type="checkbox" id="ccAckCheck" onchange="toggleCcConfirm()">
-      <label class="cc-ack-label" for="ccAckCheck">I confirm that I have read and understood the capital call notice and will arrange the wire transfer by the due date.</label>
-    </div>
-    <button class="cc-confirm-btn" id="ccConfirmBtn" disabled onclick="confirmCapitalCall()">Confirm Capital Call</button>
-  </div>
-</div>
-
-<!-- ============================================================
      DEAL SLIDE-IN PANEL
      ============================================================ -->
 <div id="deal-panel">
@@ -3276,9 +3246,8 @@ var _previewLead = new URLSearchParams(location.search).get('preview_lead') || n
 var tabLoaded = {};
 var viewAnimated = {};
 var animated = { ring: false, ozCounter: false };
-var currentCcId = null;
 var unreadMsgCount = 0;
-var pendingCcCount = 0;
+var DEALS = null;
 
 // ============================================================
 // UTILITIES
@@ -3482,9 +3451,8 @@ function toggleTheme() {
 // NAV BADGE
 // ============================================================
 function updateNavBadge() {
-  var total = unreadMsgCount + pendingCcCount;
   var dot = document.getElementById('navNotifDot');
-  if (dot) dot.classList.toggle('show', total > 0);
+  if (dot) dot.classList.toggle('show', unreadMsgCount > 0);
 }
 
 // ============================================================
@@ -3497,10 +3465,6 @@ function renderNav(member) {
   // Count unread messages for badge
   var msgs = member.messages || [];
   unreadMsgCount = msgs.filter(function(m) { return m.read === false || m.read === 0 || (!m.read && !m.read_at); }).length;
-
-  // Count pending capital calls
-  var ccs = member.capital_calls || [];
-  pendingCcCount = ccs.filter(function(cc) { return !cc.acknowledged_at; }).length;
 
   updateNavBadge();
 }
@@ -3567,38 +3531,52 @@ function _addCls(id, cls) { var el = document.getElementById(id); if (el) el.cla
 function _rmCls(id, list) { var el = document.getElementById(id); if (!el) return; list.forEach(function(c) { el.classList.remove(c); }); }
 
 function renderAttentionCards(member) {
-  var grid = document.getElementById('attentionGrid');
+  var grid    = document.getElementById('attentionGrid');
   var section = document.getElementById('attentionSection');
   if (!grid) return;
 
-  var ccs     = member.capital_calls || [];
   var notices = member.notices || [];
-
-  // Filter unacknowledged capital calls
-  var pendingCcs = ccs.filter(function(cc) { return !cc.acknowledged_at; });
-
-  if (pendingCcs.length === 0 && notices.length === 0) {
-    if (section) section.style.display = 'none';
-    return;
-  }
+  var deals   = DEALS || [];
 
   var cards = '';
 
-  pendingCcs.forEach(function(cc) {
-    _ccMap[cc.id] = cc;
-    var due = cc.due_date ? fmDate(cc.due_date) : '—';
-    var amount = fmU(cc.amount_usd || cc.amount);
-    cards += '<div class="attention-card amber" id="cc-card-' + esc(cc.id) + '">' +
-      '<div class="attention-badge amber">Pending Action</div>' +
-      '<div class="attention-title">' + esc(cc.title || cc.fund_name || 'Capital Call') + '</div>' +
-      '<div class="attention-sub">' + esc(cc.description || cc.reason || '') + ' Transfer deadline: ' + esc(due) + '.</div>' +
+  // ── Fund cash reserve status card ────────────────────────────
+  var cashReservePct  = (member.cash_reserve_pct  !== undefined) ? member.cash_reserve_pct  : 20;
+  var cashDeployedPct = (member.cash_deployed_pct !== undefined) ? member.cash_deployed_pct : 0;
+  var cashAvailPct    = Math.max(0, cashReservePct - cashDeployedPct);
+  var cashStatus      = cashDeployedPct > 0 ? 'amber' : 'green';
+  var cashBadge       = cashDeployedPct > 0 ? 'Deploying' : 'Fully Reserved';
+  var cashDesc        = cashDeployedPct > 0
+    ? 'Cash buffer is being deployed into gold on today\'s price dip. Reserve partially utilised.'
+    : 'The 20% cash buffer is fully intact — positioned to deploy on gold price pullbacks.';
+  cards += '<div class="attention-card ' + cashStatus + '">' +
+    '<div class="attention-badge ' + cashStatus + '">' + cashBadge + '</div>' +
+    '<div class="attention-title">Fund Cash Reserve</div>' +
+    '<div class="attention-sub">' + cashDesc + '</div>' +
+    '<div class="attention-footer">' +
+      '<span class="attention-amount">' + cashAvailPct.toFixed(0) + '% available</span>' +
+      '<button class="attention-cta" onclick="showView(\'portfolio\')">View Portfolio →</button>' +
+    '</div>' +
+  '</div>';
+
+  // ── Deal advertisement cards (up to 2, newest first) ─────────
+  var sortedDeals = deals.slice().sort(function(a, b) { return (b.is_new ? 1 : 0) - (a.is_new ? 1 : 0); });
+  sortedDeals.slice(0, 2).forEach(function(d) {
+    _dealMap[d.id] = d;
+    var sub = [d.geography || d.geo, d.asset_class || d.type].filter(Boolean).join(' · ');
+    if (d.target_irr) sub += ' · Target IRR ' + d.target_irr;
+    cards += '<div class="attention-card blue">' +
+      '<div class="attention-badge blue">Deal Flow' + (d.is_new ? ' — NEW' : '') + '</div>' +
+      '<div class="attention-title">' + esc(d.name) + '</div>' +
+      '<div class="attention-sub">' + esc(sub) + '</div>' +
       '<div class="attention-footer">' +
-        '<span class="attention-amount">' + amount + '</span>' +
-        '<button class="attention-cta" onclick="openCcModal(_ccMap[\'' + esc(cc.id) + '\'])">Review &amp; Confirm →</button>' +
+        '<span class="attention-amount">' + esc(d.stage || '') + '</span>' +
+        '<button class="attention-cta" onclick="openDealPanel(_dealMap[\'' + esc(d.id) + '\'])">Review Deal →</button>' +
       '</div>' +
     '</div>';
   });
 
+  // ── General notices ───────────────────────────────────────────
   notices.forEach(function(n) {
     var color = n.color || 'green';
     cards += '<div class="attention-card ' + esc(color) + '">' +
@@ -3763,73 +3741,11 @@ function renderActivity(member) {
   }).join('');
 }
 
-// ============================================================
-// CAPITAL CALL MODAL
-// ============================================================
-function openCcModal(cc) {
-  currentCcId = cc.id;
-  document.getElementById('ccModalTitle').textContent = cc.title || cc.fund_name || cc.ref || 'Capital Call';
-  document.getElementById('ccModalAmount').textContent = fmU(cc.amount_usd || cc.amount);
-  document.getElementById('ccModalDue').textContent = 'Due ' + (cc.due_date ? fmDate(cc.due_date) : '—');
-  var bankEl  = document.getElementById('ccWireBank');
-  var swiftEl = document.getElementById('ccWireSwift');
-  if (bankEl)  bankEl.textContent  = cc.wire_bank  || 'DBS Bank Singapore';
-  if (swiftEl) swiftEl.textContent = cc.wire_swift || 'DBSSSGSG';
-  document.getElementById('ccWireAccount').textContent = cc.wire_account || '—';
-  document.getElementById('ccWireRef').textContent = cc.wire_ref || cc.wire_reference || ('TACC-CC-' + cc.id);
-  document.getElementById('ccAckCheck').checked = false;
-  document.getElementById('ccConfirmBtn').disabled = true;
-  document.getElementById('cc-modal').classList.add('open');
-}
-
-function closeCcModal() {
-  document.getElementById('cc-modal').classList.remove('open');
-  currentCcId = null;
-}
-
-function toggleCcConfirm() {
-  var chk = document.getElementById('ccAckCheck');
-  document.getElementById('ccConfirmBtn').disabled = !chk.checked;
-}
-
-async function confirmCapitalCall() {
-  if (!currentCcId) return;
-  var btn = document.getElementById('ccConfirmBtn');
-  btn.disabled = true;
-  btn.textContent = 'Submitting…';
-
-  var data = await fetchSilent('/api/v2?resource=member&op=ack-capital-call', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ capital_call_id: currentCcId })
-  });
-
-  if (data !== null) {
-    // Remove the card from today tab
-    var card = document.getElementById('cc-card-' + currentCcId);
-    if (card) card.remove();
-    pendingCcCount = Math.max(0, pendingCcCount - 1);
-    updateNavBadge();
-    closeCcModal();
-    toast('Capital call acknowledged.');
-  } else {
-    btn.disabled = false;
-    btn.textContent = 'Confirm Capital Call';
-    toast('Error — please try again.', 'error');
-  }
-}
-
 // Escape key to close modals
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
-    closeCcModal();
     closeDealPanel();
   }
-});
-
-// Click outside cc-modal to close
-document.getElementById('cc-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeCcModal();
 });
 
 // ============================================================
@@ -4314,7 +4230,6 @@ function loadVaultVerifications() {
 // ============================================================
 var activeThreadId = null;
 var _msgMap  = {};
-var _ccMap   = {};
 var _dealMap = {};
 
 function loadMessages() {
@@ -4527,19 +4442,8 @@ var MOCK_MEMBER = {
   nda_signed_at: '2024-01-12',
   two_fa: true, two_fa_enabled: true,
   last_login: 'Today, 07:44 SGT',
-  capital_calls: [
-    {
-      id: 'cc-001',
-      fund_name: 'Q2 Capital Call — Series B Round',
-      reason: 'Helios Capital Partners has issued a capital call for the Series B round. Funds must be transferred by 30 May 2026.',
-      amount_usd: 250000,
-      due_date: '2026-05-30',
-      wire_bank: 'DBS Bank Singapore',
-      wire_account: '072-901234-5',
-      wire_swift: 'DBSSSGSG',
-      wire_ref: 'TACC-CC-247-Q2'
-    }
-  ],
+  cash_reserve_pct: 20,
+  cash_deployed_pct: 0,
   notices: [
     {
       id: 'notice-001',
@@ -4572,8 +4476,7 @@ var MOCK_MEMBER = {
   ],
   messages: [
     { id: 'msg-001', from: 'TACC Investor Relations', subject: 'Q2 Portfolio Update + Gold Revaluation', preview: 'Your portfolio has been revalued following the May spot price movement...', body: 'Dear Thomas,\n\nWe are pleased to share your Q2 2026 portfolio update following the recent gold spot price movement to $2,583/oz.\n\nYour allocated gold position of 847.3 oz has been revalued to $2,187,500, representing an unrealized gain of $378,867 (+20.9%) from your average acquisition cost of $2,134/oz.\n\nYour private equity positions continue to perform in line with expectations. Helios Capital Partners has confirmed their Q3 fundraise target has been met. A capital call notice for the Series B round has been issued separately.\n\nPlease log into the portal to review your full Q2 statement, now available in your Document Vault.\n\nWarm regards,\nThe Aurum Century Club Team', date: new Date(Date.now() - 7200000).toISOString(), read: false, type: 'gold' },
-    { id: 'msg-002', from: 'Helios Capital Partners',   subject: 'Series B Capital Call — Action Required', preview: 'Please find attached the Q2 capital call notice for Pacific Bridge...', body: 'Dear Thomas,\n\nPlease find attached the Q2 2026 capital call notice for the Helios Capital Partners Series B round.\n\nCapital call amount: USD 250,000\nDue date: 30 May 2026\n\nWire instructions have been provided separately. Please ensure funds are received before the due date to maintain your position.\n\nKind regards,\nHelios Capital Partners', date: new Date(Date.now() - 86400000).toISOString(), read: false, type: 'amber' },
-    { id: 'msg-003', from: 'TACC Investor Relations',   subject: 'Annual Vault Audit Complete',          preview: 'We are pleased to confirm your gold holdings have been independently verified...', body: 'Dear Thomas,\n\nWe are pleased to confirm your gold holdings have been independently verified by Malca-Amit as part of the April 2026 annual vault audit.\n\nHoldings verified: 847.3 troy oz (26.36 kg)\nPurity: 999.9 Fine Gold\nLot Reference: AU-2024-0047\nInsurance: Lloyd\'s of London — confirmed current\n\nYour vault audit certificate has been uploaded to your Document Vault.\n\nWarm regards,\nThe Aurum Century Club Team', date: new Date(Date.now() - 518400000).toISOString(), read: true, type: 'green' }
+{ id: 'msg-003', from: 'TACC Investor Relations',   subject: 'Annual Vault Audit Complete',          preview: 'We are pleased to confirm your gold holdings have been independently verified...', body: 'Dear Thomas,\n\nWe are pleased to confirm your gold holdings have been independently verified by Malca-Amit as part of the April 2026 annual vault audit.\n\nHoldings verified: 847.3 troy oz (26.36 kg)\nPurity: 999.9 Fine Gold\nLot Reference: AU-2024-0047\nInsurance: Lloyd\'s of London — confirmed current\n\nYour vault audit certificate has been uploaded to your Document Vault.\n\nWarm regards,\nThe Aurum Century Club Team', date: new Date(Date.now() - 518400000).toISOString(), read: true, type: 'green' }
   ]
 };
 
@@ -4608,7 +4511,6 @@ if (USE_MOCK) {
     if (url.includes('resource=member&op=vault-verifications'))  return JSON.parse(JSON.stringify(MOCK_VAULT_DOCS));
     if (url.includes('resource=member&op=letter-url'))           return { url: null };
     if (url.includes('resource=member&op=vault-doc-url'))        return { url: null };
-    if (url.includes('resource=member&op=ack-capital-call'))     return { ok: true };
     if (url.includes('messages?op=read'))                        return { ok: true };
     if (url.includes('mark-letter-read'))                        return { ok: true };
     return { ok: true };
@@ -4645,8 +4547,18 @@ if (USE_MOCK) {
   renderNav(MEMBER);
   renderToday(MEMBER);
 
-  SPOT = normalizeSpot(await fetchSilent('/api/v2?resource=public&op=spot'));
+  var _spotRaw  = fetchSilent('/api/v2?resource=public&op=spot');
+  var _dealsRaw = fetchSilent('/api/v2?resource=member&op=deals' + (_previewLead ? '&preview_lead=' + encodeURIComponent(_previewLead) : ''));
+  var _results  = await Promise.all([_spotRaw, _dealsRaw]);
+
+  SPOT  = normalizeSpot(_results[0]);
+  var rawDeals = _results[1];
+  DEALS = Array.isArray(rawDeals) ? rawDeals : (rawDeals && rawDeals.deals ? rawDeals.deals : []);
+  if (DEALS) DEALS.forEach(function(d) { _dealMap[d.id] = d; });
+
   if (SPOT) renderKpis(MEMBER);
+  renderAttentionCards(MEMBER); // re-render with deals now loaded
+  if (DEALS && DEALS.length) renderTodayDeals(DEALS);
   renderAccount(MEMBER); // after SPOT so accGoldValue has price data
 
   setInterval(refreshSpot, 60000);

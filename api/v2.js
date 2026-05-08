@@ -158,12 +158,36 @@ async function publicCountdown(req, res) {
 // ── resource=member ───────────────────────────────────────────────────────────
 
 async function requireMember(req) {
+  // Member cookie path
   const token = getCookie(req, COOKIE_MEMBER);
   const session = await verifyToken(token);
-  if (!session || !session.leadId) return null;
-  const lead = await getLead(session.leadId);
-  if (!lead) return null;
-  return lead;
+  if (session && session.leadId) {
+    const lead = await getLead(session.leadId);
+    if (lead) return lead;
+  }
+
+  // Admin preview fallback — lets admins browse the member portal
+  // without needing a member account (same pattern as api/doc.js)
+  const adminToken = getCookie(req, COOKIE_ADMIN);
+  const adminSession = await verifyToken(adminToken);
+  if (adminSession && adminSession.sub === 'admin') {
+    const previewId = String(getQuery(req).preview_lead || '').trim();
+    if (previewId) {
+      const lead = await getLead(previewId);
+      if (lead) { lead._adminPreview = true; return lead; }
+    }
+    return {
+      id: '_admin_browse', status: 'funded', nda_state: 'approved',
+      full_name: adminSession.email || 'Admin', name: adminSession.email || 'Admin',
+      email: adminSession.email || 'admin', tier: 'Partner (Admin View)',
+      member_number: null, gold_kg: 0, committed_usd: 0, cost_basis_usd: 0,
+      vault_location: 'Singapore Freeport', custodian: 'Malca-Amit',
+      positions: [], messages: [], capital_calls: [], notices: [],
+      gold_purchases: [], activity: [], _adminPreview: true,
+    };
+  }
+
+  return null;
 }
 
 async function handleMember(req, res, op) {
@@ -1647,27 +1671,7 @@ async function adminSeedDemo(req, res, session) {
     try { await saveLead(lead); } catch {}
   }
 
-  // 4. Capital call broadcast (members 1..6) ──────────────────────────────────
-  const ccDueOk      = now + 14 * day;          // standard due
-  const ccDueOverdue = now - 5 * day;           // member #6 overdue
-  let capitalCallsIssued = 0;
-  for (const lead of fundedLeads) {
-    const isOverdue = lead.member_number === 6;
-    const isAcked   = lead.member_number === 4;
-    const cc = {
-      id: `cc_q2_2026_${lead.id}`,
-      ref: `CC-2026-Q2-${String(lead.member_number).padStart(3, '0')}`,
-      issued_at: now - 6 * day,
-      due_date: isOverdue ? ccDueOverdue : ccDueOk,
-      amount_usd: 30_000,
-      reason: 'Q2 2026 deployment — Lotte Logistics Senior tranche participation',
-      status: isAcked ? 'acknowledged' : 'pending',
-      acknowledged_at: isAcked ? (now - 4 * day) : null,
-    };
-    lead.capital_calls = lead.capital_calls || [];
-    lead.capital_calls.push(cc);
-    try { await saveLead(lead); capitalCallsIssued++; } catch {}
-  }
+  // 4. (Capital calls removed — TACC fund model uses cash reserve, not capital calls)
 
   // 5. Quarterly letters ──────────────────────────────────────────────────────
   const lettersSpec = [
@@ -1892,7 +1896,6 @@ async function adminSeedDemo(req, res, session) {
     deals: dealsCreated.length,
     letters: lettersSpec.length,
     vault_verifications: vvSpec.length,
-    capital_calls: capitalCallsIssued,
     positions: positionsAdded,
     messages: messagesAdded,
     letters_attached: lettersAttached,

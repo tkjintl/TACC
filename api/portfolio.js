@@ -57,12 +57,6 @@ function resolveNextAction(lead) {
   if (status === 'accessed' && ndaState === 'approved') {
     return { type: 'subscribe', label: 'Complete your subscription', url: '/subscription' };
   }
-  const pendingCall = (lead.capital_calls || []).find(
-    (c) => c.status === 'pending' && !c.acknowledged_at
-  );
-  if (pendingCall) {
-    return { type: 'capital_call', label: 'Capital call requires acknowledgement', url: '/portfolio#gold' };
-  }
   return null;
 }
 
@@ -115,8 +109,10 @@ async function buildPortfolioResponse(res, lead) {
         kg_requested: subKg,
         submitted_at: subSubmit,
       } : null,
-      next_action: resolveNextAction(lead),
-      vault_mode:  getVaultMode(),
+      next_action:       resolveNextAction(lead),
+      vault_mode:        getVaultMode(),
+      cash_reserve_pct:  20,
+      cash_deployed_pct: 0,
 
       // Flat (legacy renderer compatibility — _pages/portfolio.html)
       full_name:               lead.name || null,
@@ -337,6 +333,8 @@ async function buildPortfolioResponse(res, lead) {
       next_action_sub:         null,
       bar:                     flatBar,
       notices:                 generalNotices,
+      cash_reserve_pct:        lead.cash_reserve_pct  !== undefined ? lead.cash_reserve_pct  : 20,
+      cash_deployed_pct:       lead.cash_deployed_pct !== undefined ? lead.cash_deployed_pct : 0,
     });
   } catch (e) {
     console.error('[portfolio]', e && e.message, e && e.stack);
