@@ -2847,7 +2847,6 @@ body {
   <!-- Center tabs -->
   <div class="nav-tabs">
     <button class="nav-tab active" data-view="today"     onclick="showView('today')">Today</button>
-    <button class="nav-tab"        data-view="deals"     onclick="showView('deals')">Deals</button>
     <button class="nav-tab"        data-view="portfolio" onclick="showView('portfolio')">Portfolio</button>
     <button class="nav-tab"        data-view="documents" onclick="showView('documents')">Documents</button>
     <button class="nav-tab"        data-view="messages"  onclick="showView('messages')">Messages</button>
@@ -2877,7 +2876,6 @@ body {
 <div class="mobile-nav">
   <div class="mobile-nav-inner">
     <button class="mobile-tab active" data-view="today"     onclick="showView('today')">Today</button>
-    <button class="mobile-tab"        data-view="deals"     onclick="showView('deals')">Deals</button>
     <button class="mobile-tab"        data-view="portfolio" onclick="showView('portfolio')">Portfolio</button>
     <button class="mobile-tab"        data-view="documents" onclick="showView('documents')">Documents</button>
     <button class="mobile-tab"        data-view="messages"  onclick="showView('messages')">Messages</button>
@@ -3010,18 +3008,6 @@ body {
     </div>
   </div>
 
-  <!-- Active Opportunities -->
-  <div class="today-deals-section fade-up" id="todayDealsSection">
-    <div class="section-label" style="padding:0;margin-bottom:4px">Active Opportunities</div>
-    <div class="today-deals-intro">Curated deal flow from your advisory network.</div>
-    <div class="today-deals-grid" id="todayDealsGrid">
-      <!-- skeleton -->
-      <div class="deal-skel-card"><div class="skel" style="height:14px;width:70px;margin-bottom:12px"></div><div class="skel" style="height:20px;width:70%;margin-bottom:8px"></div><div class="skel" style="height:12px;width:40%;margin-bottom:16px"></div><div class="skel" style="height:48px;width:100%;margin-bottom:14px"></div><div class="skel" style="height:12px;width:100%"></div></div>
-      <div class="deal-skel-card"><div class="skel" style="height:14px;width:70px;margin-bottom:12px"></div><div class="skel" style="height:20px;width:70%;margin-bottom:8px"></div><div class="skel" style="height:12px;width:40%;margin-bottom:16px"></div><div class="skel" style="height:48px;width:100%;margin-bottom:14px"></div><div class="skel" style="height:12px;width:100%"></div></div>
-      <div class="deal-skel-card"><div class="skel" style="height:14px;width:70px;margin-bottom:12px"></div><div class="skel" style="height:20px;width:70%;margin-bottom:8px"></div><div class="skel" style="height:12px;width:40%;margin-bottom:16px"></div><div class="skel" style="height:48px;width:100%;margin-bottom:14px"></div><div class="skel" style="height:12px;width:100%"></div></div>
-    </div>
-  </div>
-
   <!-- Recent Activity -->
   <div id="activitySection">
     <div class="fade-up section-label">Recent Activity</div>
@@ -3056,19 +3042,6 @@ body {
     <div id="kpi-pos-sub"></div>
   </div>
 
-</section>
-
-<!-- ============================================================
-     DEALS VIEW
-     ============================================================ -->
-<section class="view" id="view-deals">
-  <div class="deals-view">
-    <div class="fade-up section-label" style="padding:0;margin-bottom:12px">Available Opportunities</div>
-    <p class="fade-up deals-intro">Curated deal flow from your advisory network. Access is by invitation.</p>
-    <div class="deals-grid" id="dealsGrid">
-      <!-- populated by loadDeals() -->
-    </div>
-  </div>
 </section>
 
 <!-- ============================================================
@@ -3900,7 +3873,6 @@ function showView(id) {
   // Lazy tab loading
   if (!tabLoaded[id]) {
     tabLoaded[id] = true;
-    if (id === 'deals')     loadDeals();
     if (id === 'documents') loadDocuments();
     if (id === 'portfolio') loadPortfolio();
     if (id === 'messages')  loadMessages();
@@ -4785,132 +4757,6 @@ function renderInvestments(member) {
   }
 }
 
-// ============================================================
-// DEALS TAB — loadDeals()
-// ============================================================
-function loadDeals() {
-  var grid = document.getElementById('dealsGrid');
-  if (!grid) return;
-
-  // Skeleton
-  grid.innerHTML = [1,2,3].map(function() {
-    return '<div class="deal-skel-card">' +
-      '<div class="skel" style="height:16px;width:80px;margin-bottom:16px"></div>' +
-      '<div class="skel" style="height:22px;width:65%;margin-bottom:8px"></div>' +
-      '<div class="skel" style="height:14px;width:40%;margin-bottom:18px"></div>' +
-      '<div class="skel" style="height:1px;width:100%;margin-bottom:16px"></div>' +
-      '<div style="display:flex;gap:20px;margin-bottom:16px">' +
-        '<div class="skel" style="height:32px;width:60px"></div>' +
-        '<div class="skel" style="height:32px;width:60px"></div>' +
-        '<div class="skel" style="height:32px;width:60px"></div>' +
-      '</div>' +
-      '<div class="skel" style="height:60px;width:100%;margin-bottom:20px"></div>' +
-      '<div class="skel" style="height:14px;width:100%"></div>' +
-    '</div>';
-  }).join('');
-
-  fetchSilent('/api/v2?resource=member&op=deals').then(function(data) {
-    if (!data) {
-      grid.innerHTML = buildDealsError();
-      return;
-    }
-
-    var deals = Array.isArray(data) ? data : (data.deals || []);
-    if (!deals.length) {
-      grid.innerHTML = '<div class="state-box" style="grid-column:1/-1">' +
-        '<div class="state-box-title">No deals available at this time.</div>' +
-        '<div class="state-box-sub">New opportunities are shared by invitation.</div>' +
-      '</div>';
-      return;
-    }
-
-    deals.forEach(function(d) { _dealMap[d.id] = d; });
-    renderTodayDeals(deals);
-    grid.innerHTML = deals.map(function(deal) {
-      var ac  = (deal.asset_class || deal.type || '').toLowerCase();
-      var cls = CLASS_CHIP_MAP[ac]  || 'infra';
-      var lbl = CLASS_LABEL_MAP[ac] || (deal.asset_class || deal.type || '—');
-      var irr = parseFloat(deal.target_irr || deal.irr_target || deal.irr || 0);
-      var days = dealClosingDays(deal.closing_date || deal.closing);
-      var closingStr = days !== null ? (days > 0 ? days + 'd' : 'Soon') : esc(deal.closing_date || deal.closing || '—');
-      return '<div class="deal-card fade-up">' +
-        '<div class="deal-card-top">' +
-          '<span class="deal-asset-chip ' + cls + '">' + esc(lbl) + '</span>' +
-          (deal.featured ? '<span class="deal-new-badge">FEATURED</span>' : '') +
-        '</div>' +
-        '<div class="deal-name">' + esc(deal.name) + '</div>' +
-        '<div class="deal-geo">' + esc(deal.geography || deal.geo || '—') + '</div>' +
-        '<div class="deal-divider"></div>' +
-        '<div class="deal-stats">' +
-          '<div class="deal-stat"><div class="deal-stat-label">IRR Target</div><div class="deal-stat-val gold-val">' + (irr ? irr + '%' : '—') + '</div></div>' +
-          '<div class="deal-stat"><div class="deal-stat-label">Min Ticket</div><div class="deal-stat-val">' + (deal.min_ticket_usd ? fmU(deal.min_ticket_usd) : esc(deal.min_ticket || '—')) + '</div></div>' +
-          '<div class="deal-stat"><div class="deal-stat-label">Closing</div><div class="deal-stat-val">' + closingStr + '</div></div>' +
-        '</div>' +
-        '<div class="deal-thesis">' + esc(deal.thesis || deal.mk_notes || deal.description || '') + '</div>' +
-        '<div class="deal-footer">' +
-          '<span class="deal-stage-chip">' + esc((deal.stage || 'review').toUpperCase()) + '</span>' +
-          '<button class="deal-link" onclick="openDealPanel(_dealMap[\'' + esc(deal.id) + '\'])">View Deal →</button>' +
-        '</div>' +
-      '</div>';
-    }).join('');
-  });
-}
-
-function buildDealsError() {
-  return '<div class="state-box" style="grid-column:1/-1">' +
-    '<div class="state-box-title">Couldn\'t load deals.</div>' +
-    '<div class="state-box-sub">Please try again.</div>' +
-    '<button class="state-retry-btn" onclick="tabLoaded[\'deals\']=false;loadDeals()">Retry →</button>' +
-  '</div>';
-}
-
-// ============================================================
-// RENDER TODAY DEALS GRID
-// ============================================================
-function renderTodayDeals(deals) {
-  var grid = document.getElementById('todayDealsGrid');
-  var section = document.getElementById('todayDealsSection');
-  if (!grid) return;
-
-  if (!deals || !deals.length) {
-    if (section) section.style.display = 'none';
-    return;
-  }
-
-  // Show up to 3 deals; prefer featured then stage order
-  var sorted = deals.slice().sort(function(a, b) {
-    return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
-  });
-  var shown = sorted.slice(0, 3);
-
-  grid.innerHTML = shown.map(function(deal) {
-    var ac  = (deal.asset_class || deal.type || '').toLowerCase();
-    var cls = CLASS_CHIP_MAP[ac]  || 'infra';
-    var lbl = CLASS_LABEL_MAP[ac] || (deal.asset_class || deal.type || '—');
-    var irr = parseFloat(deal.target_irr || deal.irr_target || deal.irr || 0);
-    var days = dealClosingDays(deal.closing_date || deal.closing);
-    var closingStr = days !== null ? (days > 0 ? days + 'd' : 'Soon') : esc(deal.closing_date || deal.closing || '—');
-    return '<div class="today-deal-card fade-up">' +
-      '<div class="today-deal-top">' +
-        '<span class="deal-asset-chip ' + cls + '">' + esc(lbl) + '</span>' +
-        (deal.featured ? '<span class="deal-new-badge">FEATURED</span>' : '') +
-      '</div>' +
-      '<div class="today-deal-name">' + esc(deal.name) + '</div>' +
-      '<div class="today-deal-geo">' + esc(deal.geography || deal.geo || '—') + '</div>' +
-      '<div class="today-deal-stats">' +
-        '<div class="deal-stat"><div class="deal-stat-label">IRR Target</div><div class="deal-stat-val gold-val">' + (irr ? irr + '%' : '—') + '</div></div>' +
-        '<div class="deal-stat"><div class="deal-stat-label">Min Ticket</div><div class="deal-stat-val">' + (deal.min_ticket_usd ? fmU(deal.min_ticket_usd) : esc(deal.min_ticket || '—')) + '</div></div>' +
-        '<div class="deal-stat"><div class="deal-stat-label">Closing</div><div class="deal-stat-val">' + closingStr + '</div></div>' +
-      '</div>' +
-      '<div class="today-deal-thesis">' + esc(deal.thesis || deal.mk_notes || deal.description || '') + '</div>' +
-      '<div class="today-deal-divider"></div>' +
-      '<div class="today-deal-footer">' +
-        '<span class="deal-stage-chip">' + esc((deal.stage || 'review').toUpperCase()) + '</span>' +
-        '<button class="deal-link" onclick="openDealPanel(_dealMap[\'' + esc(deal.id) + '\'])">View Deal →</button>' +
-      '</div>' +
-    '</div>';
-  }).join('');
-}
 
 // ============================================================
 // DEAL PANEL
