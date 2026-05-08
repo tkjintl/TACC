@@ -1,0 +1,4142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TACC · Aurum Century Club · Member Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+KR:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  --bg:       #070706;
+  --bg-2:     #0d0d0b;
+  --bg-3:     #141412;
+  --surface:  #111110;
+  --border:   rgba(255,255,255,0.06);
+  --border-m: rgba(255,255,255,0.12);
+  --text:     #EDE8DE;
+  --text-2:   #9C968A;
+  --text-3:   #5A5449;
+  --gold:     #C5A572;
+  --gold-b:   #E3C187;
+  --gold-dim: #A8813A;
+  --gold-bg:  rgba(197,165,114,0.07);
+  --gold-bd:  rgba(197,165,114,0.25);
+  --green:    #2E6E48;
+  --green-b:  #3D9460;
+  --green-bg: rgba(46,110,72,0.07);
+  --green-bd: rgba(46,110,72,0.25);
+  --amber:    #8A5C1A;
+  --amber-b:  #D4922A;
+  --amber-bg: rgba(138,92,26,0.08);
+  --amber-bd: rgba(138,92,26,0.28);
+  --blue:     #2B5C8A;
+  --blue-b:   #4A7BA7;
+  --blue-bg:  rgba(43,92,138,0.07);
+  --blue-bd:  rgba(43,92,138,0.25);
+  --red:      #8B3228;
+  --red-bg:   rgba(139,50,40,0.07);
+  --red-bd:   rgba(139,50,40,0.22);
+  --serif:    'Cormorant Garamond', Georgia, serif;
+  --sans:     'DM Sans', system-ui, sans-serif;
+  --mono:     'JetBrains Mono', monospace;
+  --ease:     cubic-bezier(0.22, 1, 0.36, 1);
+  --r:        8px;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+   KEYFRAMES
+   ============================================================ */
+@property --ry { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes goldShimmer {
+  0%   { background-position: 0%   50%; }
+  100% { background-position: 200% 50%; }
+}
+@keyframes breatheGlow {
+  0%, 100% { filter: drop-shadow(0 0 20px rgba(197,165,114,0.30)) drop-shadow(0 20px 50px rgba(0,0,0,0.7)); }
+  50%       { filter: drop-shadow(0 0 45px rgba(197,165,114,0.55)) drop-shadow(0 20px 60px rgba(0,0,0,0.8)); }
+}
+@keyframes barSpin {
+  0%   { --ry: -25deg; }
+  100% { --ry:  25deg; }
+}
+@keyframes ringGlow {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(197,165,114,0.5)); }
+  50%       { filter: drop-shadow(0 0 14px rgba(197,165,114,0.85)); }
+}
+@keyframes subtlePulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+@keyframes lineExpand {
+  from { width: 0; opacity: 0; }
+  to   { width: 60px; opacity: 0.3; }
+}
+@keyframes reflectPulse {
+  0%, 100% { opacity: 0.5; transform: scaleX(1); }
+  50%       { opacity: 0.75; transform: scaleX(1.08); }
+}
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   SKELETON
+   ============================================================ */
+.skel {
+  background: linear-gradient(90deg,
+    var(--bg-2) 25%,
+    rgba(255,255,255,0.04) 50%,
+    var(--bg-2) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+/* ============================================================
+   NAVIGATION SHELL
+   ============================================================ */
+.nav-shell {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 60px;
+  background: rgba(7,7,6,0.90);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 var(--border), 0 4px 40px rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  z-index: 1000;
+  gap: 0;
+}
+
+.nav-wordmark {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+.nav-wordmark-accent {
+  width: 3px;
+  height: 20px;
+  background: linear-gradient(180deg, var(--gold-b) 0%, var(--gold-dim) 100%);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.nav-wordmark-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1;
+}
+.nav-wordmark-aurum {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+.nav-wordmark-sub {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--text-3);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+/* Desktop center tabs */
+.nav-tabs {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  gap: 0;
+}
+.nav-tab {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-3);
+  padding: 0 18px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border: none;
+  background: none;
+  position: relative;
+  letter-spacing: 0.02em;
+  transition: color 0.2s var(--ease);
+  white-space: nowrap;
+}
+.nav-tab::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 18px; right: 18px;
+  height: 2px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s var(--ease);
+  border-radius: 1px;
+}
+.nav-tab:hover { color: var(--text-2); }
+.nav-tab.active { color: var(--gold); }
+.nav-tab.active::after { transform: scaleX(1); }
+
+/* Right side */
+.nav-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  overflow: hidden;
+  min-width: 0;
+}
+.member-chip {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--gold);
+  border: 1px solid var(--gold-bd);
+  border-radius: 4px;
+  padding: 3px 8px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  box-shadow: 0 0 12px rgba(197,165,114,0.12), inset 0 1px 0 rgba(255,255,255,0.04);
+  flex-shrink: 0;
+}
+.lang-toggle {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 4px 7px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: none;
+  letter-spacing: 0.04em;
+}
+.lang-toggle:hover { border-color: var(--border-m); color: var(--text-2); }
+.nav-icon-btn {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-3);
+  cursor: pointer; border: none; background: none;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+  flex-shrink: 0;
+  position: relative;
+}
+.nav-icon-btn:hover { color: var(--text-2); background: rgba(255,255,255,0.04); }
+.nav-notif-dot {
+  position: absolute;
+  top: 4px; right: 4px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--amber-b);
+  border: 1px solid var(--bg);
+  display: none;
+}
+.nav-notif-dot.show { display: block; }
+
+/* Mobile tab row */
+.mobile-nav {
+  display: none;
+  position: sticky;
+  top: 60px;
+  z-index: 900;
+  background: rgba(7,7,6,0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.mobile-nav::-webkit-scrollbar { display: none; }
+.mobile-nav-inner {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  min-width: max-content;
+}
+.mobile-tab {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-3);
+  padding: 0 16px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border: none;
+  background: none;
+  position: relative;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+.mobile-tab::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 16px; right: 16px;
+  height: 2px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s var(--ease);
+  border-radius: 1px;
+}
+.mobile-tab.active { color: var(--gold); }
+.mobile-tab.active::after { transform: scaleX(1); }
+
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
+.main { padding-top: 60px; min-height: 100vh; }
+.view { display: none; }
+.view.active { display: block; }
+
+.fade-up {
+  opacity: 0;
+  animation: fadeUp 0.7s var(--ease) forwards;
+}
+
+/* Section labels */
+.section-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 16px;
+  padding: 0 48px;
+}
+
+/* Error / Empty states */
+.state-box {
+  padding: 40px 48px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.state-box-title {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--text-2);
+}
+.state-box-sub {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: 0.04em;
+}
+.state-retry-btn {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--text-3);
+  background: none;
+  border: 1px solid var(--border-m);
+  border-radius: 4px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+  margin-top: 4px;
+}
+.state-retry-btn:hover { color: var(--gold); border-color: var(--gold-bd); }
+
+/* ============================================================
+   TODAY TAB
+   ============================================================ */
+.today-hero {
+  padding: 80px 48px 52px;
+  text-align: center;
+  position: relative;
+}
+.today-greeting-label {
+  font-family: var(--sans);
+  font-size: 16px;
+  color: var(--text-3);
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  margin-bottom: 4px;
+}
+.today-greeting-name {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(48px, 6vw, 72px);
+  font-weight: 600;
+  line-height: 1.0;
+  background: linear-gradient(135deg, #EDE8DE 60%, #C5A572 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 16px;
+}
+.today-date-line {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+.today-meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: 0.05em;
+  margin-bottom: 28px;
+}
+.today-divider {
+  width: 60px; height: 1px;
+  background: var(--gold);
+  opacity: 0.3;
+  margin: 0 auto 52px;
+  animation: lineExpand 0.8s var(--ease) 0.6s both;
+}
+
+/* Attention cards */
+.attention-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 0 48px;
+  margin-bottom: 64px;
+}
+.attention-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  transition: border-color 0.3s var(--ease), transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.attention-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  border-radius: var(--r) 0 0 var(--r);
+}
+.attention-card.amber::before { background: #D4922A; }
+.attention-card.green::before { background: #3D9460; }
+.attention-card.blue::before  { background: #4A7BA7; }
+.attention-card:hover {
+  border-color: var(--gold-bd);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.attention-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 3px;
+  margin-bottom: 4px;
+  width: fit-content;
+}
+.attention-badge.amber {
+  color: #D4922A;
+  background: var(--amber-bg);
+  border: 1px solid var(--amber-bd);
+}
+.attention-badge.green {
+  color: #3D9460;
+  background: var(--green-bg);
+  border: 1px solid var(--green-bd);
+}
+.attention-badge.blue {
+  color: #4A7BA7;
+  background: var(--blue-bg);
+  border: 1px solid var(--blue-bd);
+}
+.attention-badge::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: subtlePulse 2s ease-in-out infinite;
+}
+.attention-title {
+  font-family: var(--sans);
+  font-size: 15px;
+  color: var(--text);
+  font-weight: 500;
+}
+.attention-sub {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.55;
+}
+.attention-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.attention-amount {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--gold);
+  letter-spacing: 0.02em;
+}
+.attention-cta {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--text-3);
+  background: none;
+  border: 1px solid var(--border-m);
+  border-radius: 4px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+  letter-spacing: 0.02em;
+}
+.attention-cta:hover {
+  color: var(--gold);
+  border-color: var(--gold-bd);
+  background: var(--gold-bg);
+}
+
+/* KPI Section */
+.kpi-section { padding: 0 48px 64px; }
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: 0 2px 40px rgba(0,0,0,0.3);
+}
+.kpi-block {
+  background: var(--bg-2);
+  padding: 36px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  transition: background 0.3s;
+}
+.kpi-block::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 32px; right: 32px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-bd), transparent);
+}
+.kpi-block:hover { background: var(--bg-3); }
+.kpi-number {
+  font-family: var(--mono);
+  font-size: clamp(28px, 3.5vw, 44px);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  background: linear-gradient(135deg, #C5A572 0%, #E3C187 50%, #C5A572 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  min-height: 1em;
+}
+.kpi-label {
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.kpi-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-3);
+}
+
+/* Activity Section */
+.activity-section { padding: 0 48px 80px; }
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+.activity-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-2);
+  transition: background 0.2s;
+}
+.activity-row:last-child { border-bottom: none; }
+.activity-row:hover { background: var(--bg-3); }
+.activity-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.activity-dot.gold  { background: var(--gold); box-shadow: 0 0 6px rgba(197,165,114,0.6); }
+.activity-dot.green { background: #3D9460;     box-shadow: 0 0 6px rgba(61,148,96,0.5); }
+.activity-dot.blue  { background: #4A7BA7;     box-shadow: 0 0 6px rgba(74,123,167,0.5); }
+.activity-dot.dim   { background: var(--text-3); }
+.activity-text {
+  flex: 1;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-2);
+}
+.activity-text strong { color: var(--text); font-weight: 500; }
+.activity-time {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+/* ============================================================
+   DEALS TAB
+   ============================================================ */
+.deals-view { padding: 56px 48px 80px; }
+.deals-intro {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 32px;
+  padding: 0;
+}
+.deals-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.deal-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+  transition: border-color 0.3s var(--ease), transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+  position: relative;
+}
+.deal-card:hover {
+  border-color: var(--gold-bd);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.deal-card-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.deal-asset-chip {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.deal-asset-chip.infra  { color: #4A7BA7; background: var(--blue-bg);  border: 1px solid var(--blue-bd);  }
+.deal-asset-chip.credit { color: #3D9460; background: var(--green-bg); border: 1px solid var(--green-bd); }
+.deal-asset-chip.assets { color: #D4922A; background: var(--amber-bg); border: 1px solid var(--amber-bd); }
+.deal-asset-chip.gold   { color: var(--gold); background: var(--gold-bg); border: 1px solid var(--gold-bd); }
+.deal-new-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--gold);
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-bd);
+  border-radius: 3px;
+  padding: 3px 7px;
+}
+.deal-name {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 22px;
+  color: var(--text);
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+.deal-geo {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-3);
+  margin-bottom: 18px;
+}
+.deal-divider {
+  height: 1px;
+  background: var(--border);
+  margin-bottom: 16px;
+}
+.deal-stats {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.deal-stat { display: flex; flex-direction: column; gap: 2px; }
+.deal-stat-label {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.deal-stat-val {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text-2);
+}
+.deal-stat-val.gold-val {
+  color: var(--gold);
+  font-weight: 500;
+}
+.deal-thesis {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-2);
+  font-style: italic;
+  line-height: 1.55;
+  margin-bottom: 20px;
+  flex: 1;
+}
+.deal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.deal-stage-chip {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 3px 7px;
+}
+.deal-link {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--gold-dim);
+  cursor: pointer;
+  transition: color 0.2s;
+  border: none;
+  background: none;
+  padding: 0;
+}
+.deal-link:hover { color: var(--gold); }
+
+/* Deal skeleton cards */
+.deal-skel-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ============================================================
+   DEAL SLIDE-IN PANEL
+   ============================================================ */
+#deal-panel {
+  position: fixed;
+  inset: 0;
+  transform: translateX(100%);
+  transition: transform 0.42s var(--ease);
+  z-index: 500;
+  background: var(--bg-2);
+  overflow-y: auto;
+  padding: 48px;
+  border-left: 1px solid var(--border-m);
+  box-shadow: -8px 0 40px rgba(0,0,0,0.6);
+}
+#deal-panel.open { transform: none; }
+.deal-panel-close {
+  position: sticky;
+  top: 0;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 32px;
+}
+.deal-panel-close-btn {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-3);
+  border: 1px solid var(--border-m);
+  border-radius: 6px;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 18px;
+  transition: color 0.2s, border-color 0.2s;
+}
+.deal-panel-close-btn:hover { color: var(--text); border-color: var(--border-m); }
+.deal-panel-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 36px;
+  color: var(--text);
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+.deal-panel-chips { display: flex; gap: 8px; margin-bottom: 32px; flex-wrap: wrap; }
+.deal-panel-section-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 16px;
+  margin-top: 32px;
+}
+.deal-panel-terms {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 24px;
+}
+.deal-panel-term { display: flex; flex-direction: column; gap: 4px; }
+.deal-panel-term-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.deal-panel-term-val {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--text);
+}
+.deal-panel-thesis {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.7;
+}
+.deal-panel-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--gold);
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-bd);
+  border-radius: 4px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+  text-decoration: none;
+  margin-top: 32px;
+}
+.deal-panel-cta:hover { background: rgba(197,165,114,0.12); }
+
+/* ============================================================
+   PORTFOLIO TAB
+   ============================================================ */
+.subtab-bar {
+  display: flex;
+  align-items: center;
+  padding: 0 48px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  gap: 0;
+}
+.subtab {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-3);
+  padding: 0 20px;
+  height: 52px;
+  display: flex; align-items: center;
+  cursor: pointer;
+  border: none; background: none;
+  position: relative;
+  transition: color 0.2s var(--ease);
+  letter-spacing: 0.02em;
+}
+.subtab::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 20px; right: 20px;
+  height: 2px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s var(--ease);
+  border-radius: 1px;
+}
+.subtab:hover { color: var(--text-2); }
+.subtab.active { color: var(--gold); }
+.subtab.active::after { transform: scaleX(1); }
+
+.subview { display: none; }
+.subview.active { display: block; }
+
+/* ============================================================
+   GOLD HERO
+   ============================================================ */
+.gold-hero {
+  position: relative;
+  padding: 70px 48px 20px;
+  text-align: center;
+  overflow: hidden;
+}
+.gold-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 40% at 50% 30%, rgba(197,165,114,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.gold-hero-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 12px;
+}
+.gold-hero-oz {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 600;
+  font-size: clamp(72px, 10vw, 110px);
+  line-height: 1;
+  background: linear-gradient(135deg, #C5A572 0%, #E3C187 40%, #F0D080 60%, #C5A572 100%);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: goldShimmer 4s linear infinite;
+  margin-bottom: 10px;
+}
+.gold-hero-value {
+  font-family: var(--mono);
+  font-size: 16px;
+  color: var(--text-2);
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+.gold-hero-pnl {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--green-b);
+  letter-spacing: 0.04em;
+  margin-bottom: 60px;
+}
+
+/* 3D Gold Bar */
+.bar-scene {
+  perspective: 800px;
+  perspective-origin: 50% 40%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0 20px;
+  position: relative;
+}
+.bar-scene-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+.bar-wrapper {
+  transform-style: preserve-3d;
+  transform: perspective(800px) rotateX(20deg) rotateY(var(--ry));
+  animation: barSpin 6s ease-in-out infinite alternate, breatheGlow 4s ease-in-out infinite;
+  position: relative;
+}
+.bar-3d {
+  position: relative;
+  width: 200px; height: 100px;
+  transform-style: preserve-3d;
+}
+.bar-front {
+  width: 200px; height: 100px;
+  background: linear-gradient(180deg, #D4A843 0%, #9A7228 60%, #8B6520 100%);
+  position: absolute;
+  top: 0; left: 0;
+  transform: translateZ(25px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid rgba(255,220,100,0.15);
+}
+.bar-front::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(255,220,100,0.12);
+  border-radius: 1px;
+  pointer-events: none;
+}
+.bar-top {
+  width: 200px; height: 50px;
+  background: linear-gradient(135deg, #F0D080 0%, #C5A572 30%, #E8C870 60%, #A8813A 100%);
+  position: absolute;
+  top: 0; left: 0;
+  transform: rotateX(90deg) translateZ(-25px) translateY(-25px);
+}
+.bar-top::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+}
+.bar-right {
+  width: 50px; height: 100px;
+  background: linear-gradient(180deg, #B8922E 0%, #7A5A1E 60%, #6B4F18 100%);
+  position: absolute;
+  top: 0; left: 0;
+  transform: rotateY(90deg) translateX(25px);
+  transform-origin: left center;
+}
+.bar-bottom {
+  width: 200px; height: 50px;
+  background: linear-gradient(180deg, #5A3D10 0%, #3A2508 100%);
+  position: absolute;
+  top: 0; left: 0;
+  transform: rotateX(-90deg) translateZ(-25px) translateY(25px);
+}
+.bar-left {
+  width: 50px; height: 100px;
+  background: linear-gradient(180deg, #9A7228 0%, #6B4F18 60%, #5A3D10 100%);
+  position: absolute;
+  top: 0; left: 0;
+  transform: rotateY(-90deg) translateX(-25px);
+  transform-origin: right center;
+}
+.bar-stamp-line1 {
+  font-family: var(--mono);
+  font-size: 6.5px;
+  color: rgba(0,0,0,0.55);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+}
+.bar-stamp-line2 {
+  font-family: var(--mono);
+  font-size: 7.5px;
+  color: rgba(0,0,0,0.45);
+  letter-spacing: 0.18em;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+}
+.bar-reflection {
+  width: 240px; height: 20px;
+  background: radial-gradient(ellipse at center, rgba(197,165,114,0.25) 0%, transparent 70%);
+  margin-top: 8px;
+  animation: breatheGlow 4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+/* Allocation section */
+.allocation-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  padding: 48px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+.allocation-chart-col { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+.ring-chart-wrap { position: relative; width: 180px; height: 180px; }
+.ring-chart-wrap svg { overflow: visible; }
+.ring-center-label {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+.ring-center-pct {
+  font-family: var(--mono);
+  font-size: 26px;
+  color: var(--gold);
+  line-height: 1;
+  display: block;
+}
+.ring-center-sub {
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--text-3);
+  display: block;
+  margin-top: 2px;
+}
+.ring-legend { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+.ring-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-2);
+}
+.ring-legend-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.ring-legend-name { flex: 1; }
+.ring-legend-pct {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-3);
+}
+.ring-gold-arc {
+  stroke-dasharray: 534;
+  stroke-dashoffset: 534;
+  transition: stroke-dashoffset 1.6s var(--ease);
+}
+.ring-gold-arc.animated {
+  animation: ringGlow 3s ease-in-out 1.6s infinite;
+}
+
+/* Vault details */
+.vault-col { display: flex; flex-direction: column; gap: 0; }
+.vault-header {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 16px;
+}
+.vault-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+}
+.vault-row:last-child { border-bottom: none; }
+.vault-row-label {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.vault-row-value {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text);
+  text-align: right;
+}
+.vault-row-value.mono { font-family: var(--mono); font-size: 12px; }
+.vault-row-value.green-val { color: var(--green-b); }
+
+/* Acquisition Table */
+.acq-section { padding: 0 48px 64px; }
+.acq-header {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 16px;
+}
+.acq-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  font-family: var(--mono);
+}
+.acq-table th {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  font-weight: 400;
+  padding: 12px 16px;
+  text-align: right;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.acq-table th:first-child { text-align: left; }
+.acq-table td {
+  padding: 13px 16px;
+  font-size: 12px;
+  color: var(--text-2);
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-2);
+  vertical-align: middle;
+}
+.acq-table td:first-child { text-align: left; color: var(--text-3); font-family: var(--sans); font-size: 13px; }
+.acq-table tr:last-child td { border-bottom: none; }
+.acq-table tr:hover td { background: var(--bg-3); }
+.acq-table .totals-row td {
+  background: var(--bg-3);
+  border-top: 1px solid var(--border-m);
+  border-bottom: none;
+  color: var(--text);
+}
+.acq-table .totals-row td:first-child {
+  font-family: var(--sans);
+  font-weight: 500;
+  color: var(--text);
+  font-size: 13px;
+}
+.acq-gold { color: var(--gold) !important; }
+.acq-green { color: var(--green-b) !important; font-weight: 500; }
+.settled-chip {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--green-b);
+  background: var(--green-bg);
+  border: 1px solid var(--green-bd);
+  border-radius: 3px;
+  padding: 2px 7px;
+  display: inline-block;
+}
+
+/* ============================================================
+   HOLDINGS TAB
+   ============================================================ */
+.holdings-section { padding: 48px; }
+.holdings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.holding-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 28px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+  transition: border-color 0.3s var(--ease), transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+.holding-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: transparent;
+  transition: background 0.3s var(--ease);
+}
+.holding-card:hover {
+  border-color: var(--gold-bd);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.holding-card:hover::before { background: var(--gold-bd); }
+.holding-name {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 22px;
+  color: var(--text);
+  line-height: 1.2;
+}
+.holding-sector-chip {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 3px 7px;
+  width: fit-content;
+}
+.holding-amount {
+  font-family: var(--mono);
+  font-size: 26px;
+  font-weight: 500;
+  background: linear-gradient(135deg, #C5A572 0%, #E3C187 50%, #C5A572 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+.holding-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 16px;
+}
+.holding-stat {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-3);
+  line-height: 1.4;
+}
+.holding-stat span {
+  color: var(--text-2);
+}
+.holding-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 3px;
+  width: fit-content;
+}
+.holding-status::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.holding-status.active {
+  color: var(--green-b);
+  background: var(--green-bg);
+  border: 1px solid var(--green-bd);
+}
+.holding-status.active::before { animation: subtlePulse 2s ease-in-out infinite; }
+.holding-status.exiting {
+  color: #D4922A;
+  background: var(--amber-bg);
+  border: 1px solid var(--amber-bd);
+}
+.holding-status.closing {
+  color: var(--blue-b);
+  background: var(--blue-bg);
+  border: 1px solid var(--blue-bd);
+}
+.holding-thesis {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.55;
+  flex: 1;
+}
+.holding-link {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--gold-dim);
+  text-align: right;
+  cursor: pointer;
+  transition: color 0.2s;
+  border: none;
+  background: none;
+  padding: 0;
+}
+.holding-link:hover { color: var(--gold); }
+
+/* ============================================================
+   DOCUMENTS TAB
+   ============================================================ */
+.docs-subtab-bar {
+  display: flex;
+  align-items: center;
+  padding: 0 48px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  gap: 0;
+}
+.docs-subtab {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-3);
+  padding: 0 20px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border: none;
+  background: none;
+  position: relative;
+  transition: color 0.2s var(--ease);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.docs-subtab::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 20px; right: 20px;
+  height: 2px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s var(--ease);
+  border-radius: 1px;
+}
+.docs-subtab:hover { color: var(--text-2); }
+.docs-subtab.active { color: var(--gold); }
+.docs-subtab.active::after { transform: scaleX(1); }
+.docs-subview { display: none; padding: 40px 48px 80px; }
+.docs-subview.active { display: block; }
+.docs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.doc-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px 22px;
+  cursor: pointer;
+  transition: border-color 0.25s var(--ease), background 0.25s, transform 0.25s var(--ease);
+  text-decoration: none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.doc-card:hover { border-color: var(--gold-bd); background: var(--bg-3); transform: translateY(-1px); }
+.doc-icon {
+  width: 40px; height: 40px;
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-bd);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+.doc-info { flex: 1; min-width: 0; }
+.doc-name {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 3px;
+}
+.doc-meta {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-3);
+  letter-spacing: 0.04em;
+}
+.doc-dl-btn {
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--text-3);
+  background: none;
+  border: 1px solid var(--border-m);
+  border-radius: 4px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+.doc-dl-btn:hover { color: var(--gold); border-color: var(--gold-bd); background: var(--gold-bg); }
+.doc-dl-btn:disabled { cursor: default; opacity: 0.6; }
+/* Letter list (Quarterly Letters sub-tab) */
+.letter-list { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+.letter-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-2);
+  transition: background 0.2s;
+  cursor: default;
+}
+.letter-row:last-child { border-bottom: none; }
+.letter-row:hover { background: var(--bg-3); }
+.letter-row.unread { border-left: 3px solid var(--gold); padding-left: 21px; }
+.letter-unread-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 6px rgba(197,165,114,0.5);
+  flex-shrink: 0;
+}
+.letter-info { flex: 1; min-width: 0; }
+.letter-subject {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 500;
+  margin-bottom: 3px;
+}
+.letter-date { font-family: var(--mono); font-size: 10px; color: var(--text-3); }
+/* Vault list */
+.vault-list { display: flex; flex-direction: column; gap: 10px; }
+.vault-card {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 20px 22px;
+  transition: border-color 0.25s var(--ease), background 0.25s;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.vault-card:hover { border-color: var(--gold-bd); background: var(--bg-3); }
+.vault-card-icon {
+  width: 44px; height: 44px;
+  background: var(--green-bg); border: 1px solid var(--green-bd);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--green-b); flex-shrink: 0;
+}
+.vault-card-info { flex: 1; }
+.vault-card-title { font-family: var(--sans); font-size: 14px; color: var(--text); font-weight: 500; margin-bottom: 3px; }
+.vault-card-meta { font-family: var(--mono); font-size: 10px; color: var(--text-3); }
+.vault-verified-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--green-b); background: var(--green-bg); border: 1px solid var(--green-bd);
+  border-radius: 3px; padding: 3px 8px; flex-shrink: 0;
+}
+
+/* ============================================================
+   MESSAGES TAB
+   ============================================================ */
+#view-messages {
+  display: none;
+  height: calc(100vh - 60px);
+}
+#view-messages.active {
+  display: flex;
+}
+.messages-threads {
+  width: 300px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.messages-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 40px;
+}
+.thread-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.thread-list-title {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 500;
+}
+.thread-unread-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--gold);
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-bd);
+  border-radius: 4px;
+  padding: 2px 7px;
+  letter-spacing: 0.06em;
+}
+.thread-row {
+  position: relative;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.thread-row.unread {
+  background: var(--bg-2);
+  border-left: 3px solid var(--gold);
+  padding-left: 17px;
+}
+.thread-row:not(.unread) { background: transparent; }
+.thread-row:hover { background: var(--bg-3); }
+.thread-row.active { background: var(--bg-3); }
+.thread-row-inner { display: flex; gap: 10px; align-items: flex-start; }
+.thread-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-bd);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+.thread-content { flex: 1; min-width: 0; }
+.thread-sender {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+  margin-bottom: 1px;
+}
+.thread-subject {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+.thread-preview {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.thread-time {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-3);
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+.thread-unread-dot {
+  position: absolute;
+  top: 16px; right: 16px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 6px rgba(197,165,114,0.6);
+}
+
+/* Message panel */
+.msg-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.msg-sender-name {
+  font-family: var(--sans);
+  font-size: 15px;
+  color: var(--text);
+  font-weight: 500;
+}
+.msg-date {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-3);
+}
+.msg-subject {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 20px;
+  color: var(--text);
+  margin-bottom: 24px;
+  line-height: 1.3;
+}
+.msg-body {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.7;
+  white-space: pre-line;
+}
+.msg-reply-btn {
+  margin-top: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-3);
+  background: none;
+  border: 1px solid var(--border-m);
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+  text-decoration: none;
+}
+.msg-reply-btn:hover {
+  color: var(--gold);
+  border-color: var(--gold-bd);
+  background: var(--gold-bg);
+}
+.msg-empty-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: 0.08em;
+}
+
+/* ============================================================
+   ACCOUNT TAB
+   ============================================================ */
+.account-view { padding: 56px 48px 80px; max-width: 760px; margin: 0 auto; }
+
+/* Member identity hero */
+.account-hero {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 36px 40px;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.account-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 50% 80% at 90% 50%, rgba(197,165,114,0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+.account-avatar {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-bd);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 26px;
+  color: var(--gold);
+  flex-shrink: 0;
+  box-shadow: 0 0 24px rgba(197,165,114,0.12);
+}
+.account-hero-info { flex: 1; }
+.account-hero-name {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.account-hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.account-tier-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-bd);
+  border-radius: 3px;
+  padding: 3px 9px;
+}
+.account-since {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-3);
+  letter-spacing: 0.04em;
+}
+.account-hero-number {
+  font-family: var(--mono);
+  font-size: 28px;
+  color: var(--gold);
+  letter-spacing: -0.02em;
+  font-weight: 500;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+.account-hero-sep {
+  width: 1px; height: 12px;
+  background: var(--border);
+  margin: 0 10px;
+  flex-shrink: 0;
+}
+.account-hero-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: auto;
+  background: var(--green-bg);
+  border: 1px solid var(--green-bd);
+  border-radius: 20px;
+  padding: 5px 12px;
+  flex-shrink: 0;
+}
+
+/* Section cards */
+.account-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  margin-bottom: 16px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.account-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.account-card-icon {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.account-card-icon.gold { background: var(--gold-bg); color: var(--gold); border: 1px solid var(--gold-bd); }
+.account-card-icon.green { background: var(--green-bg); color: var(--green-b); border: 1px solid var(--green-bd); }
+.account-card-icon.blue { background: var(--blue-bg); color: var(--blue-b); border: 1px solid var(--blue-bd); }
+.account-card-icon.dim { background: rgba(255,255,255,0.04); color: var(--text-3); border: 1px solid var(--border); }
+.account-card-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.account-card-body { padding: 0 28px; }
+.account-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 24px;
+}
+.account-row:last-child { border-bottom: none; }
+.account-label {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-3);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.account-value {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--text);
+  text-align: right;
+}
+.account-value.mono { font-family: var(--mono); font-size: 13px; letter-spacing: 0.02em; }
+.account-value.gold { color: var(--gold); }
+.account-value.green { color: var(--green-b); }
+.account-value.link {
+  color: var(--gold-dim);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.account-value.link:hover { color: var(--gold); }
+/* Stat highlight rows */
+.account-stat-row {
+  display: flex;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  margin-bottom: 28px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.account-stat-block {
+  flex: 1;
+  background: var(--bg-2);
+  padding: 22px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.account-stat-value {
+  font-family: var(--mono);
+  font-size: 22px;
+  color: var(--gold);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #C5A572 0%, #E3C187 60%, #C5A572 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.account-stat-label {
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.account-value.gold  { color: var(--gold); }
+.account-value.green { color: var(--green-b); }
+.account-value.link  {
+  color: var(--gold-dim);
+  cursor: pointer;
+  transition: color 0.2s;
+  text-decoration: none;
+}
+.account-value.link:hover { color: var(--gold); }
+
+/* ============================================================
+   CAPITAL CALL MODAL
+   ============================================================ */
+#cc-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 800;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  align-items: center;
+  justify-content: center;
+}
+#cc-modal.open { display: flex; }
+.cc-modal-inner {
+  background: var(--bg-2);
+  border: 1px solid var(--border-m);
+  border-radius: var(--r);
+  padding: 40px;
+  max-width: 480px;
+  width: 90%;
+  position: relative;
+}
+.cc-modal-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 24px;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.cc-modal-amount {
+  font-family: var(--mono);
+  font-size: 32px;
+  color: var(--gold);
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+.cc-modal-due {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: 0.06em;
+  margin-bottom: 24px;
+}
+.cc-modal-section {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 12px;
+  margin-top: 20px;
+}
+.cc-wire-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+.cc-wire-key {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-3);
+  letter-spacing: 0.06em;
+}
+.cc-wire-val {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text);
+  text-align: right;
+  word-break: break-all;
+}
+.cc-ack-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.cc-ack-row input[type="checkbox"] {
+  margin-top: 2px;
+  accent-color: var(--gold);
+  width: 14px; height: 14px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.cc-ack-label {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.5;
+  cursor: pointer;
+}
+.cc-confirm-btn {
+  width: 100%;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--bg);
+  background: var(--gold);
+  border: none;
+  border-radius: 4px;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+  letter-spacing: 0.02em;
+}
+.cc-confirm-btn:hover { background: var(--gold-b); }
+.cc-confirm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.cc-modal-close {
+  position: absolute;
+  top: 16px; right: 16px;
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 18px;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+.cc-modal-close:hover { color: var(--text); }
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  background: var(--gold);
+  color: var(--bg);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 18px;
+  border-radius: 6px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.3s var(--ease), transform 0.3s var(--ease);
+  pointer-events: none;
+  z-index: 2000;
+  letter-spacing: 0.01em;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.toast.error {
+  background: var(--red);
+  color: var(--text);
+}
+
+/* ============================================================
+   RESPONSIVE — ≤768px
+   ============================================================ */
+@media (max-width: 768px) {
+  .nav-tabs { display: none; }
+  .mobile-nav { display: block; }
+  .section-label { padding: 0 20px; }
+
+  /* Today */
+  .today-hero { padding: 56px 24px 40px; }
+  .attention-grid { grid-template-columns: 1fr; padding: 0 20px; }
+  .kpi-section { padding: 0 20px 48px; }
+  .kpi-grid { grid-template-columns: 1fr; }
+  .activity-section { padding: 0 20px 56px; }
+  .state-box { padding: 32px 20px; }
+
+  /* Deals */
+  .deals-view { padding: 40px 20px 56px; }
+  .deals-grid { grid-template-columns: 1fr; }
+
+  /* Portfolio */
+  .subtab-bar { padding: 0 20px; }
+  .gold-hero { padding: 48px 24px 16px; }
+  .bar-scene-inner { transform: scale(0.65); transform-origin: center top; }
+  .allocation-section {
+    grid-template-columns: 1fr;
+    padding: 32px 20px;
+  }
+  .allocation-chart-col { align-items: flex-start; }
+  .acq-section { padding: 0 20px 48px; }
+  .acq-table th.hide-mobile,
+  .acq-table td.hide-mobile { display: none; }
+
+  /* Holdings */
+  .holdings-section { padding: 32px 20px; }
+  .holdings-grid { grid-template-columns: 1fr; }
+
+  /* Documents */
+  .docs-view { padding: 40px 20px 56px; }
+  .docs-grid { grid-template-columns: 1fr; }
+
+  /* Messages */
+  .messages-threads { width: 100%; border-right: none; }
+  .messages-panel { display: none; }
+
+  /* Account */
+  .account-view { padding: 40px 20px; }
+
+  /* Deal panel */
+  #deal-panel { padding: 24px 20px; }
+  .deal-panel-terms { grid-template-columns: 1fr 1fr; }
+
+  /* Nav right partial hide */
+  .member-chip { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     NAVIGATION SHELL
+     ============================================================ -->
+<nav class="nav-shell">
+  <!-- Wordmark -->
+  <a class="nav-wordmark" href="#">
+    <div class="nav-wordmark-accent"></div>
+    <div class="nav-wordmark-text">
+      <span class="nav-wordmark-aurum">Aurum</span>
+      <span class="nav-wordmark-sub">Century Club</span>
+    </div>
+  </a>
+
+  <!-- Center tabs -->
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-view="today"     onclick="showView('today')">Today</button>
+    <button class="nav-tab"        data-view="deals"     onclick="showView('deals')">Deals</button>
+    <button class="nav-tab"        data-view="portfolio" onclick="showView('portfolio')">Portfolio</button>
+    <button class="nav-tab"        data-view="documents" onclick="showView('documents')">Documents</button>
+    <button class="nav-tab"        data-view="messages"  onclick="showView('messages')">Messages</button>
+    <button class="nav-tab"        data-view="account"   onclick="showView('account')">Account</button>
+  </div>
+
+  <!-- Right side -->
+  <div class="nav-right">
+    <div class="member-chip" id="navMemberChip">#—</div>
+    <button class="lang-toggle" data-lang-btn onclick="toggleLang(this)">EN</button>
+    <button class="nav-icon-btn" title="Theme" onclick="toggleTheme()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+    <button class="nav-icon-btn" id="notifBtn" title="Notifications">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      <span class="nav-notif-dot" id="navNotifDot"></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile tab row -->
+<div class="mobile-nav">
+  <div class="mobile-nav-inner">
+    <button class="mobile-tab active" data-view="today"     onclick="showView('today')">Today</button>
+    <button class="mobile-tab"        data-view="deals"     onclick="showView('deals')">Deals</button>
+    <button class="mobile-tab"        data-view="portfolio" onclick="showView('portfolio')">Portfolio</button>
+    <button class="mobile-tab"        data-view="documents" onclick="showView('documents')">Documents</button>
+    <button class="mobile-tab"        data-view="messages"  onclick="showView('messages')">Messages</button>
+    <button class="mobile-tab"        data-view="account"   onclick="showView('account')">Account</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     MAIN
+     ============================================================ -->
+<main class="main">
+
+<!-- ============================================================
+     TODAY VIEW
+     ============================================================ -->
+<section class="view active" id="view-today">
+
+  <!-- Hero -->
+  <div class="today-hero">
+    <div class="fade-up today-greeting-label" id="todayGreeting">Good morning,</div>
+    <div class="fade-up today-greeting-name" id="todayName">—</div>
+    <div class="fade-up today-date-line" id="todayDate"></div>
+    <div class="fade-up today-meta" id="todayMeta">&nbsp;</div>
+    <div class="today-divider"></div>
+  </div>
+
+  <!-- Action Required -->
+  <div id="attentionSection">
+    <div class="fade-up section-label">Action Required</div>
+    <div class="attention-grid fade-up" id="attentionGrid">
+      <!-- skeleton -->
+      <div class="deal-skel-card">
+        <div class="skel" style="height:16px;width:80px"></div>
+        <div class="skel" style="height:20px;width:60%"></div>
+        <div class="skel" style="height:32px;width:100%"></div>
+        <div class="skel" style="height:14px;width:40%"></div>
+      </div>
+      <div class="deal-skel-card">
+        <div class="skel" style="height:16px;width:80px"></div>
+        <div class="skel" style="height:20px;width:60%"></div>
+        <div class="skel" style="height:32px;width:100%"></div>
+        <div class="skel" style="height:14px;width:40%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Portfolio Snapshot -->
+  <div class="fade-up section-label" style="margin-top:0">Your Portfolio</div>
+  <div class="kpi-section fade-up">
+    <div class="kpi-grid">
+      <div class="kpi-block">
+        <div class="kpi-number" id="kpi-total">$—</div>
+        <div class="kpi-label">Total Portfolio Value</div>
+        <div class="kpi-sub" id="kpi-total-sub">Loading…</div>
+      </div>
+      <div class="kpi-block">
+        <div class="kpi-number" id="kpi-oz">— oz</div>
+        <div class="kpi-label">Allocated Gold</div>
+        <div class="kpi-sub" id="kpi-oz-sub">—</div>
+      </div>
+      <div class="kpi-block">
+        <div class="kpi-number" id="kpi-pos">—</div>
+        <div class="kpi-label">Private Positions</div>
+        <div class="kpi-sub" id="kpi-pos-sub">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div id="activitySection">
+    <div class="fade-up section-label">Recent Activity</div>
+    <div class="activity-section fade-up">
+      <div class="activity-list" id="activityList">
+        <div class="activity-row">
+          <div class="skel" style="width:8px;height:8px;border-radius:50%;flex-shrink:0"></div>
+          <div class="skel" style="height:14px;flex:1"></div>
+          <div class="skel" style="height:12px;width:50px"></div>
+        </div>
+        <div class="activity-row">
+          <div class="skel" style="width:8px;height:8px;border-radius:50%;flex-shrink:0"></div>
+          <div class="skel" style="height:14px;flex:1"></div>
+          <div class="skel" style="height:12px;width:50px"></div>
+        </div>
+        <div class="activity-row">
+          <div class="skel" style="width:8px;height:8px;border-radius:50%;flex-shrink:0"></div>
+          <div class="skel" style="height:14px;flex:1"></div>
+          <div class="skel" style="height:12px;width:50px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ============================================================
+     DEALS VIEW
+     ============================================================ -->
+<section class="view" id="view-deals">
+  <div class="deals-view">
+    <div class="fade-up section-label" style="padding:0;margin-bottom:12px">Available Opportunities</div>
+    <p class="fade-up deals-intro">Curated deal flow from your advisory network. Access is by invitation.</p>
+    <div class="deals-grid" id="dealsGrid">
+      <!-- populated by loadDeals() -->
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     PORTFOLIO VIEW
+     ============================================================ -->
+<section class="view" id="view-portfolio">
+
+  <!-- Sub-tabs -->
+  <div class="subtab-bar">
+    <button class="subtab active" data-subtab="gold"     onclick="showSubTab('gold')">Gold</button>
+    <button class="subtab"        data-subtab="holdings" onclick="showSubTab('holdings')">Holdings</button>
+  </div>
+
+  <!-- GOLD SUB-VIEW -->
+  <div class="subview active" id="subview-gold">
+
+    <!-- Gold Hero -->
+    <div class="gold-hero">
+      <div class="gold-hero-label">Allocated Gold Position</div>
+      <div class="gold-hero-oz" id="goldOzHero">— oz</div>
+      <div class="gold-hero-value" id="goldValue">—</div>
+      <div class="gold-hero-pnl" id="goldPnl">—</div>
+    </div>
+
+    <!-- 3D Bar -->
+    <div class="bar-scene">
+      <div class="bar-scene-inner">
+        <div class="bar-wrapper">
+          <div class="bar-3d">
+            <div class="bar-top"></div>
+            <div class="bar-front">
+              <div class="bar-stamp-line1">London Good Delivery</div>
+              <div class="bar-stamp-line2">999.9 Fine Gold</div>
+            </div>
+            <div class="bar-right"></div>
+            <div class="bar-bottom"></div>
+            <div class="bar-left"></div>
+          </div>
+        </div>
+        <div class="bar-reflection"></div>
+      </div>
+    </div>
+
+    <!-- Allocation + Vault -->
+    <div class="allocation-section">
+
+      <!-- Ring chart column -->
+      <div class="allocation-chart-col">
+        <div class="ring-chart-wrap">
+          <svg width="180" height="180" viewBox="0 0 180 180">
+            <defs>
+              <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%"   stop-color="#C5A572"/>
+                <stop offset="50%"  stop-color="#E3C187"/>
+                <stop offset="100%" stop-color="#A8813A"/>
+              </linearGradient>
+            </defs>
+            <g transform="rotate(-90 90 90)">
+              <circle cx="90" cy="90" r="85"
+                fill="none"
+                stroke="rgba(255,255,255,0.04)"
+                stroke-width="14"/>
+              <circle cx="90" cy="90" r="85"
+                fill="none"
+                stroke="url(#goldGrad)"
+                stroke-width="12"
+                stroke-linecap="round"
+                stroke-dasharray="534"
+                stroke-dashoffset="534"
+                id="goldArc"
+                class="ring-gold-arc"/>
+              <circle cx="90" cy="90" r="85"
+                fill="none"
+                stroke="#4A7BA7"
+                stroke-width="12"
+                stroke-linecap="round"
+                id="peArc"
+                stroke-dasharray="220 314"
+                stroke-dashoffset="-250"
+                opacity="0.55"/>
+              <circle cx="90" cy="90" r="85"
+                fill="none"
+                stroke="var(--text-3)"
+                stroke-width="12"
+                stroke-linecap="round"
+                id="liqArc"
+                stroke-dasharray="60 474"
+                stroke-dashoffset="-478"
+                opacity="0.4"/>
+            </g>
+          </svg>
+          <div class="ring-center-label">
+            <span class="ring-center-pct" id="ringCenterPct">—%</span>
+            <span class="ring-center-sub">Gold</span>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="ring-legend">
+          <div class="ring-legend-row">
+            <div class="ring-legend-dot" style="background:var(--gold)"></div>
+            <span class="ring-legend-name">Physical Gold</span>
+            <span class="ring-legend-pct" id="legendGoldPct">—%</span>
+          </div>
+          <div class="ring-legend-row">
+            <div class="ring-legend-dot" style="background:#4A7BA7"></div>
+            <span class="ring-legend-name">Private Equity</span>
+            <span class="ring-legend-pct" id="legendPePct">—%</span>
+          </div>
+          <div class="ring-legend-row">
+            <div class="ring-legend-dot" style="background:var(--text-3)"></div>
+            <span class="ring-legend-name">Liquidity Reserve</span>
+            <span class="ring-legend-pct" id="legendLiqPct">—%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vault details column -->
+      <div class="vault-col">
+        <div class="vault-header">Vault &amp; Custody Details</div>
+        <div class="vault-row">
+          <span class="vault-row-label">Vault Location</span>
+          <span class="vault-row-value" id="vaultLocation">—</span>
+        </div>
+        <div class="vault-row">
+          <span class="vault-row-label">Lot Reference</span>
+          <span class="vault-row-value mono" id="vaultLotRef">—</span>
+        </div>
+        <div class="vault-row">
+          <span class="vault-row-label">Custodian</span>
+          <span class="vault-row-value" id="vaultCustodian">—</span>
+        </div>
+        <div class="vault-row">
+          <span class="vault-row-label">Insurance</span>
+          <span class="vault-row-value" id="vaultInsurance">—</span>
+        </div>
+        <div class="vault-row">
+          <span class="vault-row-label">Annual Audit</span>
+          <span class="vault-row-value green-val" id="vaultAudit">—</span>
+        </div>
+        <div class="vault-row">
+          <span class="vault-row-label">Purity</span>
+          <span class="vault-row-value mono" id="vaultPurity">—</span>
+        </div>
+        <div class="vault-row">
+          <span class="vault-row-label">Bar Standard</span>
+          <span class="vault-row-value" id="vaultBarStd">—</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Acquisition History Table -->
+    <div class="acq-section">
+      <div class="acq-header">Acquisition History</div>
+      <table class="acq-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Quantity</th>
+            <th>Spot Price</th>
+            <th>Total Cost</th>
+            <th class="hide-mobile">Unrealized Gain</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="acqTableBody">
+          <tr>
+            <td colspan="6" style="text-align:center;padding:24px;">
+              <div class="skel" style="height:14px;width:60%;margin:0 auto"></div>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot id="acqTableFoot"></tfoot>
+      </table>
+    </div>
+
+  </div><!-- /subview-gold -->
+
+  <!-- HOLDINGS SUB-VIEW -->
+  <div class="subview" id="subview-holdings">
+    <div class="holdings-section">
+      <div class="section-label" style="padding:0;margin-bottom:24px">Private Positions</div>
+      <div class="holdings-grid" id="holdingsGrid">
+        <!-- populated by loadPortfolio() -->
+        <div class="deal-skel-card">
+          <div class="skel" style="height:22px;width:55%"></div>
+          <div class="skel" style="height:14px;width:70%"></div>
+          <div class="skel" style="height:28px;width:45%"></div>
+          <div class="skel" style="height:32px;width:100%"></div>
+        </div>
+        <div class="deal-skel-card">
+          <div class="skel" style="height:22px;width:55%"></div>
+          <div class="skel" style="height:14px;width:70%"></div>
+          <div class="skel" style="height:28px;width:45%"></div>
+          <div class="skel" style="height:32px;width:100%"></div>
+        </div>
+        <div class="deal-skel-card">
+          <div class="skel" style="height:22px;width:55%"></div>
+          <div class="skel" style="height:14px;width:70%"></div>
+          <div class="skel" style="height:28px;width:45%"></div>
+          <div class="skel" style="height:32px;width:100%"></div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /subview-holdings -->
+
+</section>
+
+<!-- ============================================================
+     DOCUMENTS VIEW
+     ============================================================ -->
+<section class="view" id="view-documents">
+
+  <!-- Sub-tab bar -->
+  <div class="docs-subtab-bar">
+    <button class="docs-subtab active" data-docs-subtab="foundation" onclick="showDocsSubTab('foundation',this)">Foundation</button>
+    <button class="docs-subtab" data-docs-subtab="letters"    onclick="showDocsSubTab('letters',this)">Quarterly Letters</button>
+    <button class="docs-subtab" data-docs-subtab="vault"      onclick="showDocsSubTab('vault',this)">Vault Reports</button>
+  </div>
+
+  <!-- FOUNDATION -->
+  <div class="docs-subview active" id="docs-subview-foundation">
+    <p class="section-label" style="padding:0;margin-bottom:20px">Foundation Documents</p>
+    <div class="docs-grid">
+      <div class="doc-card">
+        <div class="doc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        <div class="doc-info">
+          <div class="doc-name">Membership Agreement</div>
+          <div class="doc-meta">PDF · Founding Tier · Executed</div>
+        </div>
+        <button class="doc-dl-btn" onclick="downloadDoc('membership-agreement',this)">Download</button>
+      </div>
+      <div class="doc-card">
+        <div class="doc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        <div class="doc-info">
+          <div class="doc-name">Non-Disclosure Agreement</div>
+          <div class="doc-meta">PDF · Signed 12 Jan 2024</div>
+        </div>
+        <button class="doc-dl-btn" onclick="downloadDoc('nda-executed',this)">Download</button>
+      </div>
+      <div class="doc-card">
+        <div class="doc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        <div class="doc-info">
+          <div class="doc-name">Information Memorandum</div>
+          <div class="doc-meta">PDF · Fund Structure & Terms</div>
+        </div>
+        <button class="doc-dl-btn" onclick="downloadDoc('package',this)">Download</button>
+      </div>
+      <div class="doc-card">
+        <div class="doc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        <div class="doc-info">
+          <div class="doc-name">VCC Constitution</div>
+          <div class="doc-meta">PDF · Legal Structure</div>
+        </div>
+        <button class="doc-dl-btn" onclick="downloadDoc('structural',this)">Download</button>
+      </div>
+      <div class="doc-card">
+        <div class="doc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        <div class="doc-info">
+          <div class="doc-name">Lloyd's Insurance Certificate</div>
+          <div class="doc-meta">PDF · Valid through Dec 2026</div>
+        </div>
+        <button class="doc-dl-btn" onclick="downloadDoc('insurance',this)">Download</button>
+      </div>
+      <div class="doc-card">
+        <div class="doc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        <div class="doc-info">
+          <div class="doc-name">Member FAQ</div>
+          <div class="doc-meta">PDF · Frequently Asked Questions</div>
+        </div>
+        <button class="doc-dl-btn" onclick="downloadDoc('faq',this)">Download</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUARTERLY LETTERS -->
+  <div class="docs-subview" id="docs-subview-letters">
+    <p class="section-label" style="padding:0;margin-bottom:20px">Quarterly Letters</p>
+    <div id="lettersContainer">
+      <div class="letter-list">
+        <div class="letter-row"><div class="skel" style="height:14px;width:40%;margin-right:auto"></div><div class="skel" style="height:10px;width:15%"></div></div>
+        <div class="letter-row"><div class="skel" style="height:14px;width:40%;margin-right:auto"></div><div class="skel" style="height:10px;width:15%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VAULT REPORTS -->
+  <div class="docs-subview" id="docs-subview-vault">
+    <p class="section-label" style="padding:0;margin-bottom:20px">Vault Verification Reports</p>
+    <div id="vaultVerifContainer">
+      <div class="vault-list">
+        <div class="vault-card"><div class="skel" style="width:44px;height:44px;border-radius:8px;flex-shrink:0"></div><div style="flex:1"><div class="skel" style="height:14px;width:50%;margin-bottom:8px"></div><div class="skel" style="height:10px;width:30%"></div></div></div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ============================================================
+     MESSAGES VIEW
+     ============================================================ -->
+<section class="view" id="view-messages">
+
+  <!-- Thread list -->
+  <div class="messages-threads">
+    <div class="thread-list-header">
+      <span class="thread-list-title">Messages</span>
+      <span class="thread-unread-badge" id="threadUnreadBadge" style="display:none"></span>
+    </div>
+    <div id="threadList">
+      <!-- skeleton -->
+      <div class="thread-row">
+        <div class="thread-row-inner">
+          <div class="skel" style="width:28px;height:28px;border-radius:50%;flex-shrink:0"></div>
+          <div class="thread-content">
+            <div class="skel" style="height:13px;width:60%;margin-bottom:6px"></div>
+            <div class="skel" style="height:12px;width:80%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="thread-row">
+        <div class="thread-row-inner">
+          <div class="skel" style="width:28px;height:28px;border-radius:50%;flex-shrink:0"></div>
+          <div class="thread-content">
+            <div class="skel" style="height:13px;width:60%;margin-bottom:6px"></div>
+            <div class="skel" style="height:12px;width:80%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message panel -->
+  <div class="messages-panel" id="messagesPanel">
+    <div class="msg-empty-panel">Select a message to read.</div>
+  </div>
+
+</section>
+
+<!-- ============================================================
+     ACCOUNT VIEW
+     ============================================================ -->
+<section class="view" id="view-account">
+  <div class="account-view">
+
+    <!-- Identity Hero -->
+    <div class="account-hero fade-up">
+      <div class="account-avatar" id="accAvatar">T</div>
+      <div class="account-hero-info">
+        <div class="account-hero-name" id="accName">—</div>
+        <div class="account-hero-meta">
+          <span class="account-tier-badge" id="accTier">—</span>
+          <span class="account-hero-sep"></span>
+          <span class="account-hero-number" id="accNumber">—</span>
+        </div>
+      </div>
+      <div class="account-hero-status">
+        <span class="status-dot green"></span>
+        <span style="font-family:var(--mono);font-size:10px;letter-spacing:0.06em;color:var(--green-b)">ACTIVE MEMBER</span>
+      </div>
+    </div>
+
+    <!-- Financial Highlights -->
+    <div class="account-stat-row fade-up">
+      <div class="account-stat-block">
+        <div class="account-stat-value" id="accCommitted">—</div>
+        <div class="account-stat-label">Capital Committed</div>
+      </div>
+      <div class="account-stat-block">
+        <div class="account-stat-value" id="accGoldValue">—</div>
+        <div class="account-stat-label">Gold Holdings Value</div>
+      </div>
+      <div class="account-stat-block">
+        <div class="account-stat-value" id="accSince">—</div>
+        <div class="account-stat-label">Member Since</div>
+      </div>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="account-card fade-up">
+      <div class="account-card-header">
+        <div class="account-card-icon gold">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M2 13c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        </div>
+        <div class="account-card-title">Member Profile</div>
+      </div>
+      <div class="account-card-body">
+        <div class="account-row">
+          <span class="account-label">Legal Name</span>
+          <span class="account-value" id="accFullName">—</span>
+        </div>
+        <div class="account-row">
+          <span class="account-label">Entity Type</span>
+          <span class="account-value" id="accEntity">Individual</span>
+        </div>
+        <div class="account-row">
+          <span class="account-label">Jurisdiction</span>
+          <span class="account-value">Singapore</span>
+        </div>
+        <div class="account-row" style="border-bottom:none">
+          <span class="account-label">Membership Tier</span>
+          <span class="account-value gold" id="accTierDetail">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Membership Card -->
+    <div class="account-card fade-up">
+      <div class="account-card-header">
+        <div class="account-card-icon green">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M5 4V3a3 3 0 016 0v1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        </div>
+        <div class="account-card-title">Membership &amp; Subscription</div>
+      </div>
+      <div class="account-card-body">
+        <div class="account-row">
+          <span class="account-label">Subscription Status</span>
+          <span class="account-value" style="display:flex;align-items:center;gap:6px">
+            <span class="status-dot green" style="width:6px;height:6px;flex-shrink:0"></span>
+            <span style="color:var(--green-b)">Active</span>
+          </span>
+        </div>
+        <div class="account-row">
+          <span class="account-label">Capital Committed</span>
+          <span class="account-value mono gold" id="accCommitted2">—</span>
+        </div>
+        <div class="account-row">
+          <span class="account-label">Wire Date</span>
+          <span class="account-value" id="accWireDate">—</span>
+        </div>
+        <div class="account-row">
+          <span class="account-label">Annual Fee</span>
+          <span class="account-value">Included in commitment</span>
+        </div>
+        <div class="account-row" style="border-bottom:none">
+          <span class="account-label">Vault Location</span>
+          <span class="account-value" id="accVault">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- NDA & Legal Card -->
+    <div class="account-card fade-up">
+      <div class="account-card-header">
+        <div class="account-card-icon blue">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 2h6l4 4v9a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.4"/><path d="M10 2v4h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M5.5 9h5M5.5 11.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </div>
+        <div class="account-card-title">NDA &amp; Legal</div>
+      </div>
+      <div class="account-card-body">
+        <div class="account-row">
+          <span class="account-label">NDA Status</span>
+          <span class="account-value" style="display:flex;align-items:center;gap:6px">
+            <span class="status-dot green" style="width:6px;height:6px;flex-shrink:0"></span>
+            <span class="green" id="accNdaStatus">Signed</span>
+          </span>
+        </div>
+        <div class="account-row">
+          <span class="account-label">Date Signed</span>
+          <span class="account-value" id="accNdaSigned">—</span>
+        </div>
+        <div class="account-row" style="border-bottom:none">
+          <span class="account-label">Agreement</span>
+          <a class="account-value link" href="/api/nda?op=mine" target="_blank">View NDA &amp; Subscription Agreement →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security Card -->
+    <div class="account-card fade-up">
+      <div class="account-card-header">
+        <div class="account-card-icon dim">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L3 4v4c0 3.314 2.239 5.5 5 6.5 2.761-1 5-3.186 5-6.5V4L8 1.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="account-card-title">Security</div>
+      </div>
+      <div class="account-card-body">
+        <div class="account-row">
+          <span class="account-label">Primary Email</span>
+          <span class="account-value" id="accEmail">—</span>
+        </div>
+        <div class="account-row">
+          <span class="account-label">Two-Factor Auth</span>
+          <span class="account-value" id="acc2fa">—</span>
+        </div>
+        <div class="account-row">
+          <span class="account-label">Last Login</span>
+          <span class="account-value" id="accLastLogin">—</span>
+        </div>
+        <div class="account-row" style="border-bottom:none">
+          <span class="account-label">Password</span>
+          <a class="account-value link" href="/reset-password">Change password →</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</main><!-- /main -->
+
+<!-- ============================================================
+     CAPITAL CALL MODAL
+     ============================================================ -->
+<div id="cc-modal">
+  <div class="cc-modal-inner">
+    <button class="cc-modal-close" onclick="closeCcModal()">×</button>
+    <div class="cc-modal-title" id="ccModalTitle">Capital Call</div>
+    <div class="cc-modal-amount" id="ccModalAmount">$—</div>
+    <div class="cc-modal-due" id="ccModalDue">Due —</div>
+    <div class="cc-modal-section">Wire Instructions</div>
+    <div class="cc-wire-grid" id="ccWireGrid">
+      <span class="cc-wire-key">Beneficiary</span>
+      <span class="cc-wire-val">The Aurum Century Club</span>
+      <span class="cc-wire-key">Bank</span>
+      <span class="cc-wire-val" id="ccWireBank">DBS Bank Singapore</span>
+      <span class="cc-wire-key">SWIFT</span>
+      <span class="cc-wire-val" id="ccWireSwift">—</span>
+      <span class="cc-wire-key">Account No.</span>
+      <span class="cc-wire-val" id="ccWireAccount">—</span>
+      <span class="cc-wire-key">Reference</span>
+      <span class="cc-wire-val" id="ccWireRef">—</span>
+    </div>
+    <div class="cc-ack-row">
+      <input type="checkbox" id="ccAckCheck" onchange="toggleCcConfirm()">
+      <label class="cc-ack-label" for="ccAckCheck">I confirm that I have read and understood the capital call notice and will arrange the wire transfer by the due date.</label>
+    </div>
+    <button class="cc-confirm-btn" id="ccConfirmBtn" disabled onclick="confirmCapitalCall()">Confirm Capital Call</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     DEAL SLIDE-IN PANEL
+     ============================================================ -->
+<div id="deal-panel">
+  <div class="deal-panel-close">
+    <button class="deal-panel-close-btn" onclick="closeDealPanel()">×</button>
+  </div>
+  <div class="deal-panel-title" id="dealPanelTitle">—</div>
+  <div class="deal-panel-chips" id="dealPanelChips"></div>
+  <div class="deal-panel-section-label">Investment Thesis</div>
+  <div class="deal-panel-thesis" id="dealPanelThesis">—</div>
+  <div class="deal-panel-section-label">Key Terms</div>
+  <div class="deal-panel-terms" id="dealPanelTerms"></div>
+  <a class="deal-panel-cta" id="dealPanelCta" href="#">Speak to your advisor →</a>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// GLOBAL STATE
+// ============================================================
+var MEMBER = null;
+var SPOT   = null;
+var tabLoaded = {};
+var viewAnimated = {};
+var animated = { ring: false, ozCounter: false };
+var currentCcId = null;
+var unreadMsgCount = 0;
+var pendingCcCount = 0;
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function esc(s) {
+  var d = document.createElement('div');
+  d.textContent = (s === null || s === undefined) ? '' : String(s);
+  return d.innerHTML;
+}
+
+function fmU(n) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  if (n >= 1e6) return '$' + (n / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'M';
+  if (n >= 1e3) return '$' + Math.round(n).toLocaleString();
+  return '$' + n;
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return '—';
+  var diff = Date.now() - new Date(dateStr).getTime();
+  var h = diff / 3600000;
+  if (h < 1) return 'Just now';
+  if (h < 24) return Math.floor(h) + 'h ago';
+  if (h < 48) return 'Yesterday';
+  return new Date(dateStr).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
+}
+
+function fmDate(dateStr) {
+  if (!dateStr) return '—';
+  try {
+    return new Date(dateStr).toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric' });
+  } catch(e) { return dateStr; }
+}
+
+function dashOr(v) { return (v !== null && v !== undefined && v !== '') ? v : '—'; }
+
+// ============================================================
+// FETCH PATTERN
+// ============================================================
+async function fetchSilent(url, opts) {
+  try {
+    var r = await fetch(url, Object.assign({ credentials: 'include' }, opts || {}));
+    if (r.status === 401 || r.status === 403) {
+      window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+      return null;
+    }
+    if (!r.ok) return null;
+    return r.json();
+  } catch(e) { return null; }
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function toast(msg, type) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(t._t);
+  t._t = setTimeout(function() { t.classList.remove('show'); }, 3200);
+}
+
+// ============================================================
+// VIEW SWITCHING
+// ============================================================
+function showView(id) {
+  document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+  document.querySelectorAll('[data-view]').forEach(function(t) {
+    t.classList.toggle('active', t.dataset.view === id);
+  });
+  var el = document.getElementById('view-' + id);
+  if (el) el.classList.add('active');
+
+  if (!viewAnimated[id] && el) {
+    triggerFadeUps(el);
+    viewAnimated[id] = true;
+  }
+
+  if (id === 'portfolio') {
+    setTimeout(triggerPortfolioAnimations, 100);
+  }
+
+  // Lazy tab loading
+  if (!tabLoaded[id]) {
+    tabLoaded[id] = true;
+    if (id === 'deals')     loadDeals();
+    if (id === 'documents') loadDocuments();
+    if (id === 'portfolio') loadPortfolio();
+    if (id === 'messages')  loadMessages();
+  }
+}
+
+function showDocsSubTab(name, btn) {
+  document.querySelectorAll('.docs-subtab').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('.docs-subview').forEach(function(v) { v.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  var panel = document.getElementById('docs-subview-' + name);
+  if (panel) panel.classList.add('active');
+}
+
+// ============================================================
+// SUB-TAB SWITCHING
+// ============================================================
+function showSubTab(id) {
+  document.querySelectorAll('.subtab').forEach(function(t) {
+    t.classList.toggle('active', t.dataset.subtab === id);
+  });
+  document.querySelectorAll('.subview').forEach(function(v) { v.classList.remove('active'); });
+  var sv = document.getElementById('subview-' + id);
+  if (sv) sv.classList.add('active');
+
+  if (id === 'gold') setTimeout(triggerPortfolioAnimations, 100);
+  if (id === 'holdings') {
+    var cont = document.getElementById('subview-holdings');
+    if (cont) triggerFadeUps(cont);
+  }
+}
+
+// ============================================================
+// ANIMATION HELPERS
+// ============================================================
+function triggerFadeUps(container) {
+  var els = container.querySelectorAll('.fade-up');
+  els.forEach(function(el, i) {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(24px)';
+    el.style.animation = 'none';
+    void el.offsetHeight;
+    el.style.animation = 'fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) ' + (i * 0.08 + 0.05) + 's forwards';
+  });
+}
+
+function animateCounter(el, start, end, duration, formatter) {
+  if (!el) return;
+  var t0 = performance.now();
+  function tick(now) {
+    var p = Math.min((now - t0) / duration, 1);
+    var e = p === 1 ? 1 : 1 - Math.pow(2, -10 * p);
+    el.textContent = formatter(start + (end - start) * e);
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function triggerPortfolioAnimations() {
+  var arc = document.getElementById('goldArc');
+  if (arc && !animated.ring) {
+    animated.ring = true;
+    arc.classList.add('animated');
+  }
+  if (!animated.ozCounter && MEMBER) {
+    animated.ozCounter = true;
+    var ozEl = document.getElementById('goldOzHero');
+    var oz = (MEMBER.gold_kg || 0) * 32.1507;
+    if (ozEl && oz > 0) animateCounter(ozEl, 0, oz, 1200, function(v) { return v.toFixed(1) + ' oz'; });
+  }
+}
+
+// ============================================================
+// DATE INJECTION
+// ============================================================
+function injectDate() {
+  var el = document.getElementById('todayDate');
+  if (!el) return;
+  var d = new Date();
+  var days   = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
+  var months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  el.textContent = days[d.getDay()] + ' · ' + d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+
+  // Greeting
+  var h = d.getHours();
+  var greetEl = document.getElementById('todayGreeting');
+  if (greetEl) {
+    if (h < 12)      greetEl.textContent = 'Good morning,';
+    else if (h < 17) greetEl.textContent = 'Good afternoon,';
+    else             greetEl.textContent = 'Good evening,';
+  }
+}
+
+// ============================================================
+// LANG TOGGLE
+// ============================================================
+function toggleLang(btn) {
+  var cur = localStorage.getItem('lang') || 'en';
+  var next = cur === 'en' ? 'ko' : 'en';
+  localStorage.setItem('lang', next);
+  btn.textContent = next.toUpperCase();
+}
+
+function toggleTheme() {
+  var cur = document.documentElement.dataset.theme || 'dark';
+  var next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next;
+  localStorage.setItem('theme', next);
+}
+
+// ============================================================
+// NAV BADGE
+// ============================================================
+function updateNavBadge() {
+  var total = unreadMsgCount + pendingCcCount;
+  var dot = document.getElementById('navNotifDot');
+  if (dot) dot.classList.toggle('show', total > 0);
+}
+
+// ============================================================
+// RENDER NAV FROM MEMBER
+// ============================================================
+function renderNav(member) {
+  var chip = document.getElementById('navMemberChip');
+  if (chip && member.member_number) chip.textContent = '#' + member.member_number;
+
+  // Count unread messages for badge
+  var msgs = member.messages || [];
+  unreadMsgCount = msgs.filter(function(m) { return m.read === false || m.read === 0 || (!m.read && !m.read_at); }).length;
+
+  // Count pending capital calls
+  var ccs = member.capital_calls || [];
+  pendingCcCount = ccs.filter(function(cc) { return !cc.acknowledged_at; }).length;
+
+  updateNavBadge();
+}
+
+// ============================================================
+// SPOT REFRESH
+// ============================================================
+function normalizeSpot(data) {
+  if (!data) return null;
+  // Ensure both units always present regardless of API response shape
+  if (data.price_usd_per_oz  && !data.price_usd_per_kg) data.price_usd_per_kg = data.price_usd_per_oz  * 32.1507;
+  if (data.price_usd_per_kg  && !data.price_usd_per_oz) data.price_usd_per_oz = data.price_usd_per_kg  / 32.1507;
+  // Also handle alternate field names some APIs use
+  if (!data.price_usd_per_oz && data.xau_usd)           data.price_usd_per_oz = data.xau_usd;
+  if (!data.price_usd_per_kg && data.xau_usd)           data.price_usd_per_kg = data.xau_usd * 32.1507;
+  return data;
+}
+
+async function refreshSpot() {
+  var data = await fetchSilent('/api/v2?resource=public&op=spot');
+  if (data) {
+    SPOT = normalizeSpot(data);
+    if (tabLoaded['portfolio']) loadPortfolio();
+    // Update KPIs on today tab too
+    if (MEMBER) renderKpis(MEMBER);
+  }
+}
+
+// ============================================================
+// TODAY — renderToday(member)
+// ============================================================
+function renderToday(member) {
+  // Name
+  var nameEl = document.getElementById('todayName');
+  if (nameEl) {
+    var firstName = (member.full_name || '').split(' ')[0] || 'Member';
+    nameEl.textContent = firstName + '.';
+  }
+
+  // Meta line
+  var metaEl = document.getElementById('todayMeta');
+  if (metaEl && member.member_number) {
+    var tier = member.tier || member.membership_tier || 'Member';
+    var since = member.member_since ? new Date(member.member_since).toLocaleDateString('en-SG', { month: 'long', year: 'numeric' }) : '—';
+    metaEl.textContent = 'Member #' + member.member_number + '  ·  ' + tier + '  ·  Since ' + since;
+  }
+
+  // Action cards
+  renderAttentionCards(member);
+
+  // KPIs
+  renderKpis(member);
+
+  // Activity
+  renderActivity(member);
+}
+
+function renderAttentionCards(member) {
+  var grid = document.getElementById('attentionGrid');
+  var section = document.getElementById('attentionSection');
+  if (!grid) return;
+
+  var ccs     = member.capital_calls || [];
+  var notices = member.notices || [];
+
+  // Filter unacknowledged capital calls
+  var pendingCcs = ccs.filter(function(cc) { return !cc.acknowledged_at; });
+
+  if (pendingCcs.length === 0 && notices.length === 0) {
+    if (section) section.style.display = 'none';
+    return;
+  }
+
+  var cards = '';
+
+  pendingCcs.forEach(function(cc) {
+    _ccMap[cc.id] = cc;
+    var due = cc.due_date ? fmDate(cc.due_date) : '—';
+    var amount = fmU(cc.amount_usd || cc.amount);
+    cards += '<div class="attention-card amber" id="cc-card-' + esc(cc.id) + '">' +
+      '<div class="attention-badge amber">Pending Action</div>' +
+      '<div class="attention-title">' + esc(cc.title || cc.fund_name || 'Capital Call') + '</div>' +
+      '<div class="attention-sub">' + esc(cc.description || cc.reason || '') + ' Transfer deadline: ' + esc(due) + '.</div>' +
+      '<div class="attention-footer">' +
+        '<span class="attention-amount">' + amount + '</span>' +
+        '<button class="attention-cta" onclick="openCcModal(_ccMap[\'' + esc(cc.id) + '\'])">Review &amp; Confirm →</button>' +
+      '</div>' +
+    '</div>';
+  });
+
+  notices.forEach(function(n) {
+    var color = n.color || 'green';
+    cards += '<div class="attention-card ' + esc(color) + '">' +
+      '<div class="attention-badge ' + esc(color) + '">' + esc(n.badge || 'Notice') + '</div>' +
+      '<div class="attention-title">' + esc(n.title) + '</div>' +
+      '<div class="attention-sub">' + esc(n.body || n.description || '') + '</div>' +
+      '<div class="attention-footer">' +
+        '<span class="attention-amount">' + esc(n.amount_label || '') + '</span>' +
+        '<button class="attention-cta" onclick="' + esc(n.action || '') + '">' + esc(n.cta || 'View →') + '</button>' +
+      '</div>' +
+    '</div>';
+  });
+
+  grid.innerHTML = cards;
+}
+
+function renderKpis(member) {
+  var goldKg   = member.gold_kg || 0;
+  var oz       = goldKg * 32.1507;
+  var positions = member.positions || [];
+  var posCnt   = positions.length;
+
+  var goldValue = SPOT ? goldKg * SPOT.price_usd_per_kg : null;
+  var peValue   = positions.reduce(function(s, p) { return s + (p.marked_usd || p.invested_usd || 0); }, 0);
+  var totalValue = goldValue !== null ? goldValue + peValue : null;
+
+  var totalEl = document.getElementById('kpi-total');
+  var ozEl    = document.getElementById('kpi-oz');
+  var posEl   = document.getElementById('kpi-pos');
+
+  if (totalEl) {
+    if (totalValue !== null) {
+      animateCounter(totalEl, 0, totalValue, 1400, function(v) {
+        return v >= 1e6 ? '$' + (v / 1e6).toFixed(2) + 'M' : '$' + Math.round(v).toLocaleString();
+      });
+    } else {
+      totalEl.textContent = '—';
+    }
+  }
+  if (ozEl) {
+    animateCounter(ozEl, 0, oz, 1400, function(v) { return v.toFixed(1) + ' oz'; });
+  }
+  if (posEl) {
+    animateCounter(posEl, 0, posCnt, 800, function(v) { return Math.round(v).toString(); });
+  }
+
+  // Subs
+  var kpiTotalSub = document.getElementById('kpi-total-sub');
+  if (kpiTotalSub) kpiTotalSub.textContent = SPOT ? 'At $' + Math.round(SPOT.price_usd_per_oz || 0).toLocaleString() + '/oz spot' : '—';
+  var kpiOzSub = document.getElementById('kpi-oz-sub');
+  if (kpiOzSub) kpiOzSub.textContent = member.vault_location || 'Singapore Freeport';
+  var kpiPosSub = document.getElementById('kpi-pos-sub');
+  if (kpiPosSub) {
+    var active  = positions.filter(function(p) { return (p.status || 'active') === 'active'; }).length;
+    var exiting = positions.filter(function(p) { return p.status === 'exiting'; }).length;
+    kpiPosSub.textContent = active + ' active' + (exiting > 0 ? ' · ' + exiting + ' exiting' : '');
+  }
+}
+
+function renderActivity(member) {
+  var list = document.getElementById('activityList');
+  var section = document.getElementById('activitySection');
+  if (!list) return;
+
+  var items = member.activity || [];
+  if (!items.length) {
+    if (section) section.style.display = 'none';
+    return;
+  }
+
+  var dotColors = { gold: 'gold', green: 'green', blue: 'blue', dim: 'dim' };
+
+  list.innerHTML = items.map(function(item) {
+    var color = dotColors[item.color] || 'dim';
+    return '<div class="activity-row">' +
+      '<div class="activity-dot ' + color + '"></div>' +
+      '<div class="activity-text">' +
+        (item.bold ? '<strong>' + esc(item.bold) + '</strong>' : '') +
+        (item.text ? ' — ' + esc(item.text) : esc(item.label || '')) +
+      '</div>' +
+      '<div class="activity-time">' + timeAgo(item.created_at || item.timestamp) + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ============================================================
+// CAPITAL CALL MODAL
+// ============================================================
+function openCcModal(cc) {
+  currentCcId = cc.id;
+  document.getElementById('ccModalTitle').textContent = cc.title || cc.fund_name || cc.ref || 'Capital Call';
+  document.getElementById('ccModalAmount').textContent = fmU(cc.amount_usd || cc.amount);
+  document.getElementById('ccModalDue').textContent = 'Due ' + (cc.due_date ? fmDate(cc.due_date) : '—');
+  var bankEl  = document.getElementById('ccWireBank');
+  var swiftEl = document.getElementById('ccWireSwift');
+  if (bankEl)  bankEl.textContent  = cc.wire_bank  || 'DBS Bank Singapore';
+  if (swiftEl) swiftEl.textContent = cc.wire_swift || 'DBSSSGSG';
+  document.getElementById('ccWireAccount').textContent = cc.wire_account || '—';
+  document.getElementById('ccWireRef').textContent = cc.wire_ref || cc.wire_reference || ('TACC-CC-' + cc.id);
+  document.getElementById('ccAckCheck').checked = false;
+  document.getElementById('ccConfirmBtn').disabled = true;
+  document.getElementById('cc-modal').classList.add('open');
+}
+
+function closeCcModal() {
+  document.getElementById('cc-modal').classList.remove('open');
+  currentCcId = null;
+}
+
+function toggleCcConfirm() {
+  var chk = document.getElementById('ccAckCheck');
+  document.getElementById('ccConfirmBtn').disabled = !chk.checked;
+}
+
+async function confirmCapitalCall() {
+  if (!currentCcId) return;
+  var btn = document.getElementById('ccConfirmBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  var data = await fetchSilent('/api/v2?resource=member&op=ack-capital-call', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ capital_call_id: currentCcId })
+  });
+
+  if (data !== null) {
+    // Remove the card from today tab
+    var card = document.getElementById('cc-card-' + currentCcId);
+    if (card) card.remove();
+    pendingCcCount = Math.max(0, pendingCcCount - 1);
+    updateNavBadge();
+    closeCcModal();
+    toast('Capital call acknowledged.');
+  } else {
+    btn.disabled = false;
+    btn.textContent = 'Confirm Capital Call';
+    toast('Error — please try again.', 'error');
+  }
+}
+
+// Escape key to close modals
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeCcModal();
+    closeDealPanel();
+  }
+});
+
+// Click outside cc-modal to close
+document.getElementById('cc-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeCcModal();
+});
+
+// ============================================================
+// PORTFOLIO TAB — loadPortfolio()
+// ============================================================
+function loadPortfolio() {
+  if (!MEMBER) return;
+  var member = MEMBER;
+  var goldKg  = member.gold_kg || 0;
+  var oz      = goldKg * 32.1507;
+
+  // Hero
+  var ozEl = document.getElementById('goldOzHero');
+  if (ozEl) ozEl.textContent = oz.toFixed(1) + ' oz';
+
+  if (SPOT) {
+    var price_per_oz  = SPOT.price_usd_per_oz  || (SPOT.price_usd_per_kg / 32.1507);
+    var price_per_kg  = SPOT.price_usd_per_kg;
+    var value         = goldKg * price_per_kg;
+    var costBasis     = member.cost_basis_usd || 0;
+    var gain          = costBasis > 0 ? value - costBasis : 0;
+    var gainPct       = costBasis > 0 ? (gain / costBasis * 100) : 0;
+
+    var valEl = document.getElementById('goldValue');
+    if (valEl) valEl.textContent = fmU(value) + '  at  $' + Math.round(price_per_oz).toLocaleString() + '/oz spot';
+
+    var pnlEl = document.getElementById('goldPnl');
+    if (pnlEl) {
+      if (costBasis > 0) {
+        pnlEl.textContent = (gain >= 0 ? '▲ +' : '▼ ') + fmU(Math.abs(gain)) + ' · ' + (gain >= 0 ? '+' : '') + gainPct.toFixed(1) + '% since acquisition';
+        pnlEl.style.color = gain >= 0 ? 'var(--green-b)' : 'var(--red)';
+      } else {
+        pnlEl.textContent = fmU(value) + ' current value';
+        pnlEl.style.color = '';
+      }
+    }
+
+    // Ring chart
+    var positions = member.positions || [];
+    var peValue   = positions.reduce(function(s, p) { return s + (p.marked_usd || p.invested_usd || 0); }, 0);
+    var liqValue  = member.liquidity_reserve_usd || 0;
+    var total     = value + peValue + liqValue;
+    if (total > 0) {
+      var goldPct = value / total;
+      var pePct   = peValue / total;
+      var liqPct  = liqValue / total;
+      var circ    = 534; // 2*pi*r = 2*pi*85 ≈ 534
+
+      // Gold arc
+      var goldOffset = circ * (1 - goldPct);
+      var arc = document.getElementById('goldArc');
+      if (arc) arc.style.strokeDashoffset = goldOffset;
+
+      // PE arc
+      var peLen    = circ * pePct;
+      var peOffset = -(circ * goldPct);
+      var peArc = document.getElementById('peArc');
+      if (peArc) {
+        peArc.setAttribute('stroke-dasharray', peLen + ' ' + (circ - peLen));
+        peArc.setAttribute('stroke-dashoffset', peOffset);
+      }
+
+      // Liquidity arc
+      var liqLen    = circ * liqPct;
+      var liqOffset = -(circ * (goldPct + pePct));
+      var liqArc = document.getElementById('liqArc');
+      if (liqArc) {
+        liqArc.setAttribute('stroke-dasharray', liqLen + ' ' + (circ - liqLen));
+        liqArc.setAttribute('stroke-dashoffset', liqOffset);
+      }
+
+      var gp = Math.round(goldPct * 100);
+      var pp = Math.round(pePct  * 100);
+      var lp = 100 - gp - pp;
+      var rcPct = document.getElementById('ringCenterPct');
+      if (rcPct) rcPct.textContent = gp + '%';
+      var lgPct = document.getElementById('legendGoldPct');
+      if (lgPct) lgPct.textContent = gp + '%';
+      var lpPct = document.getElementById('legendPePct');
+      if (lpPct) lpPct.textContent = pp + '%';
+      var llPct = document.getElementById('legendLiqPct');
+      if (llPct) llPct.textContent = lp + '%';
+    }
+  }
+
+  // Vault details
+  document.getElementById('vaultLocation').textContent  = dashOr(member.vault_location);
+  document.getElementById('vaultLotRef').textContent     = dashOr(member.lot_ref);
+  document.getElementById('vaultCustodian').textContent  = dashOr(member.custodian);
+  document.getElementById('vaultInsurance').textContent  = dashOr(member.insurance || 'Lloyd\'s of London');
+  document.getElementById('vaultPurity').textContent     = dashOr(member.purity);
+  document.getElementById('vaultBarStd').textContent     = dashOr(member.bar_standard);
+  var auditEl = document.getElementById('vaultAudit');
+  if (auditEl) auditEl.textContent = member.last_audit_date ? fmDate(member.last_audit_date) + ' ✓' : '—';
+
+  // Acquisition history
+  renderAcqTable(member);
+
+  // Holdings
+  renderHoldings(member);
+
+  // Trigger animations
+  setTimeout(triggerPortfolioAnimations, 100);
+}
+
+function renderAcqTable(member) {
+  var tbody = document.getElementById('acqTableBody');
+  var tfoot = document.getElementById('acqTableFoot');
+  if (!tbody) return;
+
+  var purchases = member.gold_purchases || [];
+  if (!purchases.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-3);font-size:13px;padding:24px;">No acquisitions on record</td></tr>';
+    if (tfoot) tfoot.innerHTML = '';
+    return;
+  }
+
+  var currentSpotPerOz = SPOT ? (SPOT.price_usd_per_oz || SPOT.price_usd_per_kg / 32.1507) : null;
+  var totalOz = 0, totalCost = 0, totalGain = 0;
+
+  tbody.innerHTML = purchases.map(function(p) {
+    var oz     = p.quantity_oz || p.oz || 0;
+    var spotPx = p.spot_price_per_oz || p.price_per_oz || p.spot_usd || 0;
+    var cost   = p.total_cost_usd || p.total_usd || (oz * spotPx);
+    var gain   = currentSpotPerOz ? (oz * currentSpotPerOz - cost) : null;
+    var gainPct = (gain !== null && cost > 0) ? (gain / cost * 100) : null;
+    totalOz   += oz;
+    totalCost += cost;
+    if (gain !== null) totalGain += gain;
+
+    return '<tr>' +
+      '<td>' + esc(p.date ? fmDate(p.date) : '—') + '</td>' +
+      '<td>' + oz.toFixed(1) + ' oz</td>' +
+      '<td>$' + Math.round(spotPx).toLocaleString() + '</td>' +
+      '<td>' + fmU(cost) + '</td>' +
+      '<td class="' + (gain !== null && gain >= 0 ? 'acq-green' : '') + ' hide-mobile">' +
+        (gain !== null ? (gain >= 0 ? '+' : '') + fmU(gain) + ' (' + (gainPct >= 0 ? '+' : '') + gainPct.toFixed(1) + '%)' : '—') +
+      '</td>' +
+      '<td><span class="settled-chip">' + esc(p.status || 'Settled') + '</span></td>' +
+    '</tr>';
+  }).join('');
+
+  if (tfoot) {
+    var avgSpot = totalOz > 0 ? totalCost / totalOz : 0;
+    var gainPctTotal = totalCost > 0 ? (totalGain / totalCost * 100) : 0;
+    tfoot.innerHTML = '<tr class="totals-row">' +
+      '<td>Total</td>' +
+      '<td class="acq-gold">' + totalOz.toFixed(1) + ' oz</td>' +
+      '<td style="color:var(--text-2);font-weight:400">avg $' + Math.round(avgSpot).toLocaleString() + '</td>' +
+      '<td class="acq-gold">' + fmU(totalCost) + '</td>' +
+      '<td class="acq-green hide-mobile">' +
+        (currentSpotPerOz ? (totalGain >= 0 ? '+' : '') + fmU(totalGain) + ' (' + (gainPctTotal >= 0 ? '+' : '') + gainPctTotal.toFixed(1) + '%)' : '—') +
+      '</td>' +
+      '<td></td>' +
+    '</tr>';
+  }
+}
+
+function renderHoldings(member) {
+  var grid = document.getElementById('holdingsGrid');
+  if (!grid) return;
+  var positions = member.positions || [];
+
+  if (!positions.length) {
+    grid.innerHTML = '<div class="state-box"><div class="state-box-title">No private positions yet.</div><div class="state-box-sub">Private equity positions will appear here once allocated.</div></div>';
+    return;
+  }
+
+  var statusClass = { active: 'active', exiting: 'exiting', closing: 'closing' };
+
+  grid.innerHTML = positions.map(function(pos) {
+    var sc      = statusClass[pos.status || 'active'] || 'active';
+    var posName = pos.name || pos.code || pos.deal_name || '—';
+    var sector  = pos.sector || pos.asset_class || '—';
+    var irr     = pos.target_irr || pos.irr_target || pos.irr || null;
+    var entryDt = pos.entry_date || pos.invested_at || pos.entry || null;
+    var entryFmt = entryDt ? (function() {
+      try { return new Date(entryDt).toLocaleDateString('en-SG', { month: 'short', year: 'numeric' }); }
+      catch(e) { return entryDt; }
+    })() : '—';
+    return '<div class="holding-card fade-up">' +
+      '<div class="holding-name">' + esc(posName) + '</div>' +
+      '<div class="holding-sector-chip">' + esc(sector) + '</div>' +
+      '<div class="holding-amount">' + fmU(pos.marked_usd || pos.amount_usd || pos.invested_usd) + '</div>' +
+      '<div class="holding-stats">' +
+        '<div class="holding-stat">Entry: <span>' + entryFmt + '</span></div>' +
+        (irr ? '<div class="holding-stat">Target IRR: <span>' + esc(irr) + '</span></div>' : '') +
+      '</div>' +
+      '<div class="holding-status ' + sc + '">' + sc.charAt(0).toUpperCase() + sc.slice(1) + '</div>' +
+      (pos.thesis || pos.description ? '<div class="holding-thesis">' + esc(pos.thesis || pos.description) + '</div>' : '') +
+      '<button class="holding-link" onclick="">View Details →</button>' +
+    '</div>';
+  }).join('');
+}
+
+// ============================================================
+// DEALS TAB — loadDeals()
+// ============================================================
+function loadDeals() {
+  var grid = document.getElementById('dealsGrid');
+  if (!grid) return;
+
+  // Skeleton
+  grid.innerHTML = [1,2,3].map(function() {
+    return '<div class="deal-skel-card">' +
+      '<div class="skel" style="height:16px;width:80px;margin-bottom:16px"></div>' +
+      '<div class="skel" style="height:22px;width:65%;margin-bottom:8px"></div>' +
+      '<div class="skel" style="height:14px;width:40%;margin-bottom:18px"></div>' +
+      '<div class="skel" style="height:1px;width:100%;margin-bottom:16px"></div>' +
+      '<div style="display:flex;gap:20px;margin-bottom:16px">' +
+        '<div class="skel" style="height:32px;width:60px"></div>' +
+        '<div class="skel" style="height:32px;width:60px"></div>' +
+        '<div class="skel" style="height:32px;width:60px"></div>' +
+      '</div>' +
+      '<div class="skel" style="height:60px;width:100%;margin-bottom:20px"></div>' +
+      '<div class="skel" style="height:14px;width:100%"></div>' +
+    '</div>';
+  }).join('');
+
+  fetchSilent('/api/v2?resource=member&op=deals').then(function(data) {
+    if (!data) {
+      grid.innerHTML = buildDealsError();
+      return;
+    }
+
+    var deals = Array.isArray(data) ? data : (data.deals || []);
+    if (!deals.length) {
+      grid.innerHTML = '<div class="state-box" style="grid-column:1/-1">' +
+        '<div class="state-box-title">No deals available at this time.</div>' +
+        '<div class="state-box-sub">New opportunities are shared by invitation.</div>' +
+      '</div>';
+      return;
+    }
+
+    var chipClass = { infrastructure: 'infra', credit: 'credit', 'private credit': 'credit', 'real assets': 'assets', assets: 'assets', gold: 'gold' };
+
+    deals.forEach(function(d) { _dealMap[d.id] = d; });
+    grid.innerHTML = deals.map(function(deal) {
+      var cls = chipClass[(deal.asset_class || deal.type || '').toLowerCase()] || 'infra';
+      return '<div class="deal-card fade-up">' +
+        '<div class="deal-card-top">' +
+          '<span class="deal-asset-chip ' + cls + '">' + esc(deal.asset_class || deal.type || '—') + '</span>' +
+          (deal.is_new ? '<span class="deal-new-badge">NEW</span>' : '') +
+        '</div>' +
+        '<div class="deal-name">' + esc(deal.name) + '</div>' +
+        '<div class="deal-geo">' + esc(deal.geography || deal.geo || '—') + '</div>' +
+        '<div class="deal-divider"></div>' +
+        '<div class="deal-stats">' +
+          '<div class="deal-stat"><div class="deal-stat-label">IRR Target</div><div class="deal-stat-val gold-val">' + esc(deal.target_irr || deal.irr_target || deal.irr || '—') + '</div></div>' +
+          '<div class="deal-stat"><div class="deal-stat-label">Min Ticket</div><div class="deal-stat-val">' + (deal.min_ticket_usd ? fmU(deal.min_ticket_usd) : esc(deal.min_ticket || '—')) + '</div></div>' +
+          '<div class="deal-stat"><div class="deal-stat-label">Closing</div><div class="deal-stat-val">' + esc(deal.closing_date || deal.closing || '—') + '</div></div>' +
+        '</div>' +
+        '<div class="deal-thesis">' + esc(deal.thesis || deal.description || '') + '</div>' +
+        '<div class="deal-footer">' +
+          '<span class="deal-stage-chip">' + esc(deal.stage || 'Review') + '</span>' +
+          '<button class="deal-link" onclick="openDealPanel(_dealMap[\'' + esc(deal.id) + '\'])">View Deal →</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  });
+}
+
+function buildDealsError() {
+  return '<div class="state-box" style="grid-column:1/-1">' +
+    '<div class="state-box-title">Couldn\'t load deals.</div>' +
+    '<div class="state-box-sub">Please try again.</div>' +
+    '<button class="state-retry-btn" onclick="tabLoaded[\'deals\']=false;loadDeals()">Retry →</button>' +
+  '</div>';
+}
+
+// ============================================================
+// DEAL PANEL
+// ============================================================
+function openDealPanel(deal) {
+  document.getElementById('dealPanelTitle').textContent = deal.name || '—';
+
+  var chipClass = { infrastructure: 'infra', credit: 'credit', 'private credit': 'credit', 'real assets': 'assets', assets: 'assets', gold: 'gold' };
+  var cls = chipClass[(deal.asset_class || deal.type || '').toLowerCase()] || 'infra';
+  document.getElementById('dealPanelChips').innerHTML =
+    '<span class="deal-asset-chip ' + cls + '">' + esc(deal.asset_class || deal.type || '') + '</span>' +
+    '<span class="deal-stage-chip">' + esc(deal.stage || 'Review') + '</span>';
+
+  document.getElementById('dealPanelThesis').textContent = deal.thesis || deal.description || '—';
+
+  document.getElementById('dealPanelTerms').innerHTML =
+    '<div class="deal-panel-term"><div class="deal-panel-term-label">IRR Target</div><div class="deal-panel-term-val">' + esc(deal.irr_target || deal.irr || '—') + '</div></div>' +
+    '<div class="deal-panel-term"><div class="deal-panel-term-label">Structure</div><div class="deal-panel-term-val">' + esc(deal.structure || '—') + '</div></div>' +
+    '<div class="deal-panel-term"><div class="deal-panel-term-label">Min Ticket</div><div class="deal-panel-term-val">' + esc(deal.min_ticket || '—') + '</div></div>' +
+    '<div class="deal-panel-term"><div class="deal-panel-term-label">Term</div><div class="deal-panel-term-val">' + esc(deal.term || '—') + '</div></div>' +
+    '<div class="deal-panel-term"><div class="deal-panel-term-label">Closing</div><div class="deal-panel-term-val">' + esc(deal.closing_date || deal.closing || '—') + '</div></div>' +
+    '<div class="deal-panel-term"><div class="deal-panel-term-label">Geography</div><div class="deal-panel-term-val">' + esc(deal.geography || deal.geo || '—') + '</div></div>';
+
+  var cta = document.getElementById('dealPanelCta');
+  var subject = encodeURIComponent('Deal Enquiry: ' + (deal.name || ''));
+  cta.href = 'mailto:members@theaurumcc.com?subject=' + subject;
+
+  document.getElementById('deal-panel').classList.add('open');
+}
+
+function closeDealPanel() {
+  document.getElementById('deal-panel').classList.remove('open');
+}
+
+// ============================================================
+// DOCUMENTS TAB — loadDocuments()
+// ============================================================
+function downloadDoc(id, btn) {
+  btn.disabled = true;
+  btn.textContent = '⟳ Preparing';
+  window.open('/api/doc?id=' + encodeURIComponent(id), '_blank');
+  setTimeout(function() {
+    btn.textContent = '✓ Done';
+    btn.style.color = 'var(--green-b)';
+    setTimeout(function() {
+      btn.disabled = false;
+      btn.textContent = 'Download';
+      btn.style.color = '';
+    }, 2000);
+  }, 800);
+}
+
+function loadDocuments() {
+  loadLetters();
+  loadVaultVerifications();
+}
+
+function loadLetters() {
+  var c = document.getElementById('lettersContainer');
+  if (!c) return;
+
+  fetchSilent('/api/v2?resource=member&op=letters').then(function(data) {
+    if (!data) {
+      c.innerHTML = '<div class="state-box">' +
+        '<div class="state-box-title">Couldn\'t load quarterly letters.</div>' +
+        '<button class="state-retry-btn" onclick="loadLetters()">Retry →</button>' +
+      '</div>';
+      return;
+    }
+    var letters = Array.isArray(data) ? data : (data.letters || []);
+    if (!letters.length) {
+      c.innerHTML = '<div class="state-box"><div class="state-box-sub">No quarterly letters published yet.</div></div>';
+      return;
+    }
+    c.innerHTML = '<div class="docs-grid">' + letters.map(function(letter) {
+      var lid = letter.id || letter.letter_id;
+      var date = letter.date || letter.sent_at || letter.created_at;
+      return '<div class="doc-card">' +
+        '<div class="doc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>' +
+        '<div class="doc-info">' +
+          '<div class="doc-name">' + esc(letter.subject || letter.title || 'Quarterly Letter') + '</div>' +
+          '<div class="doc-meta">' + (date ? fmDate(date) : '—') + '</div>' +
+        '</div>' +
+        '<button class="doc-dl-btn" onclick="openLetter(\'' + esc(lid) + '\', this)">Read →</button>' +
+      '</div>';
+    }).join('') + '</div>';
+  });
+}
+
+function openLetter(lid, btn) {
+  btn.disabled = true;
+  btn.textContent = '⟳';
+  // Fetch signed URL first; fall back to legacy doc endpoint
+  fetchSilent('/api/v2?resource=member&op=letter-url&id=' + encodeURIComponent(lid))
+    .then(function(res) {
+      var target = (res && res.url) ? res.url : '/api/doc?id=quarterly-letter-' + encodeURIComponent(lid);
+      window.open(target, '_blank');
+    })
+    .catch(function() {
+      window.open('/api/doc?id=quarterly-letter-' + encodeURIComponent(lid), '_blank');
+    })
+    .finally(function() {
+      btn.disabled = false;
+      btn.textContent = 'Read →';
+    });
+  // Mark read
+  fetchSilent('/api/v2?resource=member&op=mark-letter-read', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ letter_id: lid })
+  });
+}
+
+function openVaultDoc(id, blobPath, btn) {
+  btn.disabled = true;
+  btn.textContent = '⟳';
+  var signedUrlEndpoint = '/api/v2?resource=member&op=vault-doc-url&id=' + encodeURIComponent(id);
+  fetchSilent(signedUrlEndpoint)
+    .then(function(res) {
+      var target = (res && res.url) ? res.url : '/api/doc?blob=' + encodeURIComponent(blobPath);
+      window.open(target, '_blank');
+    })
+    .catch(function() {
+      window.open('/api/doc?blob=' + encodeURIComponent(blobPath), '_blank');
+    })
+    .finally(function() {
+      btn.disabled = false;
+      btn.textContent = '✓ Downloaded';
+      setTimeout(function() { btn.textContent = 'Download'; }, 3000);
+    });
+}
+
+function loadVaultVerifications() {
+  var c = document.getElementById('vaultVerifContainer');
+  if (!c) return;
+
+  fetchSilent('/api/v2?resource=member&op=vault-verifications').then(function(data) {
+    if (!data) {
+      c.innerHTML = '<div class="state-box">' +
+        '<div class="state-box-title">Couldn\'t load vault verifications.</div>' +
+        '<button class="state-retry-btn" onclick="loadVaultVerifications()">Retry →</button>' +
+      '</div>';
+      return;
+    }
+    var verifs = Array.isArray(data) ? data : (data.verifications || []);
+    if (!verifs.length) {
+      c.innerHTML = '<div class="state-box"><div class="state-box-sub">No vault verification reports available yet.</div></div>';
+      return;
+    }
+    c.innerHTML = '<div class="docs-grid">' + verifs.map(function(v) {
+      var date = v.date || v.created_at;
+      return '<div class="doc-card">' +
+        '<div class="doc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>' +
+        '<div class="doc-info">' +
+          '<div class="doc-name">' + esc(v.title || 'Vault Verification') + '</div>' +
+          '<div class="doc-meta">' + (date ? fmDate(date) : '—') + '</div>' +
+        '</div>' +
+        '<button class="doc-dl-btn" onclick="openVaultDoc(\'' + esc(v.id || '') + '\',\'' + esc(v.blob_pathname || '') + '\',this)">Download</button>' +
+      '</div>';
+    }).join('') + '</div>';
+  });
+}
+
+// ============================================================
+// MESSAGES TAB — loadMessages()
+// ============================================================
+var activeThreadId = null;
+var _msgMap  = {};
+var _ccMap   = {};
+var _dealMap = {};
+
+function loadMessages() {
+  if (MEMBER) {
+    var msgs = MEMBER.messages || MEMBER.inbox || MEMBER.notifications || [];
+    renderMessages(msgs);
+  } else {
+    var tries = 0;
+    var poll = setInterval(function() {
+      tries++;
+      if (MEMBER) {
+        clearInterval(poll);
+        renderMessages(MEMBER.messages || MEMBER.inbox || MEMBER.notifications || []);
+      } else if (tries > 30) {
+        clearInterval(poll);
+        renderMessagesError();
+      }
+    }, 200);
+  }
+}
+
+function renderMessages(messages) {
+  var list = document.getElementById('threadList');
+  if (!list) return;
+
+  if (!messages.length) {
+    list.innerHTML = '<div class="state-box"><div class="state-box-title">No messages yet.</div></div>';
+    return;
+  }
+
+  // Sort newest first
+  var sorted = messages.slice().sort(function(a, b) {
+    return new Date(b.sent_at || b.created_at || b.date || 0) - new Date(a.sent_at || a.created_at || a.date || 0);
+  });
+
+  // Update unread count
+  unreadMsgCount = sorted.filter(function(m) { return m.read === false || m.read === 0 || (!m.read && !m.read_at); }).length;
+  var badge = document.getElementById('threadUnreadBadge');
+  if (badge) {
+    if (unreadMsgCount > 0) {
+      badge.style.display = '';
+      badge.textContent = unreadMsgCount;
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+  updateNavBadge();
+
+  // Store messages in lookup map so onclick doesn't need to embed JSON in HTML attribute
+  sorted.forEach(function(m) { _msgMap[m.id] = m; });
+
+  list.innerHTML = sorted.map(function(msg) {
+    var isUnread = msg.read === false || msg.read === 0 || (!msg.read && !msg.read_at);
+    var sender   = msg.sender || msg.from || 'TACC';
+    var avatar   = sender.charAt(0).toUpperCase();
+    var time     = timeAgo(msg.sent_at || msg.created_at || msg.date);
+    return '<div class="thread-row ' + (isUnread ? 'unread' : '') + '" id="thread-' + esc(msg.id) + '" onclick="openThread(this,\'' + esc(msg.id) + '\')">' +
+      (isUnread ? '<div class="thread-unread-dot"></div>' : '') +
+      '<div class="thread-row-inner">' +
+        '<div class="thread-avatar">' + avatar + '</div>' +
+        '<div class="thread-content">' +
+          '<div class="thread-sender">' + esc(sender) + '</div>' +
+          '<div class="thread-subject">' + esc(msg.subject) + '</div>' +
+          '<div class="thread-preview">' + esc(msg.preview || (msg.body || '').substring(0, 80)) + '</div>' +
+        '</div>' +
+        '<div class="thread-time">' + time + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  // Open first thread automatically
+  if (sorted.length) {
+    var firstEl = document.getElementById('thread-' + sorted[0].id);
+    if (firstEl) firstEl.click();
+  }
+}
+
+function renderMessagesError() {
+  var list = document.getElementById('threadList');
+  if (list) list.innerHTML = '<div class="state-box">' +
+    '<div class="state-box-title">Couldn\'t load messages.</div>' +
+    '<button class="state-retry-btn" onclick="tabLoaded[\'messages\']=false;loadMessages()">Retry →</button>' +
+  '</div>';
+}
+
+function openThread(el, msgOrId) {
+  var msg = (typeof msgOrId === 'string') ? _msgMap[msgOrId] : msgOrId;
+  if (!msg) return;
+  // Deactivate all
+  document.querySelectorAll('.thread-row').forEach(function(r) { r.classList.remove('active'); });
+  el.classList.add('active');
+
+  // Mark as read in UI
+  var wasUnread = el.classList.contains('unread');
+  if (wasUnread) {
+    el.classList.remove('unread');
+    var dot = el.querySelector('.thread-unread-dot');
+    if (dot) dot.style.display = 'none';
+    unreadMsgCount = Math.max(0, unreadMsgCount - 1);
+    var badge = document.getElementById('threadUnreadBadge');
+    if (badge) {
+      if (unreadMsgCount > 0) { badge.textContent = unreadMsgCount; }
+      else { badge.style.display = 'none'; }
+    }
+    updateNavBadge();
+
+    // POST mark-read
+    if (msg.id) {
+      fetchSilent('/api/messages?op=read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message_id: msg.id })
+      });
+    }
+  }
+
+  activeThreadId = msg.id;
+
+  // Render in panel
+  var panel = document.getElementById('messagesPanel');
+  if (!panel) return;
+
+  var sender = msg.sender || msg.from || 'TACC Investor Relations';
+  var date   = msg.sent_at || msg.created_at || msg.date;
+  var dateStr = date ? new Date(date).toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' }) : '—';
+  var subject = encodeURIComponent('Re: ' + (msg.subject || ''));
+
+  panel.innerHTML =
+    '<div class="msg-header">' +
+      '<span class="msg-sender-name">' + esc(sender) + '</span>' +
+      '<span class="msg-date">' + esc(dateStr) + '</span>' +
+    '</div>' +
+    '<div class="msg-subject">' + esc(msg.subject || '—') + '</div>' +
+    '<div class="msg-body">' + esc(msg.body || msg.html_body || msg.custom_body || msg.content || '') + '</div>' +
+    '<a class="msg-reply-btn" href="mailto:members@theaurumcc.com?subject=' + subject + '">Reply via Email →</a>';
+}
+
+// ============================================================
+// ACCOUNT TAB — filled from MEMBER on init
+// ============================================================
+function renderAccount(member) {
+  var set = function(id, val, fallback) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = (val !== null && val !== undefined && val !== '') ? val : (fallback || '—');
+  };
+
+  var firstName = (member.full_name || member.name || '').split(' ')[0] || '—';
+  var tier      = member.tier || member.membership_tier || '—';
+
+  // Hero
+  var avatarEl = document.getElementById('accAvatar');
+  if (avatarEl) avatarEl.textContent = firstName.charAt(0).toUpperCase();
+  set('accName',       member.full_name || member.name);
+  set('accNumber',     member.member_number ? '#' + String(member.member_number).padStart(4,'0') : '—');
+  set('accTier',       tier);
+
+  // Financial stat row
+  var goldVal = SPOT && member.gold_kg ? fmU(member.gold_kg * SPOT.price_usd_per_kg) : '—';
+  set('accCommitted',  member.committed_usd ? fmU(member.committed_usd) : '—');
+  set('accGoldValue',  goldVal);
+  set('accSince',      member.member_since ? fmDate(member.member_since) : '—');
+
+  // Profile card
+  set('accFullName',   member.full_name || member.name);
+  set('accEntity',     member.entity_type || 'Individual');
+  set('accTierDetail', tier);
+
+  // Membership card
+  set('accCommitted2', member.committed_usd ? fmU(member.committed_usd) : '—');
+  set('accWireDate',   member.wire_date ? fmDate(member.wire_date) : '—');
+  set('accVault',      member.vault_location || '—');
+
+  // NDA card
+  set('accNdaStatus',  member.nda_state === 'approved' || member.nda_state === 'signed' ? 'Signed' : (member.nda_state || '—'));
+  set('accNdaSigned',  member.nda_signed_at ? fmDate(member.nda_signed_at) : '—');
+
+  // Security card
+  set('accEmail',      member.email ? member.email.charAt(0) + '***@' + (member.email.split('@')[1] || '') : '—');
+  set('accLastLogin',  member.last_login ? timeAgo(member.last_login) : '—');
+
+  var twoFaEl = document.getElementById('acc2fa');
+  if (twoFaEl) {
+    twoFaEl.textContent = member.two_fa_enabled ? 'Enabled' : 'Disabled';
+    twoFaEl.className = 'account-value' + (member.two_fa_enabled ? ' green' : '');
+  }
+}
+
+// ============================================================
+// MOCK DATA — set USE_MOCK = false to connect to live API
+// ============================================================
+var USE_MOCK = false;
+
+var MOCK_MEMBER = {
+  member_number: 247,
+  full_name: 'Thomas',
+  tier: 'Founding Member',
+  member_since: '2024-01-15',
+  entity_type: 'Individual — Singapore',
+  email: 't***@gmail.com',
+  gold_kg: 26.36,
+  cost_basis_usd: 1885430,
+  vault_location: 'Singapore Freeport',
+  custodian: 'Malca-Amit',
+  lot_ref: 'AU-2024-0047',
+  bar_standard: 'London Good Delivery',
+  purity: '999.9 Fine',
+  committed_usd: 2562500,
+  wire_date: '2024-01-15',
+  nda_state: 'signed',
+  nda_signed_at: '2024-01-12',
+  two_fa: true, two_fa_enabled: true,
+  last_login: 'Today, 07:44 SGT',
+  capital_calls: [
+    {
+      id: 'cc-001',
+      fund_name: 'Q2 Capital Call — Series B Round',
+      reason: 'Helios Capital Partners has issued a capital call for the Series B round. Funds must be transferred by 30 May 2026.',
+      amount_usd: 250000,
+      due_date: '2026-05-30',
+      wire_bank: 'DBS Bank Singapore',
+      wire_account: '072-901234-5',
+      wire_swift: 'DBSSSGSG',
+      wire_ref: 'TACC-CC-247-Q2'
+    }
+  ],
+  notices: [
+    {
+      id: 'notice-001',
+      type: 'green',
+      badge: 'NEW DOCUMENT',
+      title: 'Annual Vault Audit Report — April 2026',
+      body: 'Your independent vault audit has been completed and certified by Malca-Amit. Lloyd\'s insurance confirmation enclosed.',
+      amount_label: '847.3 oz verified',
+      cta: 'View Report →',
+      action: 'documents'
+    }
+  ],
+  activity: [
+    { type: 'gold', text: '<strong>Gold allocation confirmed</strong> — 12.5 oz at $2,571/oz spot', time: new Date(Date.now() - 7200000).toISOString() },
+    { type: 'green', text: '<strong>Distribution received</strong> — Aurum Agri Holdings Q1 dividend', time: new Date(Date.now() - 86400000).toISOString() },
+    { type: 'blue', text: '<strong>Quarterly statement</strong> uploaded to your document vault', time: new Date(Date.now() - 604800000 + 86400000*2).toISOString() },
+    { type: 'dim', text: 'Wire confirmation — $250,000 received by custodian', time: new Date(Date.now() - 864000000).toISOString() }
+  ],
+  gold_purchases: [
+    { date: '2026-05-07', oz: 12.5,  spot_usd: 2571, total_usd: 32138,  status: 'settled' },
+    { date: '2026-02-14', oz: 50.0,  spot_usd: 2492, total_usd: 124600, status: 'settled' },
+    { date: '2025-10-03', oz: 200.0, spot_usd: 2381, total_usd: 476200, status: 'settled' },
+    { date: '2025-06-18', oz: 340.0, spot_usd: 2215, total_usd: 753100, status: 'settled' },
+    { date: '2024-01-15', oz: 244.8, spot_usd: 2040, total_usd: 499392, status: 'settled' }
+  ],
+  positions: [
+    { id: 'pos-001', code: 'Helios Capital Partners',    sector: 'Growth Equity · Southeast Asia', invested_usd: 1500000, marked_usd: 1680000, entry_date: '2024-03-01', target_irr: '18–24%', status: 'active',  thesis: 'Southeast Asian logistics and cold-chain infrastructure. Fund II raising concludes Q3 2026.' },
+    { id: 'pos-002', code: 'Aurum Agri Holdings',        sector: 'Agriculture · New Zealand',      invested_usd: 750000,  marked_usd: 812500,  entry_date: '2024-01-15', target_irr: '11–14%', status: 'active',  thesis: 'Regenerative farmland in South Island NZ. Quarterly lease income with carbon credit overlay.' },
+    { id: 'pos-003', code: 'Meridian Rare Earth Fund',   sector: 'Critical Minerals · Australia',  invested_usd: 312500,  marked_usd: 390625,  entry_date: '2023-09-01', target_irr: '2.1× est.', status: 'exiting', thesis: 'Mining royalties across three WA rare earth sites. Winding down; exit anticipated Q4 2026.' }
+  ],
+  messages: [
+    { id: 'msg-001', from: 'TACC Investor Relations', subject: 'Q2 Portfolio Update + Gold Revaluation', preview: 'Your portfolio has been revalued following the May spot price movement...', body: 'Dear Thomas,\n\nWe are pleased to share your Q2 2026 portfolio update following the recent gold spot price movement to $2,583/oz.\n\nYour allocated gold position of 847.3 oz has been revalued to $2,187,500, representing an unrealized gain of $378,867 (+20.9%) from your average acquisition cost of $2,134/oz.\n\nYour private equity positions continue to perform in line with expectations. Helios Capital Partners has confirmed their Q3 fundraise target has been met. A capital call notice for the Series B round has been issued separately.\n\nPlease log into the portal to review your full Q2 statement, now available in your Document Vault.\n\nWarm regards,\nThe Aurum Century Club Team', date: new Date(Date.now() - 7200000).toISOString(), read: false, type: 'gold' },
+    { id: 'msg-002', from: 'Helios Capital Partners',   subject: 'Series B Capital Call — Action Required', preview: 'Please find attached the Q2 capital call notice for Pacific Bridge...', body: 'Dear Thomas,\n\nPlease find attached the Q2 2026 capital call notice for the Helios Capital Partners Series B round.\n\nCapital call amount: USD 250,000\nDue date: 30 May 2026\n\nWire instructions have been provided separately. Please ensure funds are received before the due date to maintain your position.\n\nKind regards,\nHelios Capital Partners', date: new Date(Date.now() - 86400000).toISOString(), read: false, type: 'amber' },
+    { id: 'msg-003', from: 'TACC Investor Relations',   subject: 'Annual Vault Audit Complete',          preview: 'We are pleased to confirm your gold holdings have been independently verified...', body: 'Dear Thomas,\n\nWe are pleased to confirm your gold holdings have been independently verified by Malca-Amit as part of the April 2026 annual vault audit.\n\nHoldings verified: 847.3 troy oz (26.36 kg)\nPurity: 999.9 Fine Gold\nLot Reference: AU-2024-0047\nInsurance: Lloyd\'s of London — confirmed current\n\nYour vault audit certificate has been uploaded to your Document Vault.\n\nWarm regards,\nThe Aurum Century Club Team', date: new Date(Date.now() - 518400000).toISOString(), read: true, type: 'green' }
+  ]
+};
+
+var MOCK_SPOT = { price_usd_per_oz: 2583, price_usd_per_kg: 83070 };
+
+var MOCK_DEALS = [
+  { id: 'deal-001', name: 'Pacific Bridge Logistics Fund II', asset_class: 'INFRASTRUCTURE', geography: 'Southeast Asia', target_irr: '18–24%', min_ticket_usd: 500000, closing: 'Jun 2026', stage: 'LIVE', thesis: 'Cross-border cold-chain and logistics infrastructure across Thailand, Vietnam, and Malaysia.', structure: 'Closed-End Fund', term: '7 years', is_new: true },
+  { id: 'deal-002', name: 'Meridian Senior Secured II',       asset_class: 'PRIVATE CREDIT',  geography: 'Australia',       target_irr: '12–15%', min_ticket_usd: 250000, closing: 'Aug 2026', stage: 'DUE DILIGENCE', thesis: 'Senior secured lending to mid-market Australian businesses. Quarterly distributions.', structure: 'Evergreen Credit', term: '5 years', is_new: false },
+  { id: 'deal-003', name: 'Tasman Carbon Farmlands',          asset_class: 'REAL ASSETS',     geography: 'New Zealand',     target_irr: '14–18%', min_ticket_usd: 1000000, closing: 'Q4 2026', stage: 'PREVIEW', thesis: 'Premium agricultural land with carbon credit overlay. 10-year fund with annual income.', structure: 'Land Fund', term: '10 years', is_new: false }
+];
+
+var MOCK_LETTERS = [
+  { id: 'q1-2026', subject: 'Q1 2026 Quarterly Letter', date: '2026-03-31', read: false },
+  { id: 'q4-2025', subject: 'Q4 2025 Quarterly Letter', date: '2025-12-31', read: true  },
+  { id: 'q3-2025', subject: 'Q3 2025 Quarterly Letter', date: '2025-09-30', read: true  }
+];
+
+var MOCK_VAULT_DOCS = [
+  { id: 'vault-apr-2026', title: 'Vault Audit Report — April 2026',    date: '2026-04-15', blob_pathname: 'vault-audit-apr-2026.pdf' },
+  { id: 'vault-apr-2025', title: 'Vault Audit Report — April 2025',    date: '2025-04-15', blob_pathname: 'vault-audit-apr-2025.pdf' }
+];
+
+// Mock override — bypassed when USE_MOCK = false
+if (USE_MOCK) {
+  var _realFetchSilent = fetchSilent;
+  fetchSilent = async function(url, opts) {
+    await new Promise(function(r) { setTimeout(r, 400); });
+    if (url.includes('resource=member&op=me'))                   return JSON.parse(JSON.stringify(MOCK_MEMBER));
+    if (url.includes('resource=public&op=spot'))                 return JSON.parse(JSON.stringify(MOCK_SPOT));
+    if (url.includes('resource=member&op=deals'))                return JSON.parse(JSON.stringify(MOCK_DEALS));
+    if (url.includes('resource=member&op=letters'))              return JSON.parse(JSON.stringify(MOCK_LETTERS));
+    if (url.includes('resource=member&op=vault-verifications'))  return JSON.parse(JSON.stringify(MOCK_VAULT_DOCS));
+    if (url.includes('resource=member&op=letter-url'))           return { url: null };
+    if (url.includes('resource=member&op=vault-doc-url'))        return { url: null };
+    if (url.includes('resource=member&op=ack-capital-call'))     return { ok: true };
+    if (url.includes('messages?op=read'))                        return { ok: true };
+    if (url.includes('mark-letter-read'))                        return { ok: true };
+    return { ok: true };
+  };
+}
+
+// ============================================================
+// INIT
+// ============================================================
+(async function init() {
+  var lang = localStorage.getItem('lang') || 'en';
+  var langBtn = document.querySelector('[data-lang-btn]');
+  if (langBtn) langBtn.textContent = lang.toUpperCase();
+
+  var theme = localStorage.getItem('theme') || 'dark';
+  document.documentElement.dataset.theme = theme;
+
+  injectDate();
+  viewAnimated['today'] = true;
+  setTimeout(function() {
+    var todayView = document.getElementById('view-today');
+    if (todayView) triggerFadeUps(todayView);
+  }, 50);
+
+  MEMBER = await fetchSilent('/api/v2?resource=member&op=me');
+
+  if (!MEMBER) {
+    document.getElementById('todayName').textContent = 'Member';
+    var grid = document.getElementById('attentionGrid');
+    if (grid) grid.innerHTML = '<div class="state-box" style="grid-column:1/-1"><div class="state-box-title">Couldn\'t load your profile.</div><button class="state-retry-btn" onclick="window.location.reload()">Retry →</button></div>';
+    return;
+  }
+
+  renderNav(MEMBER);
+  renderToday(MEMBER);
+
+  SPOT = normalizeSpot(await fetchSilent('/api/v2?resource=public&op=spot'));
+  if (SPOT) renderKpis(MEMBER);
+  renderAccount(MEMBER); // after SPOT so accGoldValue has price data
+
+  setInterval(refreshSpot, 60000);
+})();
+
+</script>
+
+</body>
+</html>
