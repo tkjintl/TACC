@@ -1003,12 +1003,12 @@ svg {
 .lane--gold  .lane-title { color: var(--accent); }
 .lane-count             { font-family: var(--mono); font-size: 10px; color: var(--fg-muted); }
 .lane-empty             { padding: 20px 12px; text-align: center; font-family: var(--mono); font-size: 10px; color: var(--fg-dim); letter-spacing: 0.14em; text-transform: uppercase; }
-.lane-row               { padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.lane-row               { padding: 8px 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; border-bottom: 1px solid rgba(255,255,255,0.04); }
 .lane-row:last-child    { border-bottom: 0; }
 .lane-row:hover         { background: rgba(255,255,255,0.02); }
-.lane-row-main          { min-width: 0; flex: 1; overflow: hidden; }
-.lane-row-name          { color: var(--fg); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.lane-row-meta          { font-family: var(--mono); font-size: 10px; color: var(--fg-muted); letter-spacing: 0.08em; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lane-row-main          { min-width: 0; width: 100%; }
+.lane-row-name          { color: var(--fg); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+.lane-row-meta          { font-family: var(--mono); font-size: 10px; color: var(--fg-muted); letter-spacing: 0.08em; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
 
 /* ── 4.9 STAGE FUNNEL BAR ──────────────────────────────────────────── */
 .funnel-bar {
@@ -7407,7 +7407,7 @@ textarea.inp.mono-area {
           '<div class="lane-row-name">' + esc(leadName) + (title ? ' <span style="color:var(--fg-muted);font-weight:400;">· ' + esc(title) + '</span>' : '') + '</div>' +
           '<div class="lane-row-meta">' + relTime(x.created_at || x.at) + (subtitle ? ' · ' + esc(subtitle.length > 48 ? subtitle.slice(0, 48) + '…' : subtitle) : '') + '</div>' +
         '</div>' +
-        (actionLabel ? '<button class="b b--sm" data-act="' + esc(x.type || '') + '" data-lead="' + esc(leadId) + '">' + esc(actionLabel) + '</button>' : '') +
+        (actionLabel ? '<div><button class="b b--sm" data-act="' + esc(x.type || '') + '" data-lead="' + esc(leadId) + '">' + esc(actionLabel) + '</button></div>' : '') +
       '</div>';
     }).join('');
     el.querySelectorAll('.lane-row').forEach(function(row){
