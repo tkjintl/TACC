@@ -455,6 +455,16 @@ export async function broadcastVaultVerification(vv) {
   return { sent_to: funded.length - errors.length, total: funded.length, errors };
 }
 
+// ── Vault docs ────────────────────────────────────────────────────────────────
+
+export async function addVaultDoc(leadId, doc) {
+  const lead = await getLead(leadId);
+  if (!lead) throw new Error(`addVaultDoc: lead ${leadId} not found`);
+  lead.vault_docs = lead.vault_docs || [];
+  lead.vault_docs.push(doc);
+  await saveLead(lead);
+}
+
 // ── Tax statements ────────────────────────────────────────────────────────────
 
 /**

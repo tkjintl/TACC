@@ -197,6 +197,7 @@ async function handleMember(req, res, op) {
     case 'history':           return memberHistory(req, res);
     case 'letters':           return memberLetters(req, res);
     case 'vault-verifications': return memberVaultVerifications(req, res);
+    case 'vault-docs':          return memberVaultDocs(req, res);
     case 'mark-letter-read':  return memberMarkLetterRead(req, res);
     case 'deals':             return memberDeals(req, res);
     case 'ack-message':       return memberAckMessage(req, res);
@@ -370,6 +371,37 @@ async function memberVaultVerifications(req, res) {
   return ok(res, { ok: true, vault_verifications: vvs });
 }
 
+// ── member op=vault-docs ──────────────────────────────────────────────────────
+
+async function memberVaultDocs(req, res) {
+  if (req.method !== 'GET') return methodNotAllowed(res);
+  const lead = await requireMember(req);
+  if (!lead) return unauthorized(res);
+
+  const typed = (lead.vault_docs || []).map((d) => ({
+    id:            d.id,
+    type:          d.type || 'custody_statement',
+    title:         d.title,
+    date:          d.date || d.published_at || null,
+    blob_pathname: d.blob_pathname || null,
+    download_url:  `/api/doc?id=vault-doc-${d.id}`,
+  }));
+
+  const legacyAudits = (lead.vault_verifications || []).map((v) => ({
+    id:            v.id,
+    type:          'audit_report',
+    title:         v.title,
+    date:          v.published_at || null,
+    blob_pathname: v.blob_pathname || null,
+    download_url:  `/api/doc?id=vault-verification-${v.id}`,
+  }));
+
+  const all = [...typed, ...legacyAudits];
+  all.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
+
+  return ok(res, { ok: true, vault_docs: all });
+}
+
 // ── member op=mark-letter-read ────────────────────────────────────────────────
 
 async function memberMarkLetterRead(req, res) {
@@ -411,6 +443,7 @@ async function handleAdmin(req, res, op) {
     case 'read-receipt':            return adminReadReceipt(req, res, session);
     case 'send-quarterly-letter':   return adminSendQuarterlyLetter(req, res, session);
     case 'publish-vault-verification': return adminPublishVaultVerification(req, res, session);
+    case 'add-vault-doc':              return adminAddVaultDoc(req, res, session);
     case 'generate-tax-statement':  return adminGenerateTaxStatement(req, res, session);
     case 'letters':                 return adminLetters(req, res, session);
     case 'tax-statements':          return adminTaxStatements(req, res, session);
@@ -2796,6 +2829,52 @@ async function adminPublishVaultVerification(req, res, session) {
   });
 
   return ok(res, result);
+}
+
+// ── admin op=add-vault-doc ────────────────────────────────────────────────────
+
+async function adminAddVaultDoc(req, res, session) {
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  let body;
+  try { body = await readBody(req); } catch { return bad(res, 'invalid body'); }
+
+  const { type, title, date, blob_pathname, broadcast, lead_id } = body;
+  if (!type || !title) return bad(res, 'type and title required');
+
+  const validTypes = ['audit_report', 'insurance_cert', 'bar_cert', 'custody_statement'];
+  if (!validTypes.includes(type)) return bad(res, 'invalid type');
+
+  const docId = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+  const doc = {
+    id:            docId,
+    type,
+    title,
+    date:          date || new Date().toISOString().slice(0, 10),
+    blob_pathname: blob_pathname || null,
+    created_at:    Date.now(),
+  };
+
+  if (broadcast) {
+    const allLeads = await listLeads({ status: 'funded', limit: 200 });
+    let sent = 0;
+    for (const lead of (allLeads || [])) {
+      try {
+        lead.vault_docs = lead.vault_docs || [];
+        lead.vault_docs.push({ ...doc });
+        await saveLead(lead);
+        sent++;
+      } catch {}
+    }
+    return ok(res, { ok: true, broadcast: true, sent, doc });
+  }
+
+  if (!lead_id) return bad(res, 'lead_id required when not broadcasting');
+  const lead = await getLead(lead_id);
+  if (!lead) return notFound(res);
+  lead.vault_docs = lead.vault_docs || [];
+  lead.vault_docs.push(doc);
+  await saveLead(lead);
+  return ok(res, { ok: true, broadcast: false, doc });
 }
 
 // ── admin op=generate-tax-statement ──────────────────────────────────────────

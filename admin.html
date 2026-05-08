@@ -6539,6 +6539,7 @@ textarea.inp.mono-area {
         <button class="compose-tab" data-compose="cap">Capital Call</button>
         <button class="compose-tab" data-compose="qtr">Quarterly Letter</button>
         <button class="compose-tab" data-compose="vv">Vault Verification</button>
+        <button class="compose-tab" data-compose="vault-doc">Add Vault Doc</button>
       </div>
     </div>
     <div class="vcc-card-body">
@@ -6711,6 +6712,53 @@ textarea.inp.mono-area {
 
         </form>
       </div><!-- /pane-vv -->
+
+      <!-- ── Add Vault Doc pane ─────────────────────────────────────────── -->
+      <div class="compose-pane" id="pane-vault-doc">
+        <form id="form-vault-doc" autocomplete="off">
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Document Type</label>
+              <select id="vd-type" class="sel">
+                <option value="audit_report">Audit Report</option>
+                <option value="insurance_cert">Insurance Cert</option>
+                <option value="bar_cert">Bar Certificate</option>
+                <option value="custody_statement">Custody Statement</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date</label>
+              <input id="vd-date" type="date" class="inp">
+            </div>
+            <div class="form-group span-2">
+              <label class="form-label">Title</label>
+              <input id="vd-title" type="text" class="inp" placeholder="e.g. Vault Audit Report — April 2026">
+            </div>
+            <div class="form-group span-2">
+              <label class="form-label">Blob Pathname</label>
+              <input id="vd-blob" type="text" class="inp" placeholder="vault-audit-apr-2026.pdf">
+            </div>
+            <div class="form-group span-2" id="vd-lead-row" style="display:none">
+              <label class="form-label">Member (Lead ID)</label>
+              <select id="vd-lead-id" class="sel">
+                <option value="">— select member —</option>
+              </select>
+            </div>
+            <div class="form-group span-2" id="vd-broadcast-row">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="checkbox" id="vd-broadcast" checked>
+                <span class="form-label" style="margin:0">Broadcast to all funded members</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="vcc-btn vcc-btn--gold">Add Vault Document</button>
+          </div>
+
+        </form>
+      </div><!-- /pane-vault-doc -->
 
     </div><!-- /vcc-card-body -->
   </div><!-- /compose card -->
@@ -8804,9 +8852,11 @@ textarea.inp.mono-area {
     b.addEventListener('click', function(){
       document.querySelectorAll('.compose-tab').forEach(function(x){ x.classList.remove('active'); });
       b.classList.add('active');
-      ['dm','cap','qtr','vv'].forEach(function(k){
+      ['dm','cap','qtr','vv','vault-doc'].forEach(function(k){
         var f = document.getElementById('form-' + k);
         if (f) f.style.display = (k === b.dataset.compose) ? 'block' : 'none';
+        var p = document.getElementById('pane-' + k);
+        if (p) { if (k === b.dataset.compose) p.classList.add('active'); else p.classList.remove('active'); }
       });
     });
   });
@@ -9028,6 +9078,78 @@ textarea.inp.mono-area {
   document.getElementById('publish-vv-btn').addEventListener('click', function(){
     goTab('comms');
     document.querySelector('[data-compose="vv"]').click();
+  });
+
+  // Vault doc form: toggle lead selector vs broadcast based on type + checkbox
+  (function() {
+    var typeEl      = document.getElementById('vd-type');
+    var broadcastEl = document.getElementById('vd-broadcast');
+    var leadRow     = document.getElementById('vd-lead-row');
+    var bcastRow    = document.getElementById('vd-broadcast-row');
+
+    function updateVaultDocUI() {
+      var t = typeEl.value;
+      // bar_cert: no broadcast (per-member only)
+      if (t === 'bar_cert') {
+        broadcastEl.checked = false;
+        broadcastEl.disabled = true;
+      } else {
+        broadcastEl.disabled = false;
+        if (t === 'insurance_cert' || t === 'custody_statement') {
+          broadcastEl.checked = true;
+        }
+      }
+      leadRow.style.display = broadcastEl.checked ? 'none' : '';
+    }
+
+    typeEl.addEventListener('change', updateVaultDocUI);
+    broadcastEl.addEventListener('change', function() {
+      leadRow.style.display = broadcastEl.checked ? 'none' : '';
+    });
+
+    // Set default date to today
+    var today = new Date().toISOString().slice(0,10);
+    document.getElementById('vd-date').value = today;
+
+    // Populate lead selector from funded members if available
+    api('members')
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        var members = (d && d.members) || [];
+        var sel = document.getElementById('vd-lead-id');
+        members.forEach(function(m){
+          var opt = document.createElement('option');
+          opt.value = m.id;
+          opt.textContent = (m.full_name || m.name || m.email) + (m.member_number ? ' (#' + m.member_number + ')' : '');
+          sel.appendChild(opt);
+        });
+      })
+      .catch(function(){});
+  })();
+
+  document.getElementById('form-vault-doc').addEventListener('submit', function(e){
+    e.preventDefault();
+    var type         = document.getElementById('vd-type').value;
+    var title        = document.getElementById('vd-title').value.trim();
+    var date         = document.getElementById('vd-date').value;
+    var blob_pathname= document.getElementById('vd-blob').value.trim() || null;
+    var broadcast    = document.getElementById('vd-broadcast').checked;
+    var lead_id      = document.getElementById('vd-lead-id').value || null;
+
+    if (!title) { toast('Title required', 'error'); return; }
+    if (!broadcast && !lead_id) { toast('Select a member or enable broadcast', 'error'); return; }
+
+    var payload = { type, title, date, blob_pathname, broadcast, lead_id: broadcast ? null : lead_id };
+    api('add-vault-doc', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d.ok === false) { toast(d.error || 'Failed', 'error'); return; }
+        var msg = broadcast ? ('Added to ' + (d.sent || 0) + ' members') : 'Added to member';
+        toast(msg, 'success');
+        e.target.reset();
+        document.getElementById('vd-date').value = new Date().toISOString().slice(0,10);
+      })
+      .catch(function(){ toast('Failed', 'error'); });
   });
 
   var _allSentItems = [];

@@ -217,6 +217,11 @@ export default async function handler(req, res) {
     return handleVaultVerification(req, res, id, lead);
   }
 
+  // Dynamic: vault-doc-{docId}
+  if (id.startsWith('vault-doc-')) {
+    return handleVaultDoc(req, res, id, lead);
+  }
+
   return notFound(res);
 }
 
@@ -437,6 +442,51 @@ async function handleVaultVerification(req, res, id, lead) {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   res.end(html);
+}
+
+// ── Vault doc handler ────────────────────────────────────────────────────────
+
+async function handleVaultDoc(req, res, id, lead) {
+  // Only funded members can access vault documents
+  if (lead.status !== 'funded') return authFail(res, req);
+
+  const docId = id.replace(/^vault-doc-/, '');
+  const docs   = lead.vault_docs || [];
+  const doc    = docs.find((d) => d.id === docId);
+
+  if (!doc) return notFound(res);
+
+  // If no blob_pathname, return 404
+  if (!doc.blob_pathname) return notFound(res);
+
+  let pdfBuffer;
+  try {
+    pdfBuffer = await getBlob(doc.blob_pathname);
+  } catch {
+    return notFound(res);
+  }
+
+  // Attempt watermark with member identity
+  const { watermarkPdf: _wm } = await import('./_lib/watermark.js').catch(() => ({ watermarkPdf: null }));
+  if (_wm) {
+    const memberNum = lead.member_number || '—';
+    const dateStr   = new Date().toISOString().slice(0, 10);
+    try {
+      pdfBuffer = await _wm(pdfBuffer, lead.name || lead.email || 'Member', memberNum, dateStr);
+    } catch (e) {
+      console.warn('[doc/vault-doc] watermark failed, serving clean copy:', e && e.message);
+    }
+  }
+
+  const fname = doc.title
+    ? doc.title.replace(/[^a-zA-Z0-9 \-_]/g, '').trim().replace(/\s+/g, '_') + '.pdf'
+    : `TACC_VaultDoc_${docId}.pdf`;
+
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `inline; filename="${fname}"`);
+  res.setHeader('Cache-Control', 'no-store');
+  res.end(pdfBuffer);
 }
 
 // ── Signed-blob handler ──────────────────────────────────────────────────────

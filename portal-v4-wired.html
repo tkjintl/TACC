@@ -909,6 +909,110 @@ body {
 .deal-panel-cta:hover { background: rgba(197,165,114,0.12); }
 
 /* ============================================================
+   DEAL PANEL — RICH TWO-COLUMN LAYOUT (PRISM template)
+   ============================================================ */
+.dp-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 56px;
+  align-items: start;
+}
+.dp-left { display: flex; flex-direction: column; }
+.dp-right { position: sticky; top: 48px; display: flex; flex-direction: column; gap: 16px; }
+.dp-identity { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 20px; }
+.dp-logo {
+  width: 44px; height: 44px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 12px; font-weight: 500;
+  flex-shrink: 0; border: 1px solid var(--gold-bd);
+  background: var(--gold-bg); color: var(--gold);
+}
+.dp-tag {
+  font-family: var(--mono); font-size: 9px;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-3); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.dp-title {
+  font-family: var(--serif); font-style: italic;
+  font-size: clamp(28px, 4vw, 48px); font-weight: 400;
+  line-height: 1.1; color: var(--text); margin-bottom: 16px;
+}
+.dp-thesis {
+  font-family: var(--sans); font-size: 14px;
+  color: var(--text-2); line-height: 1.8;
+  margin-bottom: 32px; max-width: 580px;
+}
+/* Highlights */
+.dp-section-lbl {
+  font-family: var(--mono); font-size: 9px;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-3); margin-bottom: 14px; margin-top: 32px;
+}
+.dp-hl-cards { display: grid; gap: 8px; margin-bottom: 8px; }
+.dp-hl-card {
+  padding: 14px 18px; border: 1px solid var(--border);
+  border-radius: var(--r); background: var(--bg-2);
+  transition: border-color 0.18s, transform 0.18s;
+}
+.dp-hl-card:hover { border-color: var(--gold-bd); transform: translateX(3px); }
+.dp-hl-icon  { font-size: 15px; margin-bottom: 5px; }
+.dp-hl-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; font-family: var(--sans); }
+.dp-hl-body  { font-size: 13px; color: var(--text-2); line-height: 1.6; font-family: var(--sans); }
+/* Return chart */
+.dp-chart-section { margin-bottom: 8px; }
+.dp-chart-lbl {
+  font-family: var(--mono); font-size: 9px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-3); margin-bottom: 14px;
+}
+.dp-return-chart { display: flex; align-items: flex-end; gap: 10px; height: 120px; padding: 0 4px; }
+.dp-rc-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+.dp-rc-bar  { width: 100%; border-radius: 3px 3px 0 0; transition: height 1.1s var(--ease); min-height: 8px; }
+.dp-rc-down { background: var(--border-m); }
+.dp-rc-base { background: linear-gradient(to top, var(--gold), rgba(197,165,114,0.7)); }
+.dp-rc-up   { background: linear-gradient(to top, var(--gold-b), var(--gold)); }
+.dp-rc-val  { font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--text); }
+.dp-rc-lbl  { font-size: 11px; color: var(--text-3); font-family: var(--sans); }
+.dp-hurdle-line { position: relative; margin-top: 6px; display: flex; align-items: center; gap: 8px; }
+.dp-hurdle-dash { flex: 1; height: 1px; border-top: 1px dashed var(--amber-bd); }
+.dp-hurdle-lbl  { font-family: var(--mono); font-size: 9px; color: var(--amber-b); white-space: nowrap; }
+/* Equity scenarios */
+.dp-eq-scenarios { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+.dp-eq-sc { border: 1px solid var(--border); border-radius: var(--r); padding: 12px 10px; text-align: center; }
+.dp-eq-sc.is-base { border-color: var(--gold-bd); background: var(--gold-bg); }
+.dp-eq-sc-name     { font-size: 9px; font-family: var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
+.dp-eq-sc-irr      { font-family: var(--mono); font-size: 17px; font-weight: 500; color: var(--text); line-height: 1; }
+.dp-eq-sc-irr-lbl  { font-size: 9px; color: var(--text-3); font-family: var(--sans); margin-top: 2px; margin-bottom: 8px; }
+.dp-eq-sc-moic     { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--gold); }
+.dp-eq-sc-moic-lbl { font-size: 9px; color: var(--text-3); font-family: var(--sans); margin-bottom: 6px; }
+.dp-eq-sc-exit     { font-family: var(--mono); font-size: 11px; color: var(--text-2); }
+.dp-eq-sc-exit-lbl { font-size: 9px; color: var(--text-3); font-family: var(--sans); }
+/* Value path table */
+.dp-vp-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+.dp-vp-table th { font-size: 9px; font-family: var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--border); }
+.dp-vp-table td  { font-size: 11px; font-family: var(--mono); padding: 6px 6px; border-bottom: 1px solid var(--border); color: var(--text-2); }
+.dp-vp-table tr:last-child td { color: var(--text); font-weight: 500; }
+.dp-vp-bar-track { background: var(--bg-3); height: 4px; border-radius: 2px; overflow: hidden; }
+.dp-vp-bar-fill  { height: 4px; border-radius: 2px; background: var(--gold); transition: width 1.2s var(--ease); width: 0; }
+.dp-vp-exit-tag  { font-size: 8px; padding: 1px 5px; border: 1px solid var(--gold-bd); color: var(--gold); border-radius: 2px; font-family: var(--mono); margin-left: 4px; vertical-align: middle; }
+/* Key terms stat grid */
+.dp-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+.dp-stat-cell     { padding: 14px 16px; background: var(--bg-2); }
+.dp-stat-cell.full{ grid-column: 1 / -1; }
+.dp-stat-lbl { font-size: 10px; color: var(--text-3); letter-spacing: 0.06em; margin-bottom: 4px; font-family: var(--sans); }
+.dp-stat-val { font-family: var(--mono); font-size: 17px; font-weight: 500; color: var(--text); line-height: 1; }
+.dp-stat-val.gold { color: var(--gold); }
+/* Deal card: equity asset class chip */
+.deal-asset-chip.pe { color: var(--gold); background: var(--gold-bg); border: 1px solid var(--gold-bd); }
+/* Responsive */
+@media (max-width: 900px) {
+  .dp-inner { grid-template-columns: 1fr; }
+  .dp-right { position: static; }
+}
+
+/* ============================================================
    PORTFOLIO TAB
    ============================================================ */
 .subtab-bar {
@@ -1210,6 +1314,71 @@ body {
 }
 .vault-row-value.mono { font-family: var(--mono); font-size: 12px; }
 .vault-row-value.green-val { color: var(--green-b); }
+.vault-row-value.red-val   { color: #cf6679; }
+.vault-row-value.gold-val  { color: var(--gold); }
+
+/* Bar Certificate card */
+.bar-cert-section { margin: 32px 0 0; padding: 0 48px; }
+.bar-cert-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+.bar-cert-cell {
+  background: var(--surface);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.bar-cert-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.bar-cert-val {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text);
+}
+/* Vault Documents section */
+.vault-docs-section { margin: 32px 0 0; padding: 0 48px 32px; }
+.doc-card.skel-card { cursor: default; pointer-events: none; }
+.docs-section-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 6px;
+}
+.docs-section-sub {
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 16px;
+}
+.vault-doc-type-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.04);
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+.vault-doc-type-badge.audit   { background: rgba(61,148,96,0.12);   color: var(--green-b); }
+.vault-doc-type-badge.insur   { background: rgba(74,123,167,0.12);  color: #4A7BA7; }
+.vault-doc-type-badge.bar     { background: rgba(197,165,114,0.12); color: var(--gold); }
+.vault-doc-type-badge.custody { background: rgba(255,255,255,0.06); color: var(--text-2); }
 
 /* Acquisition Table */
 .acq-section { padding: 0 48px 64px; }
@@ -2863,8 +3032,22 @@ body {
           <span class="vault-row-label">Bar Standard</span>
           <span class="vault-row-value" id="vaultBarStd">—</span>
         </div>
+        <div class="vault-row">
+          <span class="vault-row-label">Entry Price</span>
+          <span class="vault-row-value mono gold-val" id="vaultEntryPrice">—</span>
+        </div>
+        <div class="vault-row" style="border-bottom:none">
+          <span class="vault-row-label">Unrealised Gain</span>
+          <span class="vault-row-value mono" id="vaultUnrealisedGain">—</span>
+        </div>
       </div>
 
+    </div>
+
+    <!-- Bar Certificate -->
+    <div class="bar-cert-section" id="barCertSection" style="display:none">
+      <div class="acq-header">Bar on Record</div>
+      <div class="bar-cert-grid" id="barCertGrid"></div>
     </div>
 
     <!-- Acquisition History Table -->
@@ -2890,6 +3073,15 @@ body {
         </tbody>
         <tfoot id="acqTableFoot"></tfoot>
       </table>
+    </div>
+
+    <!-- Vault Documents — Gold subview -->
+    <div class="vault-docs-section" id="vaultDocsSectionGold">
+      <div class="acq-header">Vault Documents</div>
+      <div id="vaultDocsGridGold">
+        <div class="doc-card skel-card"><div class="skel" style="height:14px;width:55%"></div></div>
+        <div class="doc-card skel-card"><div class="skel" style="height:14px;width:40%"></div></div>
+      </div>
     </div>
 
   </div><!-- /subview-gold -->
@@ -3009,6 +3201,16 @@ body {
       <div class="vault-list">
         <div class="vault-card"><div class="skel" style="width:44px;height:44px;border-radius:8px;flex-shrink:0"></div><div style="flex:1"><div class="skel" style="height:14px;width:50%;margin-bottom:8px"></div><div class="skel" style="height:10px;width:30%"></div></div></div>
       </div>
+    </div>
+  </div>
+
+  <!-- Vault Documents — Documents tab -->
+  <div class="docs-section fade-up" style="margin-top: 32px">
+    <div class="docs-section-title">Vault Documents</div>
+    <div class="docs-section-sub">Custody statements, insurance certificates, and bar records for your gold position.</div>
+    <div id="vaultDocsGridDocs">
+      <div class="doc-card skel-card"><div class="skel" style="height:14px;width:55%"></div></div>
+      <div class="doc-card skel-card"><div class="skel" style="height:14px;width:40%"></div></div>
     </div>
   </div>
 
@@ -3224,13 +3426,24 @@ body {
   <div class="deal-panel-close">
     <button class="deal-panel-close-btn" onclick="closeDealPanel()">×</button>
   </div>
-  <div class="deal-panel-title" id="dealPanelTitle">—</div>
-  <div class="deal-panel-chips" id="dealPanelChips"></div>
-  <div class="deal-panel-section-label">Investment Thesis</div>
-  <div class="deal-panel-thesis" id="dealPanelThesis">—</div>
-  <div class="deal-panel-section-label">Key Terms</div>
-  <div class="deal-panel-terms" id="dealPanelTerms"></div>
-  <a class="deal-panel-cta" id="dealPanelCta" href="#">Speak to your advisor →</a>
+  <div class="dp-inner">
+    <!-- LEFT: identity, thesis, highlights, return chart -->
+    <div class="dp-left">
+      <div class="dp-identity">
+        <div class="dp-logo" id="dpLogo">—</div>
+        <div><div class="dp-tag" id="dpTag"></div></div>
+      </div>
+      <h1 class="dp-title" id="dpTitle">—</h1>
+      <div class="dp-thesis" id="dpThesis">—</div>
+      <div id="dpHighlights"></div>
+      <div id="dpChart"></div>
+    </div>
+    <!-- RIGHT: key terms + advisor CTA -->
+    <div class="dp-right">
+      <div class="dp-stat-grid" id="dpTerms"></div>
+      <a class="deal-panel-cta" id="dpCta" href="#">Speak to your advisor →</a>
+    </div>
+  </div>
 </div>
 
 <!-- TOAST -->
@@ -3858,6 +4071,42 @@ function loadPortfolio() {
   var auditEl = document.getElementById('vaultAudit');
   if (auditEl) auditEl.textContent = member.last_audit_date ? fmDate(member.last_audit_date) + ' ✓' : '—';
 
+  // Entry price
+  var entryPriceSgd = member.entry_price_sgd || (member.gold && member.gold.entry_price_sgd) || null;
+  var epEl = document.getElementById('vaultEntryPrice');
+  if (epEl) epEl.textContent = entryPriceSgd ? 'SGD ' + Math.round(entryPriceSgd).toLocaleString() + '/kg' : '—';
+
+  // Unrealised gain
+  var entryValSgd   = member.entry_value_sgd || null;
+  var currentValSgd = member.current_value_sgd || (member.gold && member.gold.value_sgd) || null;
+  var gainEl = document.getElementById('vaultUnrealisedGain');
+  if (gainEl && entryValSgd && currentValSgd) {
+    var gainAbs = currentValSgd - entryValSgd;
+    var gainPct = (gainAbs / entryValSgd) * 100;
+    var gainStr = (gainAbs >= 0 ? '+' : '') + 'SGD ' + Math.round(Math.abs(gainAbs)).toLocaleString()
+                + ' (' + (gainAbs >= 0 ? '+' : '-') + Math.abs(gainPct).toFixed(1) + '%)';
+    gainEl.textContent = gainStr;
+    gainEl.className   = 'vault-row-value mono ' + (gainAbs >= 0 ? 'green-val' : 'red-val');
+  } else if (gainEl) {
+    gainEl.textContent = '—';
+  }
+
+  // Bar certificate card
+  var barSection = document.getElementById('barCertSection');
+  var barGrid    = document.getElementById('barCertGrid');
+  var barData    = member.bar || (member.bars && member.bars[0]) || null;
+  if (barData && barGrid && barSection) {
+    barSection.style.display = '';
+    barGrid.innerHTML =
+      barCell('Serial Number',    barData.serial   || '—') +
+      barCell('Assayer / Refiner', barData.assayer  || barData.refiner || 'LBMA Approved Refiner') +
+      barCell('Weight',            barData.weight   || (barData.weight_kg ? (barData.weight_kg * 1000).toFixed(2) + 'g fine gold' : '—')) +
+      barCell('Fineness',          barData.fineness || '999.9');
+  }
+
+  // Vault documents in Gold tab
+  loadVaultDocs('vaultDocsGridGold');
+
   // Acquisition history
   renderAcqTable(member);
 
@@ -3997,28 +4246,31 @@ function loadDeals() {
       return;
     }
 
-    var chipClass = { infrastructure: 'infra', credit: 'credit', 'private credit': 'credit', 'real assets': 'assets', assets: 'assets', gold: 'gold' };
-
     deals.forEach(function(d) { _dealMap[d.id] = d; });
     renderTodayDeals(deals);
     grid.innerHTML = deals.map(function(deal) {
-      var cls = chipClass[(deal.asset_class || deal.type || '').toLowerCase()] || 'infra';
+      var ac  = (deal.asset_class || deal.type || '').toLowerCase();
+      var cls = CLASS_CHIP_MAP[ac]  || 'infra';
+      var lbl = CLASS_LABEL_MAP[ac] || (deal.asset_class || deal.type || '—');
+      var irr = parseFloat(deal.target_irr || deal.irr_target || deal.irr || 0);
+      var days = dealClosingDays(deal.closing_date || deal.closing);
+      var closingStr = days !== null ? (days > 0 ? days + 'd' : 'Soon') : esc(deal.closing_date || deal.closing || '—');
       return '<div class="deal-card fade-up">' +
         '<div class="deal-card-top">' +
-          '<span class="deal-asset-chip ' + cls + '">' + esc(deal.asset_class || deal.type || '—') + '</span>' +
-          (deal.is_new ? '<span class="deal-new-badge">NEW</span>' : '') +
+          '<span class="deal-asset-chip ' + cls + '">' + esc(lbl) + '</span>' +
+          (deal.featured ? '<span class="deal-new-badge">FEATURED</span>' : '') +
         '</div>' +
         '<div class="deal-name">' + esc(deal.name) + '</div>' +
         '<div class="deal-geo">' + esc(deal.geography || deal.geo || '—') + '</div>' +
         '<div class="deal-divider"></div>' +
         '<div class="deal-stats">' +
-          '<div class="deal-stat"><div class="deal-stat-label">IRR Target</div><div class="deal-stat-val gold-val">' + esc(deal.target_irr || deal.irr_target || deal.irr || '—') + '</div></div>' +
+          '<div class="deal-stat"><div class="deal-stat-label">IRR Target</div><div class="deal-stat-val gold-val">' + (irr ? irr + '%' : '—') + '</div></div>' +
           '<div class="deal-stat"><div class="deal-stat-label">Min Ticket</div><div class="deal-stat-val">' + (deal.min_ticket_usd ? fmU(deal.min_ticket_usd) : esc(deal.min_ticket || '—')) + '</div></div>' +
-          '<div class="deal-stat"><div class="deal-stat-label">Closing</div><div class="deal-stat-val">' + esc(deal.closing_date || deal.closing || '—') + '</div></div>' +
+          '<div class="deal-stat"><div class="deal-stat-label">Closing</div><div class="deal-stat-val">' + closingStr + '</div></div>' +
         '</div>' +
-        '<div class="deal-thesis">' + esc(deal.thesis || deal.description || '') + '</div>' +
+        '<div class="deal-thesis">' + esc(deal.thesis || deal.mk_notes || deal.description || '') + '</div>' +
         '<div class="deal-footer">' +
-          '<span class="deal-stage-chip">' + esc(deal.stage || 'Review') + '</span>' +
+          '<span class="deal-stage-chip">' + esc((deal.stage || 'review').toUpperCase()) + '</span>' +
           '<button class="deal-link" onclick="openDealPanel(_dealMap[\'' + esc(deal.id) + '\'])">View Deal →</button>' +
         '</div>' +
       '</div>';
@@ -4047,34 +4299,36 @@ function renderTodayDeals(deals) {
     return;
   }
 
-  var chipClass = { infrastructure: 'infra', credit: 'credit', 'private credit': 'credit', 'real assets': 'assets', assets: 'assets', gold: 'gold' };
-  // Show up to 3 deals; prefer new or open stage ones
+  // Show up to 3 deals; prefer featured then stage order
   var sorted = deals.slice().sort(function(a, b) {
-    var aNew = a.is_new ? 1 : 0;
-    var bNew = b.is_new ? 1 : 0;
-    return bNew - aNew;
+    return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
   });
   var shown = sorted.slice(0, 3);
 
   grid.innerHTML = shown.map(function(deal) {
-    var cls = chipClass[(deal.asset_class || deal.type || '').toLowerCase()] || 'infra';
+    var ac  = (deal.asset_class || deal.type || '').toLowerCase();
+    var cls = CLASS_CHIP_MAP[ac]  || 'infra';
+    var lbl = CLASS_LABEL_MAP[ac] || (deal.asset_class || deal.type || '—');
+    var irr = parseFloat(deal.target_irr || deal.irr_target || deal.irr || 0);
+    var days = dealClosingDays(deal.closing_date || deal.closing);
+    var closingStr = days !== null ? (days > 0 ? days + 'd' : 'Soon') : esc(deal.closing_date || deal.closing || '—');
     return '<div class="today-deal-card fade-up">' +
       '<div class="today-deal-top">' +
-        '<span class="deal-asset-chip ' + cls + '">' + esc(deal.asset_class || deal.type || '—') + '</span>' +
-        (deal.is_new ? '<span class="deal-new-badge">NEW</span>' : '') +
+        '<span class="deal-asset-chip ' + cls + '">' + esc(lbl) + '</span>' +
+        (deal.featured ? '<span class="deal-new-badge">FEATURED</span>' : '') +
       '</div>' +
       '<div class="today-deal-name">' + esc(deal.name) + '</div>' +
       '<div class="today-deal-geo">' + esc(deal.geography || deal.geo || '—') + '</div>' +
       '<div class="today-deal-stats">' +
-        '<div class="deal-stat"><div class="deal-stat-label">IRR Target</div><div class="deal-stat-val gold-val">' + esc(deal.target_irr || deal.irr_target || deal.irr || '—') + '</div></div>' +
+        '<div class="deal-stat"><div class="deal-stat-label">IRR Target</div><div class="deal-stat-val gold-val">' + (irr ? irr + '%' : '—') + '</div></div>' +
         '<div class="deal-stat"><div class="deal-stat-label">Min Ticket</div><div class="deal-stat-val">' + (deal.min_ticket_usd ? fmU(deal.min_ticket_usd) : esc(deal.min_ticket || '—')) + '</div></div>' +
-        '<div class="deal-stat"><div class="deal-stat-label">Closing</div><div class="deal-stat-val">' + esc(deal.closing_date || deal.closing || '—') + '</div></div>' +
+        '<div class="deal-stat"><div class="deal-stat-label">Closing</div><div class="deal-stat-val">' + closingStr + '</div></div>' +
       '</div>' +
-      '<div class="today-deal-thesis">' + esc(deal.thesis || deal.description || '') + '</div>' +
+      '<div class="today-deal-thesis">' + esc(deal.thesis || deal.mk_notes || deal.description || '') + '</div>' +
       '<div class="today-deal-divider"></div>' +
       '<div class="today-deal-footer">' +
-        '<span class="deal-stage-chip">' + esc(deal.stage || 'Review') + '</span>' +
-        '<button class="deal-link" onclick="openDealPanel(_dealMap[\'" + esc(deal.id) + "\'])">View Deal →</button>' +
+        '<span class="deal-stage-chip">' + esc((deal.stage || 'review').toUpperCase()) + '</span>' +
+        '<button class="deal-link" onclick="openDealPanel(_dealMap[\'' + esc(deal.id) + '\'])">View Deal →</button>' +
       '</div>' +
     '</div>';
   }).join('');
@@ -4083,30 +4337,196 @@ function renderTodayDeals(deals) {
 // ============================================================
 // DEAL PANEL
 // ============================================================
+
+var CLASS_LABEL_MAP = { credit: 'Private Credit', pe: 'Equity', re: 'Real Estate', infra: 'Infrastructure', infrastructure: 'Infrastructure', equity: 'Equity' };
+var CLASS_CHIP_MAP  = { infrastructure: 'infra', infra: 'infra', credit: 'credit', 'private credit': 'credit', pe: 'pe', equity: 'pe', re: 'assets', 'real assets': 'assets', assets: 'assets', gold: 'gold' };
+
+function dealTicker(name) {
+  var words = (name || '').split(/\s+/).filter(Boolean);
+  if (!words.length) return '—';
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
+
+function dealClosingDays(closingDate) {
+  if (!closingDate) return null;
+  var d = new Date(closingDate);
+  if (isNaN(d)) return null;
+  return Math.ceil((d - Date.now()) / 86400000);
+}
+
+function buildDealReturnChart(deal) {
+  var ac = (deal.asset_class || deal.type || '').toLowerCase();
+  var irr = parseFloat(deal.target_irr);
+  var term = parseInt(deal.term_months || deal.term || 0, 10);
+  var hurdle = parseFloat(deal.hurdle_rate || deal.hurdle || 0);
+  var termYrs = Math.max(1, Math.ceil(term / 12));
+
+  if (!irr || !term) return '';
+
+  if (ac === 'pe' || ac === 'equity') {
+    var irrBase = irr / 100;
+    var irrDown = Math.max(0.05, Math.round(irrBase * 0.6 * 100) / 100);
+    var irrUp   = Math.round(irrBase * 1.35 * 100) / 100;
+    var inv = 500000;
+    var moicBase = Math.pow(1 + irrBase, termYrs);
+    var moicDown = Math.pow(1 + irrDown, termYrs);
+    var moicUp   = Math.pow(1 + irrUp,   termYrs);
+    var scenarios = [
+      { name: 'Conservative', irr: Math.round(irrDown * 100), moic: moicDown, val: Math.round(inv * moicDown), cls: '' },
+      { name: 'Base Case',    irr: irr,                        moic: moicBase, val: Math.round(inv * moicBase), cls: 'is-base' },
+      { name: 'Upside',       irr: Math.round(irrUp * 100),   moic: moicUp,   val: Math.round(inv * moicUp),   cls: '' },
+    ];
+    var scenHtml = scenarios.map(function(s) {
+      return '<div class="dp-eq-sc ' + s.cls + '">' +
+        '<div class="dp-eq-sc-name">' + esc(s.name) + '</div>' +
+        '<div class="dp-eq-sc-irr">' + s.irr + '%</div>' +
+        '<div class="dp-eq-sc-irr-lbl">Target IRR</div>' +
+        '<div class="dp-eq-sc-moic">' + s.moic.toFixed(2) + '×</div>' +
+        '<div class="dp-eq-sc-moic-lbl">MOIC at exit</div>' +
+        '<div class="dp-eq-sc-exit">' + fmU(s.val) + '</div>' +
+        '<div class="dp-eq-sc-exit-lbl">Exit value on $500K</div>' +
+      '</div>';
+    }).join('');
+    var maxVal = Math.round(inv * moicBase);
+    var rows = '';
+    for (var yr = 1; yr <= Math.min(termYrs, 5); yr++) {
+      var val  = Math.round(inv * Math.pow(1 + irrBase, yr));
+      var moic = Math.pow(1 + irrBase, yr);
+      var pct  = Math.round(val / maxVal * 100);
+      var isExit = yr === termYrs;
+      rows += '<tr>' +
+        '<td>Yr ' + yr + (isExit ? ' <span class="dp-vp-exit-tag">EXIT</span>' : '') + '</td>' +
+        '<td>' + fmU(val) + '</td>' +
+        '<td>' + moic.toFixed(2) + '×</td>' +
+        '<td><div class="dp-vp-bar-track"><div class="dp-vp-bar-fill" data-pct="' + pct + '"></div></div></td>' +
+      '</tr>';
+    }
+    return '<div class="dp-chart-section">' +
+      '<div class="dp-chart-lbl">Value Path · $500K at Base Case · ' + termYrs + '-Year Hold</div>' +
+      '<div class="dp-eq-scenarios">' + scenHtml + '</div>' +
+      '<div class="dp-chart-lbl" style="margin-top:4px;margin-bottom:8px">Year-by-Year Projection · Base Case ' + irr + '% IRR</div>' +
+      '<table class="dp-vp-table">' +
+        '<thead><tr><th>Period</th><th>Value</th><th>MOIC</th><th></th></tr></thead>' +
+        '<tbody>' + rows + '</tbody>' +
+      '</table>' +
+    '</div>';
+  }
+
+  // Income / yield (credit, infra, re)
+  var hurdleHtml = hurdle > 0
+    ? '<div class="dp-hurdle-line"><div class="dp-hurdle-dash"></div><div class="dp-hurdle-lbl">Hurdle: ' + hurdle + '%</div></div>'
+    : '';
+  return '<div class="dp-chart-section">' +
+    '<div class="dp-chart-lbl">Income Scenarios · $500K at Base Case</div>' +
+    '<div class="dp-return-chart">' +
+      '<div class="dp-rc-wrap"><div class="dp-rc-val" id="dp-rc-dv">—</div><div class="dp-rc-bar dp-rc-down" id="dp-rc-d" style="height:0"></div><div class="dp-rc-lbl">Downside</div></div>' +
+      '<div class="dp-rc-wrap"><div class="dp-rc-val" id="dp-rc-bv">—</div><div class="dp-rc-bar dp-rc-base" id="dp-rc-b" style="height:0"></div><div class="dp-rc-lbl">Base Case</div></div>' +
+      '<div class="dp-rc-wrap"><div class="dp-rc-val" id="dp-rc-uv">—</div><div class="dp-rc-bar dp-rc-up"   id="dp-rc-u" style="height:0"></div><div class="dp-rc-lbl">Upside</div></div>' +
+    '</div>' +
+    hurdleHtml +
+  '</div>';
+}
+
+function animateDealChart() {
+  // Animate value-path bars
+  document.querySelectorAll('.dp-vp-bar-fill').forEach(function(el) {
+    var pct = el.getAttribute('data-pct');
+    if (pct) setTimeout(function() { el.style.width = pct + '%'; }, 120);
+  });
+  // Animate income chart bars
+  var irr   = parseFloat(document.getElementById('deal-panel').dataset.chartIrr  || 0);
+  var hurdle = parseFloat(document.getElementById('deal-panel').dataset.chartHurdle || 0);
+  var inv = 500000;
+  if (irr > 0) {
+    var base  = Math.round(inv * irr / 100);
+    var down  = Math.round(base * 0.65);
+    var up    = Math.round(base * 1.30);
+    var maxH  = 100;
+    ['dp-rc-d','dp-rc-b','dp-rc-u'].forEach(function(id, i) {
+      var bar = document.getElementById(id);
+      var val = [down, base, up][i];
+      if (bar) setTimeout(function() { bar.style.height = Math.round(val / up * maxH) + 'px'; }, 80 + i * 60);
+    });
+    var labels = { 'dp-rc-dv': down, 'dp-rc-bv': base, 'dp-rc-uv': up };
+    Object.keys(labels).forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = fmU(labels[id]);
+    });
+  }
+}
+
 function openDealPanel(deal) {
-  document.getElementById('dealPanelTitle').textContent = deal.name || '—';
+  var ac  = (deal.asset_class || deal.type || '').toLowerCase();
+  var cls = CLASS_CHIP_MAP[ac] || 'infra';
+  var lbl = CLASS_LABEL_MAP[ac] || (deal.asset_class || deal.type || '—');
 
-  var chipClass = { infrastructure: 'infra', credit: 'credit', 'private credit': 'credit', 'real assets': 'assets', assets: 'assets', gold: 'gold' };
-  var cls = chipClass[(deal.asset_class || deal.type || '').toLowerCase()] || 'infra';
-  document.getElementById('dealPanelChips').innerHTML =
-    '<span class="deal-asset-chip ' + cls + '">' + esc(deal.asset_class || deal.type || '') + '</span>' +
-    '<span class="deal-stage-chip">' + esc(deal.stage || 'Review') + '</span>';
+  // Logo
+  document.getElementById('dpLogo').textContent = dealTicker(deal.name);
 
-  document.getElementById('dealPanelThesis').textContent = deal.thesis || deal.description || '—';
+  // Tag row: asset class + stage
+  document.getElementById('dpTag').innerHTML =
+    '<span class="deal-asset-chip ' + cls + '">' + esc(lbl) + '</span>' +
+    '<span class="deal-stage-chip">' + esc((deal.stage || 'review').toUpperCase()) + '</span>' +
+    (deal.geography ? '<span>' + esc(deal.geography) + '</span>' : '');
 
-  document.getElementById('dealPanelTerms').innerHTML =
-    '<div class="deal-panel-term"><div class="deal-panel-term-label">IRR Target</div><div class="deal-panel-term-val">' + esc(deal.irr_target || deal.irr || '—') + '</div></div>' +
-    '<div class="deal-panel-term"><div class="deal-panel-term-label">Structure</div><div class="deal-panel-term-val">' + esc(deal.structure || '—') + '</div></div>' +
-    '<div class="deal-panel-term"><div class="deal-panel-term-label">Min Ticket</div><div class="deal-panel-term-val">' + esc(deal.min_ticket || '—') + '</div></div>' +
-    '<div class="deal-panel-term"><div class="deal-panel-term-label">Term</div><div class="deal-panel-term-val">' + esc(deal.term || '—') + '</div></div>' +
-    '<div class="deal-panel-term"><div class="deal-panel-term-label">Closing</div><div class="deal-panel-term-val">' + esc(deal.closing_date || deal.closing || '—') + '</div></div>' +
-    '<div class="deal-panel-term"><div class="deal-panel-term-label">Geography</div><div class="deal-panel-term-val">' + esc(deal.geography || deal.geo || '—') + '</div></div>';
+  // Title + thesis
+  document.getElementById('dpTitle').textContent  = deal.name || '—';
+  document.getElementById('dpThesis').textContent = deal.thesis || deal.mk_notes || deal.description || '—';
 
-  var cta = document.getElementById('dealPanelCta');
-  var subject = encodeURIComponent('Deal Enquiry: ' + (deal.name || ''));
-  cta.href = 'mailto:members@theaurumcc.com?subject=' + subject;
+  // Highlights
+  var hlContainer = document.getElementById('dpHighlights');
+  var highlights = Array.isArray(deal.highlights) ? deal.highlights : [];
+  if (highlights.length) {
+    hlContainer.innerHTML =
+      '<div class="dp-section-lbl">Key Highlights</div>' +
+      '<div class="dp-hl-cards">' +
+      highlights.map(function(h) {
+        return '<div class="dp-hl-card">' +
+          (h.icon ? '<div class="dp-hl-icon">' + esc(h.icon) + '</div>' : '') +
+          '<div class="dp-hl-title">' + esc(h.s || h.title || '') + '</div>' +
+          '<div class="dp-hl-body">'  + esc(h.b || h.body  || '') + '</div>' +
+        '</div>';
+      }).join('') +
+      '</div>';
+  } else {
+    hlContainer.innerHTML = '';
+  }
+
+  // Return chart
+  var irr    = parseFloat(deal.target_irr || deal.irr_target || deal.irr || 0);
+  var hurdle = parseFloat(deal.hurdle_rate || deal.hurdle || 0);
+  var chartHtml = buildDealReturnChart(deal);
+  var chartEl   = document.getElementById('dpChart');
+  if (chartHtml) {
+    chartEl.innerHTML = '<div class="dp-section-lbl">Return Analysis · Illustrative</div>' + chartHtml;
+  } else {
+    chartEl.innerHTML = '';
+  }
+  document.getElementById('deal-panel').dataset.chartIrr    = irr;
+  document.getElementById('deal-panel').dataset.chartHurdle = hurdle;
+
+  // Key terms stat grid
+  var term = parseInt(deal.term_months || deal.term || 0, 10);
+  var days = dealClosingDays(deal.closing_date || deal.closing);
+  var closingStr = days !== null
+    ? (days > 0 ? days + ' days' : 'Closing soon')
+    : esc(deal.closing_date || deal.closing || '—');
+  document.getElementById('dpTerms').innerHTML =
+    '<div class="dp-stat-cell"><div class="dp-stat-lbl">IRR Target</div><div class="dp-stat-val gold">' + (irr ? irr + '%' : '—') + '</div></div>' +
+    '<div class="dp-stat-cell"><div class="dp-stat-lbl">Term</div><div class="dp-stat-val">' + (term ? term + ' mo' : '—') + '</div></div>' +
+    '<div class="dp-stat-cell"><div class="dp-stat-lbl">Min Ticket</div><div class="dp-stat-val">' + (deal.min_ticket_usd ? fmU(deal.min_ticket_usd) : esc(deal.min_ticket || '—')) + '</div></div>' +
+    '<div class="dp-stat-cell"><div class="dp-stat-lbl">Allocation</div><div class="dp-stat-val">' + (deal.target_alloc_usd ? fmU(deal.target_alloc_usd) : '—') + '</div></div>' +
+    (hurdle > 0 ? '<div class="dp-stat-cell"><div class="dp-stat-lbl">Hurdle Rate</div><div class="dp-stat-val">' + hurdle + '%</div></div>' : '') +
+    '<div class="dp-stat-cell' + (hurdle > 0 ? '' : ' full') + '"><div class="dp-stat-lbl">Closing</div><div class="dp-stat-val">' + closingStr + '</div></div>' +
+    (deal.deal_structure || deal.structure ? '<div class="dp-stat-cell full"><div class="dp-stat-lbl">Structure</div><div class="dp-stat-val" style="font-size:13px">' + esc(deal.deal_structure || deal.structure) + '</div></div>' : '');
+
+  // CTA
+  var cta = document.getElementById('dpCta');
+  cta.href = 'mailto:members@theaurumcc.com?subject=' + encodeURIComponent('Deal Enquiry: ' + (deal.name || ''));
 
   document.getElementById('deal-panel').classList.add('open');
+  setTimeout(animateDealChart, 300);
 }
 
 function closeDealPanel() {
@@ -4134,6 +4554,7 @@ function downloadDoc(id, btn) {
 function loadDocuments() {
   loadLetters();
   loadVaultVerifications();
+  loadVaultDocs('vaultDocsGridDocs');
 }
 
 function loadLetters() {
@@ -4192,23 +4613,74 @@ function openLetter(lid, btn) {
   });
 }
 
-function openVaultDoc(id, blobPath, btn) {
-  btn.disabled = true;
-  btn.textContent = '⟳';
-  var signedUrlEndpoint = '/api/v2?resource=member&op=vault-doc-url&id=' + encodeURIComponent(id);
-  fetchSilent(signedUrlEndpoint)
-    .then(function(res) {
-      var target = (res && res.url) ? res.url : '/api/doc?blob=' + encodeURIComponent(blobPath);
-      window.open(target, '_blank');
-    })
-    .catch(function() {
-      window.open('/api/doc?blob=' + encodeURIComponent(blobPath), '_blank');
-    })
-    .finally(function() {
-      btn.disabled = false;
-      btn.textContent = '✓ Downloaded';
-      setTimeout(function() { btn.textContent = 'Download'; }, 3000);
-    });
+function openVaultDoc(docId, blobPathname, btn) {
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  var url = '/api/doc?id=vault-doc-' + encodeURIComponent(docId);
+  if (_previewLead) url += '&preview_lead=' + encodeURIComponent(_previewLead);
+  window.open(url, '_blank');
+  if (btn) { setTimeout(function() { btn.disabled = false; btn.textContent = 'Download'; }, 1200); }
+}
+
+var _vaultDocsCache = null;
+
+function loadVaultDocs(containerId) {
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  if (_vaultDocsCache) { renderVaultDocs(_vaultDocsCache, containerId); return; }
+  fetchSilent('/api/v2?resource=member&op=vault-docs').then(function(data) {
+    if (!data) {
+      container.innerHTML = '<div class="state-box"><div class="state-box-sub">Couldn\'t load vault documents.</div></div>';
+      return;
+    }
+    var docs = Array.isArray(data) ? data : (data.vault_docs || []);
+    _vaultDocsCache = docs;
+    renderVaultDocs(docs, containerId);
+  });
+}
+
+var _vaultDocTypeLabel = {
+  audit_report:      'Vault Audit',
+  insurance_cert:    'Insurance',
+  bar_cert:          'Bar Certificate',
+  custody_statement: 'Custody Statement',
+};
+var _vaultDocTypeCls = {
+  audit_report:      'audit',
+  insurance_cert:    'insur',
+  bar_cert:          'bar',
+  custody_statement: 'custody',
+};
+
+function renderVaultDocs(docs, containerId) {
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  if (!docs || !docs.length) {
+    container.innerHTML = '<div class="state-box"><div class="state-box-sub">No vault documents on file yet.</div></div>';
+    return;
+  }
+  container.innerHTML = '<div class="docs-grid">' + docs.map(function(doc) {
+    var typeLabel = _vaultDocTypeLabel[doc.type] || doc.type || 'Document';
+    var typeCls   = _vaultDocTypeCls[doc.type] || 'custody';
+    var date      = doc.date || doc.published_at || doc.created_at;
+    return '<div class="doc-card">' +
+      '<div class="doc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>' +
+      '<div class="doc-info">' +
+        '<div class="doc-name" style="display:flex;align-items:center;gap:8px">' +
+          '<span>' + esc(doc.title) + '</span>' +
+          '<span class="vault-doc-type-badge ' + typeCls + '">' + esc(typeLabel) + '</span>' +
+        '</div>' +
+        '<div class="doc-meta">' + (date ? fmDate(date) : '—') + '</div>' +
+      '</div>' +
+      '<button class="doc-dl-btn" onclick="openVaultDoc(\'' + esc(doc.id) + '\',\'' + esc(doc.blob_pathname || '') + '\',this)">Download</button>' +
+    '</div>';
+  }).join('') + '</div>';
+}
+
+function barCell(label, val) {
+  return '<div class="bar-cert-cell">' +
+    '<span class="bar-cert-label">' + esc(label) + '</span>' +
+    '<span class="bar-cert-val">'   + esc(val)   + '</span>' +
+  '</div>';
 }
 
 function loadVaultVerifications() {
@@ -4512,8 +4984,11 @@ var MOCK_LETTERS = [
 ];
 
 var MOCK_VAULT_DOCS = [
-  { id: 'vault-apr-2026', title: 'Vault Audit Report — April 2026',    date: '2026-04-15', blob_pathname: 'vault-audit-apr-2026.pdf' },
-  { id: 'vault-apr-2025', title: 'Vault Audit Report — April 2025',    date: '2025-04-15', blob_pathname: 'vault-audit-apr-2025.pdf' }
+  { id: 'vault-audit-apr-2026',  type: 'audit_report',      title: 'Vault Audit Report — April 2026',        date: '2026-04-15', blob_pathname: 'vault-audit-apr-2026.pdf' },
+  { id: 'vault-audit-apr-2025',  type: 'audit_report',      title: 'Vault Audit Report — April 2025',        date: '2025-04-15', blob_pathname: 'vault-audit-apr-2025.pdf' },
+  { id: 'insurance-2026',        type: 'insurance_cert',    title: "Lloyd's Insurance Certificate — FY2026", date: '2026-01-01', blob_pathname: 'insurance-cert-2026.pdf' },
+  { id: 'bar-cert-au2024-0047',  type: 'bar_cert',          title: 'Bar Certificate — Lot AU-2024-0047',      date: '2024-01-15', blob_pathname: 'bar-cert-au2024-0047.pdf' },
+  { id: 'custody-stmt-q1-2026',  type: 'custody_statement', title: 'Custody Statement — Q1 2026',             date: '2026-03-31', blob_pathname: 'custody-stmt-q1-2026.pdf' },
 ];
 
 // Mock override — bypassed when USE_MOCK = false
@@ -4525,7 +5000,8 @@ if (USE_MOCK) {
     if (url.includes('resource=public&op=spot'))                 return JSON.parse(JSON.stringify(MOCK_SPOT));
     if (url.includes('resource=member&op=deals'))                return JSON.parse(JSON.stringify(MOCK_DEALS));
     if (url.includes('resource=member&op=letters'))              return JSON.parse(JSON.stringify(MOCK_LETTERS));
-    if (url.includes('resource=member&op=vault-verifications'))  return JSON.parse(JSON.stringify(MOCK_VAULT_DOCS));
+    if (url.includes('resource=member&op=vault-verifications'))  return JSON.parse(JSON.stringify(MOCK_VAULT_DOCS.filter(function(d){ return d.type === 'audit_report'; })));
+    if (url.includes('resource=member&op=vault-docs'))          return JSON.parse(JSON.stringify(MOCK_VAULT_DOCS));
     if (url.includes('resource=member&op=letter-url'))           return { url: null };
     if (url.includes('resource=member&op=vault-doc-url'))        return { url: null };
     if (url.includes('messages?op=read'))                        return { ok: true };
