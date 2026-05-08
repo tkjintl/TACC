@@ -7858,7 +7858,7 @@ textarea.inp.mono-area {
       return '<button class="b ' + (a.kind || '') + '" data-stage-act="' + esc(a.op) + '" data-lid="' + esc(l.id) + '">' + esc(a.label) + '</button>';
     }).join('');
     document.getElementById('dr-actions').querySelectorAll('[data-stage-act]').forEach(function(b){
-      b.addEventListener('click', function(){ runStageAction(b.dataset.stageAct, b.dataset.lid, l); });
+      b.addEventListener('click', function(){ runStageAction(b.dataset.stageAct, b.dataset.lid, l, b); });
     });
   }
 
@@ -7925,14 +7925,14 @@ textarea.inp.mono-area {
     'revoke-access':       { op: 'revoke-access', needsReason: true, reasonField: 'reason', destructive: true }
   };
 
-  function runStageAction(uiOp, lid, lead) {
+  function runStageAction(uiOp, lid, lead, btn) {
     var spec = STAGE_OP_MAP[uiOp];
     if (!spec) { toast('Unknown action: ' + uiOp, 'error'); return; }
 
-    if (uiOp === 'issue-wire')        return openWireModal(lid, lead);
-    if (uiOp === 'add-position')      return openPositionModal(lid, lead);
-    if (uiOp === 'send-message')      { closeDrawer(); goTab('comms'); return; }
-    if (uiOp === 'issue-capital-call'){ closeDrawer(); goTab('comms'); var t=document.querySelector('[data-compose="cap"]'); if(t) t.click(); return; }
+    if (uiOp === 'issue-wire')         return openWireModal(lid, lead);
+    if (uiOp === 'add-position')       return openPositionModal(lid, lead);
+    if (uiOp === 'send-message')       { closeDrawer(); goTab('comms'); return; }
+    if (uiOp === 'issue-capital-call') { closeDrawer(); goTab('comms'); var t=document.querySelector('[data-compose="cap"]'); if(t) t.click(); return; }
     if (uiOp === 'mark-wire-received') return openWireReceivedModal(lid, lead);
     if (uiOp === 'mark-cleared-admit') return openWireClearedModal(lid, lead);
     if (spec.custom === 'decline')     return openDeclineModal(lid, lead);
@@ -7941,14 +7941,26 @@ textarea.inp.mono-area {
     if (spec.destructive) return confirmDestructive(uiOp.replace(/-/g,' ') + '?', spec.op, lid, spec.reasonField || 'reason');
     if (spec.needsReason) return promptReason(uiOp.replace(/-/g,' '), spec.op, lid, spec.reasonField || 'reason');
 
-    // Plain POST { leadId }
+    // Plain POST — show loading state on button
+    var origLabel = btn ? btn.textContent : null;
+    if (btn) { btn.disabled = true; btn.textContent = 'Working…'; }
+
     api(spec.op, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ leadId: lid }) })
       .then(function(r){ return r.json(); })
       .then(function(d){
-        toast(d.ok === false ? (d.error || 'Failed') : 'Done', d.ok === false ? 'error' : 'success');
-        if (d.ok !== false) { closeDrawer(); loadPipeline(); loadDecisionLanes(); loadActivityTimeline(); }
+        if (btn) { btn.disabled = false; btn.textContent = origLabel; }
+        if (d.ok === false) {
+          toast((d.error || 'Action failed'), 'error');
+        } else {
+          toast('Done — ' + uiOp.replace(/-/g,' '), 'success');
+          closeDrawer(); loadPipeline(); loadDecisionLanes(); loadActivityTimeline();
+        }
       })
-      .catch(function(){ toast('Action failed', 'error'); });
+      .catch(function(e){
+        if (btn) { btn.disabled = false; btn.textContent = origLabel; }
+        toast('Network error — check connection', 'error');
+        console.error('[runStageAction]', uiOp, e);
+      });
   }
 
   function promptReason(title, op, lid, reasonField) {
