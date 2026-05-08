@@ -4117,7 +4117,8 @@ if (USE_MOCK) {
     if (todayView) triggerFadeUps(todayView);
   }, 50);
 
-  MEMBER = await fetchSilent('/api/v2?resource=member&op=me');
+  var _previewLead = new URLSearchParams(location.search).get('preview_lead');
+  MEMBER = await fetchSilent('/api/v2?resource=member&op=me' + (_previewLead ? '&preview_lead=' + encodeURIComponent(_previewLead) : ''));
 
   if (!MEMBER) {
     document.getElementById('todayName').textContent = 'Member';
