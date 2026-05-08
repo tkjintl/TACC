@@ -207,6 +207,11 @@ export async function bindCode(leadId, code) {
   return call(['SET', CODE_KEY(code.toUpperCase()), leadId]);
 }
 
+export async function unbindCode(code) {
+  if (!code) return;
+  return call(['DEL', CODE_KEY(code.toUpperCase())]);
+}
+
 export async function listLeads(opts = {}) {
   const { status, limit = 200, offset = 0 } = opts;
   const ids = await zRevRange(LEADS_INDEX, offset, offset + limit - 1);

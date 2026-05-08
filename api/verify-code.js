@@ -44,6 +44,11 @@ export default async function handler(req, res) {
     return unauthorized(res, 'The access credential was not recognised.');
   }
 
+  if (lead.code_revoked) {
+    await delay(400);
+    return unauthorized(res, 'Access has been revoked. Please contact the fund administrator.');
+  }
+
   if (lead.code !== code) {
     await delay(400);
     return unauthorized(res, 'The access credential was not recognised.');

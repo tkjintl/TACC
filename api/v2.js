@@ -27,7 +27,7 @@ import {
 } from './_lib/http.js';
 import { verifyToken, generateCode, COOKIE_ADMIN, COOKIE_MEMBER } from './_lib/auth.js';
 import {
-  getLead, saveLead, bindCode, listLeads, leadsCount,
+  getLead, saveLead, bindCode, unbindCode, listLeads, leadsCount,
   getCachedStats, setCachedStats,
   addCapitalCall, updateCapitalCall,
   addMessage, getMessages, markMessageRead,
@@ -752,6 +752,7 @@ async function adminNdaReject(req, res, session) {
   const lead = await getLead(leadId);
   if (!lead) return notFound(res);
 
+  const fromStgNda = resolveLeadStage(lead);
   const prev = lead.nda_state;
   lead.nda_state = 'rejected';
   lead.nda_rejected_at = Date.now();
@@ -765,6 +766,8 @@ async function adminNdaReject(req, res, session) {
     memo: lead.nda_reject_reason,
     ip: clientIp(req),
   });
+  const toStgNda = resolveLeadStage(lead);
+  if (fromStgNda !== toStgNda) await transitionStage(lead, fromStgNda, toStgNda);
   try { await saveLead(lead); } catch (e) { return serverError(res, e); }
 
   // Notify member
@@ -1197,18 +1200,37 @@ async function adminRevokeAccess(req, res, session) {
   const lead = await getLead(leadId);
   if (!lead) return notFound(res);
 
-  const prev = lead.code_revoked || false;
-  lead.code_revoked = true;
-  lead.code_revoked_at = Date.now();
+  const prevCode  = lead.code || null;
+  const fromStage = resolveLeadStage(lead);
+
+  lead.code_revoked        = true;
+  lead.code_revoked_at     = Date.now();
   lead.code_revoked_reason = reason || null;
+
+  // Delete the Redis code binding so the credential no longer authenticates
+  if (lead.code) {
+    try { await unbindCode(lead.code); } catch {}
+    lead.code            = null;
+    lead.code_expires_at = null;
+  }
+
+  // Revert non-funded leads to inquiry so kanban reflects the change
+  if (lead.status !== 'funded') {
+    lead.status = 'inquiry';
+  }
+
   await appendAudit(lead, {
-    actor: _actor(session),
+    actor:  _actor(session),
     action: 'access_revoked',
-    prev,
-    next: true,
-    memo: reason,
-    ip: clientIp(req),
+    prev:   prevCode,
+    next:   null,
+    memo:   reason,
+    ip:     clientIp(req),
   });
+
+  const toStage = resolveLeadStage(lead);
+  if (fromStage !== toStage) await transitionStage(lead, fromStage, toStage);
+
   await saveLead(lead);
 
   return ok(res, { ok: true, leadId, code_revoked: true });
