@@ -2127,6 +2127,289 @@ body {
 }
 
 /* ============================================================
+   TODAY TAB — COMMAND CENTER
+   ============================================================ */
+
+/* Snap bar */
+.today-snap-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 0 auto 8px;
+  max-width: 860px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 24px;
+  row-gap: 10px;
+}
+.snap-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 0 20px;
+}
+.snap-label {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.snap-val {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  letter-spacing: 0.01em;
+}
+.snap-sep {
+  width: 1px;
+  height: 28px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* Wealth snapshot section */
+.today-wealth-section {
+  padding: 0 48px 48px;
+}
+.today-wealth-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Generic today card */
+.today-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+  transition: border-color 0.3s var(--ease);
+}
+.today-card:hover { border-color: var(--border-m); }
+.today-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.015);
+}
+.today-card-title {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-3);
+}
+.today-card-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 3px;
+  color: var(--text-3);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+}
+.today-card-badge.gold {
+  color: var(--gold);
+  background: var(--gold-bg);
+  border-color: var(--gold-bd);
+}
+.today-card-badge.green {
+  color: var(--green-b);
+  background: var(--green-bg);
+  border-color: var(--green-bd);
+}
+.today-card-badge.amber {
+  color: var(--amber-b);
+  background: var(--amber-bg);
+  border-color: var(--amber-bd);
+}
+.today-card-body {
+  padding: 20px;
+}
+.today-stat-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.today-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 80px;
+}
+.today-stat-label {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.today-stat-val {
+  font-size: 16px;
+  color: var(--text);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+.today-stat-sub {
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: 0.01em;
+}
+.today-stat-val.mono,
+.today-stat-sub.mono { font-family: var(--mono); }
+.today-stat-val.gain-pos { color: var(--green-b); }
+.today-stat-val.gain-neg { color: #C0534A; }
+.today-stat-sub.gain-pos { color: var(--green-b); }
+.today-stat-sub.gain-neg { color: #C0534A; }
+
+.today-card-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 16px 0;
+}
+.today-spot-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.today-spot-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.today-spot-val {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--gold);
+  letter-spacing: 0.02em;
+}
+
+/* LTV bar */
+.today-ltv-row { display: flex; flex-direction: column; gap: 8px; }
+.today-ltv-labels {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.today-ltv-track {
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.today-ltv-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-dim) 0%, var(--gold-b) 100%);
+  border-radius: 2px;
+  transition: width 1.2s var(--ease);
+}
+.today-ltv-bar.ltv-safe    { background: linear-gradient(90deg, #2E6E48 0%, var(--green-b) 100%); }
+.today-ltv-bar.ltv-caution { background: linear-gradient(90deg, #8A5C1A 0%, var(--amber-b) 100%); }
+.today-ltv-bar.ltv-danger  { background: linear-gradient(90deg, #7A2B25 0%, #C0534A 100%); }
+.today-ltv-credit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2px;
+}
+
+/* Active Deals on Today tab */
+.today-deals-section {
+  padding: 0 48px 56px;
+}
+.today-deals-intro {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--text-3);
+  margin-bottom: 20px;
+  margin-top: -6px;
+}
+.today-deals-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.today-deal-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+  transition: border-color 0.3s var(--ease), transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+  position: relative;
+}
+.today-deal-card:hover {
+  border-color: var(--gold-bd);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.today-deal-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.today-deal-name {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--text);
+  line-height: 1.25;
+  margin-bottom: 4px;
+}
+.today-deal-geo {
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--text-3);
+  margin-bottom: 12px;
+}
+.today-deal-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.today-deal-thesis {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--text-2);
+  font-style: italic;
+  line-height: 1.5;
+  margin-bottom: 14px;
+  flex: 1;
+}
+.today-deal-divider {
+  height: 1px;
+  background: var(--border);
+  margin-bottom: 12px;
+}
+.today-deal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+/* ============================================================
    RESPONSIVE — ≤768px
    ============================================================ */
 @media (max-width: 768px) {
@@ -2180,6 +2463,15 @@ body {
 
   /* Nav right partial hide */
   .member-chip { display: none; }
+
+  /* Today command center */
+  .today-snap-bar { padding: 12px 16px; gap: 0; }
+  .snap-item { padding: 0 12px; }
+  .snap-sep { display: none; }
+  .today-wealth-section { padding: 0 20px 40px; }
+  .today-wealth-grid { grid-template-columns: 1fr; }
+  .today-deals-section { padding: 0 20px 48px; }
+  .today-deals-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -2256,6 +2548,18 @@ body {
     <div class="fade-up today-date-line" id="todayDate"></div>
     <div class="fade-up today-meta" id="todayMeta">&nbsp;</div>
     <div class="today-divider"></div>
+    <!-- Wealth snap bar -->
+    <div class="today-snap-bar fade-up">
+      <div class="snap-item"><span class="snap-label">Total AUM</span><span class="snap-val" id="snapTotal">—</span></div>
+      <div class="snap-sep"></div>
+      <div class="snap-item"><span class="snap-label">Gold Value</span><span class="snap-val" id="snapGoldVal">—</span></div>
+      <div class="snap-sep"></div>
+      <div class="snap-item"><span class="snap-label">Gold Return</span><span class="snap-val" id="snapGoldReturn">—</span></div>
+      <div class="snap-sep"></div>
+      <div class="snap-item"><span class="snap-label">LTV</span><span class="snap-val" id="snapLtv">—</span></div>
+      <div class="snap-sep"></div>
+      <div class="snap-item"><span class="snap-label">Committed</span><span class="snap-val" id="snapCommitted">—</span></div>
+    </div>
   </div>
 
   <!-- Action Required -->
@@ -2278,25 +2582,89 @@ body {
     </div>
   </div>
 
-  <!-- Portfolio Snapshot -->
-  <div class="fade-up section-label" style="margin-top:0">Your Portfolio</div>
-  <div class="kpi-section fade-up">
-    <div class="kpi-grid">
-      <div class="kpi-block">
-        <div class="kpi-number" id="kpi-total">$—</div>
-        <div class="kpi-label">Total Portfolio Value</div>
-        <div class="kpi-sub" id="kpi-total-sub">Loading…</div>
+  <!-- Wealth Snapshot cards -->
+  <div class="today-wealth-section fade-up">
+    <div class="section-label" style="padding:0;margin-bottom:16px">Wealth Snapshot</div>
+    <div class="today-wealth-grid">
+
+      <!-- Gold position card -->
+      <div class="today-card">
+        <div class="today-card-header">
+          <span class="today-card-title">Gold Position</span>
+          <span class="today-card-badge gold">Singapore Freeport</span>
+        </div>
+        <div class="today-card-body">
+          <div class="today-stat-row">
+            <div class="today-stat">
+              <div class="today-stat-label">Weight</div>
+              <div class="today-stat-val mono" id="wealthGoldKg">— kg</div>
+              <div class="today-stat-sub mono" id="wealthGoldOz">— oz</div>
+            </div>
+            <div class="today-stat">
+              <div class="today-stat-label">Market Value</div>
+              <div class="today-stat-val mono" id="wealthGoldVal">—</div>
+              <div class="today-stat-sub mono" id="wealthGoldSgd">—</div>
+            </div>
+            <div class="today-stat">
+              <div class="today-stat-label">Unrealised P&amp;L</div>
+              <div class="today-stat-val mono" id="wealthGoldGain">—</div>
+              <div class="today-stat-sub mono" id="wealthGoldGainPct">—</div>
+            </div>
+          </div>
+          <div class="today-card-divider"></div>
+          <div class="today-spot-row">
+            <span class="today-spot-label">Live Spot</span>
+            <span class="today-spot-val mono" id="wealthGoldSpot">—</span>
+          </div>
+        </div>
       </div>
-      <div class="kpi-block">
-        <div class="kpi-number" id="kpi-oz">— oz</div>
-        <div class="kpi-label">Allocated Gold</div>
-        <div class="kpi-sub" id="kpi-oz-sub">—</div>
+
+      <!-- Portfolio card -->
+      <div class="today-card">
+        <div class="today-card-header">
+          <span class="today-card-title">Portfolio</span>
+          <span class="today-card-badge" id="wealthLtvStatus">—</span>
+        </div>
+        <div class="today-card-body">
+          <div class="today-stat-row">
+            <div class="today-stat">
+              <div class="today-stat-label">Committed Capital</div>
+              <div class="today-stat-val mono" id="wealthCommitted">—</div>
+            </div>
+            <div class="today-stat">
+              <div class="today-stat-label">PE Invested</div>
+              <div class="today-stat-val mono" id="wealthPeInvested">—</div>
+            </div>
+          </div>
+          <div class="today-card-divider"></div>
+          <div class="today-ltv-row">
+            <div class="today-ltv-labels">
+              <span class="today-spot-label">Loan-to-Value</span>
+              <span class="today-spot-val mono" id="wealthLtvPct">—</span>
+            </div>
+            <div class="today-ltv-track">
+              <div class="today-ltv-bar" id="wealthLtvBar" style="width:0%"></div>
+            </div>
+            <div class="today-ltv-credit">
+              <span class="today-stat-label">Credit Outstanding</span>
+              <span class="today-stat-sub mono" id="wealthLtvCredit">—</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="kpi-block">
-        <div class="kpi-number" id="kpi-pos">—</div>
-        <div class="kpi-label">Private Positions</div>
-        <div class="kpi-sub" id="kpi-pos-sub">—</div>
-      </div>
+
+    </div>
+  </div>
+
+  <!-- Active Opportunities -->
+  <div class="today-deals-section fade-up" id="todayDealsSection">
+    <div class="section-label" style="padding:0;margin-bottom:4px">Active Opportunities</div>
+    <div class="today-deals-intro">Curated deal flow from your advisory network.</div>
+    <div class="today-deals-grid" id="todayDealsGrid">
+      <!-- skeleton -->
+      <div class="deal-skel-card"><div class="skel" style="height:14px;width:70px;margin-bottom:12px"></div><div class="skel" style="height:20px;width:70%;margin-bottom:8px"></div><div class="skel" style="height:12px;width:40%;margin-bottom:16px"></div><div class="skel" style="height:48px;width:100%;margin-bottom:14px"></div><div class="skel" style="height:12px;width:100%"></div></div>
+      <div class="deal-skel-card"><div class="skel" style="height:14px;width:70px;margin-bottom:12px"></div><div class="skel" style="height:20px;width:70%;margin-bottom:8px"></div><div class="skel" style="height:12px;width:40%;margin-bottom:16px"></div><div class="skel" style="height:48px;width:100%;margin-bottom:14px"></div><div class="skel" style="height:12px;width:100%"></div></div>
+      <div class="deal-skel-card"><div class="skel" style="height:14px;width:70px;margin-bottom:12px"></div><div class="skel" style="height:20px;width:70%;margin-bottom:8px"></div><div class="skel" style="height:12px;width:40%;margin-bottom:16px"></div><div class="skel" style="height:48px;width:100%;margin-bottom:14px"></div><div class="skel" style="height:12px;width:100%"></div></div>
     </div>
   </div>
 
@@ -2322,6 +2690,16 @@ body {
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Legacy KPI elements (hidden — referenced by JS) -->
+  <div style="display:none">
+    <div id="kpi-total"></div>
+    <div id="kpi-oz"></div>
+    <div id="kpi-pos"></div>
+    <div id="kpi-total-sub"></div>
+    <div id="kpi-oz-sub"></div>
+    <div id="kpi-pos-sub"></div>
   </div>
 
 </section>
@@ -3170,18 +3548,23 @@ function renderToday(member) {
   if (metaEl && member.member_number) {
     var tier = member.tier || member.membership_tier || 'Member';
     var since = member.member_since ? new Date(member.member_since).toLocaleDateString('en-SG', { month: 'long', year: 'numeric' }) : '—';
-    metaEl.textContent = 'Member #' + member.member_number + '  ·  ' + tier + '  ·  Since ' + since;
+    metaEl.textContent = 'Member #' + member.member_number + '  ·  ' + tier + '  ·  Since ' + since;
   }
 
   // Action cards
   renderAttentionCards(member);
 
-  // KPIs
+  // KPIs / wealth cards / snap bar
   renderKpis(member);
 
   // Activity
   renderActivity(member);
 }
+
+function _set(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
+function _setHtml(id, html) { var el = document.getElementById(id); if (el) el.innerHTML = html; }
+function _addCls(id, cls) { var el = document.getElementById(id); if (el) el.classList.add(cls); }
+function _rmCls(id, list) { var el = document.getElementById(id); if (!el) return; list.forEach(function(c) { el.classList.remove(c); }); }
 
 function renderAttentionCards(member) {
   var grid = document.getElementById('attentionGrid');
@@ -3233,36 +3616,48 @@ function renderAttentionCards(member) {
 }
 
 function renderKpis(member) {
-  var goldKg   = member.gold_kg || 0;
-  var oz       = goldKg * 32.1507;
+  var goldKg    = member.gold_kg || (member.gold && member.gold.kg) || 0;
+  var oz        = goldKg * 32.1507;
   var positions = member.positions || [];
-  var posCnt   = positions.length;
+  var posCnt    = positions.length;
 
-  var goldValue = SPOT ? goldKg * SPOT.price_usd_per_kg : null;
-  var peValue   = positions.reduce(function(s, p) { return s + (p.marked_usd || p.invested_usd || 0); }, 0);
-  var totalValue = goldValue !== null ? goldValue + peValue : null;
+  // Gold data
+  var goldData      = member.gold || {};
+  var goldValueUsd  = SPOT ? goldKg * SPOT.price_usd_per_kg : (goldData.value_usd || null);
+  var goldValueSgd  = goldData.value_sgd || null;
+  var goldChangePct = goldData.change_pct || null;
 
+  // PE / portfolio
+  var peInvested  = positions.reduce(function(s, p) { return s + (p.invested_usd || 0); }, 0);
+  var peMarked    = positions.reduce(function(s, p) { return s + (p.marked_usd || p.invested_usd || 0); }, 0);
+  var committed   = member.committed_usd || 0;
+  var totalValue  = goldValueUsd !== null ? goldValueUsd + peMarked : null;
+
+  // LTV
+  var ltv         = member.ltv || {};
+  var ltvPct      = ltv.ltv_pct || 0;
+  var ltvCredit   = ltv.credit_outstanding || 0;
+  var ltvStatus   = ltv.status || (ltvPct > 0 ? 'Active' : 'None');
+  var ltvCeiling  = ltv.ceiling || 0.6;
+
+  // Unrealised gain on gold
+  var costBasisUsd = member.cost_basis_usd || null;
+  var goldGainUsd  = (goldValueUsd !== null && costBasisUsd !== null) ? goldValueUsd - costBasisUsd : null;
+  var goldGainPct  = (goldGainUsd !== null && costBasisUsd && costBasisUsd > 0) ? (goldGainUsd / costBasisUsd) * 100 : (goldChangePct !== null ? goldChangePct : null);
+
+  // --- Legacy hidden KPI elements (unchanged JS refs) ---
   var totalEl = document.getElementById('kpi-total');
   var ozEl    = document.getElementById('kpi-oz');
   var posEl   = document.getElementById('kpi-pos');
-
   if (totalEl) {
     if (totalValue !== null) {
       animateCounter(totalEl, 0, totalValue, 1400, function(v) {
         return v >= 1e6 ? '$' + (v / 1e6).toFixed(2) + 'M' : '$' + Math.round(v).toLocaleString();
       });
-    } else {
-      totalEl.textContent = '—';
-    }
+    } else { totalEl.textContent = '—'; }
   }
-  if (ozEl) {
-    animateCounter(ozEl, 0, oz, 1400, function(v) { return v.toFixed(1) + ' oz'; });
-  }
-  if (posEl) {
-    animateCounter(posEl, 0, posCnt, 800, function(v) { return Math.round(v).toString(); });
-  }
-
-  // Subs
+  if (ozEl)  { animateCounter(ozEl,  0, oz,     1400, function(v) { return v.toFixed(1) + ' oz'; }); }
+  if (posEl) { animateCounter(posEl, 0, posCnt,  800, function(v) { return Math.round(v).toString(); }); }
   var kpiTotalSub = document.getElementById('kpi-total-sub');
   if (kpiTotalSub) kpiTotalSub.textContent = SPOT ? 'At $' + Math.round(SPOT.price_usd_per_oz || 0).toLocaleString() + '/oz spot' : '—';
   var kpiOzSub = document.getElementById('kpi-oz-sub');
@@ -3272,6 +3667,73 @@ function renderKpis(member) {
     var active  = positions.filter(function(p) { return (p.status || 'active') === 'active'; }).length;
     var exiting = positions.filter(function(p) { return p.status === 'exiting'; }).length;
     kpiPosSub.textContent = active + ' active' + (exiting > 0 ? ' · ' + exiting + ' exiting' : '');
+  }
+
+  // --- Snap bar ---
+  _set('snapTotal',     totalValue !== null ? fmU(totalValue) : '—');
+  _set('snapGoldVal',   goldValueUsd !== null ? fmU(goldValueUsd) : '—');
+  if (goldGainPct !== null) {
+    var gpSign = goldGainPct >= 0 ? '+' : '';
+    var snapGrEl = document.getElementById('snapGoldReturn');
+    if (snapGrEl) { snapGrEl.textContent = gpSign + goldGainPct.toFixed(2) + '%'; snapGrEl.style.color = goldGainPct >= 0 ? 'var(--green-b)' : '#C0534A'; }
+  } else { _set('snapGoldReturn', '—'); }
+  _set('snapLtv',       ltvPct > 0 ? (ltvPct <= 1 ? (ltvPct * 100).toFixed(1) : ltvPct.toFixed(1)) + '%' : 'None');
+  _set('snapCommitted', committed > 0 ? fmU(committed) : '—');
+
+  // --- Wealth card: Gold ---
+  _set('wealthGoldKg',  goldKg.toFixed(3) + ' kg');
+  _set('wealthGoldOz',  oz.toFixed(2) + ' oz');
+  _set('wealthGoldVal', goldValueUsd !== null ? fmU(goldValueUsd) : '—');
+  _set('wealthGoldSgd', goldValueSgd !== null ? 'S$' + Math.round(goldValueSgd).toLocaleString() : '—');
+  if (goldGainUsd !== null) {
+    var gainEl    = document.getElementById('wealthGoldGain');
+    var gainPctEl = document.getElementById('wealthGoldGainPct');
+    var gSign     = goldGainUsd >= 0 ? '+' : '';
+    var gCls      = goldGainUsd >= 0 ? 'gain-pos' : 'gain-neg';
+    if (gainEl)    { gainEl.textContent = gSign + fmU(Math.abs(goldGainUsd)); gainEl.className = 'today-stat-val mono ' + gCls; }
+    if (gainPctEl) { gainPctEl.textContent = gSign + goldGainPct.toFixed(2) + '%'; gainPctEl.className = 'today-stat-sub mono ' + gCls; }
+  } else {
+    _set('wealthGoldGain',    '—');
+    _set('wealthGoldGainPct', '—');
+  }
+  if (SPOT) {
+    _set('wealthGoldSpot', '$' + Math.round(SPOT.price_usd_per_oz).toLocaleString() + ' / oz');
+  }
+
+  // --- Wealth card: Portfolio ---
+  _set('wealthCommitted',  committed > 0 ? fmU(committed) : '—');
+  _set('wealthPeInvested', peInvested > 0 ? fmU(peInvested) : '—');
+
+  // LTV status badge
+  var ltvBadgeEl = document.getElementById('wealthLtvStatus');
+  if (ltvBadgeEl) {
+    ltvBadgeEl.textContent = ltvStatus;
+    ltvBadgeEl.className   = 'today-card-badge';
+    var ltvFrac = ltvPct <= 1 ? ltvPct : ltvPct / 100;
+    if (ltvFrac === 0) {
+      ltvBadgeEl.classList.add('gold');
+    } else if (ltvFrac < 0.4) {
+      ltvBadgeEl.classList.add('green');
+    } else if (ltvFrac < 0.55) {
+      ltvBadgeEl.classList.add('amber');
+    } else {
+      ltvBadgeEl.style.color = '#C0534A';
+    }
+  }
+
+  _set('wealthLtvPct',    ltvPct > 0 ? (ltvPct <= 1 ? (ltvPct * 100).toFixed(1) : ltvPct.toFixed(1)) + '%' : '—');
+  _set('wealthLtvCredit', ltvCredit > 0 ? fmU(ltvCredit) : 'None');
+
+  // LTV bar
+  var barEl = document.getElementById('wealthLtvBar');
+  if (barEl) {
+    var barFrac = ltvPct <= 1 ? ltvPct : ltvPct / 100;
+    var barW    = Math.min(barFrac / (ltvCeiling > 0 ? ltvCeiling : 0.6), 1) * 100;
+    setTimeout(function() { barEl.style.width = barW.toFixed(1) + '%'; }, 80);
+    barEl.className = 'today-ltv-bar';
+    if (barFrac < 0.35)     { barEl.classList.add('ltv-safe'); }
+    else if (barFrac < 0.5) { barEl.classList.add('ltv-caution'); }
+    else                    { barEl.classList.add('ltv-danger'); }
   }
 }
 
@@ -3605,6 +4067,7 @@ function loadDeals() {
     var chipClass = { infrastructure: 'infra', credit: 'credit', 'private credit': 'credit', 'real assets': 'assets', assets: 'assets', gold: 'gold' };
 
     deals.forEach(function(d) { _dealMap[d.id] = d; });
+    renderTodayDeals(deals);
     grid.innerHTML = deals.map(function(deal) {
       var cls = chipClass[(deal.asset_class || deal.type || '').toLowerCase()] || 'infra';
       return '<div class="deal-card fade-up">' +
@@ -3636,6 +4099,52 @@ function buildDealsError() {
     '<div class="state-box-sub">Please try again.</div>' +
     '<button class="state-retry-btn" onclick="tabLoaded[\'deals\']=false;loadDeals()">Retry →</button>' +
   '</div>';
+}
+
+// ============================================================
+// RENDER TODAY DEALS GRID
+// ============================================================
+function renderTodayDeals(deals) {
+  var grid = document.getElementById('todayDealsGrid');
+  var section = document.getElementById('todayDealsSection');
+  if (!grid) return;
+
+  if (!deals || !deals.length) {
+    if (section) section.style.display = 'none';
+    return;
+  }
+
+  var chipClass = { infrastructure: 'infra', credit: 'credit', 'private credit': 'credit', 'real assets': 'assets', assets: 'assets', gold: 'gold' };
+  // Show up to 3 deals; prefer new or open stage ones
+  var sorted = deals.slice().sort(function(a, b) {
+    var aNew = a.is_new ? 1 : 0;
+    var bNew = b.is_new ? 1 : 0;
+    return bNew - aNew;
+  });
+  var shown = sorted.slice(0, 3);
+
+  grid.innerHTML = shown.map(function(deal) {
+    var cls = chipClass[(deal.asset_class || deal.type || '').toLowerCase()] || 'infra';
+    return '<div class="today-deal-card fade-up">' +
+      '<div class="today-deal-top">' +
+        '<span class="deal-asset-chip ' + cls + '">' + esc(deal.asset_class || deal.type || '—') + '</span>' +
+        (deal.is_new ? '<span class="deal-new-badge">NEW</span>' : '') +
+      '</div>' +
+      '<div class="today-deal-name">' + esc(deal.name) + '</div>' +
+      '<div class="today-deal-geo">' + esc(deal.geography || deal.geo || '—') + '</div>' +
+      '<div class="today-deal-stats">' +
+        '<div class="deal-stat"><div class="deal-stat-label">IRR Target</div><div class="deal-stat-val gold-val">' + esc(deal.target_irr || deal.irr_target || deal.irr || '—') + '</div></div>' +
+        '<div class="deal-stat"><div class="deal-stat-label">Min Ticket</div><div class="deal-stat-val">' + (deal.min_ticket_usd ? fmU(deal.min_ticket_usd) : esc(deal.min_ticket || '—')) + '</div></div>' +
+        '<div class="deal-stat"><div class="deal-stat-label">Closing</div><div class="deal-stat-val">' + esc(deal.closing_date || deal.closing || '—') + '</div></div>' +
+      '</div>' +
+      '<div class="today-deal-thesis">' + esc(deal.thesis || deal.description || '') + '</div>' +
+      '<div class="today-deal-divider"></div>' +
+      '<div class="today-deal-footer">' +
+        '<span class="deal-stage-chip">' + esc(deal.stage || 'Review') + '</span>' +
+        '<button class="deal-link" onclick="openDealPanel(_dealMap[\'" + esc(deal.id) + "\'])">View Deal →</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
 
 // ============================================================
