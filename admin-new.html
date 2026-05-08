@@ -57,7 +57,7 @@
   --panel-w:       220px;
   --right-w:       280px;
   --topbar-h:      40px;
-  --ticker-h:      28px;
+  --ticker-h:      56px;
 
   /* ── Motion ──────────────────────────────────────────────────────── */
   --ease-entrance: cubic-bezier(0.22, 1, 0.36, 1);
@@ -207,9 +207,8 @@ svg {
   border-bottom: 1px solid var(--border);
   z-index: var(--z-header);
 }
-.tb-left   { flex: 1; display: flex; align-items: center; gap: 8px; }
-.tb-center { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; margin: 0 auto; }
-.tb-right  { flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+.tb-left  { flex: 1; display: flex; align-items: center; gap: 8px; }
+.tb-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 
 #ticker {
   grid-column: 1 / -1;
@@ -4007,17 +4006,13 @@ svg.spark   { overflow: visible; }
       </span>
     </div>
 
-    <!-- Center: clock + live indicator + operator email (truly centered) -->
-    <div class="tb-center">
-      <span class="tb-divider"></span>
-      <span class="tb-clock" id="clock">--:--:-- SGT</span>
-      <span class="tb-divider"></span>
-      <span class="tb-live-dot"></span>
-      <span class="tb-operator" id="admin-email">—</span>
-    </div>
-
-    <!-- Right: cmd-k, bots popover, tools dropdown -->
+    <!-- Right: clock + email + buttons -->
     <div class="tb-right">
+
+      <span class="tb-live-dot"></span>
+      <span class="tb-clock" id="clock">--:--:-- SGT</span>
+      <span class="tb-operator" id="admin-email">—</span>
+      <span class="tb-divider"></span>
 
       <!-- Cmd-K trigger (hidden at ≤480px via CSS in 01-css-foundation.css) -->
       <button id="cmdk-btn" class="tb-btn" type="button" aria-label="Command palette (⌘K)" data-tip="⌘K">
