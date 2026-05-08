@@ -53,7 +53,7 @@
   --display:       'Cormorant Garamond', 'Noto Serif KR', Georgia, serif;
 
   /* ── Layout ─────────────────────────────────────────────────────── */
-  --rail-w:        48px;
+  --rail-w:        80px;
   --panel-w:       220px;
   --right-w:       280px;
   --topbar-h:      40px;
@@ -229,8 +229,8 @@ svg {
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 8px 0;
+  align-items: stretch;
+  padding: 8px 6px;
   gap: 4px;
   z-index: var(--z-rail);
 }
@@ -630,22 +630,35 @@ svg {
 
 /* ── 4.3 ICON RAIL ─────────────────────────────────────────────────── */
 .rail-icon {
-  width: 36px;
+  width: 100%;
   height: 36px;
   border-radius: 6px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 16px;
+  justify-content: flex-start;
+  gap: 7px;
+  padding: 0 8px;
+  font-size: 15px;
   color: var(--fg-dim);
   cursor: pointer;
   transition: all 0.15s;
   position: relative;
   border: 1px solid transparent;
+  box-sizing: border-box;
 }
 .rail-icon:hover         { background: var(--elevated); color: var(--fg); border-color: var(--border); }
 .rail-icon:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .rail-icon.active        { background: var(--elevated); color: var(--accent); border-color: var(--accent-dim); }
+
+.rail-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: inherit;
+  white-space: nowrap;
+  line-height: 1;
+}
 
 .rail-badge {
   position: absolute;
@@ -3802,6 +3815,7 @@ svg.spark   { overflow: visible; }
   .rail-icon {
     min-height: 44px;
     min-width: 44px;
+    box-sizing: border-box;
   }
 
   /* Remove hover-dependent reveals — pipe card actions only on swipe */
@@ -4109,39 +4123,46 @@ svg.spark   { overflow: visible; }
 
     <button class="rail-icon active" data-tab="today" type="button" aria-label="Today" title="Today">
       <span>◈</span>
+      <span class="rail-label">Today</span>
       <span class="rail-badge" id="badge-today" aria-label="Today alerts"></span>
       <span class="rail-tooltip">Today</span>
     </button>
 
     <button class="rail-icon" data-tab="pipeline" type="button" aria-label="Pipeline" title="Pipeline">
       <span>⊞</span>
+      <span class="rail-label">Pipeline</span>
       <span class="rail-badge" id="badge-pipeline" aria-label="Pipeline items"></span>
       <span class="rail-tooltip">Pipeline</span>
     </button>
 
     <button class="rail-icon" data-tab="members" type="button" aria-label="Members" title="Members">
       <span>◎</span>
+      <span class="rail-label">Members</span>
       <span class="rail-badge" id="badge-members" aria-label="Member count"></span>
       <span class="rail-tooltip">Members</span>
     </button>
 
     <button class="rail-icon" data-tab="fund" type="button" aria-label="Fund" title="Fund">
       <span>◆</span>
+      <span class="rail-label">Fund</span>
       <span class="rail-tooltip">Fund</span>
     </button>
 
     <button class="rail-icon" data-tab="vault" type="button" aria-label="Vault" title="Vault">
       <span>⬡</span>
+      <span class="rail-label">Vault</span>
       <span class="rail-tooltip">Vault</span>
     </button>
 
     <button class="rail-icon" data-tab="comms" type="button" aria-label="Comms" title="Comms">
       <span>✉</span>
+      <span class="rail-label">Comms</span>
       <span class="rail-tooltip">Comms</span>
     </button>
 
     <button class="rail-icon" data-tab="compliance" type="button" aria-label="Compliance" title="Compliance">
       <span>✓</span>
+      <span class="rail-label">Comply</span>
       <span class="rail-badge" id="badge-compliance" aria-label="Compliance items"></span>
       <span class="rail-tooltip">Compliance</span>
     </button>
