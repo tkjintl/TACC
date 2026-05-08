@@ -1820,6 +1820,10 @@ select.input-field {
 }
 
 .toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
   background: var(--elevated);
   border: 1px solid var(--border-light);
   border-radius: 5px;
@@ -1830,8 +1834,11 @@ select.input-field {
   display: flex;
   align-items: center;
   gap: 8px;
-  animation: toast-in 0.2s ease;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 .toast.success { border-left: 3px solid var(--green); }
 .toast.error   { border-left: 3px solid var(--red); }
@@ -1839,6 +1846,13 @@ select.input-field {
 .toast--error  { border-color: var(--redBd); color: var(--red); }
 .toast--success{ border-color: var(--greenBd); color: var(--green); }
 .toast.show    { opacity: 1; pointer-events: auto; transform: translateY(0); }
+
+@keyframes section-pulse {
+  0%   { outline: 2px solid transparent; }
+  30%  { outline: 2px solid var(--accent); }
+  100% { outline: 2px solid transparent; }
+}
+.section-highlight { animation: section-pulse 0.9s ease forwards; border-radius: 6px; }
 
 @keyframes toast-in {
   from { opacity: 0; transform: translateY(8px); }
@@ -7044,13 +7058,20 @@ textarea.inp.mono-area {
         el.classList.add('active');
         var t = document.getElementById(el.dataset.panelGoto);
         if (t) {
-          var scroller = (currentTab === 'today' ? document.getElementById('ap-today') : null)
-                         || document.getElementById('main-content');
-          if (scroller) {
-            var off = t.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
-            scroller.scrollTo({ top: off - 12, behavior: 'smooth' });
+          // On Today tab everything fits in viewport — pulse-highlight instead of scroll
+          if (currentTab === 'today') {
+            t.classList.remove('section-highlight');
+            void t.offsetWidth; // reflow to restart animation
+            t.classList.add('section-highlight');
+            setTimeout(function(){ t.classList.remove('section-highlight'); }, 900);
           } else {
-            t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            var scroller = document.getElementById('main-content');
+            if (scroller) {
+              var off = t.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
+              scroller.scrollTo({ top: off - 12, behavior: 'smooth' });
+            } else {
+              t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
           }
         }
       });
@@ -7315,11 +7336,18 @@ textarea.inp.mono-area {
           } else {
             rrAlerts.innerHTML = allAlerts.slice(0, 5).map(function(x){
               var sev = (x.severity === 'critical' || x.severity === 'red') ? 'high' : 'med';
-              return '<div class="alert-item ' + sev + '">' +
+              var lid = x.leadId || x.lead_id || '';
+              return '<div class="alert-item ' + sev + '" style="cursor:pointer" data-alert-lead="' + esc(lid) + '">' +
                 '<div class="alert-item-title">' + esc(x.leadName || x.name || 'Alert') + '</div>' +
                 '<div class="alert-item-sub">' + esc(x.type ? flagTitle(x.type) : (x.reason || '')) + '</div>' +
               '</div>';
             }).join('');
+            rrAlerts.querySelectorAll('[data-alert-lead]').forEach(function(el){
+              el.addEventListener('click', function(){
+                var lid = el.dataset.alertLead;
+                if (lid) openLeadDrawer(lid);
+              });
+            });
           }
         }
 
