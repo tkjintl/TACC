@@ -2892,8 +2892,9 @@ body {
 // ============================================================
 // GLOBAL STATE
 // ============================================================
-var MEMBER = null;
-var SPOT   = null;
+var MEMBER      = null;
+var SPOT        = null;
+var _previewLead = new URLSearchParams(location.search).get('preview_lead') || null;
 var tabLoaded = {};
 var viewAnimated = {};
 var animated = { ring: false, ozCounter: false };
@@ -4120,7 +4121,6 @@ if (USE_MOCK) {
     if (todayView) triggerFadeUps(todayView);
   }, 50);
 
-  var _previewLead = new URLSearchParams(location.search).get('preview_lead');
   MEMBER = await fetchSilent('/api/v2?resource=member&op=me' + (_previewLead ? '&preview_lead=' + encodeURIComponent(_previewLead) : ''));
 
   if (!MEMBER) {
