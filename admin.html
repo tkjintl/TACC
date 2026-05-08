@@ -7410,7 +7410,7 @@ textarea.inp.mono-area {
     // Wire action buttons — map flag type → stage op or drawer
     var FLAG_OP_MAP = {
       'code-expiring':              'resend-admission',
-      'capital-call-overdue':       'wire-reminder',
+      'capital-call-overdue':       '__drawer',
       'wire-pending-stale':         'wire-reminder',
       'ltv-approaching':            '__drawer',
       'ltv-near-ceiling':           '__drawer',
@@ -7428,7 +7428,7 @@ textarea.inp.mono-area {
         var op = FLAG_OP_MAP[act];
         if (!op) return;
         if (op === '__drawer') { openLeadDrawer(lid); return; }
-        runStageAction(op, lid, null);
+        runStageAction(op, lid, null, btn);
       });
     });
   }
@@ -8133,11 +8133,7 @@ textarea.inp.mono-area {
           .then(function(r){ return r.json(); })
           .then(function(d){
             if (d && d.ok === false) {
-              if ((d.error || '').toLowerCase().indexOf('unknown') !== -1) {
-                toast('decline-lead op not yet on backend — falling back', 'error');
-                return;
-              }
-              toast(d.error || 'Failed', 'error');
+              toast(d.error || 'Decline failed', 'error');
               return;
             }
             toast('Declined · ' + name, 'success');

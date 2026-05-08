@@ -444,6 +444,7 @@ async function handleAdmin(req, res, op) {
     case 'test-capital-call-targeting': return adminTestCapitalCallTargeting(req, res, session);
     case 'verify-ioi':              return adminVerifyIoi(req, res, session);
     case 'decline-ioi':             return adminDeclineIoi(req, res, session);
+    case 'member-certificate-url':  return adminMemberCertificateUrl(req, res, session);
     default:                        return bad(res, `unknown admin op: ${op}`);
   }
 }
@@ -3435,6 +3436,25 @@ async function memberTaxStatementSignedUrl(req, res) {
     const { buildSignedUrl } = await import('./_lib/signed-url.js');
     const r = await buildSignedUrl({ pathname, leadId: lead.id, kind: 'tax-statement', ttlSeconds: 24 * 60 * 60 });
     return ok(res, { ok: true, lead_id: lead.id, fiscal_year: fy, signed_url: r.signed_url, expires_at: r.expires_at });
+  } catch (e) {
+    return serverError(res, e);
+  }
+}
+
+// ── admin op=member-certificate-url ─────────────────────────────────────────
+
+async function adminMemberCertificateUrl(req, res, session) {
+  if (req.method !== 'GET') return methodNotAllowed(res);
+  const q = getQuery(req);
+  const leadId = String(q.leadId || '').trim();
+  if (!leadId) return err(res, 'leadId required', 'MISSING_LEAD_ID');
+  const lead = await getLead(leadId);
+  if (!lead) return notFound(res);
+  const pathname = `certificates/${lead.id}.pdf`;
+  try {
+    const { buildSignedUrl } = await import('./_lib/signed-url.js');
+    const r = await buildSignedUrl({ pathname, leadId: lead.id, kind: 'certificate', ttlSeconds: 24 * 60 * 60 });
+    return ok(res, { ok: true, lead_id: lead.id, signed_url: r.signed_url, expires_at: r.expires_at });
   } catch (e) {
     return serverError(res, e);
   }
